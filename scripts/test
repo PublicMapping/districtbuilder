@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+function usage() {
+    echo -n \
+        "Usage: $(basename "$0")
+Run linters and tests.
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    else
+        echo "Updating dependencies"
+        yarn install
+
+        echo "Compiling source code"
+        # NOTE: This is necessary because tests can pass with TS code that
+        # doesn't compile
+        yarn run compile
+
+        echo "Linting source code"
+        yarn run lint
+        yarn run check-format
+
+        echo "Executing test suite"
+        CI=1 yarn run test
+    fi
+fi
