@@ -13,22 +13,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        if ! command -v node >/dev/null ||
-                [ "$(node --version)" != "$(cat .nvmrc)" ]; then
-            echo "ERROR: Current version of Node.js does not match .nvmrc."
-            echo
-            echo "Please run \`nvm install $(cat .nvmrc) && nvm use\` and try again."
-            exit 1
-        fi
-
-        if ! command -v yarn >/dev/null ||
-                [ "$(yarn --version)" != "$(cat .yvmrc)" ]; then
-            echo "ERROR: Current version of Yarn does not match .yvmrc."
-            echo
-            echo "Please run \`yvm use\` and try again."
-            exit 1
-        fi
-
+        ./scripts/use_version
         ./scripts/update
     fi
 fi
