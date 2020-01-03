@@ -14,13 +14,13 @@ In addition to being able to perform TopoJSON operations, the back-end API will 
 
 I evaluated [11 different Node.js web frameworks](https://docs.google.com/spreadsheets/d/1zLixcL1Xt53iYPkvzDHidg48uyKrevO7i7zj6EiBMBA/edit?usp=sharing), which generally fell into 3 types:
 
-- Minimalistic, generally with only routing and minimal HTTP support. Other features are potentially available as middleware.
+- Minimalist, generally with only routing and minimal HTTP support. Other features are potentially available as middleware.
    - Express
    - koa
    - hapi
    - Fastify
    - Next
- - Fully featured, with support for user authorization & registration, an ORM, database migrations, etc. Typically built *using* on of the more minimalistic frameworks under the hood.
+ - Fully featured, with support for user authorization & registration, an ORM, database migrations, etc. Typically built *using* one of the more minimalist frameworks under the hood.
    - Adonis
    - Feathers
    - Nest
@@ -31,11 +31,11 @@ I evaluated [11 different Node.js web frameworks](https://docs.google.com/spread
 
 
 From these frameworks, I immediately identified a few that won't work well for our purposes:
- - MeteorJS is popular and well-documented framework, but it only supports MongoDB for persisting data
+ - MeteorJS is a popular and well-documented framework, but it only supports MongoDB for persisting data
  - Next is primarily focused on server-side rendering of React applications, and does not provide many of the features we would need, nor does it have a large third-party plugin ecosystem to make up for the lack of first-party support.
 
 
-For the more minimalistic frameworks, there are third-party tools we could leverage to make up for missing features.
+For the more minimalist frameworks, there are third-party tools we could leverage to make up for missing features.
 
 User registration:
  - Auth0 can provide this as an external service, and is a service we are familiar with
@@ -47,10 +47,10 @@ Database querying & migrations management
  - For a more low-level approach, `node-postgres` or KnexJS combined with `node-db-migrate`
 
 
-The more "batteries-included" frameworks tend to use the above libraries (in some cases even allowing swapping in one with another), rather than including their own implementations. This means that when choosing between one of these frameworks or a more minimalistic one like Express, what we are really choosing between for the most part is whether to put the pieces together ourselves or whether to use the combination of libraries brought together by a framework like Nest or Feathers.
+The more "batteries-included" frameworks tend to use the above libraries (in some cases even allowing swapping in one with another), rather than including their own implementations. This means that when choosing between one of these frameworks or a more minimalist one like Express, what we are really choosing between for the most part is whether to put the pieces together ourselves or whether to use the combination of libraries brought together by a framework like Nest or Feathers.
 
 
-We could also instead consider using a minimalist framework in a hybrid approach, where we build most of the back-end API in a language/framework we are familiar with, such as Python & Django, and encapsulate the TopoJSON-specific operations in a micro-service. This would allow us to not need to learn a new way of managing database migrations, user authentication or management, etc. but with a cost of greater architectural complexity and a potential performance loss due to communication overheads. For such an approach I think it would make sense to go with Express, as we have familiarity with using it for other microservices on previous projects.
+We could also instead consider using a minimalist framework in a hybrid approach, where we build most of the back-end API in a language/framework we are familiar with, such as Python & Django, and encapsulate the TopoJSON-specific operations in a microservice. This would allow us to not need to learn a new way of managing database migrations, user authentication or management, etc., but with a cost of greater architectural complexity and a potential performance loss due to communication overheads. For such an approach I think it would make sense to go with Express, as we have familiarity with using it for other microservices on previous projects.
 
 
 Decision
