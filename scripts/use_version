@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+
+function use_version() {
+    nvm_script="$HOME/.nvm/nvm.sh"
+    if [ ! -f "$nvm_script" ]; then
+        echo "nvm script not found at $nvm_script. Is nvm installed?"
+        exit 1
+    fi
+    source ~/.nvm/nvm.sh
+    if ! nvm list | grep -q "$(cat .nvmrc)"; then
+        nvm install "$(cat .nvmrc)"
+    fi
+    nvm use
+
+    yvm_script="$HOME/.yvm/yvm.sh"
+    if [ ! -f $yvm_script ]; then
+        echo "yvm script not found at $yvm_script. Is yvm installed?"
+        exit 1
+    fi
+    source ~/.yvm/yvm.sh
+    yvm use
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    use_version
+fi
