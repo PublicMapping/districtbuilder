@@ -10,6 +10,8 @@ The main performance critical operation we know the back-end API will need to su
 
 TopoJSON is written in JavaScript (there are TopoJSON libraries in other languages, but none support the critical merge operations that make TopoJSON useful for our situation), and in order to be able to use it in a performant manner we must create a Node.js service that can keep the TopoJSON data structure in-memory. Due to familiarity and enthusiasm from the team, we would prefer to use TypeScript for this service over plain JavaScript.
 
+As an additional point in favor of Node.js / TypeScript, using TypeScript will enable us to share code with the frontend, which will be particularly helpful as we expect to need to mirror some client-side operations on the backend to support contest submissions validation.
+
 In addition to being able to perform TopoJSON operations, the back-end API will need to be able to provide user authentication (and potentially user registration and management as well) and communicate with a PostgreSQL database to persist data.
 
 I evaluated [11 different Node.js web frameworks](https://docs.google.com/spreadsheets/d/1zLixcL1Xt53iYPkvzDHidg48uyKrevO7i7zj6EiBMBA/edit?usp=sharing), which generally fell into 3 types:
@@ -61,6 +63,8 @@ We will proceed by using TypeScript with Nest as the framework for the DistrictB
 The documentation for Nest was among the best of the frameworks I investigated, and the [purposeful similarity to Angular](https://codesandbox.io/s/jjo90y00xw?from-embed) will hopefully provide an easier learning curve given the familiarity within the development team with Angular.
 
 By using Nest we won't have to choose a user authentication strategy (it provides an integration with Passport) or database management library (it uses TypeORM by default). Because it is built on-top of Express we can still use Express-middleware if necessary, but we may not have to as there are a number of plugins (https://github.com/juliandavidmr/awesome-nestjs#components--libraries). Nest also provides a dependency injection framework, which is an added bonus.
+
+---
 
 Feathers was another major contender, and it provides many of the basics we need. Ultimately the choice between them mainly came down to Nest appearing to have better TypeScript support, and the familiarity of the Angular-esque application structure used by Nest.
 
