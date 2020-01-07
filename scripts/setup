@@ -13,7 +13,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        ./scripts/use_version
         ./scripts/update
     fi
 fi
