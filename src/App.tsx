@@ -1,6 +1,7 @@
 import React from "react";
 
 import "./App.css";
+import Map from  "./components/Map";
 
 const App = () => (
   <div className="App">
@@ -8,7 +9,9 @@ const App = () => (
       <img src="logo.png" className="App-logo" alt="logo" />
       DistrictBuilder 2
     </header>
-    <main />
+    <main>
+      <Map></Map>
+    </main>
   </div>
 );
 
