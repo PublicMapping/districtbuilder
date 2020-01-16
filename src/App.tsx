@@ -1,7 +1,7 @@
 import React from "react";
 
 import "./App.css";
-import Map from  "./components/Map";
+import Map from "./components/Map";
 
 const App = () => (
   <div className="App">
