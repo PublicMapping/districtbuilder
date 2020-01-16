@@ -10,7 +10,7 @@ const App = () => (
       DistrictBuilder 2
     </header>
     <main>
-      <Map></Map>
+      <Map />
     </main>
   </div>
 );

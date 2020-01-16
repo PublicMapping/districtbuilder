@@ -4,16 +4,7 @@ const path = 'https://global-districtbuilder-dev-us-east-1.s3.amazonaws.com/pa';
 
 
 export const mapboxStyle: Style = {
-  version: 8,
-  name: 'District Builder',
-  sources: {
-    blockgroups: {
-      type: 'vector',
-      tiles: [path + '/data/tiles/{z}/{x}/{y}.pbf'],
-      minzoom: 4,
-      maxzoom: 10,
-    },
-  },
+  glyphs: path + '/fonts/{fontstack}/{range}.pbf',
   layers: [
     {
       id: 'blockgroups-outline',
@@ -27,6 +18,15 @@ export const mapboxStyle: Style = {
       },
     },
   ],
+  name: 'District Builder',
+  sources: {
+    blockgroups: {
+      type: 'vector',
+      tiles: [path + '/data/tiles/{z}/{x}/{y}.pbf'],
+      minzoom: 4,
+      maxzoom: 10,
+    },
+  },
   sprite: path + '/sprites/sprite',
-  glyphs: path + '/fonts/{fontstack}/{range}.pbf',
+  version: 8,
 };
