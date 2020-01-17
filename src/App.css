@@ -1,5 +1,17 @@
+html,
+body {
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
+
 .App {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .App-logo {
@@ -18,4 +30,8 @@
 
 .App-link {
   color: #09d3ac;
+}
+
+.App main {
+  flex: auto;
 }
