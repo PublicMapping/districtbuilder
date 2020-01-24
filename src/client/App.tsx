@@ -1,6 +1,6 @@
 import React from "react";
 
-import { getTestString } from "../shared/TestFns"
+import { getTestString } from "../shared/TestFns";
 import "./App.css";
 import Map from "./components/Map";
 
