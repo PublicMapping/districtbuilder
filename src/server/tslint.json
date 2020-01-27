@@ -1,18 +1,41 @@
 {
   "defaultSeverity": "error",
-  "extends": ["tslint:recommended"],
-  "jsRules": {
-    "no-unused-expression": true
-  },
+  "extends": [
+    "tslint:recommended",
+    "tslint-react",
+    "tslint-immutable",
+    "tslint-config-prettier",
+    "tslint-etc"
+  ],
+  "jsRules": {},
   "rules": {
-    "quotemark": [true, "single"],
-    "member-access": [false],
-    "ordered-imports": [false],
-    "max-line-length": [true, 150],
-    "member-ordering": [false],
-    "interface-name": [false],
-    "arrow-parens": false,
-    "object-literal-sort-keys": false
+    "interface-name": false,
+    "object-literal-sort-keys": [true, "match-declaration-order-only"],
+    "no-shadowed-variable": false,
+    "no-unused-declaration": true,
+    "no-unused-expression": [true, "allow-fast-null-checks"],
+    "no-var-keyword": true,
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "require-const-for-all-caps",
+      "allow-pascal-case",
+      "allow-leading-underscore"
+    ],
+    "no-parameter-reassignment": true,
+    "typedef": [true, "call-signature"],
+    "readonly-keyword": true,
+    "readonly-array": true,
+    "no-object-mutation": true,
+    "no-delete": true,
+    "no-method-signature": true,
+    "no-loop-statement": true,
+    "no-throw": true,
+    "no-try": true,
+    "no-if-statement": true,
+    "jsx-no-lambda": false,
+    "member-access": false
   },
   "rulesDirectory": []
 }
