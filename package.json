@@ -1,7 +1,19 @@
 {
-  "name": "district-builder-2",
+  "name": "district-builder-2-client",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "start": "PORT=3003 react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "compile": "tsc",
+    "watch": "tsc --watch",
+    "fix": "tslint -p . --fix",
+    "lint": "tslint -p .",
+    "format": "prettier --write 'src/{client,shared}/*.{ts,tsx,json,css}'",
+    "check-format": "prettier --check 'src/{client,shared}/*.{ts,tsx,json,css}'"
+  },
   "dependencies": {
     "@types/jest": "24.0.22",
     "@types/mapbox-gl": "^1.6.1",
@@ -19,18 +31,6 @@
     "redux-loop": "5.0.1",
     "ts.data.json": "0.3.0",
     "typescript": "3.7.2"
-  },
-  "scripts": {
-    "start": "PORT=3003 react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "compile": "tsc",
-    "watch": "tsc --watch",
-    "fix": "tslint -p . --fix",
-    "lint": "tslint -p .",
-    "format": "prettier --write 'src/**/*.{ts,tsx,json,css}'",
-    "check-format": "prettier --check 'src/**/*.{ts,tsx,json,css}'"
   },
   "eslintConfig": {
     "extends": "react-app"

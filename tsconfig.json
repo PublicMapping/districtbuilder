@@ -23,6 +23,7 @@
     "src"
   ],
   "exclude": [
-    "src/server"
+    "src/server",
+    "src/dist"
   ]
 }
