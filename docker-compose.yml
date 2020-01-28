@@ -1,0 +1,28 @@
+version: "2.3"
+services:
+  database:
+    image: quay.io/azavea/postgis:2.4-postgres10.9-slim
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "district_builder"]
+      interval: 3s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  app-backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - 3005:3005
+    links:
+      - database:database.service.districtbuilder.internal
+    volumes:
+      - ./src/:/nest/src/
+    entrypoint: yarn
+    command: start:dev
