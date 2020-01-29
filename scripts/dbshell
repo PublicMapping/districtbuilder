@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+function usage() {
+    echo -n \
+        "Usage: $(basename "$0")
+Enter a database shell.
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    else
+        # Bring up PostgreSQL in a way that respects configured service health
+        # checks.
+        docker-compose up -d \
+            database app-backend-yarn
+
+        docker-compose \
+            exec database bash -c "psql -U district_builder -d district_builder"
+    fi
+fi
