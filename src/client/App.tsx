@@ -27,7 +27,7 @@ const App = ({ users }: Props) => {
         <br />
         Test code sharing: {getTestString()}
         <br />
-        Users: {"resource" in users ? users.resource.map(u => u.email).join(",") : "none"}
+        Users: {"resource" in users && users.resource.length ? users.resource.map(u => u.email).join(",") : "none"}
       </header>
       <main>
         <Map />
