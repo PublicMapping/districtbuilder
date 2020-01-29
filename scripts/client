@@ -5,7 +5,7 @@ set -e
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
-Start application.
+Start client application.
 "
 }
 
