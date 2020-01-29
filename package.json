@@ -54,5 +54,6 @@
     "tslint-etc": "1.9.2",
     "tslint-immutable": "6.0.1",
     "tslint-react": "4.1.0"
-  }
+  },
+  "proxy": "http://localhost:3005"
 }
