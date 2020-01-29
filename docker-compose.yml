@@ -26,3 +26,17 @@ services:
       - ./src/:/nest/src/
     entrypoint: yarn
     command: start:dev
+
+  app-backend-yarn:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      database:
+        condition: service_healthy
+    links:
+      - database:database.service.districtbuilder.internal
+    volumes:
+      - ./src/:/nest/src/
+    entrypoint: yarn
