@@ -11,18 +11,30 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/server/src/main",
     "lint": "tslint -p tsconfig.json -c tslint.json",
+    "fix": "tslint -p tsconfig.json -c tslint.json --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migration:generate": "yarn run typeorm migration:generate -n",
+    "migration:create": "yarn run typeorm migration:create -n",
+    "migration:run": "yarn run typeorm migration:run"
   },
   "dependencies": {
     "@nestjs/common": "^6.10.14",
     "@nestjs/core": "^6.10.14",
     "@nestjs/platform-express": "^6.10.14",
+    "@nestjs/typeorm": "^6.2.0",
+    "@nestjsx/crud": "^4.4.1",
+    "@nestjsx/crud-typeorm": "^4.4.1",
+    "class-transformer": "^0.2.3",
+    "class-validator": "^0.11.0",
+    "pg": "^7.17.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
-    "rxjs": "^6.5.4"
+    "rxjs": "^6.5.4",
+    "typeorm": "^0.2.22"
   },
   "devDependencies": {
     "@nestjs/cli": "^6.13.2",
