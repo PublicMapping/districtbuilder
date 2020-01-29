@@ -2,6 +2,8 @@
 
 set -e
 
+DIR="$(dirname "$0")/../"
+
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
@@ -13,19 +15,34 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        echo "Updating dependencies"
+        echo "Updating client dependencies"
         yarn install
 
-        echo "Compiling source code"
-        # NOTE: This is necessary because tests can pass with TS code that
-        # doesn't compile
+        echo "Compiling client source code"
         yarn run compile
 
-        echo "Linting source code"
+        echo "Linting client source code"
         yarn run lint
         yarn run check-format
 
-        echo "Executing test suite"
+        echo "Executing client test suite"
         CI=1 yarn run test
+
+        pushd "${DIR}/src/server"
+
+        echo "Updating server dependencies"
+        yarn install
+
+        echo "Building server source code"
+        yarn run build
+
+        echo "Linting server source code"
+        yarn run lint
+        yarn run check-format
+
+        echo "Executing server test suite"
+        CI=1 yarn run test
+
+        popd
     fi
 fi
