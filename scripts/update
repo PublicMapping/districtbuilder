@@ -2,6 +2,8 @@
 
 set -e
 
+DIR="$(dirname "$0")/../"
+
 function use_version() {
     nvm_script="$HOME/.nvm/nvm.sh"
     if [ ! -f "$nvm_script" ]; then
@@ -36,7 +38,15 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     else
         use_version
 
-        echo "Updating dependencies"
+        pushd "${DIR}/src/server"
+        echo "Updating server dependencies"
+        yarn install
+        popd
+
+        echo "Running database migrations"
+        ./scripts/migrate
+
+        echo "Updating client dependencies"
         yarn install
     fi
 fi
