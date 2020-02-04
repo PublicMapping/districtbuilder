@@ -13,10 +13,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        docker-compose up -d \
-            database app-backend-yarn
-
         docker-compose \
-            run --rm app-backend-yarn "migration:run"
+            run --rm server yarn run migration:run
     fi
 fi

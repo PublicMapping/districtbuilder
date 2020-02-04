@@ -13,6 +13,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        docker-compose up app-backend
+        docker-compose up server client
     fi
 fi

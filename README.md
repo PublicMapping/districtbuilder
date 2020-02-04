@@ -4,14 +4,14 @@ DistrictBuilder 2 is web-based, open source software for collaborative redistric
 
 ## Requirements
 
-* [nvm](https://github.com/creationix/nvm) to manage Node versions on your machine
-* [yvm](https://yvm.js.org/docs/overview) to manage Yarn versions for package management
+* [Docker](https://www.docker.com/get-started)
+* [`docker-compose`](https://docs.docker.com/compose/install/)
 
 ## Development
 
 ### Setup
 
-1. Make sure you have `nvm` and `yvm` installed (see links in [Requirements](#requirements))
+1. Make sure you have `docker` and `docker-compose` installed (see links in [Requirements](#requirements))
 1. Run `./scripts/setup`
 
 Note that it is recommended to configure your editor to auto-format your code via Prettier on save.
@@ -42,11 +42,10 @@ This app uses:
 
 | Name                 | Description                                                  |
 | -------------------- | ------------------------------------------------------------ |
-| `client`             | Run frontend application                                     |
 | `dbshell`            | Open a `psql` shell connected to the database                |
 | `migrate`            | Run database migrations                                      |
 | `migration_generate` | Generate a new database migration                            |
-| `server`             | Run backend application                                      |
+| `server`             | Run application services                                     |
 | `setup`              | Get set up for development                                   |
 | `test`               | Check for lint and formatting and run tests (client + server)|
 | `update`             | Update project dependencies and run migrations               |
@@ -71,8 +70,7 @@ Note that there are two `package.json` files. Yarn commands can be run on the fr
 ### Development workflow
 
  * After remote code has been updated, run `scripts/update`
- * In one terminal, run `scripts/server`
- * In another terminal, run `scripts/client`
+ * To start all services, run `scripts/server`
  * Both services will be auto-reloaded when relevant code changes
  * To run tests for both services, run `scripts/test`
  * To run formatting and linting, run `yarn format` and `yarn lint` in the appropriate directory
