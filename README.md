@@ -49,6 +49,7 @@ This app uses:
 | `setup`              | Get set up for development                                   |
 | `test`               | Check for lint and formatting and run tests (client + server)|
 | `update`             | Update project dependencies and run migrations               |
+| `yarn`               | Run yarn commands on either the server or client             |
 
 ### Project Organization
 
@@ -73,97 +74,99 @@ Note that there are two `package.json` files. Yarn commands can be run on the fr
  * To start all services, run `scripts/server`
  * Both services will be auto-reloaded when relevant code changes
  * To run tests for both services, run `scripts/test`
- * To run formatting and linting, run `yarn format` and `yarn lint` in the appropriate directory
-   * For client (and shared code), run in the root directory
-   * For server, run in `src/server`
+ * To run formatting and linting, run `scripts/yarn <service> format` and `scripts/yarn <service> lint` using either `client` or `server` in place of "service" as appropriate
 
-### Yarn commands (frontend)
+### Yarn commands
 
-### `yarn start`
+Both the `server` and `client` use `yarn` to run different commands.
+
+Use `scripts/yarn <service> ...` to run these commands inside the relevant docker container.
+
+### Yarn commands (client)
+
+### `./scripts/yarn client start`
 
 Runs the CRA frontend in development mode.
 
 Open [http://localhost:3003](http://localhost:3003) to view it in the browser.
 
-### `yarn compile`
+### `./scripts/yarn client run compile`
 
 Compile TypeScript.
 
-### `yarn watch`
+### `./scripts/yarn client run watch`
 
 Watch for TypeScript changes.
 
-### `yarn fix`
+### `./scripts/yarn client run fix`
 
 Fix any auto-fixable issues.
 
-### `yarn lint`
+### `./scripts/yarn client run lint`
 
 Run linter to check for any issues.
 
-### `yarn format`
+### `./scripts/yarn client run format`
 
 Automatically format all source files.
 
-### `yarn check-format`
+### `./scripts/yarn client run check-format`
 
 Ensure all files are properly formatted.
 
-### `yarn test`
+### `./scripts/yarn client run test`
 
 Launches the test runner in interactive watch mode.
 
-### `yarn build`
+### `./scripts/yarn client run build`
 
 Builds the app for production to the `build` folder.
 
 
-### Yarn commands (backend -- run from `src/server`)
+### Yarn commands (server)
 
-### `yarn start|start:dev|start:debug|start:prod`
+### `./scripts/yarn server run start|start:dev|start:debug|start:prod`
 
 Not intended to be used directly. Instead use `scripts/server`, which starts the development server with proper environment variables to allow connecting to the database container.
 
-### `yarn compile`
+### `./scripts/yarn client run compile`
 
 Compile TypeScript.
 
-### `yarn fix`
+### `./scripts/yarn client run fix`
 
 Fix any auto-fixable issues.
 
-### `yarn lint`
+### `./scripts/yarn client run lint`
 
 Run linter to check for any issues.
 
-### `yarn format`
+### `./scripts/yarn client run format`
 
 Automatically format all source files.
 
-### `yarn check-format`
+### `./scripts/yarn client run check-format`
 
 Ensure all files are properly formatted.
 
-### `yarn test`
+### `./scripts/yarn client run test`
 
 Run unit tests.
 
-### `yarn test:watch`
+### `./scripts/yarn client run test:watch`
 
 Launches the test runner in interactive watch mode.
 
-### `yarn test:cov`
+### `./scripts/yarn client run test:cov`
 
 Run code coverage.
 
-### `yarn test:e2e`
+### `./scripts/yarn client run test:e2e`
 
 Run end-to-end tests.
 
-### `yarn typeorm`
+### `./scripts/yarn client run typeorm`
 
 Run typeorm commands.
 
-### `yarn migration:generate|migration:create|migration:run`
-
-Not intended to be used directly. Instead use `scripts/migrate` and `scripts/migration_generate`, which runs these commands with proper environment variables to allow connecting to the database container.
+### `./scripts/yarn client run migration:generate|migration:create|migration:run`
