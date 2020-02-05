@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+function usage() {
+    echo -n \
+        "Execute yarn commands. Pass either 'server' or 'client' to specify which service to run on.
+
+Example: scripts/yarn server install
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    elif [ "$1" == "client" ] || [ "$1" == "server" ]; then
+        docker-compose run --rm "$1" yarn "${@:2}"
+    else
+        usage
+    fi
+fi

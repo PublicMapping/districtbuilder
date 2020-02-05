@@ -10,11 +10,11 @@ services:
       retries: 3
       start_period: 5s
 
-  app-backend:
-    build:
-      context: ./
-      dockerfile: Dockerfile
+  server:
+    image: node:10-stretch
     env_file: .env
+    environment:
+      - CI
     depends_on:
       database:
         condition: service_healthy
@@ -23,20 +23,20 @@ services:
     links:
       - database:database.service.districtbuilder.internal
     volumes:
-      - ./src/:/nest/src/
-    entrypoint: yarn
-    command: start:dev
+      - ./:/opt/db2/
+    working_dir: /opt/db2/src/server
+    command: yarn run start:dev
 
-  app-backend-yarn:
-    build:
-      context: ./
-      dockerfile: Dockerfile
+  client:
+    image: node:10-stretch
     env_file: .env
-    depends_on:
-      database:
-        condition: service_healthy
+    environment:
+      - CI
+    ports:
+      - 3003:3003
     links:
-      - database:database.service.districtbuilder.internal
+      - server:backend.service.districtbuilder.internal
     volumes:
-      - ./src/:/nest/src/
-    entrypoint: yarn
+      - ./:/opt/db2/
+    working_dir: /opt/db2
+    command: yarn run start
