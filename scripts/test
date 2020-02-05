@@ -16,33 +16,49 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         usage
     else
         echo "Updating client dependencies"
-        yarn install
+        docker-compose \
+            run --rm --no-deps client \
+            yarn install
 
         echo "Compiling client source code"
-        yarn run compile
+        docker-compose \
+            run --rm --no-deps client \
+            yarn run compile
 
         echo "Linting client source code"
-        yarn run lint
-        yarn run check-format
+        docker-compose \
+            run --rm --no-deps client \
+            yarn run lint
+        docker-compose \
+            run --rm --no-deps client \
+            yarn run check-format
 
         echo "Executing client test suite"
-        CI=1 yarn run test
-
-        pushd "${DIR}/src/server"
+        CI=1 docker-compose \
+            run --rm --no-deps client \
+            yarn run test
 
         echo "Updating server dependencies"
-        yarn install
+        docker-compose \
+            run --rm --no-deps server \
+            yarn install
 
         echo "Building server source code"
-        yarn run build
+        docker-compose \
+            run --rm --no-deps server \
+            yarn run build
 
         echo "Linting server source code"
-        yarn run lint
-        yarn run check-format
+        docker-compose \
+            run --rm --no-deps server \
+            yarn run lint
+        docker-compose \
+            run --rm --no-deps server \
+            yarn run check-format
 
         echo "Executing server test suite"
-        CI=1 yarn run test
-
-        popd
+        CI=1 docker-compose \
+            run --rm --no-deps server \
+            yarn run test
     fi
 fi

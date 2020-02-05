@@ -4,27 +4,6 @@ set -e
 
 DIR="$(dirname "$0")/../"
 
-function use_version() {
-    nvm_script="$HOME/.nvm/nvm.sh"
-    if [ ! -f "$nvm_script" ]; then
-        echo "nvm script not found at $nvm_script. Is nvm installed?"
-        exit 1
-    fi
-    source ~/.nvm/nvm.sh
-    if ! nvm list | grep -q "$(cat .nvmrc)"; then
-        nvm install "$(cat .nvmrc)"
-    fi
-    nvm use
-
-    yvm_script="$HOME/.yvm/yvm.sh"
-    if [ ! -f $yvm_script ]; then
-        echo "yvm script not found at $yvm_script. Is yvm installed?"
-        exit 1
-    fi
-    source ~/.yvm/yvm.sh
-    yvm use
-}
-
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
@@ -36,17 +15,26 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        use_version
+        # Ensure container images are current
+        docker-compose build
 
-        pushd "${DIR}/src/server"
+        echo "Updating client dependencies"
+        docker-compose \
+            run --rm --no-deps client \
+            yarn install
+
+        # Install backend NPM modules
         echo "Updating server dependencies"
-        yarn install
-        popd
+        docker-compose \
+            run --rm --no-deps server \
+            yarn install
+
+        # Bring up database to run migrations
+        docker-compose up -d database
 
         echo "Running database migrations"
         ./scripts/migrate
 
-        echo "Updating client dependencies"
-        yarn install
+        docker-compose stop database
     fi
 fi
