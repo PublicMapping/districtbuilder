@@ -127,7 +127,7 @@ Builds the app for production to the `build` folder.
 
 ### `./scripts/yarn server run start|start:dev|start:debug|start:prod`
 
-Not intended to be used directly. Instead use `scripts/server`, which starts the development server with proper environment variables to allow connecting to the database container.
+Runs the NestJS server.
 
 ### `./scripts/yarn client run compile`
 
