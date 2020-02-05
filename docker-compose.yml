@@ -11,7 +11,7 @@ services:
       start_period: 5s
 
   server:
-    image: node:10-slim
+    image: node:10-stretch
     env_file: .env
     environment:
       - CI
@@ -28,7 +28,7 @@ services:
     command: yarn run start:dev
 
   client:
-    image: node:10-slim
+    image: node:10-stretch
     env_file: .env
     environment:
       - CI
