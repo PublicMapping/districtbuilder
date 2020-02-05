@@ -66,8 +66,6 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 │   └── shared (Code that is used by both the frontend and backend)
 ```
 
-Note that there are two `package.json` files. Yarn commands can be run on the frontend in the root directory, and on the backend in the `src/server` directory.
-
 ### Development workflow
 
  * After remote code has been updated, run `scripts/update`
@@ -170,3 +168,5 @@ Run end-to-end tests.
 Run typeorm commands.
 
 ### `./scripts/yarn client run migration:generate|migration:create|migration:run`
+
+Run typeorm migration commands.
