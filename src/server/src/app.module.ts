@@ -4,8 +4,10 @@ import * as process from "process";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { UsersModule } from "./users/users.module";
+
 const username = process.env.POSTGRES_USER;
 const password = process.env.POSTGRES_PASSWORD;
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
