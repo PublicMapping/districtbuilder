@@ -23,9 +23,11 @@
     "migration:run": "yarn run typeorm migration:run"
   },
   "dependencies": {
+    "@godaddy/terminus": "^4.3.1",
     "@nestjs/common": "^6.10.14",
     "@nestjs/core": "^6.10.14",
     "@nestjs/platform-express": "^6.10.14",
+    "@nestjs/terminus": "^6.5.5",
     "@nestjs/typeorm": "^6.2.0",
     "@nestjsx/crud": "^4.4.1",
     "@nestjsx/crud-typeorm": "^4.4.1",
