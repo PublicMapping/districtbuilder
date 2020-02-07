@@ -14,6 +14,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         usage
     else
         docker-compose \
-            run --rm server yarn run start migration:generate "$@"
+            run --rm server yarn run migration:generate "$@"
     fi
 fi
