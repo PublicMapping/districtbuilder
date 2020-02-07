@@ -13,7 +13,9 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
+        docker-compose up -d database
+
         docker-compose \
-            run --rm database bash -c "psql -U district_builder -d district_builder"
+            exec database bash -c "psql -U district_builder -d district_builder"
     fi
 fi
