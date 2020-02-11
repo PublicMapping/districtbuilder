@@ -1,23 +1,20 @@
-const process = require('process');
-const username = process.env.POSTGRES_USER;
-const password = process.env.POSTGRES_PASSWORD;
-const database = process.env.POSTGRES_DB;
+const process = require("process");
+
 module.exports = {
-  "type": "postgres",
-  "host": "database.service.districtbuilder.internal",
-  "port": 5432,
-  username,
-  password,
-  database,
-  "synchronize": true,
-  "dropSchema": false,
-  "logging": true,
-  "entities": [__dirname + "/src/**/*.entity.ts", __dirname + "/dist/**/*.entity.js"],
-  "migrations": ["migrations/**/*.ts"],
-  "subscribers": ["subscriber/**/*.ts", "dist/subscriber/**/.js"],
-  "cli": {
-    "entitiesDir": "src",
-    "migrationsDir": "migrations",
-    "subscribersDir": "subscriber"
+  type: "postgres",
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT || 5432,
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB,
+  logging: true,
+  synchronize: true,
+  entities: ["dist/**/*.entity.js"],
+  subscribers: ["dist/server/subscriber/*.js"],
+  migrations: ["dist/server/migrations/*.js"],
+  cli: {
+    entitiesDir: "src",
+    migrationsDir: "migrations",
+    subscribersDir: "subscriber"
   }
-}
+};

@@ -1,0 +1,4 @@
+version: "2.4"
+services:
+  server:
+    image: "district-builder-server:${GIT_COMMIT:-latest}"

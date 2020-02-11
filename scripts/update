@@ -2,12 +2,14 @@
 
 set -e
 
-DIR="$(dirname "$0")/../"
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
 
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
-Setup external project dependencies.
+Build container images, update dependencies, and run database migrations.
 "
 }
 
@@ -16,25 +18,24 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         usage
     else
         # Ensure container images are current
-        docker-compose build
+        docker-compose build --pull
 
-        echo "Updating client dependencies"
-        docker-compose \
-            run --rm --no-deps client \
-            yarn install
-
-        # Install backend NPM modules
-        echo "Updating server dependencies"
+        # Update backend, Yarn dependencies and build server
         docker-compose \
             run --rm --no-deps server \
-            yarn install
+            bash -c "yarn install && yarn build"
 
-        # Bring up database to run migrations
-        docker-compose up -d database
+        # Update frontend, Yarn dependencies and build static asset bundle
+        docker-compose \
+            run --rm --no-deps client \
+            bash -c "yarn install && yarn compile && yarn build"
 
-        echo "Running database migrations"
-        ./scripts/migrate
+        # Bring up PostgreSQL and NestJS in a way that respects
+        # configured service health checks.
+        docker-compose \
+            -f docker-compose.yml \
+            up -d database server
 
-        docker-compose stop database
+        ./scripts/migration
     fi
 fi

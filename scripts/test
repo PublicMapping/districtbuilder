@@ -2,7 +2,9 @@
 
 set -e
 
-DIR="$(dirname "$0")/../"
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
 
 function usage() {
     echo -n \
@@ -15,50 +17,30 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        echo "Updating client dependencies"
+        echo "Linting server source code"
         docker-compose \
-            run --rm --no-deps client \
-            yarn install
+            run --rm --no-deps server \
+            yarn lint
+        docker-compose \
+            run --rm --no-deps server \
+            yarn check-format
 
-        echo "Compiling client source code"
+        echo "Executing server test suite"
         docker-compose \
-            run --rm --no-deps client \
-            yarn run compile
+            run --rm --no-deps server \
+            yarn test --watchAll=false
 
         echo "Linting client source code"
         docker-compose \
             run --rm --no-deps client \
-            yarn run lint
+            yarn lint
         docker-compose \
             run --rm --no-deps client \
-            yarn run check-format
+            yarn check-format
 
         echo "Executing client test suite"
-        CI=1 docker-compose \
+        docker-compose \
             run --rm --no-deps client \
-            yarn run test
-
-        echo "Updating server dependencies"
-        docker-compose \
-            run --rm --no-deps server \
-            yarn install
-
-        echo "Building server source code"
-        docker-compose \
-            run --rm --no-deps server \
-            yarn run build
-
-        echo "Linting server source code"
-        docker-compose \
-            run --rm --no-deps server \
-            yarn run lint
-        docker-compose \
-            run --rm --no-deps server \
-            yarn run check-format
-
-        echo "Executing server test suite"
-        CI=1 docker-compose \
-            run --rm --no-deps server \
-            yarn run test
+            yarn test --watchAll=false
     fi
 fi

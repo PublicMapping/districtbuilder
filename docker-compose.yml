@@ -1,42 +1,46 @@
-version: "2.3"
+version: "2.4"
 services:
   database:
     image: quay.io/azavea/postgis:2.4-postgres10.9-slim
-    env_file: .env
+    environment:
+      - POSTGRES_USER=districtbuilder
+      - POSTGRES_PASSWORD=districtbuilder
+      - POSTGRES_DB=districtbuilder
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "district_builder"]
+      test: pg_isready -U districtbuilder
       interval: 3s
       timeout: 3s
       retries: 3
-      start_period: 5s
 
   server:
-    image: node:10-stretch
-    env_file: .env
+    image: district-builder-server
     environment:
-      - CI
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=districtbuilder
+      - POSTGRES_PASSWORD=districtbuilder
+      - POSTGRES_DB=districtbuilder
+    build:
+      context: ./src/server
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/server:/home/node/app/server
+      - ./src/shared:/home/node/app/shared
+      - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
+    working_dir: /home/node/app/server
     depends_on:
       database:
         condition: service_healthy
-    ports:
-      - 3005:3005
-    links:
-      - database:database.service.districtbuilder.internal
-    volumes:
-      - ./:/opt/db2/
-    working_dir: /opt/db2/src/server
-    command: yarn run start:dev
+    command: yarn run nest start --watch
 
   client:
-    image: node:10-stretch
-    env_file: .env
+    image: node:12-slim
     environment:
-      - CI
-    ports:
-      - 3003:3003
-    links:
-      - server:backend.service.districtbuilder.internal
+      - DB_BASE_URL=http://server:3005
+      - PORT=3003
     volumes:
-      - ./:/opt/db2/
-    working_dir: /opt/db2
-    command: yarn run start
+      - ./:/home/node/app
+      - ./src/server/dist/server/src/static:/home/node/app/build
+      - /var/cache/district-builder-client-node-modules:/home/node/app/node_modules
+    working_dir: /home/node/app
+    command: yarn run react-scripts start

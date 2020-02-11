@@ -1,27 +1,24 @@
 import { Module } from "@nestjs/common";
+import { ServeStaticModule } from "@nestjs/serve-static";
 import { TerminusModule } from "@nestjs/terminus";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import * as process from "process";
 
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { HealthcheckService } from "./healthcheck/healthcheck.service";
 import { UsersModule } from "./users/users.module";
 
-const username = process.env.POSTGRES_USER;
-const password = process.env.POSTGRES_PASSWORD;
+import { join } from "path";
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      host: "database.service.districtbuilder.internal",
-      port: 5432,
-      username,
-      password,
-      database: "postgres",
-      entities: [__dirname + "/**/*.entity{.ts,.js}"],
-      synchronize: true
+    TypeOrmModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "static"),
+      // https://github.com/nestjs/serve-static/blob/master/lib/interfaces/serve-static-options.interface.ts
+      serveStaticOptions: {
+        maxAge: 60000
+      }
     }),
     TerminusModule.forRootAsync({ useClass: HealthcheckService }),
     UsersModule
