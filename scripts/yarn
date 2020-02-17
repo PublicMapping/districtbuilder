@@ -19,6 +19,6 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     else
         docker-compose \
             run --rm --no-deps "${1}" \
-            bash -c "yarn ${@:2}"
+            bash -c "yarn ${*:2}"
     fi
 fi

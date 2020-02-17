@@ -23,6 +23,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     else
         docker-compose \
             run --rm server \
-            bash -c "yarn run migration:${1} ${@:2}"
+            bash -c "yarn run migration:${1} ${*:2}"
     fi
 fi

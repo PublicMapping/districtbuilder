@@ -44,3 +44,9 @@ services:
       - /var/cache/district-builder-client-node-modules:/home/node/app/node_modules
     working_dir: /home/node/app
     command: yarn run react-scripts start
+
+  shellcheck:
+    image: koalaman/shellcheck:stable
+    volumes:
+      - ./:/usr/local/src
+    working_dir: /usr/local/src
