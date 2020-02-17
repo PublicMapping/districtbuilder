@@ -3,13 +3,15 @@ FROM node:12-slim
 RUN mkdir -p /home/node/app/server
 WORKDIR /home/node/app/server
 
+RUN set -ex \
+    && deps=" \
+    procps=2:3.3* \
+    " \
+    && apt-get update && apt-get install -yq $deps --no-install-recommends
+
 COPY package.json /home/node/app/server
 COPY yarn.lock /home/node/app/server
 RUN set -ex \
-    && deps=" \
-    procps \
-    " \
-    && apt-get update && apt-get install -y $deps --no-install-recommends \
     && yarn install
 
 COPY ormconfig.js dist* /home/node/app/server/
