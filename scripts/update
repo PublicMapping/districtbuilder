@@ -20,15 +20,15 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Ensure container images are current
         docker-compose build --pull
 
-        # Update backend, Yarn dependencies and build server
-        docker-compose \
-            run --rm --no-deps server \
-            bash -c "yarn install && yarn build"
-
         # Update frontend, Yarn dependencies and build static asset bundle
         docker-compose \
             run --rm --no-deps client \
             bash -c "yarn install && yarn compile && yarn build"
+
+        # Update backend, Yarn dependencies and build server
+        docker-compose \
+            run --rm --no-deps server \
+            bash -c "yarn install && yarn build"
 
         # Bring up PostgreSQL and NestJS in a way that respects
         # configured service health checks.

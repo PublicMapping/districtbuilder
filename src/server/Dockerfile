@@ -16,5 +16,4 @@ RUN set -ex \
 
 COPY ormconfig.js dist* /home/node/app/server/
 
-CMD ["node", \
-"dist/server/src/main"]
+CMD ["node", "dist/server/src/main"]

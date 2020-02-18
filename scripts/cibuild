@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ -n "${FIELDSCOPE_DEBUG}" ]]; then
+if [[ -n "${DB_DEBUG}" ]]; then
     set -x
 fi
 

@@ -25,15 +25,15 @@ Run `scripts/update` to prepare the development environment:
 
  Next, run `scripts/server` to start the application:
 
-  ```bash
+```bash
  $ ./scripts/server
- ```
+```
 
  *Note:* It is recommended to configure your editor to auto-format your code via Prettier on save.
 
 ### Hot Reloading 🔥
 
-While `server` is running, the [Create React App](https://github.com/facebook/create-react-app/) frontend will automatically [reload](https://github.com/facebook/create-react-app/#whats-included) when changes are made. Additionally, the NestJS backend will [restart](https://docs.nestjs.com/cli/usages#nest-start) when changes are made.
+While `server` is running, the [Create React App](https://github.com/facebook/create-react-app/) frontend will automatically [reload](https://github.com/facebook/create-react-app/#whats-included) when changes are made. Additionally, the [NestJS](https://nestjs.com/) backend will [restart](https://docs.nestjs.com/cli/usages#nest-start) when changes are made.
 
 ### Project Organization
 
