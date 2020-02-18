@@ -32,12 +32,16 @@
     "@nestjs/typeorm": "^6.2.0",
     "@nestjsx/crud": "^4.4.1",
     "@nestjsx/crud-typeorm": "^4.4.1",
+    "@types/topojson-client": "^3.0.0",
+    "aws-sdk": "^2.616.0",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.11.0",
+    "lodash": "^4.17.15",
     "pg": "^7.17.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
     "rxjs": "^6.5.4",
+    "topojson-client": "^3.1.0",
     "typeorm": "^0.2.22"
   },
   "devDependencies": {
