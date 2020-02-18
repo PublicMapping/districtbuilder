@@ -26,12 +26,12 @@ services:
     volumes:
       - ./src/server:/home/node/app/server
       - ./src/shared:/home/node/app/shared
-      - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
+      - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
     working_dir: /home/node/app/server
     depends_on:
       database:
         condition: service_healthy
-    command: yarn run nest start --watch
+    command: yarn start:dev
 
   client:
     image: node:12-slim
@@ -41,12 +41,6 @@ services:
     volumes:
       - ./:/home/node/app
       - ./src/server/dist/server/src/static:/home/node/app/build
-      - /var/cache/district-builder-client-node-modules:/home/node/app/node_modules
+      - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
     working_dir: /home/node/app
-    command: yarn run react-scripts start
-
-  shellcheck:
-    image: koalaman/shellcheck:stable
-    volumes:
-      - ./:/usr/local/src
-    working_dir: /usr/local/src
+    command: yarn start

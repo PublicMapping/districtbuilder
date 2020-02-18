@@ -2,3 +2,9 @@ version: "2.4"
 services:
   server:
     image: "district-builder-server:${GIT_COMMIT:-latest}"
+
+  shellcheck:
+    image: koalaman/shellcheck:stable
+    volumes:
+      - ./:/usr/local/src
+    working_dir: /usr/local/src

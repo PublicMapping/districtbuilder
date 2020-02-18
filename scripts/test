@@ -19,6 +19,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     else
         echo "Linting Bash scripts"
         docker-compose \
+            -f docker-compose.ci.yml \
             run --rm --no-deps shellcheck \
             scripts/*
 
