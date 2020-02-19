@@ -10,7 +10,7 @@ const LAYERS = {
 
 @Injectable()
 export class TopologyService {
-  private readonly layers: { readonly [key: string]: Promise<Topology> };
+  private readonly layers: { readonly [key: string]: Promise<Topology | void> };
   private readonly logger = new Logger(TopologyService.name);
 
   constructor() {
@@ -20,14 +20,18 @@ export class TopologyService {
         .getObject({ Bucket: BUCKET, Key: url })
         .promise()
         .then(response => {
-          const body = response.Body.toString("utf8");
-          return JSON.parse(body) as Topology;
+          const body = response.Body?.toString("utf8");
+          if (body) {
+            return JSON.parse(body) as Topology;
+          }
         })
-        .catch(err => this.logger.error(`Unable to download topojson for ${key} at ${url}`))
+        .catch(err => {
+          this.logger.error(`Unable to download topojson for ${key} at ${url}`);
+        })
     );
   }
 
-  public async get(key: string): Promise<Topology> | null {
-    return key in this.layers ? this.layers[key] : null;
+  public async get(key: string): Promise<Topology | void> {
+    return key in this.layers ? this.layers[key] : Promise.resolve();
   }
 }

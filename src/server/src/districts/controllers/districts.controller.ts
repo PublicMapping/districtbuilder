@@ -10,7 +10,7 @@ export class DistrictsController {
   @Get("topology/:key")
   getTopology(@Res() res: Response, @Param("key") key: string): void {
     this.topologyService.get(key).then(topology => {
-      if (topology != null) {
+      if (topology) {
         res.status(HttpStatus.OK).json(topology);
       } else {
         res.status(HttpStatus.NOT_FOUND).json({ status: "not-found" });

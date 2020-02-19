@@ -24,7 +24,7 @@
     ],
     "no-parameter-reassignment": true,
     "typedef": [true, "call-signature"],
-    "readonly-keyword": true,
+    "readonly-keyword": false,
     "readonly-array": true,
     "no-object-mutation": true,
     "no-delete": true,
