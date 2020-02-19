@@ -2,7 +2,6 @@
   "defaultSeverity": "error",
   "extends": [
     "tslint:recommended",
-    "tslint-react",
     "tslint-immutable",
     "tslint-config-prettier",
     "tslint-etc"
@@ -25,16 +24,13 @@
     ],
     "no-parameter-reassignment": true,
     "typedef": [true, "call-signature"],
-    "readonly-keyword": true,
+    "readonly-keyword": false,
     "readonly-array": true,
     "no-object-mutation": true,
     "no-delete": true,
     "no-method-signature": true,
     "no-loop-statement": true,
-    "no-throw": true,
     "no-try": true,
-    "no-if-statement": true,
-    "jsx-no-lambda": false,
     "member-access": false
   },
   "rulesDirectory": []

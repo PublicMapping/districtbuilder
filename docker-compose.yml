@@ -20,6 +20,7 @@ services:
       - POSTGRES_USER=districtbuilder
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
+      - AWS_PROFILE=${AWS_PROFILE:-district-builder}
     build:
       context: ./src/server
       dockerfile: Dockerfile
@@ -27,6 +28,7 @@ services:
       - ./src/server:/home/node/app/server
       - ./src/shared:/home/node/app/shared
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
+      - $HOME/.aws:/root/.aws:ro
     working_dir: /home/node/app/server
     depends_on:
       database:

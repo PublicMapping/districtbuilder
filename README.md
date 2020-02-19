@@ -17,6 +17,9 @@ DistrictBuilder 2 is web-based, open source software for collaborative redistric
 
 ## Development
 
+Ensure that you have an AWS credential profile for `district-builder` configured on your host system.
+The server backend will need this in order to access S3 assets.
+
 Run `scripts/setup` to prepare the development environment:
 
  ```bash
