@@ -17,10 +17,10 @@ DistrictBuilder 2 is web-based, open source software for collaborative redistric
 
 ## Development
 
-Run `scripts/update` to prepare the development environment:
+Run `scripts/setup` to prepare the development environment:
 
  ```bash
- $ ./scripts/update
+ $ ./scripts/setup
  ```
 
  Next, run `scripts/server` to start the application:
@@ -77,6 +77,7 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 | `dbshell`   | Enter a database shell.                                                   |
 | `migration` | Execute TypeORM migration CLI commands.                                   |
 | `server`    | Bring up all of the services required for the project to function.        |
+| `setup`     | Setup the project's development environment.                              |
 | `test`      | Run linters and tests.                                                    |
 | `update`    | Build container images, update dependencies, and run database migrations. |
 | `yarn`      | Execute Yarn CLI commands.                                                |

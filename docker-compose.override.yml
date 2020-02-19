@@ -1,9 +1,5 @@
 version: "2.4"
 services:
-  database:
-    ports:
-      - 5432:5432
-
   server:
     ports:
       - 3005:3005
