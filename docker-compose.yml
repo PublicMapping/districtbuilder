@@ -37,6 +37,8 @@ services:
     image: node:12-slim
     environment:
       - DB_BASE_URL=http://server:3005
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=250
       - PORT=3003
     volumes:
       - ./:/home/node/app
