@@ -2,10 +2,14 @@
 
 set -e
 
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
+
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
-Start backend application services.
+Bring up all of the services required for the project to function.
 "
 }
 
@@ -13,6 +17,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        docker-compose up server client
+        docker-compose up
     fi
 fi

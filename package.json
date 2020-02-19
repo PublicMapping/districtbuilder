@@ -48,12 +48,12 @@
     ]
   },
   "devDependencies": {
+    "http-proxy-middleware": "^0.20.0",
     "prettier": "1.18.2",
     "tslint": "5.20.1",
     "tslint-config-prettier": "1.18.0",
     "tslint-etc": "1.9.2",
     "tslint-immutable": "6.0.1",
     "tslint-react": "4.1.0"
-  },
-  "proxy": "http://backend.service.districtbuilder.internal:3005"
+  }
 }

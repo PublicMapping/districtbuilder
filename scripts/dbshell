@@ -2,6 +2,10 @@
 
 set -e
 
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
+
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
@@ -13,9 +17,13 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        docker-compose up -d database
+        # Bring up PostgreSQL and NestJS in a way that respects
+        # configured service health checks.
+        docker-compose \
+            -f docker-compose.yml \
+            up -d database server
 
         docker-compose \
-            exec database bash -c "psql -U district_builder -d district_builder"
+            exec database psql -U districtbuilder districtbuilder
     fi
 fi

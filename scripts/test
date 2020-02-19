@@ -2,7 +2,9 @@
 
 set -e
 
-DIR="$(dirname "$0")/../"
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
 
 function usage() {
     echo -n \
@@ -15,50 +17,40 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        echo "Updating client dependencies"
+        echo "Linting Bash scripts"
         docker-compose \
-            run --rm --no-deps client \
-            yarn install
-
-        echo "Compiling client source code"
-        docker-compose \
-            run --rm --no-deps client \
-            yarn run compile
+            -f docker-compose.ci.yml \
+            run --rm --no-deps shellcheck \
+            scripts/*
 
         echo "Linting client source code"
-        docker-compose \
-            run --rm --no-deps client \
-            yarn run lint
-        docker-compose \
-            run --rm --no-deps client \
-            yarn run check-format
-
-        echo "Executing client test suite"
-        CI=1 docker-compose \
-            run --rm --no-deps client \
-            yarn run test
-
-        echo "Updating server dependencies"
-        docker-compose \
-            run --rm --no-deps server \
-            yarn install
-
-        echo "Building server source code"
-        docker-compose \
-            run --rm --no-deps server \
-            yarn run build
+        ./scripts/yarn client \
+            lint
+        ./scripts/yarn client \
+            check-format
 
         echo "Linting server source code"
-        docker-compose \
-            run --rm --no-deps server \
-            yarn run lint
-        docker-compose \
-            run --rm --no-deps server \
-            yarn run check-format
+        ./scripts/yarn server \
+            lint
+        ./scripts/yarn server \
+            check-format
 
-        echo "Executing server test suite"
-        CI=1 docker-compose \
-            run --rm --no-deps server \
-            yarn run test
+        echo "Executing client test suite"
+        ./scripts/yarn client \
+            test --watchAll=false
+
+        if [[ -n "${CI}" ]]; then
+            GIT_COMMIT="${GIT_COMMIT}" docker-compose \
+                -f docker-compose.yml \
+                -f docker-compose.ci.yml \
+                run --rm --no-deps \
+                -e "CI=${CI}" \
+                server \
+                yarn test --watchAll=false
+        else
+            echo "Executing server test suite"
+            ./scripts/yarn server \
+                test --watchAll=false
+        fi
     fi
 fi
