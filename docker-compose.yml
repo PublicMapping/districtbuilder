@@ -20,7 +20,7 @@ services:
       - POSTGRES_USER=districtbuilder
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
-      - AWS_PROFILE=district-builder
+      - AWS_PROFILE=${AWS_PROFILE:-district-builder}
     build:
       context: ./src/server
       dockerfile: Dockerfile
