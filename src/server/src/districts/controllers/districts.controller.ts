@@ -1,20 +1,33 @@
-import { Controller, Get, HttpStatus, Param, Res } from "@nestjs/common";
-import { Response } from "express";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  NotFoundException,
+  Param,
+  Post
+} from "@nestjs/common";
+import { FeatureCollection } from "geojson";
 
+import { DistrictsDefinitionDto } from "../entities/district-definition.dto";
 import { TopologyService } from "../services/topology.service";
 
 @Controller("districts")
 export class DistrictsController {
   constructor(public topologyService: TopologyService) {}
 
-  @Get("topology/:key")
-  getTopology(@Res() res: Response, @Param("key") key: string): void {
-    this.topologyService.get(key).then(topology => {
-      if (topology) {
-        res.status(HttpStatus.OK).json(topology);
-      } else {
-        res.status(HttpStatus.NOT_FOUND).json({ status: "not-found" });
-      }
-    });
+  @Post(":topologyKey")
+  async makeDistricts(
+    @Param("topologyKey") topologyKey: string,
+    @Body() definition: DistrictsDefinitionDto
+  ): Promise<FeatureCollection> {
+    const geoCollection = await this.topologyService.get(topologyKey);
+    if (!geoCollection) {
+      throw new NotFoundException(`Topology ${topologyKey} not found`);
+    }
+    const geojson = geoCollection.merge(definition);
+    if (geojson === null) {
+      throw new BadRequestException("District definition is invalid");
+    }
+    return geojson;
   }
 }
