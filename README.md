@@ -48,6 +48,8 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 ├── src
 │   ├── client (Location for all CRA frontend code)
 │   ├── index.tsx (This and another file need to be here for CRA-purposes)
+│   ├── manage (Command-line interface)
+│   │   ├── package.json (Applies to the command-line interface)
 │   ├── server (NestJS backend code)
 │   │   ├── package.json (Applies to the NestJS backend)
 │   └── shared (Code that is used by both the frontend and backend)
@@ -84,3 +86,8 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 | `test`      | Run linters and tests.                                                    |
 | `update`    | Build container images, update dependencies, and run database migrations. |
 | `yarn`      | Execute Yarn CLI commands.                                                |
+
+## Command-line interface
+
+A command-line interface is available for performing data processing operations.
+See `src/manage/README.md` for more info.
