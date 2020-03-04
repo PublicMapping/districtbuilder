@@ -2,14 +2,13 @@ import { Command, flags } from "@oclif/command";
 import { IArg } from "@oclif/parser/lib/args";
 import cli from "cli-ux";
 import { mapSync } from "event-stream";
-import { createReadStream, readFile, writeFileSync } from "fs";
+import { createReadStream, readFileSync, writeFileSync } from "fs";
 import { Feature, FeatureCollection, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
 import { mergeArcs, planarTriangleArea, presimplify, simplify, topology } from "topojson";
 import { Objects, Topology } from "topojson-specification";
-import { promisify } from "util";
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -181,7 +180,7 @@ it when necessary (file sizes ~1GB+).
 
   // Reader for GeoJSON files under 1GB or so. Faster than the streaming reader.
   async readSmallGeoJson(path: string): Promise<FeatureCollection<Polygon, {}>> {
-    const jsonString = await promisify(readFile)(path);
+    const jsonString = readFileSync(path);
     return JSON.parse(jsonString.toString());
   }
 
