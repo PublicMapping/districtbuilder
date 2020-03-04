@@ -123,8 +123,7 @@ it when necessary (file sizes ~1GB+).
     this.log(`Simplifying ${baseGeoLevel} geounits with minWeight: ${simplification}`);
     const topo = simplify(preSimplifiedBaseTopoJson, simplification);
 
-    const relevantGeoLevels = geoLevels.slice(1);
-    for (const [prevIndex, geoLevel] of relevantGeoLevels.entries()) {
+    for (const [prevIndex, geoLevel] of geoLevels.slice(1).entries()) {
       const currIndex = prevIndex + 1;
       const currGeoLevel = geoLevels[currIndex];
       const prevGeoLevel = geoLevels[prevIndex];
@@ -134,17 +133,8 @@ it when necessary (file sizes ~1GB+).
       // needed to be deployed here, even though it was very close without them.
       const prevGeoms: any = (topo.objects[prevGeoLevel] as any).geometries;
 
-      // The way in which geolevel ids are configured in the input data is a
-      // little peculiar: the intermediate geolevel ids are not always unique
-      // by themselves, and instead require context of the other geolevels. E.g.
-      // tracts and blockgroups need to also take the county id into consideration
-      // when grouping. To account for this, we need to group by the concatenation
-      // of each geolevel hierarchy from this position all up the chain. E.g.
-      // for a configuration of 'block,tract,county,state', if we want to group by
-      // tracts, we need to use an id of `${stateId}${countyId}${tractId}`.
-      const groupByIds = relevantGeoLevels.reverse().slice(prevIndex);
-      this.log(`Grouping geoLevel "${geoLevel}" by ids: ${groupByIds}`);
-      const grouped = groupBy(prevGeoms, f => groupByIds.map(l => f.properties[l]).join(""));
+      this.log(`Grouping geoLevel "${geoLevel}"`);
+      const grouped = groupBy(prevGeoms, f => f.properties[currGeoLevel]);
 
       this.log(`Merging ${Object.keys(grouped).length} features`);
       const mergedGeoms: any = mapValues(grouped, (geoms: readonly [Feature]) => {
