@@ -7,6 +7,7 @@ import { Feature, FeatureCollection, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
+import { join } from "path";
 import { mergeArcs, planarTriangleArea, presimplify, simplify, topology } from "topojson";
 import { Objects, Topology } from "topojson-specification";
 
@@ -50,10 +51,10 @@ it when necessary (file sizes ~1GB+).
       default: "0.001"
     }),
 
-    outputPath: flags.string({
+    outputDir: flags.string({
       char: "o",
-      description: "Path to output the TopoJSON file",
-      default: "./output.json"
+      description: "Directory to output files",
+      default: "./"
     })
   };
 
@@ -99,7 +100,9 @@ it when necessary (file sizes ~1GB+).
       simplification
     );
 
-    this.writeTopoJson(flags.outputPath, topoJsonHierarchy);
+    this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+    this.writeDemographicData(flags.outputDir, topoJsonHierarchy, geoLevels[0], demographics);
+    this.writeGeoLevelIndices(flags.outputDir, topoJsonHierarchy, geoLevels);
   }
 
   // Generates a TopoJSON topology with aggregated hierarchical data
@@ -198,7 +201,44 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Write TopoJSON file to disk
-  writeTopoJson(path: string, topology: Topology<Objects<{}>>): void {
-    writeFileSync(path, JSON.stringify(topology));
+  writeTopoJson(dir: string, topology: Topology<Objects<{}>>): void {
+    writeFileSync(join(dir, "topo.json"), JSON.stringify(topology));
+  }
+
+  // Create demographic static data and write to disk
+  writeDemographicData(
+    dir: string,
+    topology: Topology<Objects<{}>>,
+    geoLevel: string,
+    demographics: readonly string[]
+  ): void {
+    const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
+    demographics.forEach(demographic => {
+      this.log(`Writing static data file for ${demographic}`);
+      writeFileSync(
+        join(dir, `${demographic}.buf`),
+        new Uint16Array(features.map(f => f.properties[demographic]))
+      );
+    });
+  }
+
+  // Create geolevel index data and write to disk
+  writeGeoLevelIndices(
+    dir: string,
+    topology: Topology<Objects<{}>>,
+    geoLevels: readonly string[]
+  ): void {
+    const baseFeatures: Feature[] = (topology.objects[geoLevels[0]] as any).geometries;
+
+    geoLevels.slice(1).forEach(geoLevel => {
+      const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
+      const geoLevelIdToIndex = new Map(features.map((f, i) => [f.properties[geoLevel], i]));
+      const data = baseFeatures.map(f => {
+        return geoLevelIdToIndex.get(f.properties[geoLevel]);
+      });
+
+      this.log(`Writing ${geoLevel} index file`);
+      writeFileSync(join(dir, `${geoLevel}.buf`), new Uint16Array(data));
+    });
   }
 }
