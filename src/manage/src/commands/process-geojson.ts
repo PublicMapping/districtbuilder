@@ -205,6 +205,16 @@ it when necessary (file sizes ~1GB+).
     writeFileSync(join(dir, "topo.json"), JSON.stringify(topology));
   }
 
+  // Makes an appropriately-sized typed array containing the data
+  mkTypedArray(data: readonly number[]): Uint8Array | Uint16Array | Uint32Array {
+    const maxVal = Math.max.apply(null, data);
+    return maxVal <= 255
+      ? new Uint8Array(data)
+      : maxVal <= 65535
+      ? new Uint16Array(data)
+      : new Uint32Array(data);
+  }
+
   // Create demographic static data and write to disk
   writeDemographicData(
     dir: string,
@@ -215,10 +225,9 @@ it when necessary (file sizes ~1GB+).
     const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
     demographics.forEach(demographic => {
       this.log(`Writing static data file for ${demographic}`);
-      writeFileSync(
-        join(dir, `${demographic}.buf`),
-        new Uint16Array(features.map(f => f.properties[demographic]))
-      );
+      const fileName = `${demographic}.buf`;
+      const data = this.mkTypedArray(features.map(f => f.properties[demographic]));
+      writeFileSync(join(dir, fileName), data);
     });
   }
 
@@ -231,14 +240,16 @@ it when necessary (file sizes ~1GB+).
     const baseFeatures: Feature[] = (topology.objects[geoLevels[0]] as any).geometries;
 
     geoLevels.slice(1).forEach(geoLevel => {
+      this.log(`Writing ${geoLevel} index file`);
       const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
       const geoLevelIdToIndex = new Map(features.map((f, i) => [f.properties[geoLevel], i]));
-      const data = baseFeatures.map(f => {
-        return geoLevelIdToIndex.get(f.properties[geoLevel]);
-      });
-
-      this.log(`Writing ${geoLevel} index file`);
-      writeFileSync(join(dir, `${geoLevel}.buf`), new Uint16Array(data));
+      const fileName = `${geoLevel}.buf`;
+      const data = this.mkTypedArray(
+        baseFeatures.map(f => {
+          return geoLevelIdToIndex.get(f.properties[geoLevel]);
+        })
+      );
+      writeFileSync(join(dir, fileName), data);
     });
   }
 }
