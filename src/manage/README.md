@@ -67,7 +67,7 @@ OPTIONS
   -l, --levels=levels                  [default: block,blockgroup,county] Comma-separated geolevel hierarchy: smallest
                                        to largest
 
-  -o, --outputPath=outputPath          [default: ./output.json] Path to output the TopoJSON file
+  -o, --outputDir=outputDir            [default: ./] Directory to output files
 
   -s, --simplification=simplification  [default: 0.001] Topojson simplification amount (minWeight)
 
