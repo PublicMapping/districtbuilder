@@ -241,6 +241,9 @@ it when necessary (file sizes ~1GB+).
     return demographics.map(demographic => {
       this.log(`Writing static data file for ${demographic}`);
       const fileName = `${demographic}.buf`;
+
+      // For demographic static data, we want an arraybuffer of base geounits where
+      // each data element represents the demographic data contained in that geounit.
       const data = this.mkTypedArray(features.map(f => f.properties[demographic]));
       writeFileSync(join(dir, fileName), data);
       return {
@@ -264,6 +267,9 @@ it when necessary (file sizes ~1GB+).
       const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
       const geoLevelIdToIndex = new Map(features.map((f, i) => [f.properties[geoLevel], i]));
       const fileName = `${geoLevel}.buf`;
+
+      // For geolevel static data, we want an arraybuffer of base geounits where
+      // each data element represents the geolevel index of that geounit.
       const data = this.mkTypedArray(
         baseFeatures.map(f => {
           return geoLevelIdToIndex.get(f.properties[geoLevel]);
