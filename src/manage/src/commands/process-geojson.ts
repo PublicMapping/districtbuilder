@@ -222,7 +222,9 @@ it when necessary (file sizes ~1GB+).
 
   // Makes an appropriately-sized typed array containing the data
   mkTypedArray(data: readonly number[]): Uint8Array | Uint16Array | Uint32Array {
-    const maxVal = Math.max.apply(null, data);
+    // Can't use Math.max here, because it's a recursive function that will
+    // reach a maximum call stack when working with large arrays.
+    const maxVal = data.reduce((max, v) => max >= v ? max : v, -Infinity);
     return maxVal <= 255
       ? new Uint8Array(data)
       : maxVal <= 65535
