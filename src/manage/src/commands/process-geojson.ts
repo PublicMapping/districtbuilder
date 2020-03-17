@@ -7,8 +7,10 @@ import { Feature, FeatureCollection, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
+import { join } from "path";
 import { mergeArcs, planarTriangleArea, presimplify, simplify, topology } from "topojson";
 import { Objects, Topology } from "topojson-specification";
+import { IStaticMetadata } from "../../../shared/entities";
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -50,10 +52,10 @@ it when necessary (file sizes ~1GB+).
       default: "0.001"
     }),
 
-    outputPath: flags.string({
+    outputDir: flags.string({
       char: "o",
-      description: "Path to output the TopoJSON file",
-      default: "./output.json"
+      description: "Directory to output files",
+      default: "./"
     })
   };
 
@@ -99,7 +101,22 @@ it when necessary (file sizes ~1GB+).
       simplification
     );
 
-    this.writeTopoJson(flags.outputPath, topoJsonHierarchy);
+    this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+
+    const demographicMetaData = this.writeDemographicData(
+      flags.outputDir,
+      topoJsonHierarchy,
+      geoLevels[0],
+      demographics
+    );
+
+    const geoLevelMetaData = this.writeGeoLevelIndices(
+      flags.outputDir,
+      topoJsonHierarchy,
+      geoLevels
+    );
+
+    this.writeStaticMetadata(flags.outputDir, demographicMetaData, geoLevelMetaData);
   }
 
   // Generates a TopoJSON topology with aggregated hierarchical data
@@ -198,7 +215,90 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Write TopoJSON file to disk
-  writeTopoJson(path: string, topology: Topology<Objects<{}>>): void {
-    writeFileSync(path, JSON.stringify(topology));
+  writeTopoJson(dir: string, topology: Topology<Objects<{}>>): void {
+    this.log("Writing topojson file");
+    writeFileSync(join(dir, "topo.json"), JSON.stringify(topology));
+  }
+
+  // Makes an appropriately-sized typed array containing the data
+  mkTypedArray(data: readonly number[]): Uint8Array | Uint16Array | Uint32Array {
+    // Can't use Math.max here, because it's a recursive function that will
+    // reach a maximum call stack when working with large arrays.
+    const maxVal = data.reduce((max, v) => max >= v ? max : v, -Infinity);
+    return maxVal <= 255
+      ? new Uint8Array(data)
+      : maxVal <= 65535
+      ? new Uint16Array(data)
+      : new Uint32Array(data);
+  }
+
+  // Create demographic static data and write to disk
+  writeDemographicData(
+    dir: string,
+    topology: Topology<Objects<{}>>,
+    geoLevel: string,
+    demographics: readonly string[]
+  ): IStaticMetadata[] {
+    const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
+    return demographics.map(demographic => {
+      this.log(`Writing static data file for ${demographic}`);
+      const fileName = `${demographic}.buf`;
+
+      // For demographic static data, we want an arraybuffer of base geounits where
+      // each data element represents the demographic data contained in that geounit.
+      const data = this.mkTypedArray(features.map(f => f.properties[demographic]));
+      writeFileSync(join(dir, fileName), data);
+      return {
+        id: demographic,
+        fileName,
+        bytesPerElement: data.BYTES_PER_ELEMENT
+      };
+    });
+  }
+
+  // Create geolevel index data and write to disk
+  writeGeoLevelIndices(
+    dir: string,
+    topology: Topology<Objects<{}>>,
+    geoLevels: readonly string[]
+  ): IStaticMetadata[] {
+    const baseFeatures: Feature[] = (topology.objects[geoLevels[0]] as any).geometries;
+
+    return geoLevels.slice(1).map(geoLevel => {
+      this.log(`Writing ${geoLevel} index file`);
+      const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
+      const geoLevelIdToIndex = new Map(features.map((f, i) => [f.properties[geoLevel], i]));
+      const fileName = `${geoLevel}.buf`;
+
+      // For geolevel static data, we want an arraybuffer of base geounits where
+      // each data element represents the geolevel index of that geounit.
+      const data = this.mkTypedArray(
+        baseFeatures.map(f => {
+          return geoLevelIdToIndex.get(f.properties[geoLevel]);
+        })
+      );
+      writeFileSync(join(dir, fileName), data);
+      return {
+        id: geoLevel,
+        fileName,
+        bytesPerElement: data.BYTES_PER_ELEMENT
+      };
+    });
+  }
+
+  // Write static metadata file to disk
+  writeStaticMetadata(
+    dir: string,
+    demographicMetadata: IStaticMetadata,
+    geoLevelMetadata: IStaticMetadata
+  ): void {
+    this.log("Writing static metadata file");
+    writeFileSync(
+      join(dir, "static-metadata.json"),
+      JSON.stringify({
+        demographics: demographicMetadata,
+        geoLevels: geoLevelMetadata
+      })
+    );
   }
 }
