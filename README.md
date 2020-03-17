@@ -2,6 +2,8 @@
 
 DistrictBuilder 2 is web-based, open source software for collaborative redistricting.
 
+ *Note:* This repository is in the early stages, and is not yet ready for public use. Please don't attempt to set it up yet, since there are several things that need to be ironed out before it can be used by a wider audience.
+
 - [Requirements](#requirements)
 - [Development](#development)
   - [Hot Reloading 🔥](#hot-reloading-)
