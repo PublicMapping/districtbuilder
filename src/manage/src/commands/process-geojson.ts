@@ -224,7 +224,7 @@ it when necessary (file sizes ~1GB+).
   mkTypedArray(data: readonly number[]): Uint8Array | Uint16Array | Uint32Array {
     // Can't use Math.max here, because it's a recursive function that will
     // reach a maximum call stack when working with large arrays.
-    const maxVal = data.reduce((max, v) => max >= v ? max : v, -Infinity);
+    const maxVal = data.reduce((max, v) => (max >= v ? max : v), -Infinity);
     return maxVal <= 255
       ? new Uint8Array(data)
       : maxVal <= 65535
@@ -246,7 +246,7 @@ it when necessary (file sizes ~1GB+).
 
       // For demographic static data, we want an arraybuffer of base geounits where
       // each data element represents the demographic data contained in that geounit.
-      const data = this.mkTypedArray(features.map(f => f.properties[demographic]));
+      const data = this.mkTypedArray(features.map(f => f?.properties?.[demographic]));
       writeFileSync(join(dir, fileName), data);
       return {
         id: demographic,
@@ -267,14 +267,14 @@ it when necessary (file sizes ~1GB+).
     return geoLevels.slice(1).map(geoLevel => {
       this.log(`Writing ${geoLevel} index file`);
       const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
-      const geoLevelIdToIndex = new Map(features.map((f, i) => [f.properties[geoLevel], i]));
+      const geoLevelIdToIndex = new Map(features.map((f, i) => [f?.properties?.[geoLevel], i]));
       const fileName = `${geoLevel}.buf`;
 
       // For geolevel static data, we want an arraybuffer of base geounits where
       // each data element represents the geolevel index of that geounit.
       const data = this.mkTypedArray(
         baseFeatures.map(f => {
-          return geoLevelIdToIndex.get(f.properties[geoLevel]);
+          return geoLevelIdToIndex.get(f?.properties?.[geoLevel]) || 0;
         })
       );
       writeFileSync(join(dir, fileName), data);
@@ -289,8 +289,8 @@ it when necessary (file sizes ~1GB+).
   // Write static metadata file to disk
   writeStaticMetadata(
     dir: string,
-    demographicMetadata: IStaticMetadata,
-    geoLevelMetadata: IStaticMetadata
+    demographicMetadata: IStaticMetadata[],
+    geoLevelMetadata: IStaticMetadata[]
   ): void {
     this.log("Writing static metadata file");
     writeFileSync(

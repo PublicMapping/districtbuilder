@@ -5,7 +5,8 @@
   "scripts": {
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json -c tslint.json",
-    "fix": "tslint -p tsconfig.json -c tslint.json --fix"
+    "fix": "tslint -p tsconfig.json -c tslint.json --fix",
+    "build": "tsc --build tsconfig.json"
   },
   "bin": {
     "manage": "./bin/run"

@@ -20,3 +20,6 @@ src/cli/lib
 
 # macOS
 .DS_Store
+
+# Manage build
+src/manage/lib
