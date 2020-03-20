@@ -21,7 +21,7 @@ $ npm install -g manage
 $ manage COMMAND
 running command...
 $ manage (-v|--version|version)
-manage/0.1.0 linux-x64 node-v11.13.0
+manage/0.1.0 linux-x64 node-v12.13.0
 $ manage --help [COMMAND]
 USAGE
   $ manage COMMAND
@@ -67,9 +67,15 @@ OPTIONS
   -l, --levels=levels                  [default: block,blockgroup,county] Comma-separated geolevel hierarchy: smallest
                                        to largest
 
+  -n, --levelMinZoom=levelMinZoom      [default: 8,0,0] Comma-separated minimum zoom level per geolevel, must match # of
+                                       levels
+
   -o, --outputDir=outputDir            [default: ./] Directory to output files
 
   -s, --simplification=simplification  [default: 0.001] Topojson simplification amount (minWeight)
+
+  -x, --levelMaxZoom=levelMaxZoom      [default: g,g,g] Comma-separated maximum zoom level per geolevel, must match # of
+                                       levels
 
 DESCRIPTION
   Note: this can be a very memory-intensive operation,
