@@ -374,6 +374,7 @@ it when necessary (file sizes ~1GB+).
         {
           include: ["index"],
           force: true,
+          noTileCompression: true,
           output,
           maximumZoom,
           minimumZoom
@@ -383,6 +384,10 @@ it when necessary (file sizes ~1GB+).
     });
 
     const outputDir = join(dir, "tiles");
-    tileJoin(mbtiles, { noTileSizeLimit: true, outputToDirectory: outputDir }, { echo: true });
+    tileJoin(
+      mbtiles,
+      { force: true, noTileCompression: true, noTileSizeLimit: true, outputToDirectory: outputDir },
+      { echo: true }
+    );
   }
 }
