@@ -372,12 +372,17 @@ it when necessary (file sizes ~1GB+).
       tippecanoe(
         [join(dir, `${geoLevel}.geojson`)],
         {
-          include: ["index"],
+          detectSharedBorders: true,
           force: true,
-          noTileCompression: true,
-          output,
+          generateIds: true,
+          include: ["index"],
           maximumZoom,
-          minimumZoom
+          minimumZoom,
+          noTileCompression: true,
+          noTinyPolygonReduction: true,
+          output,
+          simplification: 15,
+          simplifyOnlyLowZooms: true
         },
         { echo: true }
       );
