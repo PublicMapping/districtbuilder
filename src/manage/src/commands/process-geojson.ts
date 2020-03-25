@@ -8,7 +8,6 @@ import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
 import { join } from "path";
-import tippecanoe from "tippecanoe";
 import {
   feature as topo2feature,
   mergeArcs,
@@ -19,6 +18,7 @@ import {
 } from "topojson";
 import { Objects, Topology } from "topojson-specification";
 import { IStaticMetadata } from "../../../shared/entities";
+import { tippecanoe, tileJoin } from "../lib/cmd";
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -353,16 +353,25 @@ it when necessary (file sizes ~1GB+).
     minZooms: readonly string[],
     maxZooms: readonly string[]
   ): void {
+    const mbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
     geoLevels.forEach((geoLevel, idx) => {
       const minimumZoom = minZooms[idx];
       const maximumZoom = maxZooms[idx];
-      const tileDir = join(dir, geoLevel);
+      const output = mbtiles[idx];
       this.log(`Converting geojson to vectortiles for ${geoLevel}`);
       tippecanoe(
         [join(dir, `${geoLevel}.geojson`)],
-        { force: true, outputToDirectory: tileDir, maximumZoom, minimumZoom },
+        {
+          force: true,
+          output,
+          maximumZoom,
+          minimumZoom
+        },
         { echo: true }
       );
     });
+
+    const outputDir = join(dir, "tiles");
+    tileJoin(mbtiles, { noTileSizeLimit: true, outputToDirectory: outputDir }, { echo: true });
   }
 }
