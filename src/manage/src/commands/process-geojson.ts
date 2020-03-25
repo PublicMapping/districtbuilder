@@ -217,14 +217,16 @@ it when necessary (file sizes ~1GB+).
         geometries: Object.values(mergedGeoms)
       };
     }
-    // Add 'index' property to each feature. This is implicit now but will
+    // Add an 'id' to each feature. This is implicit now but will
     // become necessary to index static data array buffers once the features
-    // are converted into vector tiles
+    // are converted into vector tiles.
+    // We are using the id here, rather than a property, because an id is needed
+    // in order to use the `setFeatureState` capability on the front-end.
     for (const geoLevel of geoLevels) {
       const geomCollection = topo.objects[geoLevel] as GeometryCollection;
       geomCollection.geometries.forEach((geometry: Geometry, index) => {
         // tslint:disable-next-line:no-object-mutation
-        geometry.properties.index = index;
+        geometry.id = index;
       });
     }
 
@@ -374,8 +376,6 @@ it when necessary (file sizes ~1GB+).
         {
           detectSharedBorders: true,
           force: true,
-          generateIds: true,
-          include: ["index"],
           maximumZoom,
           minimumZoom,
           noTileCompression: true,
