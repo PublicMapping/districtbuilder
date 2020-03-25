@@ -16,7 +16,7 @@ import {
   simplify,
   topology
 } from "topojson";
-import { Objects, Topology } from "topojson-specification";
+import { Geometry, GeometryCollection, Objects, Topology } from "topojson-specification";
 import { IStaticMetadata } from "../../../shared/entities";
 import { tippecanoe, tileJoin } from "../lib/cmd";
 
@@ -217,6 +217,16 @@ it when necessary (file sizes ~1GB+).
         geometries: Object.values(mergedGeoms)
       };
     }
+    // Add 'index' property to each feature. This is implicit now but will
+    // become necessary to index static data array buffers once the features
+    // are converted into vector tiles
+    for (const geoLevel of geoLevels) {
+      const geomCollection = topo.objects[geoLevel] as GeometryCollection;
+      geomCollection.geometries.forEach((geometry: Geometry, index) => {
+        // tslint:disable-next-line:no-object-mutation
+        geometry.properties.index = index;
+      });
+    }
 
     return topo;
   }
@@ -362,6 +372,7 @@ it when necessary (file sizes ~1GB+).
       tippecanoe(
         [join(dir, `${geoLevel}.geojson`)],
         {
+          include: ["index"],
           force: true,
           output,
           maximumZoom,
