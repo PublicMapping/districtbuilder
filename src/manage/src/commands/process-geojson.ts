@@ -8,9 +8,17 @@ import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
 import { join } from "path";
-import { mergeArcs, planarTriangleArea, presimplify, simplify, topology } from "topojson";
-import { Objects, Topology } from "topojson-specification";
+import {
+  feature as topo2feature,
+  mergeArcs,
+  planarTriangleArea,
+  presimplify,
+  simplify,
+  topology
+} from "topojson";
+import { Geometry, GeometryCollection, Objects, Topology } from "topojson-specification";
 import { IStaticMetadata } from "../../../shared/entities";
+import { tileJoin, tippecanoe } from "../lib/cmd";
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -40,6 +48,18 @@ it when necessary (file sizes ~1GB+).
       default: "block,blockgroup,county"
     }),
 
+    levelMinZoom: flags.string({
+      char: "n",
+      description: "Comma-separated minimum zoom level per geolevel, must match # of levels",
+      default: "8,0,0"
+    }),
+
+    levelMaxZoom: flags.string({
+      char: "x",
+      description: "Comma-separated maximum zoom level per geolevel, must match # of levels",
+      default: "g,g,g"
+    }),
+
     demographics: flags.string({
       char: "d",
       description: "Comma-separated census demographics to select and aggregate",
@@ -64,8 +84,15 @@ it when necessary (file sizes ~1GB+).
   async run(): Promise<void> {
     const { args, flags } = this.parse(ProcessGeojson);
     const geoLevels = flags.levels.split(",");
+    const minZooms = flags.levelMinZoom.split(",");
+    const maxZooms = flags.levelMaxZoom.split(",");
     const demographics = flags.demographics.split(",");
     const simplification = parseFloat(flags.simplification);
+
+    if (geoLevels.length !== minZooms.length || geoLevels.length !== maxZooms.length) {
+      this.log("'levels' 'levelMinZoom' and 'levelMaxZoom' must all have the same length, exiting");
+      return;
+    }
 
     cli.action.start(`Reading base GeoJSON: ${args.file}`);
     const baseGeoJson = await (flags.big
@@ -102,6 +129,10 @@ it when necessary (file sizes ~1GB+).
     );
 
     this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+
+    this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevels);
+
+    this.writeVectorTiles(flags.outputDir, geoLevels, minZooms, maxZooms);
 
     const demographicMetaData = this.writeDemographicData(
       flags.outputDir,
@@ -185,6 +216,18 @@ it when necessary (file sizes ~1GB+).
         type: "GeometryCollection",
         geometries: Object.values(mergedGeoms)
       };
+    }
+    // Add an 'id' to each feature. This is implicit now but will
+    // become necessary to index static data array buffers once the features
+    // are converted into vector tiles.
+    // We are using the id here, rather than a property, because an id is needed
+    // in order to use the `setFeatureState` capability on the front-end.
+    for (const geoLevel of geoLevels) {
+      const geomCollection = topo.objects[geoLevel] as GeometryCollection;
+      geomCollection.geometries.forEach((geometry: Geometry, index) => {
+        // tslint:disable-next-line:no-object-mutation
+        geometry.id = index;
+      });
     }
 
     return topo;
@@ -299,6 +342,57 @@ it when necessary (file sizes ~1GB+).
         demographics: demographicMetadata,
         geoLevels: geoLevelMetadata
       })
+    );
+  }
+
+  // Convert TopoJSON to GeoJSON and write to disk
+  writeIntermediaryGeoJson(
+    dir: string,
+    topology: Topology<Objects<{}>>,
+    geoLevels: readonly string[]
+  ): void {
+    geoLevels.forEach(geoLevel => {
+      this.log(`Converting topojson to geojson for ${geoLevel}`);
+      const geojson = topo2feature(topology, topology.objects[geoLevel]);
+      writeFileSync(join(dir, `${geoLevel}.geojson`), JSON.stringify(geojson));
+    });
+  }
+
+  // Convert GeoJSON on disk to Vector Tiles
+  writeVectorTiles(
+    dir: string,
+    geoLevels: readonly string[],
+    minZooms: readonly string[],
+    maxZooms: readonly string[]
+  ): void {
+    const mbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
+    geoLevels.forEach((geoLevel, idx) => {
+      const minimumZoom = minZooms[idx];
+      const maximumZoom = maxZooms[idx];
+      const output = mbtiles[idx];
+      this.log(`Converting geojson to vectortiles for ${geoLevel}`);
+      tippecanoe(
+        [join(dir, `${geoLevel}.geojson`)],
+        {
+          detectSharedBorders: true,
+          force: true,
+          maximumZoom,
+          minimumZoom,
+          noTileCompression: true,
+          noTinyPolygonReduction: true,
+          output,
+          simplification: 15,
+          simplifyOnlyLowZooms: true
+        },
+        { echo: true }
+      );
+    });
+
+    const outputDir = join(dir, "tiles");
+    tileJoin(
+      mbtiles,
+      { force: true, noTileCompression: true, noTileSizeLimit: true, outputToDirectory: outputDir },
+      { echo: true }
     );
   }
 }
