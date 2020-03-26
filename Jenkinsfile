@@ -14,6 +14,22 @@ node {
       }
     }
 
+    if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME.startsWith('test/') || env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME.startsWith('hotfix/')) {
+      // Publish container images built and tested during `cibuild`
+      // to the private Amazon Container Registry tagged with the
+      // first seven characters of the revision SHA.
+      stage('cipublish') {
+        // Decode the ECR endpoint stored within Jenkins.
+        withCredentials([[$class: 'StringBinding',
+                credentialsId: 'DB_AWS_ECR_ENDPOINT',
+                variable: 'DB_AWS_ECR_ENDPOINT']]) {
+          wrap([$class: 'AnsiColorBuildWrapper']) {
+            sh './scripts/cipublish'
+          }
+        }
+      }
+    }
+
     if (currentBuild.currentResult == 'SUCCESS' && currentBuild.previousBuild?.result != 'SUCCESS') {
       def slackMessage = ":jenkins: *DistrictBuilder (${env.BRANCH_NAME}) #${env.BUILD_NUMBER}*"
       if (env.CHANGE_TITLE) {
