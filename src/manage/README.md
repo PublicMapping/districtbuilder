@@ -8,7 +8,9 @@ in the future, but until then, commands may be run using `./bin/run` rather than
 For example, to see help on the `process-geojson`, run: `./bin/run process-geojson --help`.
 
 The CLI has not yet been containerized, as it's currently a development-only tool. Since it will be run
-locally, dependency installation will need to manually initiated with: `yarn install`.
+locally, dependency installation will need to manually initiated with: `yarn install`. Also, it is
+necessary to install [tippecanoe](https://github.com/mapbox/tippecanoe#installation) and have it be
+accessible on your `PATH`.
 
 <!-- toc -->
 * [Usage](#usage)

@@ -18,7 +18,7 @@ import {
 } from "topojson";
 import { Geometry, GeometryCollection, Objects, Topology } from "topojson-specification";
 import { IStaticMetadata } from "../../../shared/entities";
-import { tippecanoe, tileJoin } from "../lib/cmd";
+import { tileJoin, tippecanoe } from "../lib/cmd";
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
