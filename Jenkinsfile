@@ -8,6 +8,9 @@ node {
       checkout scm
     }
 
+    env.AWS_PROFILE = 'district-builder'
+    env.AWS_DEFAULT_REGION = 'us-east-1'
+
     stage('cibuild') {
       wrap([$class: 'AnsiColorBuildWrapper']) {
         sh './scripts/cibuild'
