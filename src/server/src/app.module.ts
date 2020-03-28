@@ -5,6 +5,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { AuthModule } from "./auth/auth.module";
 import { DistrictsModule } from "./districts/districts.module";
 import { HealthcheckService } from "./healthcheck/healthcheck.service";
 import { UsersModule } from "./users/users.module";
@@ -22,8 +23,9 @@ import { join } from "path";
       }
     }),
     TerminusModule.forRootAsync({ useClass: HealthcheckService }),
-    UsersModule,
-    DistrictsModule
+    AuthModule,
+    DistrictsModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService]

@@ -30,7 +30,7 @@
     "no-delete": true,
     "no-method-signature": true,
     "no-loop-statement": true,
-    "no-try": true,
+    "no-try": false,
     "member-access": false
   },
   "rulesDirectory": []

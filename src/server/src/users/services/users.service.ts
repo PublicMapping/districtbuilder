@@ -9,4 +9,8 @@ export class UsersService extends TypeOrmCrudService<User> {
   constructor(@InjectRepository(User) usersRepository: Repository<User>) {
     super(usersRepository);
   }
+
+  getRepository(): Repository<User> {
+    return this.repo;
+  }
 }

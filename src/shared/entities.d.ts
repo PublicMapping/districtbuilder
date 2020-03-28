@@ -16,3 +16,8 @@ export interface IStaticMetadata {
   readonly fileName: string;
   readonly bytesPerElement: number;
 }
+
+export interface Login {
+  readonly email: string;
+  readonly password: string;
+}
