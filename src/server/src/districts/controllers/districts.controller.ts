@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { FeatureCollection } from "geojson";
 
+import { MakeDistrictsErrors } from "../../../../shared/constants";
 import { DistrictsDefinitionDto } from "../entities/district-definition.dto";
 import { TopologyService } from "../services/topology.service";
 
@@ -22,11 +23,17 @@ export class DistrictsController {
   ): Promise<FeatureCollection> {
     const geoCollection = await this.topologyService.get(topologyKey);
     if (!geoCollection) {
-      throw new NotFoundException(`Topology ${topologyKey} not found`);
+      throw new NotFoundException(
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND,
+        `Topology ${topologyKey} not found`
+      );
     }
     const geojson = geoCollection.merge(definition);
     if (geojson === null) {
-      throw new BadRequestException("District definition is invalid");
+      throw new BadRequestException(
+        MakeDistrictsErrors.INVALID_DEFINITION,
+        "District definition is invalid"
+      );
     }
     return geojson;
   }
