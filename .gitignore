@@ -23,3 +23,11 @@ src/cli/lib
 
 # Manage build
 src/manage/lib
+
+# Terraform
+.terraform
+.terraform/
+*.tfplan
+*.tfstate
+*.tfstate.backup
+*.tfvars
