@@ -49,11 +49,18 @@ aws_region  = "us-east-1"
 
 aws_key_name = "districtbuilder-2-stg"
 
+r53_private_hosted_zone = "districtbuilder-2.internal"
+
 external_access_cidr_block = "127.0.0.1/32"
 
 bastion_ami           = "ami-0fc61db8544a617ed"
 bastion_instance_type = "t3.nano"
 bastion_ebs_optimized = true
+
+rds_database_identifier = districtbuilder-2-staging
+rds_database_name       = districtbuilder
+rds_database_username   = districtbuilder
+rds_database_password   = districtbuilder
 ```
 
 This file lives at `s3://districtbuilder-2-staging-config-us-east-1/terraform/terraform.tfvars`.
