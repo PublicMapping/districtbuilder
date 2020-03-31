@@ -1,48 +1,20 @@
-import React, { useEffect } from "react";
-import { connect } from "react-redux";
-import { getTestString } from "../shared/TestFns";
-import { usersFetch, UsersResource } from "./actions/users";
+import React from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+
+import HomeScreen from "./screens/HomeScreen";
+import ProjectScreen from "./screens/ProjectScreen";
+
 import "./App.css";
-import Map from "./components/Map";
-import { State } from "./reducers";
-import store from "./store";
-import { Resource } from "./types";
 
-interface StateProps {
-  readonly users: Resource<UsersResource>;
-}
+const App = () => (
+  <div className="App">
+    <Router>
+      <Switch>
+        <Route path="/" exact={true} component={HomeScreen} />
+        <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
+      </Switch>
+    </Router>
+  </div>
+);
 
-type Props = StateProps;
-
-const App = ({ users }: Props) => {
-  useEffect(() => {
-    store.dispatch(usersFetch());
-  }, []);
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src="logo.png" className="App-logo" alt="logo" />
-        DistrictBuilder 2
-        <br />
-        Test code sharing: {getTestString()}
-        <br />
-        Users:{" "}
-        {"resource" in users && users.resource.length
-          ? users.resource.map(u => u.email).join(",")
-          : "none"}
-      </header>
-      <main>
-        <Map />
-      </main>
-    </div>
-  );
-};
-
-function mapStateToProps(state: State): StateProps {
-  return {
-    users: state.users
-  };
-}
-
-export default connect(mapStateToProps)(App);
+export default App;
