@@ -1,5 +1,10 @@
 {
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
-  "entryFile": "server/src/main"
+  "entryFile": "server/src/main",
+  "compilerOptions": {
+      "assets": [
+          {"include": "templates/**/*", "watchAssets": true}
+      ]
+  }
 }

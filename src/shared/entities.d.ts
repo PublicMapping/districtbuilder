@@ -1,6 +1,7 @@
 export interface IUser {
   readonly id: string;
   readonly email: string;
+  readonly name: string;
 }
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
@@ -20,4 +21,8 @@ export interface IStaticMetadata {
 export interface Login {
   readonly email: string;
   readonly password: string;
+}
+
+export interface Register extends Login {
+  readonly name: string;
 }

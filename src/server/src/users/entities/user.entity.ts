@@ -11,11 +11,31 @@ export class User implements IUser {
   @Column({ unique: true })
   email: string;
 
+  @Column()
+  name: string;
+
+  @Column({ default: false })
+  isEmailVerified: boolean;
+
   // TODO: Is it possible to make this private? I only want to allow
   // modification via setPassword
   // Note: not in shared interface and not intended to be sent over-the-wire
   @Column()
   passwordHash: string;
+
+  constructor(params?: { id?: string; email: string; name: string; passwordHash?: string }) {
+    if (!params) {
+      return;
+    }
+    this.email = params.email;
+    this.name = params.name;
+    if (params.id) {
+      this.id = params.id;
+    }
+    if (params.passwordHash) {
+      this.passwordHash = params.passwordHash;
+    }
+  }
 
   async comparePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.passwordHash);
