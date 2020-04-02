@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { Exclude } from "class-transformer";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { IUser } from "../../../../shared/entities";
 import { BCRYPT_SALT_ROUNDS } from "../../constants";
@@ -19,8 +20,8 @@ export class User implements IUser {
 
   // TODO: Is it possible to make this private? I only want to allow
   // modification via setPassword
-  // Note: not in shared interface and not intended to be sent over-the-wire
   @Column()
+  @Exclude()
   passwordHash: string;
 
   constructor(params?: { id?: string; email: string; name: string; passwordHash?: string }) {
