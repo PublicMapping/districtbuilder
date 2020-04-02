@@ -22,8 +22,8 @@ import { join } from "path";
 // TODO: Use SESTransport.Options instead if using SES in #54
 const mailTransportOptions: StreamTransport.Options = {
   streamTransport: true,
-  newline: "unix",
-  buffer: true
+  buffer: true,
+  newline: "unix"
 };
 
 @Module({

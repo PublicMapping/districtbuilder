@@ -6,8 +6,8 @@ import { EmailVerification } from "./entities/email-verification.entity";
 import { AuthService } from "./services/auth.service";
 
 @Module({
-  controllers: [AuthController],
   imports: [UsersModule, TypeOrmModule.forFeature([EmailVerification])],
+  controllers: [AuthController],
   providers: [AuthService]
 })
 export class AuthModule {}

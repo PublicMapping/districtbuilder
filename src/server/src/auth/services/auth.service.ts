@@ -74,11 +74,11 @@ export class AuthService {
       to: user.email,
       from: FROM_EMAIL,
       subject: "Verify your DistrictBuilder account",
-      template: "verify",
       context: {
         emailToken,
         user
-      }
+      },
+      template: "verify"
     });
 
     this.logger.debug(info.envelope, info.message.toString());
@@ -91,6 +91,7 @@ export class AuthService {
     if (emailVerif) {
       const userFromDb = await this.usersService.findOne({ email: emailVerif.email });
       if (userFromDb) {
+        /* tslint:disable:no-object-mutation */
         userFromDb.isEmailVerified = true;
         let savedUser;
         await getManager().transaction(async transactionalEntityManager => {
@@ -98,6 +99,7 @@ export class AuthService {
           await transactionalEntityManager.remove(emailVerif);
         });
         return savedUser;
+        /* tslint:enable */
       }
     }
   }
