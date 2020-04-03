@@ -24,7 +24,12 @@ export class User implements IUser {
   @Exclude()
   passwordHash: string;
 
-  constructor(params?: { id?: string; email: string; name: string; passwordHash?: string }) {
+  constructor(params?: {
+    id?: string;
+    email: string;
+    name: string;
+    passwordHash?: string;
+  }) {
     if (!params) {
       return;
     }
@@ -43,7 +48,9 @@ export class User implements IUser {
   }
 
   async setPassword(password: string): Promise<void> {
+    /* tslint:disable:no-object-mutation */
     this.passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    /* tslint:enable */
     return;
   }
 

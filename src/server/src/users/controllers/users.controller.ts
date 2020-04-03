@@ -7,6 +7,9 @@ import { UsersService } from "../services/users.service";
   model: {
     type: User
   },
+  query: {
+    exclude: ["email", "passwordHash"]
+  },
   routes: {
     only: ["getOneBase", "updateOneBase"]
   },
@@ -16,9 +19,6 @@ import { UsersService } from "../services/users.service";
       primary: true,
       disabled: true
     }
-  },
-  query: {
-    exclude: ["email", "passwordHash"]
   }
 })
 @CrudAuth({
