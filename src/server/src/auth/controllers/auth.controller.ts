@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Logger,
   NotFoundException,
   Param,
   Post
@@ -31,6 +32,8 @@ import { AuthService } from "../services/auth.service";
  */
 @Controller("auth")
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UsersService
@@ -42,6 +45,7 @@ export class AuthController {
     try {
       userOrError = await this.authService.validateLogin(login.email, login.password);
     } catch (error) {
+      // Intentionally not logging errors as they may contain passwords
       throw new BadRequestException(LoginErrors.ERROR);
     }
 
@@ -72,6 +76,7 @@ export class AuthController {
           `User with email '${registerDto.email}' already exists`
         );
       }
+      // Intentionally not logging errors as they may contain passwords
       throw new BadRequestException(RegisterResponse[RegisterResponse.ERROR]);
     }
     return RegisterResponse[RegisterResponse.SUCCESS];
@@ -90,24 +95,27 @@ export class AuthController {
       // TODO: return JWT instead of user
       return verifiedUser;
     } catch (error) {
+      Logger.error(error);
       throw new BadRequestException(VerifyEmailErrors[VerifyEmailErrors.ERROR]);
     }
   }
 
   @Post("email/resend-verification/:email")
   public async sendEmailVerification(@Param("email") email: string): Promise<string> {
-    try {
-      const user = await this.userService.findOne({ email });
-      if (!user) {
-        throw new NotFoundException(
-          ResendResponse[ResendResponse.NOT_FOUND],
-          "User not found for this email"
-        );
-      }
-      await this.authService.sendVerificationEmail(user);
-      return ResendResponse[ResendResponse.SUCCESS];
-    } catch (error) {
-      throw new BadRequestException(ResendResponse[ResendResponse.ERROR], error);
+    const user = await this.userService.findOne({ email });
+    if (!user) {
+      throw new NotFoundException(
+        ResendResponse[ResendResponse.NOT_FOUND],
+        "User not found for this email"
+      );
     }
+
+    try {
+      await this.authService.sendVerificationEmail(user);
+    } catch (error) {
+      Logger.error(error);
+      throw new BadRequestException(ResendResponse[ResendResponse.ERROR]);
+    }
+    return ResendResponse[ResendResponse.SUCCESS];
   }
 }
