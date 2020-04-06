@@ -11,7 +11,7 @@ node {
     env.AWS_PROFILE = 'district-builder'
     env.AWS_DEFAULT_REGION = 'us-east-1'
 
-    env.DB_SETTINGS_BUCKET = 'districtbuilder-2-staging-config-us-east-1'
+    env.DB_SETTINGS_BUCKET = 'districtbuilder-staging-config-us-east-1'
 
     stage('cibuild') {
       wrap([$class: 'AnsiColorBuildWrapper']) {

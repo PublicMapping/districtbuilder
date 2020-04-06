@@ -43,13 +43,13 @@ First, we need to make sure there is a `terraform.tfvars` file in the project se
 Here is an example `terraform.tfvars` for this project:
 
 ```hcl
-project     = "DistrictBuilder 2"
+project     = "DistrictBuilder"
 environment = "Staging"
 aws_region  = "us-east-1"
 
-aws_key_name = "districtbuilder-2-stg"
+aws_key_name = "districtbuilder-stg"
 
-r53_private_hosted_zone = "districtbuilder-2.internal"
+r53_private_hosted_zone = "districtbuilder.internal"
 
 external_access_cidr_block = "127.0.0.1/32"
 
@@ -57,13 +57,13 @@ bastion_ami           = "ami-0fc61db8544a617ed"
 bastion_instance_type = "t3.nano"
 bastion_ebs_optimized = true
 
-rds_database_identifier = districtbuilder-2-staging
+rds_database_identifier = districtbuilder-staging
 rds_database_name       = districtbuilder
 rds_database_username   = districtbuilder
 rds_database_password   = districtbuilder
 ```
 
-This file lives at `s3://districtbuilder-2-staging-config-us-east-1/terraform/terraform.tfvars`.
+This file lives at `s3://districtbuilder-staging-config-us-east-1/terraform/terraform.tfvars`.
 
 To deploy this project's core infrastructure, use the `infra` wrapper script to lookup the remote state of the infrastructure and assemble a plan for work to be done:
 

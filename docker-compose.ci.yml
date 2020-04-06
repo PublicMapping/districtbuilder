@@ -18,6 +18,6 @@ services:
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - GIT_COMMIT=${GIT_COMMIT:-latest}
       - DB_DEBUG=1
-      - DB_SETTINGS_BUCKET=${DB_SETTINGS_BUCKET:-districtbuilder-2-staging-config-us-east-1}
+      - DB_SETTINGS_BUCKET=${DB_SETTINGS_BUCKET:-districtbuilder-staging-config-us-east-1}
     working_dir: /usr/local/src
     entrypoint: bash

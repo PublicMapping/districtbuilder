@@ -1,5 +1,5 @@
 variable "project" {
-  default = "DistrictBuilder 2"
+  default = "DistrictBuilder"
   type    = string
 }
 
@@ -121,7 +121,7 @@ variable "rds_auto_minor_version_upgrade" {
 }
 
 variable "rds_final_snapshot_identifier" {
-  default = "districtbuilder-2-rds-snapshot"
+  default = "districtbuilder-rds-snapshot"
   type    = string
 }
 
