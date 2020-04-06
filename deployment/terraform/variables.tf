@@ -60,7 +60,7 @@ variable "bastion_ebs_optimized" {
 }
 
 variable "rds_allocated_storage" {
-  default = "64"
+  default = "32"
   type    = string
 }
 
