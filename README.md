@@ -83,6 +83,7 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 |-------------|---------------------------------------------------------------------------|
 | `cibuild`   | Build application for staging or a release.                               |
 | `dbshell`   | Enter a database shell.                                                   |
+| `infra`     | Execute Terraform subcommands with remote state management.               |
 | `migration` | Execute TypeORM migration CLI commands.                                   |
 | `server`    | Bring up all of the services required for the project to function.        |
 | `setup`     | Setup the project's development environment.                              |

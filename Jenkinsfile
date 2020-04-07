@@ -11,6 +11,8 @@ node {
     env.AWS_PROFILE = 'district-builder'
     env.AWS_DEFAULT_REGION = 'us-east-1'
 
+    env.DB_SETTINGS_BUCKET = 'districtbuilder-staging-config-us-east-1'
+
     stage('cibuild') {
       wrap([$class: 'AnsiColorBuildWrapper']) {
         sh './scripts/cibuild'
@@ -29,6 +31,20 @@ node {
           wrap([$class: 'AnsiColorBuildWrapper']) {
             sh './scripts/cipublish'
           }
+        }
+      }
+
+      // Plan and apply the current state of the staging infrastructure
+      // as outlined by whatever branch of the repository passes the
+      // conditional above (`develop`, `test/*`, `release/*`, `hotfix/*`).
+      stage('infra') {
+        // Use `git` to get the primary repository's current commmit SHA and
+        // set it as the value of the `GIT_COMMIT` environment variable.
+        env.GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+
+        wrap([$class: 'AnsiColorBuildWrapper']) {
+          sh 'docker-compose -f docker-compose.ci.yml run --rm terraform ./scripts/infra plan'
+          sh 'docker-compose -f docker-compose.ci.yml run --rm terraform ./scripts/infra apply'
         }
       }
     }
