@@ -1,6 +1,7 @@
 import { MailerService } from "@nestjs-modules/mailer";
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { JwtService } from "@nestjs/jwt";
 import base64url from "base64url";
 import { randomBytes } from "crypto";
 import { getManager, Repository } from "typeorm";
@@ -11,7 +12,9 @@ import { User } from "../../users/entities/user.entity";
 import { UsersService } from "../../users/services/users.service";
 import { EmailVerification } from "../entities/email-verification.entity";
 
-function generateToken(): Promise<string> {
+export type JWT = string;
+
+function generateEmailToken(): Promise<string> {
   return new Promise((resolve, reject) => {
     randomBytes(EMAIL_VERIFICATION_TOKEN_LENGTH, (err, buffer) => {
       if (err) {
@@ -31,7 +34,8 @@ export class AuthService {
     @InjectRepository(EmailVerification)
     private emailVerificationRepo: Repository<EmailVerification>,
     private mailerService: MailerService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private jwtService: JwtService
   ) {}
 
   async validateLogin(email: string, pass: string): Promise<User | LoginErrors> {
@@ -53,8 +57,18 @@ export class AuthService {
     return LoginErrors.INVALID_PASSWORD;
   }
 
+  generateJwt(user: User): JWT {
+    const payload: Pick<User, "email" | "name" | "isEmailVerified"> & { sub: string } = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      isEmailVerified: user.isEmailVerified
+    };
+    return this.jwtService.sign(payload);
+  }
+
   async sendVerificationEmail(user: User): Promise<void> {
-    const emailToken = await generateToken();
+    const emailToken = await generateEmailToken();
     const data = {
       email: user.email,
       emailToken,

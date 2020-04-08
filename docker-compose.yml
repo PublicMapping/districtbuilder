@@ -21,6 +21,8 @@ services:
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
+      - JWT_SECRET=insecure
+      - JWT_EXPIRATION_IN_MS=172800000
     build:
       context: ./src/server
       dockerfile: Dockerfile

@@ -1,7 +1,6 @@
 export enum LoginErrors {
   NOT_FOUND,
-  INVALID_PASSWORD,
-  ERROR
+  INVALID_PASSWORD
 }
 
 export enum MakeDistrictsErrors {
@@ -12,17 +11,14 @@ export enum MakeDistrictsErrors {
 export enum RegisterResponse {
   SUCCESS,
   DUPLICATE,
-  INVALID,
-  ERROR
+  INVALID
 }
 
 export enum ResendResponse {
   SUCCESS,
-  NOT_FOUND,
-  ERROR
+  NOT_FOUND
 }
 
 export enum VerifyEmailErrors {
-  NOT_FOUND,
-  ERROR
+  NOT_FOUND
 }

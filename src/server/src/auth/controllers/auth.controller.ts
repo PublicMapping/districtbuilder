@@ -1,6 +1,8 @@
 import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
 import {
+  UnauthorizedException,
   BadRequestException,
+  InternalServerErrorException,
   Body,
   Controller,
   Logger,
@@ -21,7 +23,7 @@ import { UsersService } from "../../users/services/users.service";
 
 import { LoginDto } from "../entities/login.dto";
 import { RegisterDto } from "../entities/register.dto";
-import { AuthService } from "../services/auth.service";
+import { AuthService, JWT } from "../services/auth.service";
 
 /*
  * Authentication service that handles logins, account activiation and
@@ -40,28 +42,28 @@ export class AuthController {
   ) {}
 
   @Post("email/login")
-  public async login(@Body() login: LoginDto): Promise<User> {
+  public async login(@Body() login: LoginDto): Promise<JWT> {
     let userOrError;
     try {
       userOrError = await this.authService.validateLogin(login.email, login.password);
     } catch (error) {
       // Intentionally not logging errors as they may contain passwords
-      throw new BadRequestException(LoginErrors.ERROR);
+      throw new InternalServerErrorException();
     }
 
-    if (userOrError === null || userOrError === LoginErrors.NOT_FOUND) {
+    if (userOrError === LoginErrors.NOT_FOUND) {
       throw new NotFoundException(
         LoginErrors[LoginErrors.NOT_FOUND],
         `Email ${login.email} not found`
       );
     } else if (userOrError === LoginErrors.INVALID_PASSWORD) {
-      throw new BadRequestException(LoginErrors[LoginErrors.INVALID_PASSWORD], "Invalid password");
-    } else if (userOrError === LoginErrors.ERROR) {
-      throw new BadRequestException(LoginErrors[LoginErrors.ERROR]);
+      throw new UnauthorizedException(
+        LoginErrors[LoginErrors.INVALID_PASSWORD],
+        "Invalid password"
+      );
     }
 
-    // TODO: return JWT instead of user
-    return userOrError;
+    return this.authService.generateJwt(userOrError);
   }
 
   @Post("email/register")
@@ -69,6 +71,7 @@ export class AuthController {
     try {
       const newUser = await this.userService.create(registerDto);
       await this.authService.sendVerificationEmail(newUser);
+      return RegisterResponse[RegisterResponse.SUCCESS];
     } catch (error) {
       if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {
         throw new BadRequestException(
@@ -77,13 +80,12 @@ export class AuthController {
         );
       }
       // Intentionally not logging errors as they may contain passwords
-      throw new BadRequestException(RegisterResponse[RegisterResponse.ERROR]);
+      throw new InternalServerErrorException();
     }
-    return RegisterResponse[RegisterResponse.SUCCESS];
   }
 
   @Post("email/verify/:token")
-  public async verifyEmail(@Param("token") token: string): Promise<User> {
+  public async verifyEmail(@Param("token") token: string): Promise<JWT> {
     try {
       const verifiedUser = await this.authService.verifyEmail(token);
       if (verifiedUser === undefined) {
@@ -92,11 +94,10 @@ export class AuthController {
           "Email or user not found for token"
         );
       }
-      // TODO: return JWT instead of user
-      return verifiedUser;
+      return this.authService.generateJwt(verifiedUser);
     } catch (error) {
-      Logger.error(error);
-      throw new BadRequestException(VerifyEmailErrors[VerifyEmailErrors.ERROR]);
+      this.logger.error(`Error verifying email token: ${error}`);
+      throw new InternalServerErrorException();
     }
   }
 
@@ -112,10 +113,10 @@ export class AuthController {
 
     try {
       await this.authService.sendVerificationEmail(user);
+      return ResendResponse[ResendResponse.SUCCESS];
     } catch (error) {
-      Logger.error(error);
-      throw new BadRequestException(ResendResponse[ResendResponse.ERROR]);
+      this.logger.error(`Error sending email verification: ${error}`);
+      throw new InternalServerErrorException();
     }
-    return ResendResponse[ResendResponse.SUCCESS];
   }
 }
