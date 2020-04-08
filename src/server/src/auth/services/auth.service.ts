@@ -1,18 +1,17 @@
 import { MailerService } from "@nestjs-modules/mailer";
 import { Injectable, Logger } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
 import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
 import base64url from "base64url";
 import { randomBytes } from "crypto";
 import { getManager, Repository } from "typeorm";
 
 import { LoginErrors } from "../../../../shared/constants";
+import { JWT } from "../../../../shared/entities";
 import { EMAIL_VERIFICATION_TOKEN_LENGTH, FROM_EMAIL } from "../../constants";
 import { User } from "../../users/entities/user.entity";
 import { UsersService } from "../../users/services/users.service";
 import { EmailVerification } from "../entities/email-verification.entity";
-
-export type JWT = string;
 
 function generateEmailToken(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -38,7 +37,10 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async validateLogin(email: string, pass: string): Promise<User | LoginErrors> {
+  async validateLogin(
+    email: string,
+    pass: string
+  ): Promise<User | LoginErrors> {
     const user = await this.usersService.findOne({ email });
     if (!user) {
       return LoginErrors.NOT_FOUND;
@@ -58,13 +60,7 @@ export class AuthService {
   }
 
   generateJwt(user: User): JWT {
-    const payload: Pick<User, "email" | "name" | "isEmailVerified"> & { sub: string } = {
-      sub: user.id,
-      email: user.email,
-      name: user.name,
-      isEmailVerified: user.isEmailVerified
-    };
-    return this.jwtService.sign(payload);
+    return this.jwtService.sign(user);
   }
 
   async sendVerificationEmail(user: User): Promise<void> {
@@ -80,7 +76,9 @@ export class AuthService {
       .insert()
       .into(EmailVerification)
       .values(data)
-      .onConflict(`("email") DO UPDATE SET "emailToken" = :emailToken, "timestamp" = :timestamp`)
+      .onConflict(
+        `("email") DO UPDATE SET "emailToken" = :emailToken, "timestamp" = :timestamp`
+      )
       .setParameters(data)
       .execute();
 

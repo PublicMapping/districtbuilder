@@ -1,14 +1,14 @@
 import { PG_UNIQUE_VIOLATION } from "@drdgvhbh/postgres-error-codes";
 import {
-  UnauthorizedException,
   BadRequestException,
-  InternalServerErrorException,
   Body,
   Controller,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   Param,
-  Post
+  Post,
+  UnauthorizedException
 } from "@nestjs/common";
 
 import {
@@ -17,13 +17,12 @@ import {
   ResendResponse,
   VerifyEmailErrors
 } from "../../../../shared/constants";
-
-import { User } from "../../users/entities/user.entity";
+import { JWT } from "../../../../shared/entities";
 import { UsersService } from "../../users/services/users.service";
 
 import { LoginDto } from "../entities/login.dto";
 import { RegisterDto } from "../entities/register.dto";
-import { AuthService, JWT } from "../services/auth.service";
+import { AuthService } from "../services/auth.service";
 
 /*
  * Authentication service that handles logins, account activiation and
@@ -45,7 +44,10 @@ export class AuthController {
   public async login(@Body() login: LoginDto): Promise<JWT> {
     let userOrError;
     try {
-      userOrError = await this.authService.validateLogin(login.email, login.password);
+      userOrError = await this.authService.validateLogin(
+        login.email,
+        login.password
+      );
     } catch (error) {
       // Intentionally not logging errors as they may contain passwords
       throw new InternalServerErrorException();
@@ -73,7 +75,10 @@ export class AuthController {
       await this.authService.sendVerificationEmail(newUser);
       return RegisterResponse[RegisterResponse.SUCCESS];
     } catch (error) {
-      if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {
+      if (
+        error.name === "QueryFailedError" &&
+        error.code === PG_UNIQUE_VIOLATION
+      ) {
         throw new BadRequestException(
           RegisterResponse[RegisterResponse.DUPLICATE],
           `User with email '${registerDto.email}' already exists`
@@ -102,7 +107,9 @@ export class AuthController {
   }
 
   @Post("email/resend-verification/:email")
-  public async sendEmailVerification(@Param("email") email: string): Promise<string> {
+  public async sendEmailVerification(
+    @Param("email") email: string
+  ): Promise<string> {
     const user = await this.userService.findOne({ email });
     if (!user) {
       throw new NotFoundException(

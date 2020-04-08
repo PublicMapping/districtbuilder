@@ -1,7 +1,10 @@
+export type UserId = string;
+
 export interface IUser {
-  readonly id: string;
+  readonly id: UserId;
   readonly email: string;
   readonly name: string;
+  readonly isEmailVerified: boolean;
 }
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
@@ -26,3 +29,11 @@ export interface Login {
 export interface Register extends Login {
   readonly name: string;
 }
+
+export type JWT = string;
+
+export type JWTPayload = IUser & {
+  readonly exp: number;
+  readonly iat: number;
+  readonly sub: UserId;
+};

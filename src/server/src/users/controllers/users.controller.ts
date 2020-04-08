@@ -1,9 +1,13 @@
 import { Controller, Get, Request, UseGuards } from "@nestjs/common";
 import { Crud, CrudAuth, CrudController } from "@nestjsx/crud";
 
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { User } from "../entities/user.entity";
 import { UsersService } from "../services/users.service";
-import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
+
+type AuthedRequest = Request & {
+  readonly user: User;
+};
 
 @Crud({
   model: {
@@ -37,7 +41,7 @@ export class UsersController implements CrudController<User> {
 
   @UseGuards(JwtAuthGuard)
   @Get("profile")
-  getProfile(@Request() request: any): User {
+  getProfile(@Request() request: AuthedRequest): User {
     return request.user;
   }
 }
