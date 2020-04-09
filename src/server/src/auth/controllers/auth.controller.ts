@@ -43,30 +43,32 @@ export class AuthController {
 
   @Post("email/login")
   public async login(@Body() login: LoginDto): Promise<JWT> {
-    let userOrError;
     try {
-      userOrError = await this.authService.validateLogin(
+      const userOrError = await this.authService.validateLogin(
         login.email,
         login.password
       );
+      if (userOrError === LoginErrors.NOT_FOUND) {
+        throw new NotFoundException(
+          LoginErrors[LoginErrors.NOT_FOUND],
+          `Email ${login.email} not found`
+        );
+      } else if (userOrError === LoginErrors.INVALID_PASSWORD) {
+        throw new UnauthorizedException(
+          LoginErrors[LoginErrors.INVALID_PASSWORD],
+          "Invalid password"
+        );
+      }
+      return this.authService.generateJwt(userOrError);
     } catch (error) {
-      // Intentionally not logging errors as they may contain passwords
-      throw new InternalServerErrorException();
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        // Intentionally not logging errors as they may contain passwords
+        this.logger.error(`Error logging user in`);
+        throw new InternalServerErrorException();
+      }
     }
-
-    if (userOrError === LoginErrors.NOT_FOUND) {
-      throw new NotFoundException(
-        LoginErrors[LoginErrors.NOT_FOUND],
-        `Email ${login.email} not found`
-      );
-    } else if (userOrError === LoginErrors.INVALID_PASSWORD) {
-      throw new UnauthorizedException(
-        LoginErrors[LoginErrors.INVALID_PASSWORD],
-        "Invalid password"
-      );
-    }
-
-    return this.authService.generateJwt(userOrError);
   }
 
   @Post("email/register")
@@ -84,9 +86,11 @@ export class AuthController {
           RegisterResponse[RegisterResponse.DUPLICATE],
           `User with email '${registerDto.email}' already exists`
         );
+      } else {
+        // Intentionally not logging errors as they may contain passwords
+        this.logger.error(`Error registering user`);
+        throw new InternalServerErrorException();
       }
-      // Intentionally not logging errors as they may contain passwords
-      throw new InternalServerErrorException();
     }
   }
 
@@ -115,20 +119,23 @@ export class AuthController {
   public async sendEmailVerification(
     @Param("email") email: string
   ): Promise<string> {
-    const user = await this.userService.findOne({ email });
-    if (!user) {
-      throw new NotFoundException(
-        ResendResponse[ResendResponse.NOT_FOUND],
-        "User not found for this email"
-      );
-    }
-
     try {
+      const user = await this.userService.findOne({ email });
+      if (!user) {
+        throw new NotFoundException(
+          ResendResponse[ResendResponse.NOT_FOUND],
+          "User not found for this email"
+        );
+      }
       await this.authService.sendVerificationEmail(user);
       return ResendResponse[ResendResponse.SUCCESS];
     } catch (error) {
-      this.logger.error(`Error sending email verification: ${error}`);
-      throw new InternalServerErrorException();
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        this.logger.error(`Error sending email verification: ${error}`);
+        throw new InternalServerErrorException();
+      }
     }
   }
 }
