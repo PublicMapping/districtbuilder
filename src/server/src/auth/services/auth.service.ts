@@ -7,7 +7,7 @@ import { randomBytes } from "crypto";
 import { getManager, Repository } from "typeorm";
 
 import { LoginErrors } from "../../../../shared/constants";
-import { JWT } from "../../../../shared/entities";
+import { IUser, JWT, UserId } from "../../../../shared/entities";
 import { EMAIL_VERIFICATION_TOKEN_LENGTH, FROM_EMAIL } from "../../constants";
 import { User } from "../../users/entities/user.entity";
 import { UsersService } from "../../users/services/users.service";
@@ -60,7 +60,14 @@ export class AuthService {
   }
 
   generateJwt(user: User): JWT {
-    return this.jwtService.sign(user);
+    const payload: IUser & { sub: UserId } = {
+      sub: user.id,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      isEmailVerified: user.isEmailVerified
+    };
+    return this.jwtService.sign(payload);
   }
 
   async sendVerificationEmail(user: User): Promise<void> {
