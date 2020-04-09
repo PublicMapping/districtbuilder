@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  HttpException,
   InternalServerErrorException,
   Logger,
   NotFoundException,
@@ -101,8 +102,12 @@ export class AuthController {
       }
       return this.authService.generateJwt(verifiedUser);
     } catch (error) {
-      this.logger.error(`Error verifying email token: ${error}`);
-      throw new InternalServerErrorException();
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        this.logger.error(`Error verifying email token: ${error}`);
+        throw new InternalServerErrorException();
+      }
     }
   }
 
