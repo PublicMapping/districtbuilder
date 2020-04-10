@@ -1,4 +1,4 @@
-import { Controller, Get, Request, UseGuards } from "@nestjs/common";
+import { Controller, UseGuards } from "@nestjs/common";
 import { Crud, CrudAuth, CrudController } from "@nestjsx/crud";
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
