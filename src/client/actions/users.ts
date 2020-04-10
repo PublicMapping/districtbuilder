@@ -6,11 +6,11 @@ export enum ActionTypes {
   USERS_FETCH_FAILURE = "USERS_FETCH_FAILURE"
 }
 
-export type UsersResource = ReadonlyArray<IUser>;
+export type Users = ReadonlyArray<IUser>;
 
 export type UsersAction =
   | { readonly type: ActionTypes.USERS_FETCH }
-  | { readonly type: ActionTypes.USERS_FETCH_SUCCESS; readonly users: UsersResource }
+  | { readonly type: ActionTypes.USERS_FETCH_SUCCESS; readonly users: Users }
   | { readonly type: ActionTypes.USERS_FETCH_FAILURE; readonly errorMsg: string };
 
 export function usersFetch(): UsersAction {
@@ -19,7 +19,7 @@ export function usersFetch(): UsersAction {
   };
 }
 
-export function usersFetchSuccess(users: UsersResource): UsersAction {
+export function usersFetchSuccess(users: Users): UsersAction {
   return {
     type: ActionTypes.USERS_FETCH_SUCCESS,
     users

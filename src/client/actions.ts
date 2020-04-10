@@ -1,5 +1,4 @@
+import { AuthAction } from "./actions/auth";
 import { UsersAction } from "./actions/users";
 
-export type Action = UsersAction;
-
-export type DispatchFunction = (action: Action) => void;
+export type Action = AuthAction | UsersAction;

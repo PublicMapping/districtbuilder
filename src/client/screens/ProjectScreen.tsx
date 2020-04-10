@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { Link, useParams } from "react-router-dom";
+import { Link, Redirect, useParams } from "react-router-dom";
 import { getTestString } from "../../shared/TestFns";
-import { usersFetch, UsersResource } from "../actions/users";
+import { Users, usersFetch } from "../actions/users";
 import "../App.css";
 import Map from "../components/Map";
 import { State } from "../reducers";
@@ -10,7 +10,7 @@ import store from "../store";
 import { Resource } from "../types";
 
 interface StateProps {
-  readonly users: Resource<UsersResource>;
+  readonly users: Resource<Users>;
 }
 
 const ProjectScreen = ({ users }: StateProps) => {
@@ -19,7 +19,11 @@ const ProjectScreen = ({ users }: StateProps) => {
   }, []);
 
   const { projectId } = useParams();
-  return (
+  return "isPending" in users ? (
+    <span>Loading...</span>
+  ) : "errorMessage" in users ? (
+    <Redirect to={"/login"} />
+  ) : (
     <div className="App">
       <header className="App-header">
         <Link to="/">
