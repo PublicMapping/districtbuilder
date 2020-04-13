@@ -28,10 +28,10 @@ export async function authenticateUser(email: string, password: string): Promise
   });
 }
 
-export async function fetchUsers(): Promise<ReadonlyArray<IUser>> {
+export async function fetchUser(): Promise<IUser> {
   return new Promise((resolve, reject) => {
     axios
-      .get("/api/users")
+      .get("/api/user")
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });

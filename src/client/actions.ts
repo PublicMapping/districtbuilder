@@ -1,4 +1,4 @@
 import { AuthAction } from "./actions/auth";
-import { UsersAction } from "./actions/users";
+import { UserAction } from "./actions/user";
 
-export type Action = AuthAction | UsersAction;
+export type Action = AuthAction | UserAction;
