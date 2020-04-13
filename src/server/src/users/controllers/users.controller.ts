@@ -32,7 +32,7 @@ import { UsersService } from "../services/users.service";
   }
 })
 @UseGuards(JwtAuthGuard)
-@Controller("users")
+@Controller("api/users")
 export class UsersController implements CrudController<User> {
   constructor(public service: UsersService) {}
 }
