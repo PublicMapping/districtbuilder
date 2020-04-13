@@ -2,11 +2,15 @@ import axios from "axios";
 import { IUser, JWT } from "../shared/entities";
 import { getJWT, setJWT } from "./jwt";
 
+function setAxiosAuthHeaders(jwt: JWT): void {
+  // tslint:disable-next-line no-object-mutation no-unused-expression
+  axios.defaults.headers.common.Authorization = `Bearer ${jwt}`;
+}
+
 const authToken = getJWT();
 // tslint:disable-next-line no-if-statement
 if (authToken) {
-  // tslint:disable-next-line no-object-mutation no-unused-expression
-  axios.defaults.headers.common.Authorization = `Bearer ${authToken}`;
+  setAxiosAuthHeaders(authToken);
 }
 
 export async function authenticateUser(email: string, password: string): Promise<JWT> {
@@ -15,7 +19,9 @@ export async function authenticateUser(email: string, password: string): Promise
       .post("/api/auth/email/login", { email, password })
       .then(response => {
         // Save JWT so it can be in headers for subsequent requests
-        setJWT(response.data);
+        const jwt = response.data;
+        setJWT(jwt);
+        setAxiosAuthHeaders(jwt);
         resolve(response.data);
       })
       .catch(error => reject(error.message));
