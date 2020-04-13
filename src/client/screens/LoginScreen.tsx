@@ -21,11 +21,11 @@ const LoginScreen = ({ jwt }: StateProps) => {
   return "resource" in jwt && !jwtIsExpired(jwt.resource) ? (
     <Redirect to="/" />
   ) : (
-    <div>
-      <label>
-        Email:{" "}
+    <>
+      <div>
         <input
           type="text"
+          placeholder="Email"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setLoginForm({
               ...loginForm,
@@ -33,11 +33,11 @@ const LoginScreen = ({ jwt }: StateProps) => {
             })
           }
         />
-      </label>
-      <label>
-        Password:{" "}
+      </div>
+      <div>
         <input
           type="password"
+          placeholder="Password"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setLoginForm({
               ...loginForm,
@@ -45,9 +45,12 @@ const LoginScreen = ({ jwt }: StateProps) => {
             })
           }
         />
-      </label>
-      <button onClick={() => store.dispatch(authenticate(loginForm))}>Log in</button>
-    </div>
+      </div>
+      <div>
+        <button onClick={() => store.dispatch(authenticate(loginForm))}>Log in</button>
+      </div>
+      {"errorMessage" in jwt ? <div style={{ color: "red" }}>{jwt.errorMessage}</div> : null}
+    </>
   );
 };
 
