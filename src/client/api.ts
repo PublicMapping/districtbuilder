@@ -11,7 +11,7 @@ if (authToken) {
 export async function authenticateUser(email: string, password: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     axios
-      .post("/auth/email/login", { email, password })
+      .post("/api/auth/email/login", { email, password })
       .then(response => {
         // Save JWT so it can be in headers for subsequent requests
         localStorage.setItem("jwt", response.data);
