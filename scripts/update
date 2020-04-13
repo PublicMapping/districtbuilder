@@ -30,6 +30,11 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
             run --rm --no-deps server \
             bash -c "yarn install && yarn build"
 
+        # Update manage, Yarn dependencies and build
+        docker-compose \
+            run --rm --no-deps manage \
+            bash -c "yarn install && yarn build"
+
         # Bring up PostgreSQL and NestJS in a way that respects
         # configured service health checks.
         docker-compose \
