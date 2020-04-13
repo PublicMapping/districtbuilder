@@ -8,13 +8,13 @@ fi
 
 function usage() {
     echo -n \
-        "Usage: $(basename "$0") client | server [command [flags]]
+        "Usage: $(basename "$0") client | server | manage [command [flags]]
 Execute Yarn CLI commands.
 "
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    if [[ "${1:-}" == "--help" ]] || [[ ! "${1}" == "client" && ! "${1}" == "server" ]]; then
+    if [[ "${1:-}" == "--help" ]] || [[ ! "${1}" == "client" && ! "${1}" == "server" && ! "${1}" == "manage" ]]; then
         usage
     else
         docker-compose \

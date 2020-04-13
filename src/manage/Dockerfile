@@ -27,4 +27,4 @@ RUN apt install -y git g++ libsqlite3-dev libz-dev make && \
   cd /root && \
   rm -rf /root/tippecanoe
 
-ENTRYPOINT ["/home/node/app/manage/bin/run"]
+CMD ["/home/node/app/manage/bin/run"]

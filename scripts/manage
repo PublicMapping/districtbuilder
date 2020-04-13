@@ -6,4 +6,6 @@ if [[ -n "${DB_DEBUG}" ]]; then
     set -x
 fi
 
-docker-compose run --rm manage "$@"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    docker-compose run --rm manage ./bin/run "$@"
+fi
