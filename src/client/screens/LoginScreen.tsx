@@ -1,10 +1,10 @@
-import jwtDecode from "jwt-decode";
 import React, { useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 
-import { JWT, JWTPayload, Login } from "../../shared/entities";
+import { JWT, Login } from "../../shared/entities";
 import { authenticate } from "../actions/auth";
+import { jwtIsExpired } from "../jwt";
 import { State } from "../reducers";
 import store from "../store";
 import { Resource } from "../types";
@@ -18,7 +18,7 @@ const LoginScreen = ({ jwt }: StateProps) => {
     email: "",
     password: ""
   });
-  return "resource" in jwt && (jwtDecode(jwt.resource) as JWTPayload).exp > new Date().getTime() ? (
+  return "resource" in jwt && !jwtIsExpired(jwt.resource) ? (
     <Redirect to="/" />
   ) : (
     <div>

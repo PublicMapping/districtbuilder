@@ -1,7 +1,8 @@
 import axios from "axios";
 import { IUser, JWT } from "../shared/entities";
+import { getJWT, setJWT } from "./jwt";
 
-const authToken = localStorage.getItem("jwt");
+const authToken = getJWT();
 // tslint:disable-next-line no-if-statement
 if (authToken) {
   // tslint:disable-next-line no-object-mutation no-unused-expression
@@ -14,7 +15,7 @@ export async function authenticateUser(email: string, password: string): Promise
       .post("/api/auth/email/login", { email, password })
       .then(response => {
         // Save JWT so it can be in headers for subsequent requests
-        localStorage.setItem("jwt", response.data);
+        setJWT(response.data);
         resolve(response.data);
       })
       .catch(error => reject(error.message));
