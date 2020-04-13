@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
+
+docker-compose run --rm manage "$@"
