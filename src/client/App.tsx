@@ -5,6 +5,7 @@ import { getJWT, jwtIsExpired } from "./jwt";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import ProjectScreen from "./screens/ProjectScreen";
+import RegistrationScreen from "./screens/RegistrationScreen";
 
 import "./App.css";
 
@@ -24,6 +25,7 @@ const App = () => (
         <Route path="/" exact={true} component={HomeScreen} />
         <PrivateRoute path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
+        <Route path="/register" exact={true} component={RegistrationScreen} />
       </Switch>
     </Router>
   </div>

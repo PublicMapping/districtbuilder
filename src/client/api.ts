@@ -36,3 +36,12 @@ export async function fetchUser(): Promise<IUser> {
       .catch(error => reject(error.message));
   });
 }
+
+export async function registerUser(name: string, email: string, password: string): Promise<IUser> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post("/api/auth/email/register", { name, email, password })
+      .then(() => resolve())
+      .catch(error => reject(error.message));
+  });
+}
