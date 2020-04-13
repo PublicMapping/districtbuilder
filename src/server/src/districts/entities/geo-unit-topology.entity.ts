@@ -37,15 +37,11 @@ function group(
         children:
           remainingGroups.length === 0
             ? []
-            : group(
-                topology,
-                { ...definition, groups: remainingGroups },
-                child => {
-                  const childProps = child.properties as any;
-                  const parentProps = geometry.properties as any;
-                  return childProps[firstGroup] === parentProps[firstGroup];
-                }
-              )
+            : group(topology, { ...definition, groups: remainingGroups }, child => {
+                const childProps = child.properties as any;
+                const parentProps = geometry.properties as any;
+                return childProps[firstGroup] === parentProps[firstGroup];
+              })
       } as GeoUnitHierarchy)
   );
 }
@@ -53,10 +49,7 @@ function group(
 export class GeoUnitTopology {
   private readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
 
-  constructor(
-    public readonly topology: Topology,
-    public readonly definition: GeoUnitDefinition
-  ) {
+  constructor(public readonly topology: Topology, public readonly definition: GeoUnitDefinition) {
     this.hierarchy = group(topology, definition);
   }
 
@@ -66,19 +59,14 @@ export class GeoUnitTopology {
    */
   merge(definition: DistrictsDefinitionDto): FeatureCollection | null {
     const mutableDistrictGeoms: Array<Array<MultiPolygon | Polygon>> = [];
-    const addToDistrict = (
-      elem: GeoUnitCollection,
-      hierarchy: GeoUnitHierarchy
-    ): boolean => {
+    const addToDistrict = (elem: GeoUnitCollection, hierarchy: GeoUnitHierarchy): boolean => {
       if (Array.isArray(elem)) {
         // If the array length doesn't match the length of our current place in
         // the hierarchy, the district definition is invalid
         if (elem.length !== hierarchy.children.length) {
           return false;
         }
-        return elem.every((subelem, idx) =>
-          addToDistrict(subelem, hierarchy.children[idx])
-        );
+        return elem.every((subelem, idx) => addToDistrict(subelem, hierarchy.children[idx]));
       } else if (typeof elem === "number" && elem >= 0) {
         const districtIndex = elem;
         if (!mutableDistrictGeoms[districtIndex]) {
@@ -93,9 +81,7 @@ export class GeoUnitTopology {
 
     const valid =
       definition.districts.length === this.hierarchy.length &&
-      definition.districts.every((elem, idx) =>
-        addToDistrict(elem, this.hierarchy[idx])
-      );
+      definition.districts.every((elem, idx) => addToDistrict(elem, this.hierarchy[idx]));
 
     if (!valid) {
       return null;

@@ -24,12 +24,7 @@ export class User implements IUser {
   @Exclude()
   passwordHash: string;
 
-  constructor(params?: {
-    id?: string;
-    email: string;
-    name: string;
-    passwordHash?: string;
-  }) {
+  constructor(params?: { id?: string; email: string; name: string; passwordHash?: string }) {
     if (!params) {
       return;
     }

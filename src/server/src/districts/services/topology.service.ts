@@ -3,10 +3,7 @@ import S3 from "aws-sdk/clients/s3";
 import mapValues from "lodash/mapValues";
 import { Topology } from "topojson-specification";
 
-import {
-  GeoUnitDefinition,
-  GeoUnitTopology
-} from "../entities/geo-unit-topology.entity";
+import { GeoUnitDefinition, GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 
 interface Layer {
   url: string;

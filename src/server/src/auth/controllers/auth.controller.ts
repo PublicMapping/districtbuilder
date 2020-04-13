@@ -43,10 +43,7 @@ export class AuthController {
   public async login(@Body() login: LoginDto): Promise<User> {
     let userOrError;
     try {
-      userOrError = await this.authService.validateLogin(
-        login.email,
-        login.password
-      );
+      userOrError = await this.authService.validateLogin(login.email, login.password);
     } catch (error) {
       // Intentionally not logging errors as they may contain passwords
       throw new BadRequestException(LoginErrors.ERROR);
@@ -58,10 +55,7 @@ export class AuthController {
         `Email ${login.email} not found`
       );
     } else if (userOrError === LoginErrors.INVALID_PASSWORD) {
-      throw new BadRequestException(
-        LoginErrors[LoginErrors.INVALID_PASSWORD],
-        "Invalid password"
-      );
+      throw new BadRequestException(LoginErrors[LoginErrors.INVALID_PASSWORD], "Invalid password");
     } else if (userOrError === LoginErrors.ERROR) {
       throw new BadRequestException(LoginErrors[LoginErrors.ERROR]);
     }
@@ -76,10 +70,7 @@ export class AuthController {
       const newUser = await this.userService.create(registerDto);
       await this.authService.sendVerificationEmail(newUser);
     } catch (error) {
-      if (
-        error.name === "QueryFailedError" &&
-        error.code === PG_UNIQUE_VIOLATION
-      ) {
+      if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {
         throw new BadRequestException(
           RegisterResponse[RegisterResponse.DUPLICATE],
           `User with email '${registerDto.email}' already exists`
@@ -110,9 +101,7 @@ export class AuthController {
   }
 
   @Post("email/resend-verification/:email")
-  public async sendEmailVerification(
-    @Param("email") email: string
-  ): Promise<string> {
+  public async sendEmailVerification(@Param("email") email: string): Promise<string> {
     const user = await this.userService.findOne({ email });
     if (!user) {
       throw new NotFoundException(

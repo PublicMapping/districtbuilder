@@ -34,10 +34,7 @@ export class AuthService {
     private usersService: UsersService
   ) {}
 
-  async validateLogin(
-    email: string,
-    pass: string
-  ): Promise<User | LoginErrors> {
+  async validateLogin(email: string, pass: string): Promise<User | LoginErrors> {
     const user = await this.usersService.findOne({ email });
     if (!user) {
       return LoginErrors.NOT_FOUND;
@@ -69,9 +66,7 @@ export class AuthService {
       .insert()
       .into(EmailVerification)
       .values(data)
-      .onConflict(
-        `("email") DO UPDATE SET "emailToken" = :emailToken, "timestamp" = :timestamp`
-      )
+      .onConflict(`("email") DO UPDATE SET "emailToken" = :emailToken, "timestamp" = :timestamp`)
       .setParameters(data)
       .execute();
 
