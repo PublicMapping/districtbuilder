@@ -35,6 +35,12 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         ./scripts/yarn server \
             check-format
 
+        echo "Linting manage source code"
+        ./scripts/yarn manage \
+            lint
+        ./scripts/yarn manage \
+            check-format
+
         echo "Executing client test suite"
         ./scripts/yarn client \
             test --watchAll=false

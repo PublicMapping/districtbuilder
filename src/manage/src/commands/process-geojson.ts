@@ -16,7 +16,7 @@ import {
   simplify,
   topology
 } from "topojson";
-import { Geometry, GeometryCollection, Objects, Topology } from "topojson-specification";
+import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
 import { IStaticMetadata } from "../../../shared/entities";
 import { tileJoin, tippecanoe } from "../lib/cmd";
 
@@ -224,7 +224,7 @@ it when necessary (file sizes ~1GB+).
     // in order to use the `setFeatureState` capability on the front-end.
     for (const geoLevel of geoLevels) {
       const geomCollection = topo.objects[geoLevel] as GeometryCollection;
-      geomCollection.geometries.forEach((geometry: Geometry, index) => {
+      geomCollection.geometries.forEach((geometry: GeometryObject, index) => {
         // tslint:disable-next-line:no-object-mutation
         geometry.id = index;
       });

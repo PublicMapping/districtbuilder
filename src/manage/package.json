@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "format": "prettier --write \"src/**/*.ts\"",
+    "check-format": "prettier --check \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "fix": "tslint -p tsconfig.json -c tslint.json --fix",
     "build": "tsc --build tsconfig.json"
