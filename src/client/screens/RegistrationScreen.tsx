@@ -62,7 +62,7 @@ const RegistrationScreen = () => {
             isFormValid(registrationForm)
           }
         >
-          Log in
+          Register
         </button>
       </div>
       {"errorMessage" in registrationResource ? (
