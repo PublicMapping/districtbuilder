@@ -1,3 +1,25 @@
+FROM node:12-slim AS tippecanoe
+
+ENV TIPPECANOE_VERSION="1.35.0"
+
+RUN set -ex \
+  && deps=" \
+  g++ \
+  libsqlite3-dev \
+  libz-dev \
+  make \
+  wget \
+  " \
+  && apt-get update && apt-get install -yq $deps
+
+WORKDIR /usr/local/src
+
+RUN wget -qO- https://github.com/mapbox/tippecanoe/archive/${TIPPECANOE_VERSION}.tar.gz \
+  | tar xvz -C /usr/local/src
+RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION}
+RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION} install
+
+
 FROM node:12-slim
 
 RUN mkdir -p /home/node/app/manage
@@ -14,17 +36,6 @@ COPY yarn.lock /home/node/app/manage
 RUN set -ex \
     && yarn install
 
-ENV TIPPECANOE_VERSION="1.35.0"
-
-RUN apt install -y git g++ libsqlite3-dev libz-dev make && \
-  cd /root && \
-  git clone https://github.com/mapbox/tippecanoe.git tippecanoe && \
-  cd tippecanoe && \
-  git checkout tags/$TIPPECANOE_VERSION && \
-  cd /root/tippecanoe && \
-  make && \
-  make install && \
-  cd /root && \
-  rm -rf /root/tippecanoe
+COPY --from=tippecanoe /usr/local/bin/tippecanoe /usr/local/bin/tippecanoe
 
 CMD ["/home/node/app/manage/bin/run"]
