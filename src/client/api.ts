@@ -13,16 +13,19 @@ if (authToken) {
   setAxiosAuthHeaders(authToken);
 }
 
+function saveJWT(jwt: JWT): void {
+  setJWT(jwt);
+  setAxiosAuthHeaders(jwt);
+}
+
 export async function authenticateUser(email: string, password: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     axios
       .post("/api/auth/email/login", { email, password })
       .then(response => {
-        // Save JWT so it can be in headers for subsequent requests
         const jwt = response.data;
-        setJWT(jwt);
-        setAxiosAuthHeaders(jwt);
-        resolve(response.data);
+        saveJWT(jwt);
+        resolve(jwt);
       })
       .catch(error => reject(error.message));
   });
@@ -42,6 +45,19 @@ export async function registerUser(name: string, email: string, password: string
     axios
       .post("/api/auth/email/register", { name, email, password })
       .then(() => resolve())
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function activateAccount(token: string): Promise<JWT> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post(`/api/auth/email/verify/${token}`)
+      .then(response => {
+        const jwt = response.data;
+        saveJWT(jwt);
+        resolve(jwt);
+      })
       .catch(error => reject(error.message));
   });
 }
