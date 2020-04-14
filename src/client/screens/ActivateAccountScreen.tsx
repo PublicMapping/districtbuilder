@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { activateAccount } from "../api";
 import { Resource } from "../types";
 
-const ActivateScreen = () => {
+const ActivateAccountScreen = () => {
   const { token } = useParams();
   const [activationResource, setActivationResource] = useState<Resource<void>>({
     isPending: false
@@ -27,4 +27,4 @@ const ActivateScreen = () => {
   ) : null;
 };
 
-export default ActivateScreen;
+export default ActivateAccountScreen;

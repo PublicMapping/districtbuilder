@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Redirect, Route, RouteProps, Switch } from "react-router-dom";
 
 import { getJWT, jwtIsExpired } from "./jwt";
-import ActivateScreen from "./screens/ActivateScreen";
+import ActivateAccountScreen from "./screens/ActivateAccountScreen";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import ProjectScreen from "./screens/ProjectScreen";
@@ -27,7 +27,7 @@ const App = () => (
         <PrivateRoute path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />
-        <Route path="/activate/:token" exact={true} component={ActivateScreen} />
+        <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
       </Switch>
     </Router>
   </div>
