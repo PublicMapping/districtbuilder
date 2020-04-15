@@ -44,10 +44,7 @@ export class AuthController {
   @Post("email/login")
   public async login(@Body() login: LoginDto): Promise<JWT> {
     try {
-      const userOrError = await this.authService.validateLogin(
-        login.email,
-        login.password
-      );
+      const userOrError = await this.authService.validateLogin(login.email, login.password);
       if (userOrError === LoginErrors.NOT_FOUND) {
         throw new NotFoundException(
           LoginErrors[LoginErrors.NOT_FOUND],
@@ -78,10 +75,7 @@ export class AuthController {
       await this.authService.sendVerificationEmail(newUser);
       return RegisterResponse[RegisterResponse.SUCCESS];
     } catch (error) {
-      if (
-        error.name === "QueryFailedError" &&
-        error.code === PG_UNIQUE_VIOLATION
-      ) {
+      if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {
         throw new BadRequestException(
           RegisterResponse[RegisterResponse.DUPLICATE],
           `User with email '${registerDto.email}' already exists`
@@ -116,9 +110,7 @@ export class AuthController {
   }
 
   @Post("email/resend-verification/:email")
-  public async sendEmailVerification(
-    @Param("email") email: string
-  ): Promise<string> {
+  public async sendEmailVerification(@Param("email") email: string): Promise<string> {
     try {
       const user = await this.userService.findOne({ email });
       if (!user) {
