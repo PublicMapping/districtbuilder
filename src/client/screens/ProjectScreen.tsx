@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { Link, useParams } from "react-router-dom";
+import { Link, Redirect, useParams } from "react-router-dom";
+import { IUser } from "../../shared/entities";
 import { getTestString } from "../../shared/TestFns";
-import { usersFetch, UsersResource } from "../actions/users";
+import { userFetch } from "../actions/user";
 import "../App.css";
 import Map from "../components/Map";
 import { State } from "../reducers";
@@ -10,16 +11,20 @@ import store from "../store";
 import { Resource } from "../types";
 
 interface StateProps {
-  readonly users: Resource<UsersResource>;
+  readonly user: Resource<IUser>;
 }
 
-const ProjectScreen = ({ users }: StateProps) => {
+const ProjectScreen = ({ user }: StateProps) => {
   useEffect(() => {
-    store.dispatch(usersFetch());
+    store.dispatch(userFetch());
   }, []);
 
   const { projectId } = useParams();
-  return (
+  return "isPending" in user ? (
+    <span>Loading...</span>
+  ) : "errorMessage" in user ? (
+    <Redirect to={"/login"} />
+  ) : (
     <div className="App">
       <header className="App-header">
         <Link to="/">
@@ -29,10 +34,7 @@ const ProjectScreen = ({ users }: StateProps) => {
         <br />
         Test code sharing: {getTestString()}
         <br />
-        Users:{" "}
-        {"resource" in users && users.resource.length
-          ? users.resource.map(u => u.email).join(",")
-          : "none"}
+        User: {"resource" in user ? user.resource.email : "none"}
         <br />
         Project id: {projectId}
       </header>
@@ -45,7 +47,7 @@ const ProjectScreen = ({ users }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    users: state.users
+    user: state.user
   };
 }
 

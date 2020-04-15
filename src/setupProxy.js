@@ -3,10 +3,10 @@ const proxy = require('http-proxy-middleware');
 
 module.exports = function(app) {
   app.use(
-    '/users',
+    '/api',
     proxy({
       changeOrigin: true,
-      target: process.env.DB_BASE_URL
+      target: process.env.BASE_URL
     })
   );
 };

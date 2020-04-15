@@ -32,7 +32,7 @@ import { AuthService } from "../services/auth.service";
  * Pay careful attention when modifying this module to not unintentionally log
  * any passwords or hashes through stack traces or generated error messages.
  */
-@Controller("auth")
+@Controller("api/auth")
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 

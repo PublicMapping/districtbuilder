@@ -1,18 +1,18 @@
 import { combineReducers } from "redux-loop";
-import { UsersResource } from "./actions/users";
-import usersReducer from "./reducers/users";
-import { Resource } from "./types";
+import authReducer, { AuthState, initialState as initialAuthState } from "./reducers/auth";
+import userReducer, { initialState as initialUserState, UserState } from "./reducers/user";
 
 export interface State {
-  readonly users: Resource<UsersResource>;
+  readonly auth: AuthState;
+  readonly user: UserState;
 }
 
 export const initialState: State = {
-  users: {
-    isPending: false
-  }
+  auth: initialAuthState,
+  user: initialUserState
 };
 
 export default combineReducers({
-  users: usersReducer
+  auth: authReducer,
+  user: userReducer
 });
