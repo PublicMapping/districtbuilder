@@ -32,7 +32,15 @@ const RegistrationScreen = () => {
       continue.
     </div>
   ) : (
-    <>
+    <form
+      onSubmit={(e: React.FormEvent) => {
+        e.preventDefault();
+        setRegistrationResource({ isPending: true });
+        registerUser(registrationForm.name, registrationForm.email, registrationForm.password)
+          .then(() => setRegistrationResource({ resource: void 0 }))
+          .catch(errorMessage => setRegistrationResource({ errorMessage }));
+      }}
+    >
       <div>
         <input type="text" placeholder="Name" onChange={setForm("name")} />
       </div>
@@ -51,12 +59,7 @@ const RegistrationScreen = () => {
       </div>
       <div>
         <button
-          onClick={() => {
-            setRegistrationResource({ isPending: true });
-            registerUser(registrationForm.name, registrationForm.email, registrationForm.password)
-              .then(() => setRegistrationResource({ resource: void 0 }))
-              .catch(errorMessage => setRegistrationResource({ errorMessage }));
-          }}
+          type="submit"
           disabled={
             ("isPending" in registrationResource && registrationResource.isPending) ||
             isFormValid(registrationForm)
@@ -68,7 +71,7 @@ const RegistrationScreen = () => {
       {"errorMessage" in registrationResource ? (
         <div style={{ color: "red" }}>{registrationResource.errorMessage}</div>
       ) : null}
-    </>
+    </form>
   );
 };
 
