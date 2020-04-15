@@ -23,6 +23,7 @@ services:
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - JWT_SECRET=insecure
       - JWT_EXPIRATION_IN_MS=172800000
+      - CLIENT_URL=http://localhost:3003  # TODO: make this configurable per environment
     build:
       context: ./src/server
       dockerfile: Dockerfile

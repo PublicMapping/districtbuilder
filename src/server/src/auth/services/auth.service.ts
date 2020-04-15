@@ -89,8 +89,8 @@ export class AuthService {
       from: FROM_EMAIL,
       subject: "Verify your DistrictBuilder account",
       context: {
-        emailToken,
-        user
+        user,
+        url: `${process.env.CLIENT_URL}/activate/${emailToken}`
       },
       template: "verify"
     });
