@@ -21,7 +21,12 @@ const LoginScreen = ({ jwt }: StateProps) => {
   return "resource" in jwt && !jwtIsExpired(jwt.resource) ? (
     <Redirect to="/" />
   ) : (
-    <>
+    <form
+      onSubmit={(e: React.FormEvent) => {
+        e.preventDefault();
+        store.dispatch(authenticate(loginForm));
+      }}
+    >
       <div>
         <input
           type="text"
@@ -47,10 +52,10 @@ const LoginScreen = ({ jwt }: StateProps) => {
         />
       </div>
       <div>
-        <button onClick={() => store.dispatch(authenticate(loginForm))}>Log in</button>
+        <button type="submit">Log in</button>
       </div>
       {"errorMessage" in jwt ? <div style={{ color: "red" }}>{jwt.errorMessage}</div> : null}
-    </>
+    </form>
   );
 };
 
