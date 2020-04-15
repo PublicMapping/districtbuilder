@@ -3,10 +3,13 @@ import {
   BadRequestException,
   Body,
   Controller,
+  HttpException,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   Param,
-  Post
+  Post,
+  UnauthorizedException
 } from "@nestjs/common";
 
 import {
@@ -15,8 +18,7 @@ import {
   ResendResponse,
   VerifyEmailErrors
 } from "../../../../shared/constants";
-
-import { User } from "../../users/entities/user.entity";
+import { JWT } from "../../../../shared/entities";
 import { UsersService } from "../../users/services/users.service";
 
 import { LoginDto } from "../entities/login.dto";
@@ -40,28 +42,30 @@ export class AuthController {
   ) {}
 
   @Post("email/login")
-  public async login(@Body() login: LoginDto): Promise<User> {
-    let userOrError;
+  public async login(@Body() login: LoginDto): Promise<JWT> {
     try {
-      userOrError = await this.authService.validateLogin(login.email, login.password);
+      const userOrError = await this.authService.validateLogin(login.email, login.password);
+      if (userOrError === LoginErrors.NOT_FOUND) {
+        throw new NotFoundException(
+          LoginErrors[LoginErrors.NOT_FOUND],
+          `Email ${login.email} not found`
+        );
+      } else if (userOrError === LoginErrors.INVALID_PASSWORD) {
+        throw new UnauthorizedException(
+          LoginErrors[LoginErrors.INVALID_PASSWORD],
+          "Invalid password"
+        );
+      }
+      return this.authService.generateJwt(userOrError);
     } catch (error) {
-      // Intentionally not logging errors as they may contain passwords
-      throw new BadRequestException(LoginErrors.ERROR);
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        // Intentionally not logging errors as they may contain passwords
+        this.logger.error(`Error logging user in`);
+        throw new InternalServerErrorException();
+      }
     }
-
-    if (userOrError === null || userOrError === LoginErrors.NOT_FOUND) {
-      throw new NotFoundException(
-        LoginErrors[LoginErrors.NOT_FOUND],
-        `Email ${login.email} not found`
-      );
-    } else if (userOrError === LoginErrors.INVALID_PASSWORD) {
-      throw new BadRequestException(LoginErrors[LoginErrors.INVALID_PASSWORD], "Invalid password");
-    } else if (userOrError === LoginErrors.ERROR) {
-      throw new BadRequestException(LoginErrors[LoginErrors.ERROR]);
-    }
-
-    // TODO: return JWT instead of user
-    return userOrError;
   }
 
   @Post("email/register")
@@ -69,21 +73,23 @@ export class AuthController {
     try {
       const newUser = await this.userService.create(registerDto);
       await this.authService.sendVerificationEmail(newUser);
+      return RegisterResponse[RegisterResponse.SUCCESS];
     } catch (error) {
       if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {
         throw new BadRequestException(
           RegisterResponse[RegisterResponse.DUPLICATE],
           `User with email '${registerDto.email}' already exists`
         );
+      } else {
+        // Intentionally not logging errors as they may contain passwords
+        this.logger.error(`Error registering user`);
+        throw new InternalServerErrorException();
       }
-      // Intentionally not logging errors as they may contain passwords
-      throw new BadRequestException(RegisterResponse[RegisterResponse.ERROR]);
     }
-    return RegisterResponse[RegisterResponse.SUCCESS];
   }
 
   @Post("email/verify/:token")
-  public async verifyEmail(@Param("token") token: string): Promise<User> {
+  public async verifyEmail(@Param("token") token: string): Promise<JWT> {
     try {
       const verifiedUser = await this.authService.verifyEmail(token);
       if (verifiedUser === undefined) {
@@ -92,30 +98,36 @@ export class AuthController {
           "Email or user not found for token"
         );
       }
-      // TODO: return JWT instead of user
-      return verifiedUser;
+      return this.authService.generateJwt(verifiedUser);
     } catch (error) {
-      Logger.error(error);
-      throw new BadRequestException(VerifyEmailErrors[VerifyEmailErrors.ERROR]);
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        this.logger.error(`Error verifying email token: ${error}`);
+        throw new InternalServerErrorException();
+      }
     }
   }
 
   @Post("email/resend-verification/:email")
   public async sendEmailVerification(@Param("email") email: string): Promise<string> {
-    const user = await this.userService.findOne({ email });
-    if (!user) {
-      throw new NotFoundException(
-        ResendResponse[ResendResponse.NOT_FOUND],
-        "User not found for this email"
-      );
-    }
-
     try {
+      const user = await this.userService.findOne({ email });
+      if (!user) {
+        throw new NotFoundException(
+          ResendResponse[ResendResponse.NOT_FOUND],
+          "User not found for this email"
+        );
+      }
       await this.authService.sendVerificationEmail(user);
+      return ResendResponse[ResendResponse.SUCCESS];
     } catch (error) {
-      Logger.error(error);
-      throw new BadRequestException(ResendResponse[ResendResponse.ERROR]);
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        this.logger.error(`Error sending email verification: ${error}`);
+        throw new InternalServerErrorException();
+      }
     }
-    return ResendResponse[ResendResponse.SUCCESS];
   }
 }
