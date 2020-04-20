@@ -37,3 +37,13 @@ export type JWTPayload = IUser & {
   readonly iat: number;
   readonly sub: UserId;
 };
+
+type RegionConfigId = string;
+
+export interface IRegionConfig {
+  readonly id: RegionConfigId;
+  readonly name: string;
+  readonly countryCode: string;
+  readonly regionCode: string;
+  readonly version: Date;
+}

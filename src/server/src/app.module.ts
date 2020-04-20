@@ -14,6 +14,7 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { DistrictsModule } from "./districts/districts.module";
 import { HealthcheckService } from "./healthcheck/healthcheck.service";
+import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { UsersModule } from "./users/users.module";
 
 import { join } from "path";
@@ -52,7 +53,8 @@ const mailTransportOptions: StreamTransport.Options = {
     TerminusModule.forRootAsync({ useClass: HealthcheckService }),
     AuthModule,
     DistrictsModule,
-    UsersModule
+    UsersModule,
+    RegionConfigsModule
   ],
   controllers: [AppController],
   providers: [AppService]
