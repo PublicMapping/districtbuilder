@@ -35,7 +35,7 @@ const userReducer: LoopReducer<UserState, Action> = (
       };
     case ActionTypes.USER_FETCH_FAILURE:
       return {
-        errorMessage: action.errorMsg
+        errorMessage: action.errorMessage
       };
     default:
       return state;
