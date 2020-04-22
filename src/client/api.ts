@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IUser, JWT } from "../shared/entities";
+import { IProject, IUser, JWT, RegionConfigId } from "../shared/entities";
 import { getJWT, setJWT } from "./jwt";
 
 function setAxiosAuthHeaders(jwt: JWT): void {
@@ -58,6 +58,19 @@ export async function activateAccount(token: string): Promise<JWT> {
         saveJWT(jwt);
         resolve(jwt);
       })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function createProject(
+  name: string,
+  numberOfDistricts: number,
+  regionConfigId: RegionConfigId
+): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post(`/api/projects`, { name, numberOfDistricts, regionConfigId })
+      .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });
 }

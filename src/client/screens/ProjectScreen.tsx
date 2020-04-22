@@ -7,8 +7,8 @@ import { userFetch } from "../actions/user";
 import "../App.css";
 import Map from "../components/Map";
 import { State } from "../reducers";
+import { Resource } from "../resource";
 import store from "../store";
-import { Resource } from "../types";
 
 interface StateProps {
   readonly user: Resource<IUser>;

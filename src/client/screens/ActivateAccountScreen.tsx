@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { activateAccount } from "../api";
-import { Resource } from "../types";
+import { Resource } from "../resource";
 
 const ActivateAccountScreen = () => {
   const { token } = useParams();

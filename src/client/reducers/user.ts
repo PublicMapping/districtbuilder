@@ -5,7 +5,7 @@ import { ActionTypes, userFetchFailure, userFetchSuccess } from "../actions/user
 
 import { IUser } from "../../shared/entities";
 import { fetchUser } from "../api";
-import { Resource } from "../types";
+import { Resource } from "../resource";
 
 export type UserState = Resource<IUser>;
 

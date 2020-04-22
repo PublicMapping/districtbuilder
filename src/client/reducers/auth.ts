@@ -5,7 +5,7 @@ import { ActionTypes, authenticateFailure, authenticateSuccess } from "../action
 
 import { JWT } from "../../shared/entities";
 import { authenticateUser } from "../api";
-import { Resource } from "../types";
+import { Resource } from "../resource";
 
 export type AuthState = Resource<JWT>;
 

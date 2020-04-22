@@ -47,3 +47,12 @@ export interface IRegionConfig {
   readonly regionCode: string;
   readonly version: Date;
 }
+
+type ProjectId = string;
+
+export interface IProject {
+  readonly id: ProjectId;
+  readonly name: string;
+  readonly numberOfDistricts: number;
+  readonly regionConfigId: RegionConfigId;
+}

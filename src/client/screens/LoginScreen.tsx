@@ -6,8 +6,8 @@ import { JWT, Login } from "../../shared/entities";
 import { authenticate } from "../actions/auth";
 import { jwtIsExpired } from "../jwt";
 import { State } from "../reducers";
+import { Resource } from "../resource";
 import store from "../store";
-import { Resource } from "../types";
 
 interface StateProps {
   readonly jwt: Resource<JWT>;
