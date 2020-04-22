@@ -9,7 +9,7 @@ import {
 } from "../actions/projectForm";
 
 import { IProject } from "../../shared/entities";
-import { fetchUser } from "../api";
+import { createProject } from "../api";
 import { WriteResource } from "../resource";
 
 export type ProjectFormState = WriteResource<ProjectForm, IProject>;
@@ -41,7 +41,7 @@ const projectFormReducer: LoopReducer<ProjectFormState, Action> = (
           ...state,
           isPending: true
         },
-        Cmd.run(fetchUser, {
+        Cmd.run(createProject, {
           successActionCreator: saveProjectSuccess,
           failActionCreator: saveProjectFailure,
           args: []

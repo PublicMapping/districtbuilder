@@ -1,19 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
 import { ProjectForm, saveProject, setCreateProjectForm } from "../actions/projectForm";
+import { regionConfigsFetch } from "../actions/regionConfig";
 import { State } from "../reducers";
 import { ProjectFormState } from "../reducers/projectForm";
+import { RegionConfigState } from "../reducers/regionConfig";
 import store from "../store";
 
 interface StateProps {
   readonly projectForm: ProjectFormState;
+  readonly regionConfigs: RegionConfigState;
 }
 
 const isFormValid = (form: ProjectForm): boolean =>
-  form.name.trim() !== "" || form.numberOfDistricts > 0 || form.regionConfigId !== null;
+  form.name.trim() !== "" && form.numberOfDistricts > 0 && form.regionConfigId !== null;
 
-const CreateProjectScreen = ({ projectForm }: StateProps) => {
+const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
+  useEffect(() => {
+    store.dispatch(regionConfigsFetch());
+  }, []);
+
   return (
     <form
       onSubmit={(e: React.FormEvent) => {
@@ -48,6 +55,26 @@ const CreateProjectScreen = ({ projectForm }: StateProps) => {
         />
       </div>
       <div>
+        <select
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            store.dispatch(
+              setCreateProjectForm({
+                regionConfigId: e.currentTarget.value
+              })
+            )
+          }
+        >
+          <option></option>
+          {"resource" in regionConfigs
+            ? regionConfigs.resource.map(regionConfig => (
+                <option key={regionConfig.id} value={regionConfig.id}>
+                  {regionConfig.name}
+                </option>
+              ))
+            : null}
+        </select>
+      </div>
+      <div>
         <button
           type="submit"
           disabled={
@@ -67,7 +94,8 @@ const CreateProjectScreen = ({ projectForm }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    projectForm: state.projectForm
+    projectForm: state.projectForm,
+    regionConfigs: state.regionConfig
   };
 }
 
