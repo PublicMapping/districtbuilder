@@ -54,5 +54,6 @@ export interface IProject {
   readonly id: ProjectId;
   readonly name: string;
   readonly numberOfDistricts: number;
-  readonly regionConfigId: RegionConfigId;
+  readonly regionConfig: IRegionConfig;
+  readonly user: IUser;
 }
