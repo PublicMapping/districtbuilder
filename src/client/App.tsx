@@ -29,7 +29,7 @@ const App = () => (
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
-        <Route path="/create-project" exact={true} component={CreateProjectScreen} />
+        <PrivateRoute path="/create-project" exact={true} component={CreateProjectScreen} />
       </Switch>
     </Router>
   </div>

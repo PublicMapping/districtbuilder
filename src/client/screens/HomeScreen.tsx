@@ -8,6 +8,7 @@ const HomeScreen = () => (
     <br />
     <Link to="/projects/123abc">Project 123abc</Link>
     <br />
+    <br />
     <Link to="/create-project">Create project</Link>
     <br />
     <br />

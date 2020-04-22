@@ -14,7 +14,7 @@ interface StateProps {
 }
 
 const isFormValid = (form: ProjectForm): boolean =>
-  form.name.trim() !== "" && form.numberOfDistricts > 0 && form.regionConfigId !== null;
+  form.name.trim() !== "" && form.numberOfDistricts > 1 && form.regionConfigId !== null;
 
 const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
   useEffect(() => {
