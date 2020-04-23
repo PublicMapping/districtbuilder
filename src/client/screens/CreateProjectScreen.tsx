@@ -69,7 +69,7 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
             )
           }
         >
-          <option/>
+          <option />
           {"resource" in regionConfigs
             ? regionConfigs.resource.map(regionConfig => (
                 <option key={regionConfig.id} value={regionConfig.id}>
