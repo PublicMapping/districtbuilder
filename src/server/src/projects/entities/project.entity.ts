@@ -14,11 +14,11 @@ export class Project implements IProject {
   @Column({ name: "number_of_districts" })
   numberOfDistricts: number;
 
-  @ManyToOne(() => RegionConfig)
+  @ManyToOne(() => RegionConfig, { nullable: false })
   @JoinColumn({ name: "region_config_id" })
   regionConfig: RegionConfig;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "user_id" })
   user: User;
 
