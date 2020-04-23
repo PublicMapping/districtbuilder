@@ -87,7 +87,7 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
             ("data" in projectForm && !isFormValid(projectForm.data))
           }
         >
-          Register
+          Create project
         </button>
       </div>
       {"errorMessage" in projectForm ? (
