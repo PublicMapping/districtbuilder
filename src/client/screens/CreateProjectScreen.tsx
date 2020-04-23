@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
+import { Redirect } from "react-router-dom";
 
 import { ProjectForm, saveProject, setCreateProjectForm } from "../actions/projectForm";
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -21,7 +22,11 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
     store.dispatch(regionConfigsFetch());
   }, []);
 
-  return (
+  // NOTE: Intermediate variable needed here because of TS type-checking limitations
+  const success = "resource" in projectForm;
+  return success ? (
+    <Redirect to="/" />
+  ) : (
     <form
       onSubmit={(e: React.FormEvent) => {
         e.preventDefault();
@@ -64,7 +69,7 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
             )
           }
         >
-          <option></option>
+          <option/>
           {"resource" in regionConfigs
             ? regionConfigs.resource.map(regionConfig => (
                 <option key={regionConfig.id} value={regionConfig.id}>

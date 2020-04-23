@@ -4,6 +4,10 @@ import projectFormReducer, {
   initialState as initialProjectFormState,
   ProjectFormState
 } from "./reducers/projectForm";
+import projectsReducer, {
+  initialState as initialProjectsState,
+  ProjectsState
+} from "./reducers/projects";
 import regionConfigReducer, {
   initialState as initialRegionConfigState,
   RegionConfigState
@@ -15,18 +19,21 @@ export interface State {
   readonly user: UserState;
   readonly projectForm: ProjectFormState;
   readonly regionConfig: RegionConfigState;
+  readonly projects: ProjectsState;
 }
 
 export const initialState: State = {
   auth: initialAuthState,
   user: initialUserState,
   projectForm: initialProjectFormState,
-  regionConfig: initialRegionConfigState
+  regionConfig: initialRegionConfigState,
+  projects: initialProjectsState
 };
 
 export default combineReducers({
   auth: authReducer,
   user: userReducer,
   projectForm: projectFormReducer,
-  regionConfig: regionConfigReducer
+  regionConfig: regionConfigReducer,
+  projects: projectsReducer
 });

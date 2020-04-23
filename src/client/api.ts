@@ -75,6 +75,15 @@ export async function createProject(
   });
 }
 
+export async function fetchProjects(): Promise<readonly IProject[]> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get("/api/projects")
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
 export async function fetchRegionConfigs(): Promise<IRegionConfig> {
   return new Promise((resolve, reject) => {
     axios
