@@ -1,7 +1,18 @@
 import { Controller, UseGuards } from "@nestjs/common";
-import { Crud, CrudController } from "@nestjsx/crud";
+import {
+  Crud,
+  CrudAuth,
+  CrudController,
+  CrudRequest,
+  Override,
+  ParsedBody,
+  ParsedRequest
+} from "@nestjsx/crud";
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { RegionConfig } from "../../region-configs/entities/region-config.entity";
+import { User } from "../../users/entities/user.entity";
+import { ProjectDto } from "../entities/project.dto";
 import { Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
 
@@ -10,18 +21,30 @@ import { ProjectsService } from "../services/projects.service";
     type: Project
   },
   routes: {
-    only: ["getManyBase", "createOneBase"]
-  },
-  params: {
-    id: {
-      type: "uuid",
-      primary: true,
-      disabled: true
-    }
+    only: ["createOneBase", "getManyBase"]
+  }
+})
+@CrudAuth({
+  persist: (user: User) => {
+    return {
+      userId: user ? user.id : undefined
+    };
   }
 })
 @UseGuards(JwtAuthGuard)
 @Controller("api/projects")
 export class ProjectsController implements CrudController<Project> {
   constructor(public service: ProjectsService) {}
+
+  @Override()
+  async createOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: ProjectDto
+  ): Promise<Project> {
+    return await this.service.createOne(req, {
+      ...dto,
+      regionConfig: (dto.regionConfigId as unknown) as RegionConfig,
+      user: req.parsed.authPersist.userId
+    });
+  }
 }

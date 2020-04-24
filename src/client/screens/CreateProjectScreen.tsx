@@ -83,8 +83,9 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
         <button
           type="submit"
           disabled={
-            ("isPending" in projectForm && projectForm.isPending) ||
-            ("data" in projectForm && !isFormValid(projectForm.data))
+            (("isPending" in projectForm && projectForm.isPending) ||
+              ("data" in projectForm && !isFormValid(projectForm.data))) &&
+            !("errorMessage" in projectForm)
           }
         >
           Create project
