@@ -10,4 +10,3 @@ export class ProjectDto implements CreateProjectData {
   @IsUUID()
   readonly regionConfigId: RegionConfigId;
 }
-
