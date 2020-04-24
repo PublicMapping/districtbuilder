@@ -22,13 +22,17 @@ const HomeScreen = ({ projects }: StateProps) => {
       <br />
       <br />
       {"resource" in projects ? (
-        <ul>
-          {projects.resource.map(project => (
-            <li key={project.id}>
-              <Link to={`/projects/${project.id}`}>{project.name}</Link>
-            </li>
-          ))}
-        </ul>
+        projects.resource.length ? (
+          <ul>
+            {projects.resource.map(project => (
+              <li key={project.id}>
+                <Link to={`/projects/${project.id}`}>{project.name}</Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div>No projects found</div>
+        )
       ) : null}
       <br />
       <Link to="/create-project">Create project</Link>
