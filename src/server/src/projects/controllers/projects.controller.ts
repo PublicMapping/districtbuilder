@@ -25,6 +25,12 @@ import { ProjectsService } from "../services/projects.service";
   }
 })
 @CrudAuth({
+  property: "user",
+  filter: (user: User) => {
+    return {
+      user: user ? user.id : undefined
+    };
+  },
   persist: (user: User) => {
     return {
       userId: user ? user.id : undefined
