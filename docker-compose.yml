@@ -22,7 +22,7 @@ services:
       - POSTGRES_DB=districtbuilder
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - JWT_SECRET=insecure
-      - JWT_EXPIRATION_IN_MS=2629800000  # 1 month
+      - JWT_EXPIRATION_IN_MS=604800000  # 1 week
       - CLIENT_URL=http://localhost:3003  # TODO: make this configurable per environment
     build:
       context: ./src/server
