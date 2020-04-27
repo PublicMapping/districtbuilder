@@ -44,7 +44,15 @@ const projectFormReducer: LoopReducer<ProjectFormState, Action> = (
         Cmd.run(createProject, {
           successActionCreator: saveProjectSuccess,
           failActionCreator: saveProjectFailure,
-          args: [state.data] as Parameters<typeof createProject>
+          args: [
+            {
+              name: state.data.name,
+              numberOfDistricts: state.data.numberOfDistricts,
+              regionConfig: {
+                id: state.data.regionConfigId
+              }
+            }
+          ] as Parameters<typeof createProject>
         })
       );
     case ActionTypes.SAVE_PROJECT_SUCCESS:

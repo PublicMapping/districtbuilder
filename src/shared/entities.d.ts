@@ -61,5 +61,5 @@ export interface IProject {
 export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
-  readonly regionConfigId: RegionConfigId;
+  readonly regionConfig: Pick<IRegionConfig, "id">;
 }

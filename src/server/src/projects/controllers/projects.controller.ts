@@ -10,7 +10,6 @@ import {
 } from "@nestjsx/crud";
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
-import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 import { ProjectDto } from "../entities/project.dto";
 import { Project } from "../entities/project.entity";
@@ -49,7 +48,6 @@ export class ProjectsController implements CrudController<Project> {
   ): Promise<Project> {
     return await this.service.createOne(req, {
       ...dto,
-      regionConfig: (dto.regionConfigId as unknown) as RegionConfig,
       user: req.parsed.authPersist.userId
     });
   }
