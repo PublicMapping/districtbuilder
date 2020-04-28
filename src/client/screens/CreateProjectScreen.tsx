@@ -1,36 +1,60 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 
-import { ProjectForm, saveProject, setCreateProjectForm } from "../actions/projectForm";
+import { IProject, RegionConfigId } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
+import { createProject } from "../api";
 import { State } from "../reducers";
-import { ProjectFormState } from "../reducers/projectForm";
 import { RegionConfigState } from "../reducers/regionConfig";
+import { Resource } from "../resource";
 import store from "../store";
 
 interface StateProps {
-  readonly projectForm: ProjectFormState;
   readonly regionConfigs: RegionConfigState;
 }
 
 const isFormValid = (form: ProjectForm): boolean =>
   form.name.trim() !== "" && form.numberOfDistricts > 1 && form.regionConfigId !== null;
 
-const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
+export interface ProjectForm {
+  readonly name: string;
+  readonly numberOfDistricts: number;
+  readonly regionConfigId: RegionConfigId | null;
+}
+
+const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
   useEffect(() => {
     store.dispatch(regionConfigsFetch());
   }, []);
+  const [createProjectForm, setCreateProjectForm] = useState<ProjectForm>({
+    name: "",
+    numberOfDistricts: 0,
+    regionConfigId: null
+  });
+  const [createProjectResource, setCreateProjectResource] = useState<Resource<IProject>>({
+    isPending: false
+  });
 
-  // NOTE: Intermediate variable needed here because of TS type-checking limitations
-  const success = "resource" in projectForm;
-  return success ? (
+  return "resource" in createProjectResource ? (
     <Redirect to="/" />
   ) : (
     <form
       onSubmit={(e: React.FormEvent) => {
         e.preventDefault();
-        store.dispatch(saveProject());
+        // tslint:disable-next-line no-if-statement
+        if (isFormValid(createProjectForm) && createProjectForm.regionConfigId) {
+          setCreateProjectResource({ isPending: true });
+          createProject({
+            name: createProjectForm.name,
+            numberOfDistricts: createProjectForm.numberOfDistricts,
+            regionConfig: {
+              id: createProjectForm.regionConfigId
+            }
+          })
+            .then((project: IProject) => setCreateProjectResource({ resource: project }))
+            .catch((errorMessage: string) => setCreateProjectResource({ errorMessage }));
+        }
       }}
     >
       <div>
@@ -38,11 +62,10 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
           type="text"
           placeholder="Name"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            store.dispatch(
-              setCreateProjectForm({
-                name: e.currentTarget.value
-              })
-            )
+            setCreateProjectForm({
+              ...createProjectForm,
+              name: e.currentTarget.value
+            })
           }
         />
       </div>
@@ -51,22 +74,20 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
           type="number"
           placeholder="Number of districts"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            store.dispatch(
-              setCreateProjectForm({
-                numberOfDistricts: parseInt(e.currentTarget.value, 10)
-              })
-            )
+            setCreateProjectForm({
+              ...createProjectForm,
+              numberOfDistricts: parseInt(e.currentTarget.value, 10)
+            })
           }
         />
       </div>
       <div>
         <select
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            store.dispatch(
-              setCreateProjectForm({
-                regionConfigId: e.currentTarget.value
-              })
-            )
+            setCreateProjectForm({
+              ...createProjectForm,
+              regionConfigId: e.currentTarget.value
+            })
           }
         >
           <option />
@@ -83,16 +104,16 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
         <button
           type="submit"
           disabled={
-            (("isPending" in projectForm && projectForm.isPending) ||
-              ("data" in projectForm && !isFormValid(projectForm.data))) &&
-            !("errorMessage" in projectForm)
+            (("isPending" in createProjectResource && createProjectResource.isPending) ||
+              !isFormValid(createProjectForm)) &&
+            !("errorMessage" in createProjectResource)
           }
         >
           Create project
         </button>
       </div>
-      {"errorMessage" in projectForm ? (
-        <div style={{ color: "red" }}>{projectForm.errorMessage}</div>
+      {"errorMessage" in createProjectResource ? (
+        <div style={{ color: "red" }}>{createProjectResource.errorMessage}</div>
       ) : null}
     </form>
   );
@@ -100,7 +121,6 @@ const CreateProjectScreen = ({ projectForm, regionConfigs }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    projectForm: state.projectForm,
     regionConfigs: state.regionConfig
   };
 }
