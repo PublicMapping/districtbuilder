@@ -45,6 +45,7 @@ export interface IRegionConfig {
   readonly name: string;
   readonly countryCode: string;
   readonly regionCode: string;
+  readonly chambers: readonly IChamber[];
   readonly version: Date;
 }
 
@@ -53,7 +54,6 @@ type ProjectId = string;
 export interface IProject {
   readonly id: ProjectId;
   readonly name: string;
-  readonly numberOfDistricts: number;
   readonly regionConfig: IRegionConfig;
   readonly user: IUser;
 }
@@ -62,4 +62,11 @@ export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
+}
+
+export interface IChamber {
+  readonly id: string;
+  readonly name: string;
+  readonly numberOfDistricts: number;
+  readonly regionConfig: IRegionConfig;
 }
