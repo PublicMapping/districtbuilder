@@ -9,7 +9,7 @@ export enum ActionTypes {
 export type UserAction =
   | { readonly type: ActionTypes.USER_FETCH }
   | { readonly type: ActionTypes.USER_FETCH_SUCCESS; readonly user: IUser }
-  | { readonly type: ActionTypes.USER_FETCH_FAILURE; readonly errorMsg: string };
+  | { readonly type: ActionTypes.USER_FETCH_FAILURE; readonly errorMessage: string };
 
 export function userFetch(): UserAction {
   return {
@@ -24,9 +24,9 @@ export function userFetchSuccess(user: IUser): UserAction {
   };
 }
 
-export function userFetchFailure(errorMsg: string): UserAction {
+export function userFetchFailure(errorMessage: string): UserAction {
   return {
     type: ActionTypes.USER_FETCH_FAILURE,
-    errorMsg
+    errorMessage
   };
 }

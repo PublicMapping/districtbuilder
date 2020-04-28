@@ -14,6 +14,7 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { DistrictsModule } from "./districts/districts.module";
 import { HealthcheckService } from "./healthcheck/healthcheck.service";
+import { ProjectsModule } from "./projects/projects.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { UsersModule } from "./users/users.module";
 
@@ -54,7 +55,8 @@ const mailTransportOptions: StreamTransport.Options = {
     AuthModule,
     DistrictsModule,
     UsersModule,
-    RegionConfigsModule
+    RegionConfigsModule,
+    ProjectsModule
   ],
   controllers: [AppController],
   providers: [AppService]

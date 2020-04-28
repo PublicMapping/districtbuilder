@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IUser, JWT } from "../shared/entities";
+import { CreateProjectData, IProject, IRegionConfig, IUser, JWT } from "../shared/entities";
 import { getJWT, setJWT } from "./jwt";
 
 function setAxiosAuthHeaders(jwt: JWT): void {
@@ -58,6 +58,37 @@ export async function activateAccount(token: string): Promise<JWT> {
         saveJWT(jwt);
         resolve(jwt);
       })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function createProject({
+  name,
+  numberOfDistricts,
+  regionConfig
+}: CreateProjectData): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post(`/api/projects`, { name, numberOfDistricts, regionConfig })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchProjects(): Promise<readonly IProject[]> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get("/api/projects")
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchRegionConfigs(): Promise<IRegionConfig> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get("/api/region-configs")
+      .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });
 }

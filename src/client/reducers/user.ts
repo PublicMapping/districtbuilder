@@ -5,7 +5,7 @@ import { ActionTypes, userFetchFailure, userFetchSuccess } from "../actions/user
 
 import { IUser } from "../../shared/entities";
 import { fetchUser } from "../api";
-import { Resource } from "../types";
+import { Resource } from "../resource";
 
 export type UserState = Resource<IUser>;
 
@@ -35,7 +35,7 @@ const userReducer: LoopReducer<UserState, Action> = (
       };
     case ActionTypes.USER_FETCH_FAILURE:
       return {
-        errorMessage: action.errorMsg
+        errorMessage: action.errorMessage
       };
     default:
       return state;

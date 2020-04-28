@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { Register } from "../../shared/entities";
 import { registerUser } from "../api";
-import { Resource } from "../types";
+import { Resource } from "../resource";
 
 const isFormValid = (form: RegistrationForm): boolean =>
   Object.values(form).some(value => value.trim() === "") || form.password !== form.confirmPassword;
