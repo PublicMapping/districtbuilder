@@ -60,7 +60,7 @@ export interface IProject {
 
 export interface CreateProjectData {
   readonly name: string;
-  readonly numberOfDistricts: number;
+  readonly chamber: IChamber;
   readonly regionConfig: Pick<IRegionConfig, "id">;
 }
 

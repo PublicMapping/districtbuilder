@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 
-import { IProject, RegionConfigId } from "../../shared/entities";
+import { IChamber, IProject, IRegionConfig } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { createProject } from "../api";
 import { State } from "../reducers";
@@ -14,14 +14,26 @@ interface StateProps {
   readonly regionConfigs: RegionConfigState;
 }
 
-const isFormValid = (form: ProjectForm): boolean =>
-  form.name.trim() !== "" && form.numberOfDistricts > 1 && form.regionConfigId !== null;
+const validate = (form: ProjectForm): ProjectForm =>
+  form.name.trim() !== "" && form.chamber !== null && form.regionConfig !== null
+    ? ({ ...form, valid: true } as ValidForm)
+    : ({ ...form, valid: false } as InvalidForm);
 
-export interface ProjectForm {
+export interface InvalidForm {
   readonly name: string;
-  readonly numberOfDistricts: number;
-  readonly regionConfigId: RegionConfigId | null;
+  readonly chamber: IChamber | null;
+  readonly regionConfig: IRegionConfig | null;
+  readonly valid: false;
 }
+
+export interface ValidForm {
+  readonly name: string;
+  readonly chamber: IChamber;
+  readonly regionConfig: IRegionConfig;
+  readonly valid: true;
+}
+
+export type ProjectForm = ValidForm | InvalidForm;
 
 const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
   useEffect(() => {
@@ -29,8 +41,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
   }, []);
   const [createProjectForm, setCreateProjectForm] = useState<ProjectForm>({
     name: "",
-    numberOfDistricts: 0,
-    regionConfigId: null
+    chamber: null,
+    regionConfig: null,
+    valid: false
   });
   const [createProjectResource, setCreateProjectResource] = useState<Resource<IProject>>({
     isPending: false
@@ -42,16 +55,11 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
     <form
       onSubmit={(e: React.FormEvent) => {
         e.preventDefault();
+        const validatedForm = validate(createProjectForm);
         // tslint:disable-next-line no-if-statement
-        if (isFormValid(createProjectForm) && createProjectForm.regionConfigId) {
+        if (validatedForm.valid === true) {
           setCreateProjectResource({ isPending: true });
-          createProject({
-            name: createProjectForm.name,
-            numberOfDistricts: createProjectForm.numberOfDistricts,
-            regionConfig: {
-              id: createProjectForm.regionConfigId
-            }
-          })
+          createProject(validatedForm)
             .then((project: IProject) => setCreateProjectResource({ resource: project }))
             .catch((errorMessage: string) => setCreateProjectResource({ errorMessage }));
         }
@@ -70,25 +78,20 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
         />
       </div>
       <div>
-        <input
-          type="number"
-          placeholder="Number of districts"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setCreateProjectForm({
-              ...createProjectForm,
-              numberOfDistricts: parseInt(e.currentTarget.value, 10)
-            })
-          }
-        />
-      </div>
-      <div>
         <select
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setCreateProjectForm({
-              ...createProjectForm,
-              regionConfigId: e.currentTarget.value
-            })
-          }
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            const regionConfig =
+              "resource" in regionConfigs
+                ? regionConfigs.resource.find(
+                    regionConfig => regionConfig.id === e.currentTarget.value
+                  )
+                : null;
+            regionConfig &&
+              setCreateProjectForm({
+                ...createProjectForm,
+                regionConfig
+              });
+          }}
         >
           <option />
           {"resource" in regionConfigs
@@ -101,11 +104,36 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
         </select>
       </div>
       <div>
+        <select
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            const chamber = createProjectForm.regionConfig
+              ? createProjectForm.regionConfig.chambers.find(
+                  chamber => chamber.id === e.currentTarget.value
+                )
+              : null;
+            chamber &&
+              setCreateProjectForm({
+                ...createProjectForm,
+                chamber
+              });
+          }}
+        >
+          <option />
+          {createProjectForm.regionConfig
+            ? createProjectForm.regionConfig.chambers.map(chamber => (
+                <option key={chamber.id} value={chamber.id}>
+                  {chamber.name} - {chamber.numberOfDistricts}
+                </option>
+              ))
+            : null}
+        </select>
+      </div>
+      <div>
         <button
           type="submit"
           disabled={
             (("isPending" in createProjectResource && createProjectResource.isPending) ||
-              !isFormValid(createProjectForm)) &&
+              !validate(createProjectForm).valid) &&
             !("errorMessage" in createProjectResource)
           }
         >
