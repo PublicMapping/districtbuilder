@@ -8,13 +8,13 @@ export class RegionConfig implements IRegionConfig {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ type: "character varying" })
   name: string;
 
-  @Column({ name: "country_code" })
+  @Column({ type: "character varying", name: "country_code" })
   countryCode: string;
 
-  @Column({ name: "region_code" })
+  @Column({ type: "character varying", name: "region_code" })
   regionCode: string;
 
   @OneToMany(
@@ -24,7 +24,7 @@ export class RegionConfig implements IRegionConfig {
   @JoinColumn({ name: "chamber_id" })
   chambers: readonly Chamber[];
 
-  @Column({ name: "s3_uri", unique: true })
+  @Column({ type: "character varying", name: "s3_uri", unique: true })
   s3URI: string;
 
   @Column({ type: "timestamp with time zone", default: () => "NOW()" })

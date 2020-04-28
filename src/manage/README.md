@@ -29,6 +29,7 @@ USAGE
 <!-- commands -->
 * [`manage help [COMMAND]`](#manage-help-command)
 * [`manage process-geojson FILE`](#manage-process-geojson-file)
+* [`manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME`](#manage-publish-region-staticdatadir-countrycode-regioncode-regionname)
 
 ## `manage help [COMMAND]`
 
@@ -86,5 +87,23 @@ DESCRIPTION
   Relatedly, set the -b flag for very large GeoJSON files
   that need to be streamed. This is slower, so only use
   it when necessary (file sizes ~1GB+).
+```
+
+## `manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME`
+
+describe the command here
+
+```
+USAGE
+  $ manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME
+
+ARGUMENTS
+  STATICDATADIR  Directory of the region's static data (the output of `process-geojson`)
+  COUNTRYCODE    Country code, e.g. US
+  REGIONCODE     Region code, e.g. PA
+  REGIONNAME     Name of the region, e.g. Pennsylvania
+
+OPTIONS
+  -b, --bucketName=bucketName  [default: global-districtbuilder-dev-us-east-1] Bucket to upload the files to
 ```
 <!-- commandsstop -->
