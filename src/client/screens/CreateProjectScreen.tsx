@@ -14,16 +14,15 @@ interface StateProps {
   readonly regionConfigs: RegionConfigState;
 }
 
-const validate = (form: ProjectForm): ProjectForm =>
+const validate = (form: ProjectForm) =>
   form.name.trim() !== "" && form.chamber !== null && form.regionConfig !== null
     ? ({ ...form, valid: true } as ValidForm)
     : ({ ...form, valid: false } as InvalidForm);
 
-export interface InvalidForm {
+export interface ProjectForm {
   readonly name: string;
   readonly chamber: IChamber | null;
   readonly regionConfig: IRegionConfig | null;
-  readonly valid: false;
 }
 
 export interface ValidForm {
@@ -33,7 +32,9 @@ export interface ValidForm {
   readonly valid: true;
 }
 
-export type ProjectForm = ValidForm | InvalidForm;
+interface InvalidForm extends ProjectForm {
+  readonly valid: false;
+}
 
 const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
   useEffect(() => {
@@ -42,8 +43,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
   const [createProjectForm, setCreateProjectForm] = useState<ProjectForm>({
     name: "",
     chamber: null,
-    regionConfig: null,
-    valid: false
+    regionConfig: null
   });
   const [createProjectResource, setCreateProjectResource] = useState<Resource<IProject>>({
     isPending: false
@@ -86,11 +86,10 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                     regionConfig => regionConfig.id === e.currentTarget.value
                   )
                 : null;
-            regionConfig &&
-              setCreateProjectForm({
-                ...createProjectForm,
-                regionConfig
-              });
+            setCreateProjectForm({
+              ...createProjectForm,
+              regionConfig: regionConfig || null
+            });
           }}
         >
           <option />
@@ -111,11 +110,10 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                   chamber => chamber.id === e.currentTarget.value
                 )
               : null;
-            chamber &&
-              setCreateProjectForm({
-                ...createProjectForm,
-                chamber
-              });
+            setCreateProjectForm({
+              ...createProjectForm,
+              chamber: chamber || null
+            });
           }}
         >
           <option />
