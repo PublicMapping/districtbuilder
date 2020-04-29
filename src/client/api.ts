@@ -64,12 +64,12 @@ export async function activateAccount(token: string): Promise<JWT> {
 
 export async function createProject({
   name,
-  chamber,
+  numberOfDistricts,
   regionConfig
 }: CreateProjectData): Promise<IProject> {
   return new Promise((resolve, reject) => {
     axios
-      .post(`/api/projects`, { name, chamber, regionConfig })
+      .post(`/api/projects`, { name, numberOfDistricts, regionConfig })
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });

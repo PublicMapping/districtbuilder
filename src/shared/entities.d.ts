@@ -55,13 +55,13 @@ export interface IProject {
   readonly id: ProjectId;
   readonly name: string;
   readonly regionConfig: IRegionConfig;
-  readonly chamber: IChamber;
+  readonly numberOfDistricts: number;
   readonly user: IUser;
 }
 
 export interface CreateProjectData {
   readonly name: string;
-  readonly chamber: Pick<IChamber, "id">;
+  readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
 }
 

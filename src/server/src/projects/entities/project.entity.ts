@@ -1,7 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { IProject } from "../../../../shared/entities";
-import { Chamber } from "../../chambers/entities/chamber.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 
@@ -17,9 +16,8 @@ export class Project implements IProject {
   @JoinColumn({ name: "region_config_id" })
   regionConfig: RegionConfig;
 
-  @ManyToOne(() => Chamber, { nullable: false })
-  @JoinColumn({ name: "chamber_id" })
-  chamber: Chamber;
+  @Column({ name: "number_of_districts" })
+  numberOfDistricts: number;
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "user_id" })

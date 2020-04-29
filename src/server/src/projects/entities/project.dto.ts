@@ -1,12 +1,6 @@
-import { IsNotEmpty, IsUUID } from "class-validator";
+import { IsInt, IsNotEmpty, IsUUID } from "class-validator";
 
-import {
-  ChamberId,
-  CreateProjectData,
-  IChamber,
-  IRegionConfig,
-  RegionConfigId
-} from "../../../../shared/entities";
+import { CreateProjectData, IRegionConfig, RegionConfigId } from "../../../../shared/entities";
 
 class RegionConfigIdDto implements Pick<IRegionConfig, "id"> {
   @IsUUID()
@@ -14,15 +8,10 @@ class RegionConfigIdDto implements Pick<IRegionConfig, "id"> {
 }
 
 // tslint:disable-next-line max-classes-per-file
-class ChamberIdDto implements Pick<IChamber, "id"> {
-  @IsUUID()
-  readonly id: ChamberId;
-}
-
-// tslint:disable-next-line max-classes-per-file
 export class CreateProjectDto implements CreateProjectData {
   @IsNotEmpty()
   readonly name: string;
-  readonly chamber: ChamberIdDto;
+  @IsInt()
+  readonly numberOfDistricts: number;
   readonly regionConfig: RegionConfigIdDto;
 }

@@ -21,9 +21,6 @@ import { ProjectsService } from "../services/projects.service";
   },
   query: {
     join: {
-      chamber: {
-        eager: true
-      },
       regionConfig: {
         eager: true
       }
