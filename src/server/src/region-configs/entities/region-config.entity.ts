@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  Unique
-} from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { IRegionConfig } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 
