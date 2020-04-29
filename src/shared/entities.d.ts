@@ -38,7 +38,7 @@ export type JWTPayload = IUser & {
   readonly sub: UserId;
 };
 
-type RegionConfigId = string;
+export type RegionConfigId = string;
 
 export interface IRegionConfig {
   readonly id: RegionConfigId;
@@ -49,7 +49,7 @@ export interface IRegionConfig {
   readonly version: Date;
 }
 
-type ProjectId = string;
+export type ProjectId = string;
 
 export interface IProject {
   readonly id: ProjectId;
@@ -60,12 +60,14 @@ export interface IProject {
 
 export interface CreateProjectData {
   readonly name: string;
-  readonly chamber: IChamber;
+  readonly chamber: Pick<IChamber, "id">;
   readonly regionConfig: Pick<IRegionConfig, "id">;
 }
 
+export type ChamberId = string;
+
 export interface IChamber {
-  readonly id: string;
+  readonly id: ChamberId;
   readonly name: string;
   readonly numberOfDistricts: number;
   readonly regionConfig: IRegionConfig;
