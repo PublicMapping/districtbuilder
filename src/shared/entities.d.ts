@@ -55,6 +55,7 @@ export interface IProject {
   readonly id: ProjectId;
   readonly name: string;
   readonly regionConfig: IRegionConfig;
+  readonly chamber: IChamber;
   readonly user: IUser;
 }
 

@@ -19,6 +19,16 @@ import { ProjectsService } from "../services/projects.service";
   model: {
     type: Project
   },
+  query: {
+    join: {
+      chamber: {
+        eager: true
+      },
+      regionConfig: {
+        eager: true
+      }
+    }
+  },
   routes: {
     only: ["createOneBase", "getManyBase"]
   }
