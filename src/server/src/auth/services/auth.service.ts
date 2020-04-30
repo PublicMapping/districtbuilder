@@ -8,7 +8,7 @@ import { getManager, Repository } from "typeorm";
 
 import { LoginErrors } from "../../../../shared/constants";
 import { IUser, JWT, UserId } from "../../../../shared/entities";
-import { EMAIL_VERIFICATION_TOKEN_LENGTH, FROM_EMAIL } from "../../constants";
+import { EMAIL_VERIFICATION_TOKEN_LENGTH, FROM_EMAIL } from "../../common/constants";
 import { User } from "../../users/entities/user.entity";
 import { UsersService } from "../../users/services/users.service";
 import { EmailVerification } from "../entities/email-verification.entity";
