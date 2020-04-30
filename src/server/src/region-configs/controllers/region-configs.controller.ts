@@ -23,6 +23,14 @@ import { RegionConfigsService } from "../services/region-configs.service";
   model: {
     type: RegionConfig
   },
+  query: {
+    join: {
+      chambers: {
+        persist: ["regionConfig"],
+        eager: true
+      }
+    }
+  },
   routes: {
     only: ["createOneBase", "getManyBase"]
   }

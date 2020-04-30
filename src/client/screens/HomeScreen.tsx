@@ -26,7 +26,8 @@ const HomeScreen = ({ projects }: StateProps) => {
           <ul>
             {projects.resource.map(project => (
               <li key={project.id}>
-                <Link to={`/projects/${project.id}`}>{project.name}</Link>
+                <Link to={`/projects/${project.id}`}>{project.name}</Link> (
+                {project.regionConfig.name} - {project.numberOfDistricts})
               </li>
             ))}
           </ul>

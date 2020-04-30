@@ -11,13 +11,20 @@ import {
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { User } from "../../users/entities/user.entity";
-import { ProjectDto } from "../entities/project.dto";
+import { CreateProjectDto } from "../entities/project.dto";
 import { Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
 
 @Crud({
   model: {
     type: Project
+  },
+  query: {
+    join: {
+      regionConfig: {
+        eager: true
+      }
+    }
   },
   routes: {
     only: ["createOneBase", "getManyBase"]
@@ -44,7 +51,7 @@ export class ProjectsController implements CrudController<Project> {
   @Override()
   async createOne(
     @ParsedRequest() req: CrudRequest,
-    @ParsedBody() dto: ProjectDto
+    @ParsedBody() dto: CreateProjectDto
   ): Promise<Project> {
     return await this.service.createOne(req, {
       ...dto,
