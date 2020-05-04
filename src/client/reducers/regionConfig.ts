@@ -1,8 +1,9 @@
 import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
+import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
-  ActionTypes,
+  regionConfigsFetch,
   regionConfigsFetchFailure,
   regionConfigsFetchSuccess
 } from "../actions/regionConfig";
@@ -22,7 +23,7 @@ const regionConfigReducer: LoopReducer<RegionConfigState, Action> = (
   action: Action
 ): RegionConfigState | Loop<RegionConfigState, Action> => {
   switch (action.type) {
-    case ActionTypes.REGION_CONFIGS_FETCH:
+    case getType(regionConfigsFetch):
       return loop(
         {
           isPending: true
@@ -33,13 +34,13 @@ const regionConfigReducer: LoopReducer<RegionConfigState, Action> = (
           args: []
         })
       );
-    case ActionTypes.REGION_CONFIGS_FETCH_SUCCESS:
+    case getType(regionConfigsFetchSuccess):
       return {
-        resource: action.regionConfigs
+        resource: action.payload
       };
-    case ActionTypes.REGION_CONFIGS_FETCH_FAILURE:
+    case getType(regionConfigsFetchFailure):
       return {
-        errorMessage: action.errorMessage
+        errorMessage: action.payload
       };
     default:
       return state;
