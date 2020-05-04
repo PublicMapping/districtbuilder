@@ -1,7 +1,8 @@
 import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
+import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { ActionTypes, userFetchFailure, userFetchSuccess } from "../actions/user";
+import { userFetch, userFetchFailure, userFetchSuccess } from "../actions/user";
 
 import { IUser } from "../../shared/entities";
 import { fetchUser } from "../api";
@@ -18,7 +19,7 @@ const userReducer: LoopReducer<UserState, Action> = (
   action: Action
 ): UserState | Loop<UserState, Action> => {
   switch (action.type) {
-    case ActionTypes.USER_FETCH:
+    case getType(userFetch):
       return loop(
         {
           isPending: true
@@ -29,13 +30,13 @@ const userReducer: LoopReducer<UserState, Action> = (
           args: []
         })
       );
-    case ActionTypes.USER_FETCH_SUCCESS:
+    case getType(userFetchSuccess):
       return {
-        resource: action.user
+        resource: action.payload
       };
-    case ActionTypes.USER_FETCH_FAILURE:
+    case getType(userFetchFailure):
       return {
-        errorMessage: action.errorMessage
+        errorMessage: action.payload
       };
     default:
       return state;
