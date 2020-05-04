@@ -28,6 +28,7 @@
     "redux": "4.0.4",
     "redux-loop": "5.0.1",
     "ts.data.json": "0.3.0",
+    "typesafe-actions": "^5.1.0",
     "typescript": "3.7.2"
   },
   "eslintConfig": {
