@@ -1,4 +1,5 @@
 import { ConnectionOptions } from "typeorm";
+import { Chamber } from "../../../server/src/chambers/entities/chamber.entity";
 import { RegionConfig } from "../../../server/src/region-configs/entities/region-config.entity";
 
 export const connectionOptions: ConnectionOptions = {
@@ -8,7 +9,7 @@ export const connectionOptions: ConnectionOptions = {
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
-  entities: [RegionConfig],
+  entities: [Chamber, RegionConfig],
   logging: true,
   synchronize: false
 };

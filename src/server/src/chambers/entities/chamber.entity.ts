@@ -7,10 +7,10 @@ export class Chamber implements IChamber {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ type: "character varying" })
   name: string;
 
-  @Column({ name: "number_of_districts" })
+  @Column({ type: "integer", name: "number_of_districts" })
   numberOfDistricts: number;
 
   @ManyToOne(() => RegionConfig, { nullable: false })
