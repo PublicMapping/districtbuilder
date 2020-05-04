@@ -22,9 +22,13 @@
     "event-stream": "^4.0.1",
     "kebab-case": "^1.0.0",
     "lodash": "^4.17.15",
+    "pg": "^7.17.1",
+    "recursive-readdir": "^2.2.2",
+    "rxjs": "^6.5.4",
     "shelljs": "^0.8.3",
     "topojson": "^3.0.2",
-    "tslib": "^1.11.0"
+    "tslib": "^1.11.0",
+    "typeorm": "^0.2.22"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.22.2",
@@ -33,7 +37,9 @@
     "@types/jsonstream": "^0.8.30",
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.7.5",
+    "@types/recursive-readdir": "^2.2.0",
     "@types/topojson": "^3.2.2",
+    "aws-sdk": "^2.616.0",
     "globby": "^11.0.0",
     "prettier": "^1.18.2",
     "ts-node": "^8.6.2",

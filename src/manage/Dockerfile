@@ -27,6 +27,7 @@ WORKDIR /home/node/app/manage
 
 RUN set -ex \
     && deps=" \
+    libsqlite3-dev \
     procps=2:3.3* \
     " \
     && apt-get update && apt-get install -yq $deps --no-install-recommends
@@ -37,5 +38,6 @@ RUN set -ex \
     && yarn install
 
 COPY --from=tippecanoe /usr/local/bin/tippecanoe /usr/local/bin/tippecanoe
+COPY --from=tippecanoe /usr/local/bin/tile-join /usr/local/bin/tile-join
 
 CMD ["/home/node/app/manage/bin/run"]
