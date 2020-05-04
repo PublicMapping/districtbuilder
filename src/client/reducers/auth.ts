@@ -1,7 +1,8 @@
 import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
+import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { ActionTypes, authenticateFailure, authenticateSuccess } from "../actions/auth";
+import { authenticate, authenticateFailure, authenticateSuccess } from "../actions/auth";
 
 import { JWT } from "../../shared/entities";
 import { authenticateUser } from "../api";
@@ -18,7 +19,7 @@ const authReducer: LoopReducer<AuthState, Action> = (
   action: Action
 ): AuthState | Loop<AuthState, Action> => {
   switch (action.type) {
-    case ActionTypes.AUTHENTICATE:
+    case getType(authenticate):
       return loop(
         {
           isPending: true
@@ -26,18 +27,18 @@ const authReducer: LoopReducer<AuthState, Action> = (
         Cmd.run(authenticateUser, {
           successActionCreator: authenticateSuccess,
           failActionCreator: authenticateFailure,
-          args: [action.loginForm.email, action.loginForm.password] as Parameters<
+          args: [action.payload.email, action.payload.password] as Parameters<
             typeof authenticateUser
           >
         })
       );
-    case ActionTypes.AUTHENTICATE_SUCCESS:
+    case getType(authenticateSuccess):
       return {
-        resource: action.jwt
+        resource: action.payload
       };
-    case ActionTypes.AUTHENTICATE_FAILURE:
+    case getType(authenticateFailure):
       return {
-        errorMessage: action.errorMessage
+        errorMessage: action.payload
       };
     default:
       return state;
