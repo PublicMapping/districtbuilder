@@ -1,24 +1,24 @@
 export enum LoginErrors {
-  NOT_FOUND,
-  INVALID_PASSWORD
+  NOT_FOUND = "NOT_FOUND",
+  INVALID_PASSWORD = "INVALID_PASSWORD"
 }
 
 export enum MakeDistrictsErrors {
-  TOPOLOGY_NOT_FOUND,
-  INVALID_DEFINITION
+  TOPOLOGY_NOT_FOUND = "TOPOLOGY_NOT_FOUND",
+  INVALID_DEFINITION = "INVALID_DEFINITION"
 }
 
 export enum RegisterResponse {
-  SUCCESS,
-  DUPLICATE,
-  INVALID
+  SUCCESS = "SUCCESS",
+  DUPLICATE = "DUPLICATE",
+  INVALID = "INVALID"
 }
 
 export enum ResendResponse {
-  SUCCESS,
-  NOT_FOUND
+  SUCCESS = "SUCCESS",
+  NOT_FOUND = "NOT_FOUND"
 }
 
 export enum VerifyEmailErrors {
-  NOT_FOUND
+  NOT_FOUND = "NOT_FOUND"
 }

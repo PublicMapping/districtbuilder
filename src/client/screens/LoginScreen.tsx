@@ -1,68 +1,67 @@
 import React, { useState } from "react";
-import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 
 import { JWT, Login } from "../../shared/entities";
-import { authenticate } from "../actions/auth";
+import { authenticateUser } from "../api";
+import { FieldErrors, getErrorMessage, getFieldErrors } from "../components/FieldErrors";
 import { jwtIsExpired } from "../jwt";
-import { State } from "../reducers";
-import { Resource } from "../resource";
-import store from "../store";
+import { WriteResource } from "../resource";
 
-interface StateProps {
-  readonly jwt: Resource<JWT>;
-}
-
-const LoginScreen = ({ jwt }: StateProps) => {
-  const [loginForm, setLoginForm] = useState<Login>({
-    email: "",
-    password: ""
+const LoginScreen = () => {
+  const [loginResource, setLoginResource] = useState<WriteResource<Login, JWT>>({
+    data: {
+      email: "",
+      password: ""
+    }
   });
-  return "resource" in jwt && !jwtIsExpired(jwt.resource) ? (
+  const { data } = loginResource;
+  const errorMessage = getErrorMessage(loginResource);
+  const fieldErrors = getFieldErrors(loginResource);
+
+  return "resource" in loginResource && !jwtIsExpired(loginResource.resource) ? (
     <Redirect to="/" />
   ) : (
     <form
       onSubmit={(e: React.FormEvent) => {
         e.preventDefault();
-        store.dispatch(authenticate(loginForm));
+        setLoginResource({ data, isPending: true });
+        authenticateUser(data.email, data.password)
+          .then(jwt => setLoginResource({ data, resource: jwt }))
+          .catch(errors => {
+            setLoginResource({ data, errors });
+          });
       }}
     >
+      {errorMessage ? <div style={{ color: "red" }}>{errorMessage}</div> : null}
       <div>
         <input
           type="text"
           placeholder="Email"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setLoginForm({
-              ...loginForm,
-              email: e.currentTarget.value
+            setLoginResource({
+              data: { ...data, email: e.currentTarget.value }
             })
           }
         />
+        <FieldErrors field="email" errors={fieldErrors} />
       </div>
       <div>
         <input
           type="password"
           placeholder="Password"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setLoginForm({
-              ...loginForm,
-              password: e.currentTarget.value
+            setLoginResource({
+              data: { ...data, password: e.currentTarget.value }
             })
           }
         />
+        <FieldErrors field="password" errors={fieldErrors} />
       </div>
       <div>
         <button type="submit">Log in</button>
       </div>
-      {"errorMessage" in jwt ? <div style={{ color: "red" }}>{jwt.errorMessage}</div> : null}
     </form>
   );
 };
 
-function mapStateToProps(state: State): StateProps {
-  return {
-    jwt: state.auth
-  };
-}
-
-export default connect(mapStateToProps)(LoginScreen);
+export default LoginScreen;

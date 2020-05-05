@@ -1,3 +1,5 @@
+import { Errors } from "../shared/types";
+
 export interface ResourceEditing<D> {
   readonly data: D;
 }
@@ -20,7 +22,7 @@ export interface ResourceWriteSuccess<D, T> {
 }
 export interface ResourceWriteFailure<D> {
   readonly data: D;
-  readonly errorMessage: string;
+  readonly errors: Errors<D>;
 }
 
 export type Resource<T> = ResourcePending | ResourceSuccess<T> | ResourceFailure;

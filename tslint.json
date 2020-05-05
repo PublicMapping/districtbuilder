@@ -10,7 +10,7 @@
   "jsRules": {},
   "rules": {
     "interface-name": false,
-    "object-literal-sort-keys": [true, "match-declaration-order-only"],
+    "object-literal-sort-keys": false,
     "no-shadowed-variable": false,
     "no-unused-declaration": true,
     "no-unused-expression": [true, "allow-fast-null-checks"],

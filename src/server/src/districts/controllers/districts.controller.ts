@@ -24,15 +24,15 @@ export class DistrictsController {
     const geoCollection = await this.topologyService.get(topologyKey);
     if (!geoCollection) {
       throw new NotFoundException(
-        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND,
-        `Topology ${topologyKey} not found`
+        `Topology ${topologyKey} not found`,
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
     }
     const geojson = geoCollection.merge(definition);
     if (geojson === null) {
       throw new BadRequestException(
-        MakeDistrictsErrors.INVALID_DEFINITION,
-        "District definition is invalid"
+        "District definition is invalid",
+        MakeDistrictsErrors.INVALID_DEFINITION
       );
     }
     return geojson;

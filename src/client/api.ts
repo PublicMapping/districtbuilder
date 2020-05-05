@@ -27,7 +27,7 @@ export async function authenticateUser(email: string, password: string): Promise
         saveJWT(jwt);
         resolve(jwt);
       })
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 
@@ -45,7 +45,7 @@ export async function registerUser(name: string, email: string, password: string
     axios
       .post("/api/auth/email/register", { name, email, password })
       .then(() => resolve())
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 

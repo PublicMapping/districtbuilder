@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { Exclude } from "class-transformer";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { IUser } from "../../../../shared/entities";
-import { BCRYPT_SALT_ROUNDS } from "../../constants";
+import { BCRYPT_SALT_ROUNDS } from "../../common/constants";
 
 @Entity()
 export class User implements IUser {
