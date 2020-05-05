@@ -1,7 +1,8 @@
 import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
+import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { ActionTypes, projectsFetchFailure, projectsFetchSuccess } from "../actions/projects";
+import { projectsFetch, projectsFetchFailure, projectsFetchSuccess } from "../actions/projects";
 
 import { IProject } from "../../shared/entities";
 import { fetchProjects } from "../api";
@@ -18,7 +19,7 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
   action: Action
 ): ProjectsState | Loop<ProjectsState, Action> => {
   switch (action.type) {
-    case ActionTypes.PROJECTS_FETCH:
+    case getType(projectsFetch):
       return loop(
         {
           isPending: true
@@ -29,13 +30,13 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
           args: []
         })
       );
-    case ActionTypes.PROJECTS_FETCH_SUCCESS:
+    case getType(projectsFetchSuccess):
       return {
-        resource: action.projects
+        resource: action.payload
       };
-    case ActionTypes.PROJECTS_FETCH_FAILURE:
+    case getType(projectsFetchFailure):
       return {
-        errorMessage: action.errorMessage
+        errorMessage: action.payload
       };
     default:
       return state;
