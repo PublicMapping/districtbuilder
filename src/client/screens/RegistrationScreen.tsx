@@ -2,8 +2,8 @@ import React, { useState } from "react";
 
 import { Register } from "../../shared/entities";
 import { registerUser } from "../api";
+import { FieldErrors, getErrorMessage, getFieldErrors } from "../components/FieldErrors";
 import { WriteResource } from "../resource";
-import { buildErrors, getErrorMessage, getFieldErrors } from "../utility";
 
 const isFormInvalid = (form: RegistrationForm): boolean =>
   Object.values(form).some(value => value.trim() === "") || form.password !== form.confirmPassword;
@@ -31,6 +31,7 @@ const RegistrationScreen = () => {
     setRegistrationResource({
       data: { ...data, [field]: e.currentTarget.value }
     });
+
   return "resource" in registrationResource ? (
     <div>
       Thanks for signing up for DistrictBuilder! Please click the link in your registration email to
@@ -55,15 +56,15 @@ const RegistrationScreen = () => {
       {errorMessage ? <div style={{ color: "red" }}>{errorMessage}</div> : null}
       <div>
         <input type="text" placeholder="Name" onChange={setForm("name")} />
-        {buildErrors("name", fieldErrors)}
+        <FieldErrors field={"name"} errors={fieldErrors} />
       </div>
       <div>
         <input type="text" placeholder="Email" onChange={setForm("email")} />
-        {buildErrors("email", fieldErrors)}
+        <FieldErrors field={"email"} errors={fieldErrors} />
       </div>
       <div>
         <input type="password" placeholder="Password" onChange={setForm("password")} />
-        {buildErrors("password", fieldErrors)}
+        <FieldErrors field={"password"} errors={fieldErrors} />
       </div>
       <div>
         <input

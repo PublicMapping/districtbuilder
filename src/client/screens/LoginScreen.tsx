@@ -3,9 +3,9 @@ import { Redirect } from "react-router-dom";
 
 import { JWT, Login } from "../../shared/entities";
 import { authenticateUser } from "../api";
+import { FieldErrors, getErrorMessage, getFieldErrors } from "../components/FieldErrors";
 import { jwtIsExpired } from "../jwt";
 import { WriteResource } from "../resource";
-import { buildErrors, getErrorMessage, getFieldErrors } from "../utility";
 
 const LoginScreen = () => {
   const [loginResource, setLoginResource] = useState<WriteResource<Login, JWT>>({
@@ -43,7 +43,7 @@ const LoginScreen = () => {
             })
           }
         />
-        {buildErrors("email", fieldErrors)}
+        <FieldErrors field="email" errors={fieldErrors} />
       </div>
       <div>
         <input
@@ -55,7 +55,7 @@ const LoginScreen = () => {
             })
           }
         />
-        {buildErrors("password", fieldErrors)}
+        <FieldErrors field="password" errors={fieldErrors} />
       </div>
       <div>
         <button type="submit">Log in</button>
