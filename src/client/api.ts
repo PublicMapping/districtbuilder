@@ -27,7 +27,7 @@ export async function authenticateUser(email: string, password: string): Promise
         saveJWT(jwt);
         resolve(jwt);
       })
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 

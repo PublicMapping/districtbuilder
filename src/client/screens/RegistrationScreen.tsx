@@ -1,24 +1,12 @@
 import React, { useState } from "react";
 
 import { Register } from "../../shared/entities";
-import { ErrorMap } from "../../shared/types";
 import { registerUser } from "../api";
 import { WriteResource } from "../resource";
+import { buildErrors, getErrorMessage, getFieldErrors } from "../utility";
 
 const isFormInvalid = (form: RegistrationForm): boolean =>
   Object.values(form).some(value => value.trim() === "") || form.password !== form.confirmPassword;
-
-function getErrors<F extends keyof RegistrationForm>(
-  field: F,
-  errors: ErrorMap<RegistrationForm>
-): JSX.Element | null {
-  const fieldErrors = errors[field];
-  return fieldErrors ? (
-    <div style={{ color: "red" }}>
-      {fieldErrors && fieldErrors.map((msg: string, index: number) => <p key={index}>{msg}</p>)}
-    </div>
-  ) : null;
-}
 
 interface RegistrationForm extends Register {
   readonly confirmPassword: string;
@@ -36,14 +24,9 @@ const RegistrationScreen = () => {
     }
   });
   const { data } = registrationResource;
-  const errorMessage =
-    "errors" in registrationResource && typeof registrationResource.errors.message === "string"
-      ? registrationResource.errors.message
-      : undefined;
-  const fieldErrors =
-    "errors" in registrationResource && typeof registrationResource.errors.message !== "string"
-      ? registrationResource.errors.message
-      : {};
+  const errorMessage = getErrorMessage(registrationResource);
+  const fieldErrors = getFieldErrors(registrationResource);
+
   const setForm = (field: keyof RegistrationForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setRegistrationResource({
       data: { ...data, [field]: e.currentTarget.value }
@@ -72,15 +55,15 @@ const RegistrationScreen = () => {
       {errorMessage ? <div style={{ color: "red" }}>{errorMessage}</div> : null}
       <div>
         <input type="text" placeholder="Name" onChange={setForm("name")} />
-        {getErrors("name", fieldErrors)}
+        {buildErrors("name", fieldErrors)}
       </div>
       <div>
         <input type="text" placeholder="Email" onChange={setForm("email")} />
-        {getErrors("email", fieldErrors)}
+        {buildErrors("email", fieldErrors)}
       </div>
       <div>
         <input type="password" placeholder="Password" onChange={setForm("password")} />
-        {getErrors("password", fieldErrors)}
+        {buildErrors("password", fieldErrors)}
       </div>
       <div>
         <input
