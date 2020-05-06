@@ -7,11 +7,12 @@ function convertValidationErrors(
 ): {
   [field: string]: readonly string[];
 } {
-  return Object.fromEntries(
-    errors.map((error: ValidationError) => {
-      return [error.property, Object.values(error.constraints)];
+  const fieldErrors = errors
+    .map((error: ValidationError) => {
+      return error.constraints ? [error.property, Object.values(error.constraints)] : undefined;
     })
-  );
+    .filter(item => item !== undefined) as Array<[string, string[]]>;
+  return Object.fromEntries(fieldErrors);
 }
 
 /**
