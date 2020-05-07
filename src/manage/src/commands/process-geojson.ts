@@ -8,14 +8,9 @@ import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
 import { join } from "path";
-import {
-  feature as topo2feature,
-  mergeArcs,
-  planarTriangleArea,
-  presimplify,
-  simplify,
-  topology
-} from "topojson";
+import { feature as topo2feature, mergeArcs } from "topojson-client";
+import { topology } from "topojson-server";
+import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
 import { IStaticMetadata } from "../../../shared/entities";
 import { tileJoin, tippecanoe } from "../lib/cmd";

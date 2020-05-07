@@ -13,7 +13,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { DistrictsModule } from "./districts/districts.module";
-import { HealthcheckService } from "./healthcheck/healthcheck.service";
+import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { UsersModule } from "./users/users.module";
@@ -51,9 +51,10 @@ const mailTransportOptions: StreamTransport.Options = {
         maxAge: 60000
       }
     }),
-    TerminusModule.forRootAsync({ useClass: HealthcheckService }),
+    TerminusModule,
     AuthModule,
     DistrictsModule,
+    HealthCheckModule,
     UsersModule,
     RegionConfigsModule,
     ProjectsModule

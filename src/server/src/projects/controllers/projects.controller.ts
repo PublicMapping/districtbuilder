@@ -34,7 +34,7 @@ import { ProjectsService } from "../services/projects.service";
   property: "user",
   filter: (user: User) => {
     return {
-      user: user ? user.id : undefined
+      user_id: user ? user.id : undefined
     };
   },
   persist: (user: User) => {
