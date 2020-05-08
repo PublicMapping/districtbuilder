@@ -1,4 +1,7 @@
+/** @jsx jsx */
 import React from "react";
+import { Box, jsx, Styled } from "theme-ui";
+
 import { ErrorMap } from "../../shared/types";
 import { WriteResource } from "./../resource";
 
@@ -22,8 +25,14 @@ interface FieldErrorsProps<D> {
 export function FieldErrors<D>({ field, errors }: FieldErrorsProps<D>): JSX.Element | null {
   const fieldErrors = errors[field];
   return fieldErrors ? (
-    <div style={{ color: "red" }}>
-      {fieldErrors && fieldErrors.map((msg: string, index: number) => <p key={index}>{msg}</p>)}
-    </div>
+    <Box sx={{ color: "warning", textAlign: "left" }}>
+      {fieldErrors &&
+        fieldErrors.map((msg: string, index: number) => (
+          <React.Fragment key={index}>
+            {msg}
+            <Styled.p />
+          </React.Fragment>
+        ))}
+    </Box>
   ) : null;
 }
