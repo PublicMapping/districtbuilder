@@ -12,6 +12,7 @@ DistrictBuilder is web-based, open source software for collaborative redistricti
   - [Stack](#stack)
   - [Ports](#ports)
 - [Scripts](#scripts)
+- [Command Line Interface](#command-line-interface)
 - [DistrictBuilder Classic](#districtbuilder-classic)
 
 ## Requirements
@@ -94,9 +95,9 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 | `update`    | Build container images, update dependencies, and run database migrations. |
 | `yarn`      | Execute Yarn CLI commands.                                                |
 
-## Command-line interface
+## Command Line Interface
 
-A command-line interface is available for performing data processing operations.
+A command line interface is available for performing data processing operations.
 See `src/manage/README.md` for more info.
 
 ## DistrictBuilder Classic
