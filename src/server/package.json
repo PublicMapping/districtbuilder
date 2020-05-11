@@ -1,5 +1,5 @@
 {
-  "name": "district-builder-2-server",
+  "name": "district-builder-server",
   "version": "0.1.0",
   "private": true,
   "scripts": {

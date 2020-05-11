@@ -30,7 +30,7 @@ const ProjectScreen = ({ user }: StateProps) => {
         <Link to="/">
           <img src={process.env.PUBLIC_URL + "/logo.png"} className="App-logo" alt="logo" />
         </Link>
-        DistrictBuilder 2
+        DistrictBuilder
         <br />
         Test code sharing: {getTestString()}
         <br />
