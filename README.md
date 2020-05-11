@@ -1,9 +1,9 @@
-# DistrictBuilder 2
+# DistrictBuilder
 
 
 ***Note:* This repository is in the early stages, and is not yet ready for public use. Please don't attempt to set it up yet, since there are several things that need to be ironed out before it can be used by a wider audience. Please contact districtbuilder@azavea.com  to sign up for early access and to learn more.**
 
-DistrictBuilder 2 is web-based, open source software for collaborative redistricting.
+DistrictBuilder is web-based, open source software for collaborative redistricting.
 
 - [Requirements](#requirements)
 - [Development](#development)
@@ -12,6 +12,7 @@ DistrictBuilder 2 is web-based, open source software for collaborative redistric
   - [Stack](#stack)
   - [Ports](#ports)
 - [Scripts](#scripts)
+- [DistrictBuilder Classic](#districtbuilder-classic)
 
 ## Requirements
 
@@ -97,3 +98,7 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 
 A command-line interface is available for performing data processing operations.
 See `src/manage/README.md` for more info.
+
+## DistrictBuilder Classic
+
+This project is a continuation of the original version of DistrictBuilder, now called [DistrictBuilder Classic](https://github.com/PublicMapping/districtbuilder-classic). DistrictBuilder Classic is no longer being maintained. This repository is where active development of DistrictBuilder will continue to occur.
