@@ -63,7 +63,8 @@ export class ProjectsController implements CrudController<Project> {
   ): Promise<Project> {
     return await this.service.createOne(req, {
       ...dto,
-      user: req.parsed.authPersist.userId
+      user: req.parsed.authPersist.userId,
+      districtsDefinition: (Buffer.alloc(dto.numberOfDistricts) as unknown) as readonly []
     });
   }
 }
