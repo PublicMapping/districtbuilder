@@ -39,10 +39,10 @@ const LoginScreen = () => {
             justifyContent: "center"
           }}
         >
-          <Heading>DistrictBuilder</Heading>
+          <Heading as="h1">DistrictBuilder</Heading>
           <Card
             as="form"
-            sx={{ backgroundColor: "muted", margin: 4, padding: 5 }}
+            sx={{ backgroundColor: "muted", my: 4, p: 4 }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
               setLoginResource({ data, isPending: true });
@@ -55,11 +55,12 @@ const LoginScreen = () => {
           >
             <Flex
               sx={{
-                flexDirection: "column",
-                "& > label, & > input, & > button": { my: 4 }
+                flexDirection: "column"
               }}
             >
-              <Heading sx={{ textAlign: "left" }}>Log in</Heading>
+              <Heading as="h2" sx={{ textAlign: "left" }}>
+                Log in
+              </Heading>
               {errorMessage ? (
                 <Box sx={{ backgroundColor: "warning", color: "white" }}>{errorMessage}</Box>
               ) : null}
