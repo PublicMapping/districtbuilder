@@ -1,6 +1,7 @@
+import { Theme as StyledSystemTheme } from "@styled-system/css";
 import { Theme } from "theme-ui";
 
-const theme: Theme = {
+const theme: Theme & StyledSystemTheme = {
   fonts: {
     body:
       'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
@@ -38,7 +39,6 @@ const theme: Theme = {
     }
   },
   space: [4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
-  // @ts-ignore
   forms: {
     input: {
       mb: 2
