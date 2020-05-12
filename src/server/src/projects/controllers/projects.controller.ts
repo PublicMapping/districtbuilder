@@ -52,6 +52,7 @@ import { ProjectsService } from "../services/projects.service";
 })
 @UseGuards(JwtAuthGuard)
 @Controller("api/projects")
+// @ts-ignore
 export class ProjectsController implements CrudController<Project> {
   constructor(public service: ProjectsService) {}
 
