@@ -35,3 +35,7 @@ body {
 .App main {
   flex: auto;
 }
+
+button[disabled] {
+  opacity: 0.6;
+}

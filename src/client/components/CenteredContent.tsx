@@ -1,14 +1,8 @@
 /** @jsx jsx */
 import React from "react";
-import { Card, Flex, Heading, jsx } from "theme-ui";
+import { Flex, jsx } from "theme-ui";
 
-const CenteredCard = ({
-  children,
-  footer
-}: {
-  readonly children: React.ReactElement;
-  readonly footer?: React.ReactElement;
-}) => {
+const CenteredContent = ({ children }: { readonly children: React.ReactNode }) => {
   return (
     <Flex
       sx={{
@@ -26,13 +20,11 @@ const CenteredCard = ({
             justifyContent: "center"
           }}
         >
-          <Heading as="h1">DistrictBuilder</Heading>
-          <Card sx={{ backgroundColor: "muted", my: 4, p: 4 }}>{children}</Card>
-          {footer}
+          {children}
         </Flex>
       </Flex>
     </Flex>
   );
 };
 
-export default CenteredCard;
+export default CenteredContent;

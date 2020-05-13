@@ -13,14 +13,14 @@ const theme: Theme & StyledSystemTheme = {
     heading: "#000",
     text: "#444",
     background: "#f6f6f6",
-    primary: "#33e",
+    primary: "#093EA7",
     secondary: "#33e",
     muted: "#fff",
-    accent: "#33e",
+    accent: "#29303D",
     warning: "#C00339"
   },
   sizes: {
-    form: "468px"
+    form: "500px"
   },
   fontSizes: [12, 14, 16, 21, 28, 38, 50],
   fontWeights: {
@@ -44,7 +44,8 @@ const theme: Theme & StyledSystemTheme = {
       mb: 2
     },
     label: {
-      mb: 1
+      mb: 1,
+      textAlign: "left"
     }
   },
   styles: {

@@ -71,7 +71,7 @@ export async function createProject({
     axios
       .post(`/api/projects`, { name, numberOfDistricts, regionConfig })
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 
