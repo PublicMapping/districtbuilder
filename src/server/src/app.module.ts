@@ -12,7 +12,6 @@ import * as StreamTransport from "nodemailer/lib/stream-transport";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
-import { DistrictsModule } from "./districts/districts.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
@@ -53,7 +52,6 @@ const mailTransportOptions: StreamTransport.Options = {
     }),
     TerminusModule,
     AuthModule,
-    DistrictsModule,
     HealthCheckModule,
     UsersModule,
     RegionConfigsModule,
