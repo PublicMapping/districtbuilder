@@ -1,8 +1,12 @@
+/** @jsx jsx */
 import React, { useState } from "react";
+import { Button, Flex, Heading, jsx } from "theme-ui";
 
 import { Register } from "../../shared/entities";
 import { registerUser } from "../api";
-import { FieldErrors, getErrorMessage, getFieldErrors } from "../components/FieldErrors";
+import CenteredCard from "../components/CenteredCard";
+import Field from "../components/Field";
+import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
 
 const isFormInvalid = (form: RegistrationForm): boolean =>
@@ -24,8 +28,6 @@ const RegistrationScreen = () => {
     }
   });
   const { data } = registrationResource;
-  const errorMessage = getErrorMessage(registrationResource);
-  const fieldErrors = getFieldErrors(registrationResource);
 
   const setForm = (field: keyof RegistrationForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setRegistrationResource({
@@ -38,53 +40,63 @@ const RegistrationScreen = () => {
       continue.
     </div>
   ) : (
-    <form
-      onSubmit={(e: React.FormEvent) => {
-        e.preventDefault();
-        setRegistrationResource({ data, isPending: true });
-        registerUser(
-          registrationResource.data.name,
-          registrationResource.data.email,
-          registrationResource.data.password
-        )
-          .then(() => setRegistrationResource({ data, resource: void 0 }))
-          .catch(errors => {
-            setRegistrationResource({ data, errors });
-          });
-      }}
-    >
-      {errorMessage ? <div style={{ color: "red" }}>{errorMessage}</div> : null}
-      <div>
-        <input type="text" placeholder="Name" onChange={setForm("name")} />
-        <FieldErrors field={"name"} errors={fieldErrors} />
-      </div>
-      <div>
-        <input type="text" placeholder="Email" onChange={setForm("email")} />
-        <FieldErrors field={"email"} errors={fieldErrors} />
-      </div>
-      <div>
-        <input type="password" placeholder="Password" onChange={setForm("password")} />
-        <FieldErrors field={"password"} errors={fieldErrors} />
-      </div>
-      <div>
-        <input
-          type="password"
-          placeholder="Confirm password"
-          onChange={setForm("confirmPassword")}
+    <CenteredCard>
+      <Flex
+        as="form"
+        sx={{ flexDirection: "column" }}
+        onSubmit={(e: React.FormEvent) => {
+          e.preventDefault();
+          setRegistrationResource({ data, isPending: true });
+          registerUser(
+            registrationResource.data.name,
+            registrationResource.data.email,
+            registrationResource.data.password
+          )
+            .then(() => setRegistrationResource({ data, resource: void 0 }))
+            .catch(errors => {
+              setRegistrationResource({ data, errors });
+            });
+        }}
+      >
+        <Heading as="h2" sx={{ textAlign: "left" }}>
+          Create an account
+        </Heading>
+        <FormError resource={registrationResource} />
+        <Field
+          field="name"
+          label="Name"
+          resource={registrationResource}
+          inputProps={{ onChange: setForm("name") }}
         />
-      </div>
-      <div>
-        <button
+        <Field
+          field="email"
+          label="Email"
+          resource={registrationResource}
+          inputProps={{ onChange: setForm("email") }}
+        />
+        <Field
+          field="password"
+          label="Password"
+          resource={registrationResource}
+          inputProps={{ onChange: setForm("password"), type: "password" }}
+        />
+        <Field
+          field="confirmPassword"
+          label="Confirm password"
+          resource={registrationResource}
+          inputProps={{ onChange: setForm("confirmPassword"), type: "password" }}
+        />
+        <Button
           type="submit"
           disabled={
             ("isPending" in registrationResource && registrationResource.isPending) ||
             isFormInvalid(data)
           }
         >
-          Register
-        </button>
-      </div>
-    </form>
+          Let’s go!
+        </Button>
+      </Flex>
+    </CenteredCard>
   );
 };
 
