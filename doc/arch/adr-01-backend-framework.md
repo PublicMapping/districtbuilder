@@ -4,7 +4,7 @@ Backend Framework
 Context
 -------
 
-DistrictBuilder 2 is intended to be a primarily front-end application, with a back-end API to persist data and support operations that cannot be feasibly completed in the browser in a performant manner.
+DistrictBuilder is intended to be a primarily front-end application, with a back-end API to persist data and support operations that cannot be feasibly completed in the browser in a performant manner.
 
 The main performance critical operation we know the back-end API will need to support is the merging of geographic areas to form new districts. Through some [research and experimentation](https://docs.google.com/document/d/1znHcDr1wXQ1vr6cNiI5Y9gl5uwIveVPj659Wpug70Is/edit?usp=sharing), we have decided to rely upon [TopoJSON](https://github.com/topojson/topojson) to support this operation.
 
