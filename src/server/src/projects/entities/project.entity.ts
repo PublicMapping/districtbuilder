@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
