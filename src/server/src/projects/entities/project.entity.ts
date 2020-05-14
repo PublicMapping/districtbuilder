@@ -5,7 +5,7 @@ import { RegionConfig } from "../../region-configs/entities/region-config.entity
 import { User } from "../../users/entities/user.entity";
 
 const districtsDefinitionTransformer = {
-  from: (bytes: Buffer) => [...JSON.parse(bytes.toString())],
+  from: (bytes: Buffer) => JSON.parse(bytes.toString()),
   to: (array: GeoUnitCollection) => Buffer.from(JSON.stringify(array))
 };
 
