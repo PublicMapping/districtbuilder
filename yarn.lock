@@ -1493,62 +1493,62 @@
     "@svgr/plugin-svgo" "^4.3.1"
     loader-utils "^1.2.3"
 
-"@theme-ui/color-modes@^0.4.0-alpha.0":
-  version "0.4.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@theme-ui/color-modes/-/color-modes-0.4.0-alpha.0.tgz#ddd213315deae7458693c126ca152a78c3e200fa"
-  integrity sha512-sGl7MNYz1wWGLY1jCjeSI6MlIS6oVRiwBvSAXDU9vQzvSYo3YCHREQotK8KHR+eh6m8WN3bZlMVOx788Gu5U+A==
+"@theme-ui/color-modes@^0.4.0-alpha.1", "@theme-ui/color-modes@^0.4.0-highlight.0":
+  version "0.4.0-highlight.0"
+  resolved "https://registry.yarnpkg.com/@theme-ui/color-modes/-/color-modes-0.4.0-highlight.0.tgz#333400c5d30ac65b71ff1b23a7d7ebee72f3c477"
+  integrity sha512-xdcAgfkL0gs0Z832lojtNGiTNtnQKoCu85t3Cxvqg2r1hVHar0SOJAyx+ljdV6tIHsBTxgVwUvdcby+QYCghRg==
   dependencies:
     "@emotion/core" "^10.0.0"
-    "@theme-ui/core" "^0.4.0-alpha.0"
-    "@theme-ui/css" "^0.4.0-alpha.0"
+    "@theme-ui/core" "^0.4.0-highlight.0"
+    "@theme-ui/css" "^0.4.0-highlight.0"
     deepmerge "^4.2.2"
 
-"@theme-ui/components@^0.4.0-alpha.0":
-  version "0.4.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@theme-ui/components/-/components-0.4.0-alpha.0.tgz#52084b889e56ea715d28eb8d9eddb6b908b9e683"
-  integrity sha512-IQsP8WwoT4D7Qw+IBe/DzKRJmNzdb+1pMWvg6RyLtBxYku9EMrRAyWsJQuvV2y5AbQfBlkrVxxS300sOpcMVpA==
+"@theme-ui/components@^0.4.0-alpha.1":
+  version "0.4.0-highlight.0"
+  resolved "https://registry.yarnpkg.com/@theme-ui/components/-/components-0.4.0-highlight.0.tgz#e4eafd517e347b3c8f380906f504103e215ca222"
+  integrity sha512-dwVKGcXf29m4nehEKwaX/Vbl5fi/xhMNqHIYo1hnYmInKdUOnKDJOyxiiu4iNdmjTuXmpjj9WxBap1WHM07hkQ==
   dependencies:
     "@emotion/core" "^10.0.0"
     "@emotion/styled" "^10.0.0"
     "@styled-system/color" "^5.1.2"
     "@styled-system/should-forward-prop" "^5.1.2"
     "@styled-system/space" "^5.1.2"
-    "@theme-ui/css" "^0.4.0-alpha.0"
+    "@theme-ui/css" "^0.4.0-highlight.0"
 
-"@theme-ui/core@^0.4.0-alpha.0":
-  version "0.4.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@theme-ui/core/-/core-0.4.0-alpha.0.tgz#0721e615327a0dde1226dcf3d9fd5da89e75e082"
-  integrity sha512-jE6vX/y0RY+Y19S8sz3gUwox8TbfXyx78R/iSiCQKb9Cxf3Y5Dj8XoYROlU5XTF4sT0F2mbck40S59RnnWwufA==
+"@theme-ui/core@^0.4.0-alpha.1", "@theme-ui/core@^0.4.0-highlight.0":
+  version "0.4.0-highlight.0"
+  resolved "https://registry.yarnpkg.com/@theme-ui/core/-/core-0.4.0-highlight.0.tgz#8989fc45347ad750ab9b1ab10c896387582dd48f"
+  integrity sha512-r5S0tiO51sBrFPXWOnotWfhA+L+s60JI5ewLJU+P6wE2ZOKdnn3HorphRgZWusxjTrzjNfBfgwhwXK+GkQFycw==
   dependencies:
     "@emotion/core" "^10.0.0"
-    "@theme-ui/css" "^0.4.0-alpha.0"
+    "@theme-ui/css" "^0.4.0-highlight.0"
     deepmerge "^4.2.2"
 
-"@theme-ui/css@^0.4.0-alpha.0":
-  version "0.4.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@theme-ui/css/-/css-0.4.0-alpha.0.tgz#7c4da1b65c96a1efd693475a3e20b45a3593bad6"
-  integrity sha512-4pgAwQAgPLdGlPM7/JM8n+/8FRoyXftGAgO11AghGTE5Z4Ksi5s0Kn16TfgiA63gX6izK2C1bkHr0YGDnCPahA==
+"@theme-ui/css@^0.4.0-alpha.1", "@theme-ui/css@^0.4.0-highlight.0":
+  version "0.4.0-highlight.0"
+  resolved "https://registry.yarnpkg.com/@theme-ui/css/-/css-0.4.0-highlight.0.tgz#ee239d61ce7c7e076ffb49a7c5fcd5b9f1bbfb48"
+  integrity sha512-0O9ERm3l4arXip9EmaVl83I84l0ZhEj1ZUrKHrNbjiW2/rhIdEWUQOdYcWdBCb8/nr5NwRMOJQ4rdqiUj7S5IQ==
   dependencies:
     csstype "^2.5.7"
 
-"@theme-ui/mdx@^0.4.0-alpha.0":
-  version "0.4.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@theme-ui/mdx/-/mdx-0.4.0-alpha.0.tgz#83fb14fae55d97ba86836a85643467e030bbd830"
-  integrity sha512-JCmoPh8lnsbtYKlxSsXmTkcDfEz5D2Si2xY/EZbhk4Lnctl/x5ZWbxilZXJCgO2iWyForamn2ygynfgog5D2hA==
+"@theme-ui/mdx@^0.4.0-alpha.1", "@theme-ui/mdx@^0.4.0-highlight.0":
+  version "0.4.0-highlight.0"
+  resolved "https://registry.yarnpkg.com/@theme-ui/mdx/-/mdx-0.4.0-highlight.0.tgz#e7c9bfea7d2c9ab8cbd8318726d8e14661a2b373"
+  integrity sha512-kyEU0+AGaE3EoIe5Sip2PvEYx0w6CnkaryxEtqi6XH2A0Vu4jlRTVeDS0/ZrKVcsbqOWGdyc0Kpti3DN/JBhIg==
   dependencies:
     "@emotion/core" "^10.0.0"
     "@emotion/styled" "^10.0.0"
     "@mdx-js/react" "^1.0.0"
 
-"@theme-ui/theme-provider@^0.4.0-alpha.0":
-  version "0.4.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@theme-ui/theme-provider/-/theme-provider-0.4.0-alpha.0.tgz#e5bbd5f8a42173f34f1e52a5ad26404da37d2e03"
-  integrity sha512-TmJigda7soPlaAZIzi+RuhRxol00qBf0V5B7ND862g4w0ZblAmbVA+8c8jfAcHqZVKixrJVyU1sfxxrtPZ1IGA==
+"@theme-ui/theme-provider@^0.4.0-alpha.1":
+  version "0.4.0-highlight.0"
+  resolved "https://registry.yarnpkg.com/@theme-ui/theme-provider/-/theme-provider-0.4.0-highlight.0.tgz#88e8cb28bc5f7d9629573e1bdbec4369fdacd044"
+  integrity sha512-QBpTmyyQenyc6fZd/4ereXdMGZiaJ8IVN+FmoRXo9UnV3EJDBrAAt708lMRaVw7ccWpa4KQb7HQnN3FpxXlnTg==
   dependencies:
     "@emotion/core" "^10.0.0"
-    "@theme-ui/color-modes" "^0.4.0-alpha.0"
-    "@theme-ui/core" "^0.4.0-alpha.0"
-    "@theme-ui/mdx" "^0.4.0-alpha.0"
+    "@theme-ui/color-modes" "^0.4.0-highlight.0"
+    "@theme-ui/core" "^0.4.0-highlight.0"
+    "@theme-ui/mdx" "^0.4.0-highlight.0"
 
 "@types/babel__core@^7.1.0":
   version "7.1.3"
@@ -10247,17 +10247,17 @@ text-table@0.2.0, text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
 
-theme-ui@0.4.0-alpha.0:
-  version "0.4.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/theme-ui/-/theme-ui-0.4.0-alpha.0.tgz#aaf104dbc82ffa7412271358d1dde590ae251db0"
-  integrity sha512-M23A8y8S3jZX9DCXVIixiXKUXUF/XooOmQSrILz7SN4QgbZmIpWS8UkPNWqU+1LIl2Tuv1u1nE/Zu8InvIEMNw==
+theme-ui@0.4.0-alpha.1:
+  version "0.4.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/theme-ui/-/theme-ui-0.4.0-alpha.1.tgz#9f5c97b9a65a0b8b8397c90060da0a11737ca031"
+  integrity sha512-NKlYIfzE5bxxhYSO9QncDrResQmO02LltrWFlMENrs9EXGluqTUvclv3dQ4Oxy3K9AZRKt2QAbp/wV6z8nXMPw==
   dependencies:
-    "@theme-ui/color-modes" "^0.4.0-alpha.0"
-    "@theme-ui/components" "^0.4.0-alpha.0"
-    "@theme-ui/core" "^0.4.0-alpha.0"
-    "@theme-ui/css" "^0.4.0-alpha.0"
-    "@theme-ui/mdx" "^0.4.0-alpha.0"
-    "@theme-ui/theme-provider" "^0.4.0-alpha.0"
+    "@theme-ui/color-modes" "^0.4.0-alpha.1"
+    "@theme-ui/components" "^0.4.0-alpha.1"
+    "@theme-ui/core" "^0.4.0-alpha.1"
+    "@theme-ui/css" "^0.4.0-alpha.1"
+    "@theme-ui/mdx" "^0.4.0-alpha.1"
+    "@theme-ui/theme-provider" "^0.4.0-alpha.1"
     "@types/theme-ui__components" "^0.2.3"
 
 throat@^4.0.0:

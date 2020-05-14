@@ -27,7 +27,7 @@
     "react-scripts": "3.2.0",
     "redux": "4.0.4",
     "redux-loop": "5.0.1",
-    "theme-ui": "0.4.0-alpha.0",
+    "theme-ui": "0.4.0-alpha.1",
     "ts.data.json": "0.3.0",
     "typesafe-actions": "5.1.0",
     "typescript": "3.7.5"
