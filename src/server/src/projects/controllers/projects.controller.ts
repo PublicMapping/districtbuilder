@@ -84,7 +84,7 @@ export class ProjectsController implements CrudController<Project> {
     return await this.service.createOne(req, {
       ...dto,
       user: req.parsed.authPersist.userId,
-      districtsDefinition: (Buffer.alloc(dto.numberOfDistricts) as unknown) as readonly []
+      districtsDefinition: Array(dto.numberOfDistricts).fill(0)
     });
   }
 
@@ -109,7 +109,7 @@ export class ProjectsController implements CrudController<Project> {
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
     }
-    const geojson = geoCollection.merge({ districts: [...project.districtsDefinition] });
+    const geojson = geoCollection.merge({ districts: project.districtsDefinition });
     if (geojson === null) {
       throw new BadRequestException(
         "District definition is invalid",

@@ -1,8 +1,20 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn
+} from "typeorm";
 
 import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
+
+const districtsDefinitionTransformer = {
+  from: (bytes: Buffer) => [...bytes],
+  // tslint:disable-next-line readonly-array
+  to: (array: number[]) => Buffer.from(array)
+};
 
 @Entity()
 export class Project implements IProject {
@@ -19,7 +31,11 @@ export class Project implements IProject {
   @Column({ name: "number_of_districts" })
   numberOfDistricts: number;
 
-  @Column({ type: "bytea", name: "districts_definition" })
+  @Column({
+    type: "bytea",
+    name: "districts_definition",
+    transformer: districtsDefinitionTransformer
+  })
   districtsDefinition: DistrictsDefinition;
 
   @ManyToOne(() => User, { nullable: false })
