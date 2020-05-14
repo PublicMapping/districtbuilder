@@ -5,8 +5,8 @@ import { RegionConfig } from "../../region-configs/entities/region-config.entity
 import { User } from "../../users/entities/user.entity";
 
 const districtsDefinitionTransformer = {
-  from: (bytes: Buffer) => JSON.parse(bytes.toString()),
-  to: (array: GeoUnitCollection) => Buffer.from(JSON.stringify(array))
+  from: (json: string) => JSON.parse(json),
+  to: (geounits: GeoUnitCollection) => JSON.stringify(geounits)
 };
 
 @Entity()
@@ -25,7 +25,7 @@ export class Project implements IProject {
   numberOfDistricts: number;
 
   @Column({
-    type: "bytea",
+    type: "jsonb",
     name: "districts_definition",
     transformer: districtsDefinitionTransformer
   })
