@@ -50,7 +50,7 @@ import { ProjectsService } from "../services/projects.service";
     }
   },
   routes: {
-    only: ["createOneBase", "getManyBase", "getOneBase"]
+    only: ["createOneBase", "getManyBase", "getOneBase", "updateOneBase"]
   }
 })
 @CrudAuth({
