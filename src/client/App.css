@@ -7,25 +7,6 @@ body {
   height: 100%;
 }
 
-.App {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.App-logo {
-  padding: 1em;
-}
-
-.App-link {
-  color: #09d3ac;
-}
-
-.App main {
-  flex: auto;
-}
-
 button[disabled] {
   opacity: 0.6;
 }
