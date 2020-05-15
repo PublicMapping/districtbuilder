@@ -1,10 +1,13 @@
-import React, { useEffect } from "react";
+/** @jsx jsx */
+import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link, Redirect, useParams } from "react-router-dom";
+import { Box, Flex, Image, jsx } from "theme-ui";
 import { IUser } from "../../shared/entities";
 import { getTestString } from "../../shared/TestFns";
 import { userFetch } from "../actions/user";
 import "../App.css";
+import CenteredContent from "../components/CenteredContent";
 import Map from "../components/Map";
 import { State } from "../reducers";
 import { Resource } from "../resource";
@@ -21,14 +24,25 @@ const ProjectScreen = ({ user }: StateProps) => {
 
   const { projectId } = useParams();
   return "isPending" in user ? (
-    <span>Loading...</span>
+    <CenteredContent>Loading...</CenteredContent>
   ) : "errorMessage" in user ? (
     <Redirect to={"/login"} />
   ) : (
-    <div className="App">
-      <header className="App-header">
+    <Flex sx={{ textAlign: "center", flexDirection: "column", height: "100%" }}>
+      <Flex
+        as="header"
+        sx={{
+          backgroundColor: "accent",
+          minHeight: "30vh",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontSize: 3,
+          verticalAlign: "middle"
+        }}
+      >
         <Link to="/">
-          <img src={process.env.PUBLIC_URL + "/logo.png"} className="App-logo" alt="logo" />
+          <Image src={process.env.PUBLIC_URL + "/logo.png"} alt="logo" sx={{ p: 3 }} />
         </Link>
         DistrictBuilder
         <br />
@@ -37,11 +51,11 @@ const ProjectScreen = ({ user }: StateProps) => {
         User: {"resource" in user ? user.resource.email : "none"}
         <br />
         Project id: {projectId}
-      </header>
-      <main>
+      </Flex>
+      <Box as="main" sx={{ flex: "auto" }}>
         <Map />
-      </main>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 
