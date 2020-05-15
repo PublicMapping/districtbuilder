@@ -48,6 +48,18 @@ const theme: Theme & StyledSystemTheme = {
       textAlign: "left"
     }
   },
+  links: {
+    button: {
+      backgroundColor: "primary",
+      color: "white",
+      fontSize: 2,
+      borderRadius: "4px",
+      textDecoration: "none",
+      fontWeight: "body",
+      px: 3,
+      py: 2
+    }
+  },
   styles: {
     img: {
       maxWidth: "100%",
