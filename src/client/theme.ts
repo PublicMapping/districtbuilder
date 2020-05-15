@@ -39,6 +39,14 @@ const theme: Theme & StyledSystemTheme = {
     }
   },
   space: [4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
+  buttons: {
+    primary: {
+      "&[disabled]": { opacity: 0.6 }
+    },
+    secondary: {
+      "&[disabled]": { opacity: 0.6 }
+    }
+  },
   forms: {
     input: {
       mb: 2
