@@ -214,3 +214,21 @@ variable "rds_cpu_credit_balance_threshold" {
   default = "30"
   type    = string
 }
+
+variable "image_tag" {
+   type = string
+ }
+
+ variable "fargate_app_cli_cpu" {
+   type = number
+ }
+
+ variable "fargate_app_cli_memory" {
+   type = number
+ }
+
+ variable "aws_ecs_task_execution_role_policy_arn" {
+   default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+   type    = string
+ }
+ 

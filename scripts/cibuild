@@ -29,7 +29,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         GIT_COMMIT="${GIT_COMMIT}" docker-compose \
             -f docker-compose.yml \
             -f docker-compose.ci.yml \
-            build server
+            build server manage
 
         CI=1 GIT_COMMIT="${GIT_COMMIT}" \
             ./scripts/test

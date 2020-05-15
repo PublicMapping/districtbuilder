@@ -1,0 +1,44 @@
+[
+  {
+    "name": "app-cli",
+    "image": "${image}",
+    "cpu": 0,
+    "essential": true,
+    "entryPoint": [
+      "./bin/run"
+    ],
+    "environment": [
+      {
+        "name": "POSTGRES_HOST",
+        "value": "${postgres_host}"
+      },
+      {
+        "name": "POSTGRES_PORT",
+        "value": "${postgres_port}"
+      },
+      {
+        "name": "POSTGRES_USER",
+        "value": "${postgres_user}"
+      },
+      {
+        "name": "POSTGRES_PASSWORD",
+        "value": "${postgres_password}"
+      },
+      {
+        "name": "POSTGRES_DB",
+        "value": "${postgres_db}"
+      }
+    ],
+    "mountPoints": [],
+    "portMappings": [],
+    "volumesFrom": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "log${environment}AppCLI",
+        "awslogs-region": "${aws_region}",
+        "awslogs-stream-prefix": "${lower(project)}-app-cli"
+      }
+    }
+  }
+]
