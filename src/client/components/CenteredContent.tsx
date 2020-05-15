@@ -10,7 +10,7 @@ const CenteredContent = ({ children }: { readonly children: React.ReactNode }) =
         minHeight: "100vh"
       }}
     >
-      <Flex as="main" sx={{ width: "100%" }}>
+      <Flex as="main" sx={{ width: "100%", height: "100%" }}>
         <Flex
           sx={{
             width: "100%",
