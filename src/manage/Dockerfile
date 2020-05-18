@@ -40,4 +40,6 @@ RUN set -ex \
 COPY --from=tippecanoe /usr/local/bin/tippecanoe /usr/local/bin/tippecanoe
 COPY --from=tippecanoe /usr/local/bin/tile-join /usr/local/bin/tile-join
 
+COPY . /home/node/app/manage
+
 CMD ["/home/node/app/manage/bin/run"]

@@ -31,7 +31,7 @@ $ export DB_AWS_ECR_ENDPOINT=123456789012.dkr.ecr.us-east-1.amazonaws.com
 $ ./scripts/cibuild
 ...
 Successfully built 20dcf93f6907
-Successfully tagged district-builder-server:a476b78
+Successfully tagged districtbuilder:a476b78
 $ ./scripts/cipublish
 ...
 ```

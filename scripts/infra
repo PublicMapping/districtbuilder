@@ -44,6 +44,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 -backend-config="key=terraform/state"
 
             terraform plan \
+                -var="image_tag=${GIT_COMMIT}" \
                 -var-file="${DB_SETTINGS_BUCKET}.tfvars" \
                 -out="${DB_SETTINGS_BUCKET}.tfplan"
             ;;

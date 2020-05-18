@@ -13,7 +13,7 @@ services:
       retries: 3
 
   server:
-    image: district-builder-server
+    image: districtbuilder
     environment:
       - POSTGRES_HOST=database
       - POSTGRES_PORT=5432
@@ -53,7 +53,7 @@ services:
     command: yarn start
 
   manage:
-    image: district-builder-manage
+    image: districtbuilder-manage
     environment:
       - POSTGRES_HOST=database
       - POSTGRES_PORT=5432

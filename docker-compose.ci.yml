@@ -1,7 +1,7 @@
 version: "2.4"
 services:
   server:
-    image: "district-builder-server:${GIT_COMMIT:-latest}"
+    image: "districtbuilder:${GIT_COMMIT:-latest}"
 
   shellcheck:
     image: koalaman/shellcheck:stable

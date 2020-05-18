@@ -28,9 +28,13 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
             # is a docker login command with temporarily ECR credentials.
             eval "$(aws ecr get-login --no-include-email)"
 
-            docker tag "district-builder-server:${GIT_COMMIT}" \
-                "${DB_AWS_ECR_ENDPOINT}/district-builder-server:${GIT_COMMIT}"
-            docker push "${DB_AWS_ECR_ENDPOINT}/district-builder-server:${GIT_COMMIT}"
+            docker tag "districtbuilder:${GIT_COMMIT}" \
+                "${DB_AWS_ECR_ENDPOINT}/districtbuilder:${GIT_COMMIT}"
+            docker push "${DB_AWS_ECR_ENDPOINT}/districtbuilder:${GIT_COMMIT}"
+
+            docker tag "districtbuilder-manage:${GIT_COMMIT}" \
+                "${DB_AWS_ECR_ENDPOINT}/districtbuilder-manage:${GIT_COMMIT}"
+            docker push "${DB_AWS_ECR_ENDPOINT}/districtbuilder-manage:${GIT_COMMIT}"
         else
             echo "ERROR: No DB_AWS_ECR_ENDPOINT variable defined."
             exit 1
