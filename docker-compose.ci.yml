@@ -3,6 +3,9 @@ services:
   server:
     image: "districtbuilder:${GIT_COMMIT:-latest}"
 
+  manage:
+    image: "districtbuilder-manage:${GIT_COMMIT:-latest}"
+
   shellcheck:
     image: koalaman/shellcheck:stable
     volumes:
