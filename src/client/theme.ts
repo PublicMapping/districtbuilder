@@ -13,14 +13,14 @@ const theme: Theme & StyledSystemTheme = {
     heading: "#000",
     text: "#444",
     background: "#f6f6f6",
-    primary: "#33e",
+    primary: "#093EA7",
     secondary: "#33e",
     muted: "#fff",
-    accent: "#33e",
+    accent: "#29303D",
     warning: "#C00339"
   },
   sizes: {
-    form: "468px"
+    form: "500px"
   },
   fontSizes: [12, 14, 16, 21, 28, 38, 50],
   fontWeights: {
@@ -39,12 +39,33 @@ const theme: Theme & StyledSystemTheme = {
     }
   },
   space: [4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
+  buttons: {
+    primary: {
+      "&[disabled]": { opacity: 0.6 }
+    },
+    secondary: {
+      "&[disabled]": { opacity: 0.6 }
+    }
+  },
   forms: {
     input: {
       mb: 2
     },
     label: {
-      mb: 1
+      mb: 1,
+      textAlign: "left"
+    }
+  },
+  links: {
+    button: {
+      backgroundColor: "primary",
+      color: "white",
+      fontSize: 2,
+      borderRadius: "4px",
+      textDecoration: "none",
+      fontWeight: "body",
+      px: 3,
+      py: 2
     }
   },
   styles: {

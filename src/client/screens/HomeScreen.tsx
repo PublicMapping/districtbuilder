@@ -1,6 +1,8 @@
+/** @jsx jsx */
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
+import { Box, Divider, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import { projectsFetch } from "../actions/projects";
 import { State } from "../reducers";
@@ -17,30 +19,45 @@ const HomeScreen = ({ projects }: StateProps) => {
   }, []);
 
   return (
-    <div>
-      <span>Home screen</span>
-      <br />
-      <br />
-      {"resource" in projects ? (
-        projects.resource.length ? (
-          <ul>
-            {projects.resource.map(project => (
-              <li key={project.id}>
+    <Flex sx={{ flexDirection: "column" }}>
+      <Flex as="header" sx={{ justifyContent: "flex-end" }}>
+        <Heading as="h2" sx={{ mb: "0px", mr: "auto", p: 2 }}>
+          DistrictBuilder
+        </Heading>
+        <Link to="/login" sx={{ p: 2 }}>
+          Login
+        </Link>{" "}
+        <Link to="/register" sx={{ p: 2 }}>
+          Register
+        </Link>
+      </Flex>
+      <Divider />
+      <Flex as="main" sx={{ flexDirection: "column" }}>
+        <Heading sx={{ textAlign: "left", p: 2 }}>
+          Maps
+          <Styled.a
+            as={Link}
+            to="/create-project"
+            sx={{ variant: "links.button", float: "right", fontSize: 2 }}
+          >
+            New map
+          </Styled.a>
+        </Heading>
+        {"resource" in projects ? (
+          projects.resource.length ? (
+            projects.resource.map(project => (
+              <React.Fragment key={project.id}>
                 <Link to={`/projects/${project.id}`}>{project.name}</Link> (
                 {project.regionConfig.name} - {project.numberOfDistricts})
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div>No projects found</div>
-        )
-      ) : null}
-      <br />
-      <Link to="/create-project">Create project</Link>
-      <br />
-      <br />
-      <Link to="/login">Login</Link> | <Link to="/register">Register</Link>
-    </div>
+                <Divider />
+              </React.Fragment>
+            ))
+          ) : (
+            <Box>No maps created yet</Box>
+          )
+        ) : null}
+      </Flex>
+    </Flex>
   );
 };
 

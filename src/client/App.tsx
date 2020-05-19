@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Redirect, Route, RouteProps, Switch } from "react-router-dom";
-import { ThemeProvider } from "theme-ui";
+import { Flex, ThemeProvider } from "theme-ui";
 
 import { getJWT, jwtIsExpired } from "./jwt";
 import ActivateAccountScreen from "./screens/ActivateAccountScreen";
@@ -23,8 +23,8 @@ const PrivateRoute = ({ component, ...props }: RouteProps) => {
 };
 
 const App = () => (
-  <div className="App">
-    <ThemeProvider theme={theme}>
+  <ThemeProvider theme={theme}>
+    <Flex sx={{ textAlign: "center", flexDirection: "column", height: "100%" }}>
       <Router>
         <Switch>
           <Route path="/" exact={true} component={HomeScreen} />
@@ -35,8 +35,8 @@ const App = () => (
           <PrivateRoute path="/create-project" exact={true} component={CreateProjectScreen} />
         </Switch>
       </Router>
-    </ThemeProvider>
-  </div>
+    </Flex>
+  </ThemeProvider>
 );
 
 export default App;
