@@ -1,3 +1,14 @@
+resource "aws_s3_bucket" "logs" {
+  bucket = "${lower(var.project)}-${lower(var.environment)}-logs-${var.aws_region}"
+  acl    = "private"
+
+  tags = {
+    Name        = "${lower(var.project)}-${lower(var.environment)}-logs-${var.aws_region}"
+    Project     = var.project
+    Environment = var.environment
+  }
+}
+
 module "ecr" {
   source = "github.com/azavea/terraform-aws-ecr-repository?ref=1.0.0"
 

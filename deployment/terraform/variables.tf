@@ -30,6 +30,10 @@ variable "r53_public_hosted_zone" {
   type = string
 }
 
+variable "cloudfront_price_class" {
+  type = string
+}
+
 variable "vpc_cidr_block" {
   default = "10.0.0.0/16"
   type    = string
@@ -244,7 +248,7 @@ variable "jwt_secret" {
 }
 
 variable "jwt_expiration_in_ms" {
-  type = string
+  type = number
 }
 
 variable "client_url" {
