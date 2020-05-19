@@ -1,0 +1,57 @@
+[
+  {
+    "name": "app",
+    "image": "${image}",
+    "cpu": 0,
+    "essential": true,
+    "environment": [
+      {
+        "name": "POSTGRES_HOST",
+        "value": "${postgres_host}"
+      },
+      {
+        "name": "POSTGRES_PORT",
+        "value": "${postgres_port}"
+      },
+      {
+        "name": "POSTGRES_USER",
+        "value": "${postgres_user}"
+      },
+      {
+        "name": "POSTGRES_PASSWORD",
+        "value": "${postgres_password}"
+      },
+      {
+        "name": "POSTGRES_DB",
+        "value": "${postgres_db}"
+      },
+      {
+        "name": "JWT_SECRET",
+        "value": "${jwt_secret}"
+      },
+      {
+        "name": "JWT_EXPIRATION_IN_MS",
+        "value": "${jwt_expiration_in_ms}"
+      },
+      {
+        "name": "CLIENT_URL",
+        "value": "${client_url}"
+      }
+    ],
+    "mountPoints": [],
+    "portMappings": [
+      {
+        "containerPort": ${app_port}
+      }
+    ],
+    "volumesFrom": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "log${environment}App",
+        "awslogs-region": "${aws_region}",
+        "awslogs-stream-prefix": "${lower(project)}-app"
+      }
+    }
+  }
+]
