@@ -227,6 +227,21 @@ variable "image_tag" {
    type = string
  }
 
+variable "fargate_app_desired_count" {
+  default = "1"
+  type    = string
+}
+
+variable "fargate_app_deployment_min_percent" {
+  default = "100"
+  type    = string
+}
+
+variable "fargate_app_deployment_max_percent" {
+  default = "200"
+  type    = string
+}
+
 variable "fargate_app_cpu" {
   type = number
 }
