@@ -21,3 +21,14 @@ export const staticGeoLevelsFetchSuccess = createAction("Static geoLevels fetch 
   ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
 >();
 export const staticGeoLevelsFetchFailure = createAction("Static geoLevels fetch failure")<string>();
+
+export const staticDemographicsFetch = createAction("Static demographics fetch")<{
+  readonly s3URI: S3URI;
+  readonly demographics: readonly IStaticFile[];
+}>();
+export const staticDemographicsFetchSuccess = createAction("Static demographics fetch success")<
+  ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
+>();
+export const staticDemographicsFetchFailure = createAction("Static demographics fetch failure")<
+  string
+>();

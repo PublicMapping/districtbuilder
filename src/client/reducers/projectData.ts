@@ -7,6 +7,9 @@ import {
   projectFetch,
   projectFetchFailure,
   projectFetchSuccess,
+  staticDemographicsFetch,
+  staticDemographicsFetchFailure,
+  staticDemographicsFetchSuccess,
   staticGeoLevelsFetch,
   staticGeoLevelsFetchFailure,
   staticGeoLevelsFetchSuccess,
@@ -24,12 +27,14 @@ export interface ProjectDataState {
   readonly project: Resource<IProject>;
   readonly staticMetadata: Resource<IStaticMetadata>;
   readonly staticGeoLevels: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
+  readonly staticDemographics: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
 }
 
 export const initialState = {
   project: { isPending: false },
   staticMetadata: { isPending: false },
-  staticGeoLevels: { isPending: false }
+  staticGeoLevels: { isPending: false },
+  staticDemographics: { isPending: false }
 };
 
 const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
@@ -114,16 +119,57 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       );
 
     case getType(staticGeoLevelsFetchSuccess):
-      return {
-        ...state,
-        staticGeoLevels: {
-          resource: action.payload
-        }
-      };
+      return "resource" in state.project && "resource" in state.staticMetadata
+        ? loop(
+            {
+              ...state,
+              staticGeoLevels: {
+                resource: action.payload
+              }
+            },
+            Cmd.action(
+              staticDemographicsFetch({
+                s3URI: state.project.resource.regionConfig.s3URI,
+                demographics: state.staticMetadata.resource.demographics
+              })
+            )
+          )
+        : (state as never);
     case getType(staticGeoLevelsFetchFailure):
       return {
         ...state,
         staticGeoLevels: {
+          errorMessage: action.payload
+        }
+      };
+    case getType(staticDemographicsFetch):
+      return loop(
+        {
+          ...state,
+          staticDemographics: {
+            isPending: true
+          }
+        },
+        Cmd.run(fetchStaticFiles, {
+          successActionCreator: staticDemographicsFetchSuccess,
+          failActionCreator: staticDemographicsFetchFailure,
+          args: [action.payload.s3URI, action.payload.demographics] as Parameters<
+            typeof fetchStaticFiles
+          >
+        })
+      );
+
+    case getType(staticDemographicsFetchSuccess):
+      return {
+        ...state,
+        staticDemographics: {
+          resource: action.payload
+        }
+      };
+    case getType(staticDemographicsFetchFailure):
+      return {
+        ...state,
+        staticDemographics: {
           errorMessage: action.payload
         }
       };

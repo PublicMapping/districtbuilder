@@ -45,7 +45,6 @@ export async function fetchStaticFiles(
               bpe === 1 ? Uint8Array : bpe === 2 ? Uint16Array : Uint32Array;
 
             const typedArray = new typedArrayConstructor(res.data);
-            console.log("response: ", typedArray);
             return typedArray;
           })
         )
