@@ -12,7 +12,7 @@ import { feature as topo2feature, mergeArcs } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
-import { IStaticMetadata } from "../../../shared/entities";
+import { IStaticFile, IStaticMetadata } from "../../../shared/entities";
 import { tileJoin, tippecanoe } from "../lib/cmd";
 
 export default class ProcessGeojson extends Command {
@@ -123,6 +123,12 @@ it when necessary (file sizes ~1GB+).
       simplification
     );
 
+    const bbox = topoJsonHierarchy.bbox;
+    if (bbox === undefined || bbox.length !== 4) {
+      this.log(`Invalid bbox: "${bbox}"`);
+      return;
+    }
+
     this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
     this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevels);
@@ -142,7 +148,13 @@ it when necessary (file sizes ~1GB+).
       geoLevels
     );
 
-    this.writeStaticMetadata(flags.outputDir, demographicMetaData, geoLevelMetaData);
+    this.writeStaticMetadata(
+      flags.outputDir,
+      demographicMetaData,
+      geoLevelMetaData,
+      bbox,
+      geoLevels
+    );
   }
 
   // Generates a TopoJSON topology with aggregated hierarchical data
@@ -276,7 +288,7 @@ it when necessary (file sizes ~1GB+).
     topology: Topology<Objects<{}>>,
     geoLevel: string,
     demographics: readonly string[]
-  ): IStaticMetadata[] {
+  ): IStaticFile[] {
     const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
     return demographics.map(demographic => {
       this.log(`Writing static data file for ${demographic}`);
@@ -299,7 +311,7 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     topology: Topology<Objects<{}>>,
     geoLevels: readonly string[]
-  ): IStaticMetadata[] {
+  ): IStaticFile[] {
     const baseFeatures: Feature[] = (topology.objects[geoLevels[0]] as any).geometries;
 
     return geoLevels.slice(1).map(geoLevel => {
@@ -327,17 +339,20 @@ it when necessary (file sizes ~1GB+).
   // Write static metadata file to disk
   writeStaticMetadata(
     dir: string,
-    demographicMetadata: IStaticMetadata[],
-    geoLevelMetadata: IStaticMetadata[]
+    demographicMetadata: IStaticFile[],
+    geoLevelMetadata: IStaticFile[],
+    bbox: [number, number, number, number],
+    geoLevelHierarchy: string[]
   ): void {
     this.log("Writing static metadata file");
-    writeFileSync(
-      join(dir, "static-metadata.json"),
-      JSON.stringify({
-        demographics: demographicMetadata,
-        geoLevels: geoLevelMetadata
-      })
-    );
+    const staticMetadata: IStaticMetadata = {
+      demographics: demographicMetadata,
+      geoLevels: geoLevelMetadata,
+      bbox,
+      geoLevelHierarchy
+    };
+
+    writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));
   }
 
   // Convert TopoJSON to GeoJSON and write to disk

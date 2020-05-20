@@ -19,6 +19,13 @@ import { ProjectsService } from "../services/projects.service";
   model: {
     type: Project
   },
+  params: {
+    id: {
+      type: "uuid",
+      primary: true,
+      field: "id"
+    }
+  },
   query: {
     join: {
       regionConfig: {
@@ -27,7 +34,7 @@ import { ProjectsService } from "../services/projects.service";
     }
   },
   routes: {
-    only: ["createOneBase", "getManyBase"]
+    only: ["createOneBase", "getManyBase", "getOneBase"]
   }
 })
 @CrudAuth({

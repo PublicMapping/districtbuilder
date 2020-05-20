@@ -1,6 +1,6 @@
 import { createAction } from "typesafe-actions";
 import { IProject } from "../../shared/entities";
 
-export const projectsFetch = createAction("Project fetch")();
-export const projectsFetchSuccess = createAction("Project fetch success")<readonly IProject[]>();
-export const projectsFetchFailure = createAction("Project fetch failure")<string>();
+export const projectsFetch = createAction("Projects fetch")();
+export const projectsFetchSuccess = createAction("Projects fetch success")<readonly IProject[]>();
+export const projectsFetchFailure = createAction("Projects fetch failure")<string>();

@@ -15,10 +15,17 @@ export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;
 }
 
-export interface IStaticMetadata {
+export interface IStaticFile {
   readonly id: string;
   readonly fileName: string;
   readonly bytesPerElement: number;
+}
+
+export interface IStaticMetadata {
+  readonly demographics: readonly IStaticFile[];
+  readonly geoLevels: readonly IStaticFile[];
+  readonly bbox: readonly [number, number, number, number];
+  readonly geoLevelHierarchy: readonly string[];
 }
 
 export interface Login {
@@ -40,12 +47,16 @@ export type JWTPayload = IUser & {
 
 export type RegionConfigId = string;
 
+export type S3URI = string;
+export type HttpsURI = string;
+
 export interface IRegionConfig {
   readonly id: RegionConfigId;
   readonly name: string;
   readonly countryCode: string;
   readonly regionCode: string;
   readonly chambers: readonly IChamber[];
+  readonly s3URI: S3URI;
   readonly version: Date;
 }
 

@@ -27,7 +27,7 @@ const userReducer: LoopReducer<UserState, Action> = (
         Cmd.run(fetchUser, {
           successActionCreator: userFetchSuccess,
           failActionCreator: userFetchFailure,
-          args: []
+          args: [] as Parameters<typeof fetchUser>
         })
       );
     case getType(userFetchSuccess):
