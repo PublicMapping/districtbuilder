@@ -54,9 +54,13 @@ const Map = ({ project }: Props) => {
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
       const map = new MapboxGL.Map({
         container: mapContainer,
+
         style: getMapboxStyle(project.regionConfig.s3URI),
-        center: [-75.547314, 39.746992],
-        zoom: 6.5,
+
+        //center: [-75.547314, 39.746992],
+        //zoom: 6.5,
+        bounds: [-73.9876, 40.7661, -73.9397, 40.8002],
+
         minZoom: 5,
         maxZoom: 15
       });

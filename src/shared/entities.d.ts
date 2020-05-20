@@ -15,10 +15,16 @@ export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;
 }
 
-export interface IStaticMetadata {
+export interface IStaticFile {
   readonly id: string;
   readonly fileName: string;
   readonly bytesPerElement: number;
+}
+
+export interface IStaticMetadata {
+  readonly demographics: readonly IStaticFile[];
+  readonly geoLevels: readonly IStaticFile[];
+  readonly bbox: readonly [number, number, number, number];
 }
 
 export interface Login {
