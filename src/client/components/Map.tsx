@@ -1,10 +1,11 @@
+import { join } from "path";
 import React, { useEffect, useRef, useState } from "react";
-import { parse } from "url";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { IProject } from "../../shared/entities";
+import { s3ToHttps } from "../s3";
 
 const styles = {
   width: "100%",
@@ -16,9 +17,6 @@ interface Props {
 }
 
 function getMapboxStyle(path: string): MapboxGL.Style {
-  const uri = parse(path);
-  const tilePath = `https://${uri.host}.s3.amazonaws.com${uri.path}`;
-
   return {
     layers: [
       {
@@ -37,7 +35,7 @@ function getMapboxStyle(path: string): MapboxGL.Style {
     sources: {
       county: {
         type: "vector",
-        tiles: [`${tilePath}tiles/{z}/{x}/{y}.pbf`],
+        tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
         minzoom: 4,
         maxzoom: 10
       }

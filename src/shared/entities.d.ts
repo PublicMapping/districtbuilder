@@ -46,13 +46,16 @@ export type JWTPayload = IUser & {
 
 export type RegionConfigId = string;
 
+export type S3URI = string;
+export type HttpsURI = string;
+
 export interface IRegionConfig {
   readonly id: RegionConfigId;
   readonly name: string;
   readonly countryCode: string;
   readonly regionCode: string;
   readonly chambers: readonly IChamber[];
-  readonly s3URI: string;
+  readonly s3URI: S3URI;
   readonly version: Date;
 }
 
