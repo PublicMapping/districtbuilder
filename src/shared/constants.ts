@@ -1,3 +1,8 @@
+export enum ForgotPasswordResponse {
+  SUCCESS = "SUCCESS",
+  NOT_FOUND = "NOT_FOUND"
+}
+
 export enum LoginErrors {
   NOT_FOUND = "NOT_FOUND",
   INVALID_PASSWORD = "INVALID_PASSWORD"
@@ -15,6 +20,11 @@ export enum RegisterResponse {
 }
 
 export enum ResendResponse {
+  SUCCESS = "SUCCESS",
+  NOT_FOUND = "NOT_FOUND"
+}
+
+export enum ResetPasswordResponse {
   SUCCESS = "SUCCESS",
   NOT_FOUND = "NOT_FOUND"
 }
