@@ -4,27 +4,27 @@ import { connect } from "react-redux";
 import { Link, Redirect, useParams } from "react-router-dom";
 import { Box, Flex, Image, jsx } from "theme-ui";
 import { IProject, IStaticMetadata, IUser } from "../../shared/entities";
-import { projectFetch } from "../actions/project";
+import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
 import "../App.css";
 import CenteredContent from "../components/CenteredContent";
 import Map from "../components/Map";
 import { State } from "../reducers";
+import { ProjectDataState } from "../reducers/projectData";
 import { Resource } from "../resource";
 import store from "../store";
 
 interface StateProps {
-  readonly project: Resource<IProject>;
-  readonly staticMetadata: Resource<IStaticMetadata>;
+  readonly projectData: ProjectDataState;
   readonly user: Resource<IUser>;
 }
 
-const ProjectScreen = ({ project, staticMetadata, user }: StateProps) => {
+const ProjectScreen = ({ projectData, user }: StateProps) => {
   const { projectId } = useParams();
 
   useEffect(() => {
     store.dispatch(userFetch());
-    projectId && store.dispatch(projectFetch(projectId));
+    projectId && store.dispatch(projectDataFetch(projectId));
   }, [projectId]);
 
   return "isPending" in user ? (
@@ -55,8 +55,11 @@ const ProjectScreen = ({ project, staticMetadata, user }: StateProps) => {
         Project id: {projectId}
       </Flex>
       <Box as="main" sx={{ flex: "auto" }}>
-        {"resource" in project && "resource" in staticMetadata ? (
-          <Map project={project.resource} staticMetadata={staticMetadata.resource} />
+        {"resource" in projectData.project && "resource" in projectData.staticMetadata ? (
+          <Map
+            project={projectData.project.resource}
+            staticMetadata={projectData.staticMetadata.resource}
+          />
         ) : null}
       </Box>
     </Flex>
@@ -65,8 +68,7 @@ const ProjectScreen = ({ project, staticMetadata, user }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    project: state.project,
-    staticMetadata: state.staticMetadata,
+    projectData: state.projectData,
     user: state.user
   };
 }
