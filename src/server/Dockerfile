@@ -14,6 +14,7 @@ COPY yarn.lock /home/node/app/server
 RUN set -ex \
     && yarn install
 
-COPY ormconfig.js dist* /home/node/app/server/
+COPY ormconfig.js /home/node/app/server
+COPY dist /home/node/app/server/dist
 
 CMD ["node", "dist/server/src/main"]
