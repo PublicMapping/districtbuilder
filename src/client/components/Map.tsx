@@ -23,8 +23,8 @@ function getMapboxStyle(path: string): MapboxGL.Style {
       {
         id: "county-outline",
         type: "line",
-        source: "county", // why?
-        "source-layer": "tract",
+        source: "db",
+        "source-layer": "county",
         paint: {
           "line-color": "#000",
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
@@ -34,7 +34,7 @@ function getMapboxStyle(path: string): MapboxGL.Style {
     ],
     name: "District Builder",
     sources: {
-      county: {
+      db: {
         type: "vector",
         tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
         minzoom: 4,
@@ -45,21 +45,20 @@ function getMapboxStyle(path: string): MapboxGL.Style {
   };
 }
 
-const Map = ({ project }: Props) => {
+const Map = ({ project, staticMetadata }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
+      // Conversion from readonly -> mutable to match Mapbox interface
+      const [b0, b1, b2, b3] = staticMetadata.bbox;
+
       const map = new MapboxGL.Map({
         container: mapContainer,
-
         style: getMapboxStyle(project.regionConfig.s3URI),
-
-        //center: [-75.547314, 39.746992],
-        //zoom: 6.5,
-        bounds: [-73.9876, 40.7661, -73.9397, 40.8002],
-
+        bounds: [b0, b1, b2, b3],
+        fitBoundsOptions: { padding: 20 },
         minZoom: 5,
         maxZoom: 15
       });
