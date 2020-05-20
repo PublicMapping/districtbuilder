@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { IProject } from "../../shared/entities";
+import { IProject, IStaticMetadata } from "../../shared/entities";
 import { s3ToHttps } from "../s3";
 
 const styles = {
@@ -14,6 +14,7 @@ const styles = {
 
 interface Props {
   readonly project: IProject;
+  readonly staticMetadata: IStaticMetadata;
 }
 
 function getMapboxStyle(path: string): MapboxGL.Style {

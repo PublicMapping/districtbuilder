@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link, Redirect, useParams } from "react-router-dom";
 import { Box, Flex, Image, jsx } from "theme-ui";
-import { IProject, IUser } from "../../shared/entities";
+import { IProject, IStaticMetadata, IUser } from "../../shared/entities";
 import { projectFetch } from "../actions/project";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -15,10 +15,11 @@ import store from "../store";
 
 interface StateProps {
   readonly project: Resource<IProject>;
+  readonly staticMetadata: Resource<IStaticMetadata>;
   readonly user: Resource<IUser>;
 }
 
-const ProjectScreen = ({ project, user }: StateProps) => {
+const ProjectScreen = ({ project, staticMetadata, user }: StateProps) => {
   const { projectId } = useParams();
 
   useEffect(() => {
@@ -54,7 +55,9 @@ const ProjectScreen = ({ project, user }: StateProps) => {
         Project id: {projectId}
       </Flex>
       <Box as="main" sx={{ flex: "auto" }}>
-        {"resource" in project ? <Map project={project.resource} /> : null}
+        {"resource" in project && "resource" in staticMetadata ? (
+          <Map project={project.resource} staticMetadata={staticMetadata.resource} />
+        ) : null}
       </Box>
     </Flex>
   );
@@ -63,6 +66,7 @@ const ProjectScreen = ({ project, user }: StateProps) => {
 function mapStateToProps(state: State): StateProps {
   return {
     project: state.project,
+    staticMetadata: state.staticMetadata,
     user: state.user
   };
 }

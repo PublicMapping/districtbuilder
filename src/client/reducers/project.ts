@@ -3,6 +3,7 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import { projectFetchSuccess, projectFetch, projectFetchFailure } from "../actions/project";
+import { staticMetadataFetch } from "../actions/staticMetadata";
 
 import { IProject } from "../../shared/entities";
 import { fetchProject } from "../api";
@@ -31,9 +32,12 @@ const projectReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(projectFetchSuccess):
-      return {
-        resource: action.payload
-      };
+      return loop(
+        {
+          resource: action.payload
+        },
+        Cmd.action(staticMetadataFetch(action.payload.regionConfig.s3URI))
+      );
     case getType(projectFetchFailure):
       return {
         errorMessage: action.payload
