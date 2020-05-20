@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { IProject, IStaticFile, IStaticMetadata } from "../../shared/entities";
+import { IProject, IStaticMetadata } from "../../shared/entities";
 import { s3ToHttps } from "../s3";
 
 const styles = {
@@ -17,15 +17,14 @@ interface Props {
   readonly staticMetadata: IStaticMetadata;
 }
 
-function getMapboxStyle(path: string, geoLevels: readonly IStaticFile[]): MapboxGL.Style {
+function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.Style {
   return {
-    // TODO: the base geounit level doesn't appear to be showing up on the map
     layers: geoLevels.map(level => {
       return {
-        id: level.id,
+        id: level,
         type: "line",
         source: "db",
-        "source-layer": level.id,
+        "source-layer": level,
         paint: {
           "line-color": "#000",
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
@@ -55,9 +54,13 @@ const Map = ({ project, staticMetadata }: Props) => {
       // Conversion from readonly -> mutable to match Mapbox interface
       const [b0, b1, b2, b3] = staticMetadata.bbox;
 
+      // At the moment, we are only interacting with the top geolevel (e.g. County)
+      const topGeoLevel =
+        staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1];
+
       const map = new MapboxGL.Map({
         container: mapContainer,
-        style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevels),
+        style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevelHierarchy),
         bounds: [b0, b1, b2, b3],
         fitBoundsOptions: { padding: 20 },
         minZoom: 5,
@@ -71,6 +74,31 @@ const Map = ({ project, staticMetadata }: Props) => {
       map.on("load", () => {
         setMap(map);
         map.resize();
+      });
+
+      // Add a click event to the top geolevel that logs demographic information.
+      // Note that since we are dealing with line types, the feature can't be
+      // directly selected under the cursor. Instead we need to extend a bounding
+      // box and select the first feature we find. This is fine for the proof-of-concept,
+      // but we'll want to add better handling when it comes to actually drawing districts.
+      map.on("click", e => {
+        const buffer = 10;
+        const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
+        const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
+        const features = map.queryRenderedFeatures([southWest, northEast], {
+          layers: [topGeoLevel]
+        });
+
+        // tslint:disable-next-line
+        if (features.length === 0) {
+          // tslint:disable-next-line
+          console.log("No features selected, try clicking closer to a feature border");
+          return;
+        }
+        const feature = features[0];
+
+        // tslint:disable-next-line
+        console.log(`id: ${feature.id}, properties: ${JSON.stringify(feature.properties)}`);
       });
     };
 
