@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link, Redirect, useParams } from "react-router-dom";
 import { Box, Flex, Image, jsx } from "theme-ui";
-import { IProject, IStaticMetadata, IUser } from "../../shared/entities";
+import { IUser } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -55,10 +55,15 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
         Project id: {projectId}
       </Flex>
       <Box as="main" sx={{ flex: "auto" }}>
-        {"resource" in projectData.project && "resource" in projectData.staticMetadata ? (
+        {"resource" in projectData.project &&
+        "resource" in projectData.staticMetadata &&
+        "resource" in projectData.staticGeoLevels &&
+        "resource" in projectData.staticDemographics ? (
           <Map
             project={projectData.project.resource}
             staticMetadata={projectData.staticMetadata.resource}
+            staticGeoLevels={projectData.staticGeoLevels.resource}
+            staticDemographics={projectData.staticDemographics.resource}
           />
         ) : null}
       </Box>

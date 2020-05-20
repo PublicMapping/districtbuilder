@@ -15,6 +15,8 @@ const styles = {
 interface Props {
   readonly project: IProject;
   readonly staticMetadata: IStaticMetadata;
+  readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
+  readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
 }
 
 function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.Style {
@@ -45,7 +47,26 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
   };
 }
 
-const Map = ({ project, staticMetadata }: Props) => {
+// Helper for finding all indices in an array buffer matching a value.
+// Note: mutation is used, because the union type of array buffers proved
+// too difficult to line up types for reduce or map/filter.
+function getAllIndices(
+  arrayBuf: Uint8Array | Uint16Array | Uint32Array,
+  val: number
+): readonly number[] {
+  // tslint:disable-next-line
+  const indices: number[] = [];
+  arrayBuf.forEach((el: number, ind: number) => {
+    // tslint:disable-next-line no-if-statement
+    if (el === val) {
+      // tslint:disable-next-line no-object-mutation
+      indices.push(ind);
+    }
+  });
+  return indices;
+}
+
+const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -89,16 +110,26 @@ const Map = ({ project, staticMetadata }: Props) => {
           layers: [topGeoLevel]
         });
 
-        // tslint:disable-next-line
-        if (features.length === 0) {
+        // tslint:disable-next-line no-if-statement
+        if (features.length === 0 || typeof features[0].id !== "number") {
           // tslint:disable-next-line
-          console.log("No features selected, try clicking closer to a feature border");
+          console.log("No features selected, try clicking closer to a feature border. ", features);
           return;
         }
         const feature = features[0];
-
+        const featureId = feature.id as number;
         // tslint:disable-next-line
-        console.log(`id: ${feature.id}, properties: ${JSON.stringify(feature.properties)}`);
+        console.log(`id: ${feature.id}, properties: `, feature.properties);
+
+        // Indices of all base geounits belonging to the clicked feature
+        const baseIndices = getAllIndices(staticGeoLevels[staticGeoLevels.length - 1], featureId);
+
+        // As a proof of concept, log to the console the aggregated demographic data for the feature
+        staticMetadata.demographics.forEach((demographic, ind) => {
+          const val = baseIndices.reduce((sum, v) => sum + staticDemographics[ind][v], 0);
+          // tslint:disable-next-line
+          console.log(`${demographic.id}: ${val}`);
+        });
       });
     };
 
