@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { IProject, IStaticMetadata } from "../../shared/entities";
+import { IProject, IStaticFile, IStaticMetadata } from "../../shared/entities";
 import { s3ToHttps } from "../s3";
 
 const styles = {
@@ -17,28 +17,29 @@ interface Props {
   readonly staticMetadata: IStaticMetadata;
 }
 
-function getMapboxStyle(path: string): MapboxGL.Style {
+function getMapboxStyle(path: string, geoLevels: readonly IStaticFile[]): MapboxGL.Style {
   return {
-    layers: [
-      {
-        id: "county-outline",
+    // TODO: the base geounit level doesn't appear to be showing up on the map
+    layers: geoLevels.map(level => {
+      return {
+        id: level.id,
         type: "line",
         source: "db",
-        "source-layer": "county",
+        "source-layer": level.id,
         paint: {
           "line-color": "#000",
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
           "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1, 12, 2]
         }
-      }
-    ],
+      };
+    }),
     name: "District Builder",
     sources: {
       db: {
         type: "vector",
         tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
         minzoom: 4,
-        maxzoom: 10
+        maxzoom: 12
       }
     },
     version: 8
@@ -56,7 +57,7 @@ const Map = ({ project, staticMetadata }: Props) => {
 
       const map = new MapboxGL.Map({
         container: mapContainer,
-        style: getMapboxStyle(project.regionConfig.s3URI),
+        style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevels),
         bounds: [b0, b1, b2, b3],
         fitBoundsOptions: { padding: 20 },
         minZoom: 5,
