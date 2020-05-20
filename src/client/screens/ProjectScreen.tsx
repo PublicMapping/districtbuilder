@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link, Redirect, useParams } from "react-router-dom";
 import { Box, Flex, Image, jsx } from "theme-ui";
-import { IUser } from "../../shared/entities";
-import { getTestString } from "../../shared/TestFns";
+import { IProject, IUser } from "../../shared/entities";
+import { projectFetch } from "../actions/project";
 import { userFetch } from "../actions/user";
 import "../App.css";
 import CenteredContent from "../components/CenteredContent";
@@ -14,15 +14,18 @@ import { Resource } from "../resource";
 import store from "../store";
 
 interface StateProps {
+  readonly project: Resource<IProject>;
   readonly user: Resource<IUser>;
 }
 
-const ProjectScreen = ({ user }: StateProps) => {
+const ProjectScreen = ({ project, user }: StateProps) => {
+  const { projectId } = useParams();
+
   useEffect(() => {
     store.dispatch(userFetch());
-  }, []);
+    projectId && store.dispatch(projectFetch(projectId));
+  }, [projectId]);
 
-  const { projectId } = useParams();
   return "isPending" in user ? (
     <CenteredContent>Loading...</CenteredContent>
   ) : "errorMessage" in user ? (
@@ -46,14 +49,12 @@ const ProjectScreen = ({ user }: StateProps) => {
         </Link>
         DistrictBuilder
         <br />
-        Test code sharing: {getTestString()}
-        <br />
         User: {"resource" in user ? user.resource.email : "none"}
         <br />
         Project id: {projectId}
       </Flex>
       <Box as="main" sx={{ flex: "auto" }}>
-        <Map />
+        {"resource" in project ? <Map project={project.resource} /> : null}
       </Box>
     </Flex>
   );
@@ -61,6 +62,7 @@ const ProjectScreen = ({ user }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
+    project: state.project,
     user: state.user
   };
 }

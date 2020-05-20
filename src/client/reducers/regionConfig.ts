@@ -31,7 +31,7 @@ const regionConfigReducer: LoopReducer<RegionConfigState, Action> = (
         Cmd.run(fetchRegionConfigs, {
           successActionCreator: regionConfigsFetchSuccess,
           failActionCreator: regionConfigsFetchFailure,
-          args: []
+          args: [] as Parameters<typeof fetchRegionConfigs>
         })
       );
     case getType(regionConfigsFetchSuccess):

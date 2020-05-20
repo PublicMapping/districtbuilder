@@ -27,7 +27,7 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         Cmd.run(fetchProjects, {
           successActionCreator: projectsFetchSuccess,
           failActionCreator: projectsFetchFailure,
-          args: []
+          args: [] as Parameters<typeof fetchProjects>
         })
       );
     case getType(projectsFetchSuccess):

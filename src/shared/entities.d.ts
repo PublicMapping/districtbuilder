@@ -46,6 +46,7 @@ export interface IRegionConfig {
   readonly countryCode: string;
   readonly regionCode: string;
   readonly chambers: readonly IChamber[];
+  readonly s3URI: string;
   readonly version: Date;
 }
 
