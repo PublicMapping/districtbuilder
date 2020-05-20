@@ -7,13 +7,10 @@ import {
   projectFetch,
   projectFetchFailure,
   projectFetchSuccess,
-  staticDemographicsFetch,
   staticDemographicsFetchFailure,
   staticDemographicsFetchSuccess,
-  staticGeoLevelsFetch,
   staticGeoLevelsFetchFailure,
   staticGeoLevelsFetchSuccess,
-  staticMetadataFetch,
   staticMetadataFetchFailure,
   staticMetadataFetchSuccess
 } from "../actions/projectData";
@@ -55,18 +52,9 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       );
     case getType(projectFetchSuccess):
       return loop(
-        { ...state, project: { resource: action.payload } },
-        Cmd.action(staticMetadataFetch(action.payload.regionConfig.s3URI))
-      );
-    case getType(projectFetchFailure):
-      return {
-        ...state,
-        project: { errorMessage: action.payload }
-      };
-    case getType(staticMetadataFetch):
-      return loop(
         {
           ...state,
+          project: { resource: action.payload },
           staticMetadata: {
             isPending: true
           }
@@ -74,9 +62,14 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         Cmd.run(fetchStaticMetadata, {
           successActionCreator: staticMetadataFetchSuccess,
           failActionCreator: staticMetadataFetchFailure,
-          args: [action.payload] as Parameters<typeof fetchStaticMetadata>
+          args: [action.payload.regionConfig.s3URI] as Parameters<typeof fetchStaticMetadata>
         })
       );
+    case getType(projectFetchFailure):
+      return {
+        ...state,
+        project: { errorMessage: action.payload }
+      };
     case getType(staticMetadataFetchSuccess):
       return "resource" in state.project
         ? loop(
@@ -84,14 +77,35 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
               ...state,
               staticMetadata: {
                 resource: action.payload
+              },
+              staticGeoLevels: {
+                isPending: true
+              },
+              staticDemographics: {
+                isPending: true
               }
             },
-            Cmd.action(
-              staticGeoLevelsFetch({
-                s3URI: state.project.resource.regionConfig.s3URI,
-                geoLevels: action.payload.geoLevels
+            Cmd.list([
+              Cmd.run(fetchStaticFiles, {
+                successActionCreator: staticGeoLevelsFetchSuccess,
+                failActionCreator: staticGeoLevelsFetchFailure,
+                args: [
+                  state.project.resource.regionConfig.s3URI,
+                  action.payload.geoLevels
+                ] as Parameters<typeof fetchStaticFiles>
+              }),
+              // The following is completely valid, but fails to typecheck for some
+              // reason: seemingly related to either redux-loop or typesafe-actions.
+              // @ts-ignore
+              Cmd.run(fetchStaticFiles, {
+                successActionCreator: staticDemographicsFetchSuccess,
+                failActionCreator: staticDemographicsFetchFailure,
+                args: [
+                  state.project.resource.regionConfig.s3URI,
+                  action.payload.demographics
+                ] as Parameters<typeof fetchStaticFiles>
               })
-            )
+            ])
           )
         : (state as never);
     case getType(staticMetadataFetchFailure):
@@ -101,40 +115,13 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
           errorMessage: action.payload
         }
       };
-    case getType(staticGeoLevelsFetch):
-      return loop(
-        {
-          ...state,
-          staticGeoLevels: {
-            isPending: true
-          }
-        },
-        Cmd.run(fetchStaticFiles, {
-          successActionCreator: staticGeoLevelsFetchSuccess,
-          failActionCreator: staticGeoLevelsFetchFailure,
-          args: [action.payload.s3URI, action.payload.geoLevels] as Parameters<
-            typeof fetchStaticFiles
-          >
-        })
-      );
-
     case getType(staticGeoLevelsFetchSuccess):
-      return "resource" in state.project && "resource" in state.staticMetadata
-        ? loop(
-            {
-              ...state,
-              staticGeoLevels: {
-                resource: action.payload
-              }
-            },
-            Cmd.action(
-              staticDemographicsFetch({
-                s3URI: state.project.resource.regionConfig.s3URI,
-                demographics: state.staticMetadata.resource.demographics
-              })
-            )
-          )
-        : (state as never);
+      return {
+        ...state,
+        staticGeoLevels: {
+          resource: action.payload
+        }
+      };
     case getType(staticGeoLevelsFetchFailure):
       return {
         ...state,
@@ -142,23 +129,6 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
           errorMessage: action.payload
         }
       };
-    case getType(staticDemographicsFetch):
-      return loop(
-        {
-          ...state,
-          staticDemographics: {
-            isPending: true
-          }
-        },
-        Cmd.run(fetchStaticFiles, {
-          successActionCreator: staticDemographicsFetchSuccess,
-          failActionCreator: staticDemographicsFetchFailure,
-          args: [action.payload.s3URI, action.payload.demographics] as Parameters<
-            typeof fetchStaticFiles
-          >
-        })
-      );
-
     case getType(staticDemographicsFetchSuccess):
       return {
         ...state,
