@@ -25,6 +25,7 @@ export interface IStaticMetadata {
   readonly demographics: readonly IStaticFile[];
   readonly geoLevels: readonly IStaticFile[];
   readonly bbox: readonly [number, number, number, number];
+  readonly geoLevelHierarchy: readonly string[];
 }
 
 export interface Login {

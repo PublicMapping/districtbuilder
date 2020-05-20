@@ -148,7 +148,13 @@ it when necessary (file sizes ~1GB+).
       geoLevels
     );
 
-    this.writeStaticMetadata(flags.outputDir, demographicMetaData, geoLevelMetaData, bbox);
+    this.writeStaticMetadata(
+      flags.outputDir,
+      demographicMetaData,
+      geoLevelMetaData,
+      bbox,
+      geoLevels
+    );
   }
 
   // Generates a TopoJSON topology with aggregated hierarchical data
@@ -335,13 +341,15 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     demographicMetadata: IStaticFile[],
     geoLevelMetadata: IStaticFile[],
-    bbox: [number, number, number, number]
+    bbox: [number, number, number, number],
+    geoLevelHierarchy: string[]
   ): void {
     this.log("Writing static metadata file");
     const staticMetadata: IStaticMetadata = {
       demographics: demographicMetadata,
       geoLevels: geoLevelMetadata,
-      bbox
+      bbox,
+      geoLevelHierarchy
     };
 
     writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));
