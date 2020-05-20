@@ -224,8 +224,8 @@ variable "rds_cpu_credit_balance_threshold" {
 }
 
 variable "image_tag" {
-   type = string
- }
+  type = string
+}
 
 variable "fargate_app_desired_count" {
   default = "1"
@@ -250,13 +250,13 @@ variable "fargate_app_memory" {
   type = number
 }
 
- variable "fargate_app_cli_cpu" {
-   type = number
- }
+variable "fargate_app_cli_cpu" {
+  type = number
+}
 
- variable "fargate_app_cli_memory" {
-   type = number
- }
+variable "fargate_app_cli_memory" {
+  type = number
+}
 
 variable "jwt_secret" {
   type = string
@@ -272,11 +272,11 @@ variable "client_url" {
 
 variable "app_port" {
   default = "3005"
-  type = string
+  type    = string
 }
 
- variable "aws_ecs_task_execution_role_policy_arn" {
-   default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-   type    = string
- }
+variable "aws_ecs_task_execution_role_policy_arn" {
+  default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  type    = string
+}
  
