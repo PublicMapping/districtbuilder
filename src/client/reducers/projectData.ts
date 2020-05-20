@@ -7,6 +7,9 @@ import {
   projectFetch,
   projectFetchFailure,
   projectFetchSuccess,
+  staticGeoLevelsFetch,
+  staticGeoLevelsFetchFailure,
+  staticGeoLevelsFetchSuccess,
   staticMetadataFetch,
   staticMetadataFetchFailure,
   staticMetadataFetchSuccess
@@ -15,16 +18,18 @@ import {
 import { IProject, IStaticMetadata } from "../../shared/entities";
 import { fetchProject } from "../api";
 import { Resource } from "../resource";
-import { fetchStaticMetadata } from "../s3";
+import { fetchStaticFiles, fetchStaticMetadata } from "../s3";
 
 export interface ProjectDataState {
   readonly project: Resource<IProject>;
   readonly staticMetadata: Resource<IStaticMetadata>;
+  readonly staticGeoLevels: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
 }
 
 export const initialState = {
   project: { isPending: false },
-  staticMetadata: { isPending: false }
+  staticMetadata: { isPending: false },
+  staticGeoLevels: { isPending: false }
 };
 
 const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
@@ -68,16 +73,57 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         })
       );
     case getType(staticMetadataFetchSuccess):
-      return {
-        ...state,
-        staticMetadata: {
-          resource: action.payload
-        }
-      };
+      return "resource" in state.project
+        ? loop(
+            {
+              ...state,
+              staticMetadata: {
+                resource: action.payload
+              }
+            },
+            Cmd.action(
+              staticGeoLevelsFetch({
+                s3URI: state.project.resource.regionConfig.s3URI,
+                geoLevels: action.payload.geoLevels
+              })
+            )
+          )
+        : (state as never);
     case getType(staticMetadataFetchFailure):
       return {
         ...state,
         staticMetadata: {
+          errorMessage: action.payload
+        }
+      };
+    case getType(staticGeoLevelsFetch):
+      return loop(
+        {
+          ...state,
+          staticGeoLevels: {
+            isPending: true
+          }
+        },
+        Cmd.run(fetchStaticFiles, {
+          successActionCreator: staticGeoLevelsFetchSuccess,
+          failActionCreator: staticGeoLevelsFetchFailure,
+          args: [action.payload.s3URI, action.payload.geoLevels] as Parameters<
+            typeof fetchStaticFiles
+          >
+        })
+      );
+
+    case getType(staticGeoLevelsFetchSuccess):
+      return {
+        ...state,
+        staticGeoLevels: {
+          resource: action.payload
+        }
+      };
+    case getType(staticGeoLevelsFetchFailure):
+      return {
+        ...state,
+        staticGeoLevels: {
           errorMessage: action.payload
         }
       };
