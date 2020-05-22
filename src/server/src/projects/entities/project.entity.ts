@@ -27,6 +27,7 @@ export class Project implements IProject {
   @Column({
     type: "jsonb",
     name: "districts_definition",
+    nullable: true,
     transformer: districtsDefinitionTransformer
   })
   districtsDefinition: DistrictsDefinition;
