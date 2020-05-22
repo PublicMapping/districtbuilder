@@ -5,6 +5,7 @@ import { Flex, ThemeProvider } from "theme-ui";
 import { getJWT, jwtIsExpired } from "./jwt";
 import ActivateAccountScreen from "./screens/ActivateAccountScreen";
 import CreateProjectScreen from "./screens/CreateProjectScreen";
+import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import ProjectScreen from "./screens/ProjectScreen";
@@ -31,6 +32,7 @@ const App = () => (
           <PrivateRoute path="/projects/:projectId" exact={true} component={ProjectScreen} />
           <Route path="/login" exact={true} component={LoginScreen} />
           <Route path="/register" exact={true} component={RegistrationScreen} />
+          <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
           <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
           <PrivateRoute path="/create-project" exact={true} component={CreateProjectScreen} />
         </Switch>

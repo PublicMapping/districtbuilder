@@ -59,6 +59,15 @@ export async function registerUser(name: string, email: string, password: string
   });
 }
 
+export async function initiateForgotPassword(email: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/auth/email/forgot-password/${email}`)
+      .then(() => resolve())
+      .catch(error => reject(error.response.data));
+  });
+}
+
 export async function activateAccount(token: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios

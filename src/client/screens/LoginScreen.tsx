@@ -75,6 +75,12 @@ const LoginScreen = () => {
           Sign up for free
         </Styled.a>
       </Box>
+      <Box>
+        Forgot password?{" "}
+        <Styled.a as={Link} to="/forgot-password" sx={{ color: "primary" }}>
+          Password reset
+        </Styled.a>
+      </Box>
     </CenteredContent>
   );
 };
