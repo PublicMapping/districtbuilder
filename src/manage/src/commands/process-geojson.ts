@@ -79,6 +79,11 @@ it when necessary (file sizes ~1GB+).
   async run(): Promise<void> {
     const { args, flags } = this.parse(ProcessGeojson);
 
+    if (!existsSync(args.file)) {
+      this.log(`file ${args.file} does not exist, exiting`);
+      return;
+    }
+
     if (!existsSync(flags.outputDir)) {
       this.log(`output directory ${flags.outputDir} does not exist, exiting`);
       return;
