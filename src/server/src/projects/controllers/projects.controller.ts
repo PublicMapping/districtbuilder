@@ -110,6 +110,7 @@ export class ProjectsController implements CrudController<Project> {
     }
     const geojson = geoCollection.merge({ districts: project.districtsDefinition });
     if (geojson === null) {
+      this.logger.error(`Invalid districts definition for project ${projectId}`);
       throw new BadRequestException(
         "District definition is invalid",
         MakeDistrictsErrors.INVALID_DEFINITION
