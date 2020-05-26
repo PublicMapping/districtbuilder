@@ -4,11 +4,13 @@ import { useParams } from "react-router-dom";
 import { Link, Redirect } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
 
+import { showPasswordResetNotice } from "../actions/auth";
 import { resetPassword } from "../api";
 import CenteredContent from "../components/CenteredContent";
 import { InputField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
+import store from "../store";
 
 const isFormInvalid = (form: ResetPasswordForm): boolean =>
   Object.values(form).some(value => value.trim() === "") || form.password !== form.confirmPassword;
@@ -45,7 +47,10 @@ const ResetPasswordScreen = () => {
             e.preventDefault();
             setPasswordResource({ data, isPending: true });
             resetPassword(token, data.password)
-              .then(() => setPasswordResource({ data, resource: void 0 }))
+              .then(() => {
+                setPasswordResource({ data, resource: void 0 });
+                store.dispatch(showPasswordResetNotice(true));
+              })
               .catch(errors => {
                 setPasswordResource({ data, errors });
               });
