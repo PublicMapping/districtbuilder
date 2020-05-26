@@ -228,18 +228,18 @@ variable "image_tag" {
 }
 
 variable "fargate_app_desired_count" {
-  default = "1"
-  type    = string
+  default = 1
+  type    = number
 }
 
 variable "fargate_app_deployment_min_percent" {
-  default = "100"
-  type    = string
+  default = 100
+  type    = number
 }
 
 variable "fargate_app_deployment_max_percent" {
-  default = "200"
-  type    = string
+  default = 200
+  type    = number
 }
 
 variable "fargate_app_cpu" {
@@ -271,12 +271,11 @@ variable "client_url" {
 }
 
 variable "app_port" {
-  default = "3005"
-  type    = string
+  default = 3005
+  type    = number
 }
 
 variable "aws_ecs_task_execution_role_policy_arn" {
   default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   type    = string
 }
- 
