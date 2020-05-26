@@ -20,7 +20,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Ensure container images are current
         docker-compose build --pull
 
-        # Clean frontend static asset bundle
+        # Clean dist directory
         docker-compose \
             run --rm --no-deps server \
             bash -c "yarn clean"
