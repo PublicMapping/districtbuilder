@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "rimraf dist",
+    "clean": "rm -rf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "check-format": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -50,7 +50,6 @@
     "passport-jwt": "4.0.0",
     "pg": "7.17.1",
     "reflect-metadata": "0.1.13",
-    "rimraf": "3.0.0",
     "rxjs": "6.5.4",
     "topojson-client": "3.1.0",
     "typeorm": "0.2.22"

@@ -26,6 +26,14 @@ variable "r53_private_hosted_zone" {
   type = string
 }
 
+variable "r53_public_hosted_zone" {
+  type = string
+}
+
+variable "cloudfront_price_class" {
+  type = string
+}
+
 variable "vpc_cidr_block" {
   default = "10.0.0.0/16"
   type    = string
@@ -216,19 +224,58 @@ variable "rds_cpu_credit_balance_threshold" {
 }
 
 variable "image_tag" {
-   type = string
- }
+  type = string
+}
 
- variable "fargate_app_cli_cpu" {
-   type = number
- }
+variable "fargate_app_desired_count" {
+  default = 1
+  type    = number
+}
 
- variable "fargate_app_cli_memory" {
-   type = number
- }
+variable "fargate_app_deployment_min_percent" {
+  default = 100
+  type    = number
+}
 
- variable "aws_ecs_task_execution_role_policy_arn" {
-   default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-   type    = string
- }
- 
+variable "fargate_app_deployment_max_percent" {
+  default = 200
+  type    = number
+}
+
+variable "fargate_app_cpu" {
+  type = number
+}
+
+variable "fargate_app_memory" {
+  type = number
+}
+
+variable "fargate_app_cli_cpu" {
+  type = number
+}
+
+variable "fargate_app_cli_memory" {
+  type = number
+}
+
+variable "jwt_secret" {
+  type = string
+}
+
+variable "jwt_expiration_in_ms" {
+  type = number
+}
+
+variable "client_url" {
+  type = string
+}
+
+variable "app_port" {
+  default = 3005
+  type    = number
+}
+
+variable "aws_ecs_task_execution_role_policy_arn" {
+  default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  type    = string
+}
