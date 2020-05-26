@@ -81,6 +81,15 @@ export async function activateAccount(token: string): Promise<JWT> {
   });
 }
 
+export async function resetPassword(token: string, password: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/auth/email/reset-password/${token}`, { password })
+      .then(() => resolve())
+      .catch(error => reject(error.response.data));
+  });
+}
+
 export async function createProject({
   name,
   numberOfDistricts,
