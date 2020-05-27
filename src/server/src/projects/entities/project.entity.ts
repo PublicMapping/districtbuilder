@@ -1,13 +1,16 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
-import { DistrictsDefinition, GeoUnitCollection, IProject } from "../../../../shared/entities";
+import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 
-const districtsDefinitionTransformer = {
-  from: (json: string) => JSON.parse(json),
-  to: (geounits: GeoUnitCollection) => JSON.stringify(geounits)
-};
+// const districtsDefinitionTransformer = {
+//   from: (json: string) => {
+//     console.log("json", json);
+//     return JSON.parse(json);
+//   },
+//   to: (geounits: GeoUnitCollection) => JSON.stringify(geounits)
+// };
 
 @Entity()
 export class Project implements IProject {
@@ -27,8 +30,8 @@ export class Project implements IProject {
   @Column({
     type: "jsonb",
     name: "districts_definition",
-    nullable: true,
-    transformer: districtsDefinitionTransformer
+    nullable: true
+    // transformer: districtsDefinitionTransformer
   })
   districtsDefinition: DistrictsDefinition;
 
