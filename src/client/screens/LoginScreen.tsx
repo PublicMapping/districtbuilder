@@ -1,17 +1,25 @@
 /** @jsx jsx */
 import React, { useState } from "react";
+import { connect } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
-import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Alert, Box, Button, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import { JWT, Login } from "../../shared/entities";
+import { showPasswordResetNotice } from "../actions/auth";
 import { authenticateUser } from "../api";
 import CenteredContent from "../components/CenteredContent";
 import { InputField } from "../components/Field";
 import FormError from "../components/FormError";
 import { jwtIsExpired } from "../jwt";
+import { State } from "../reducers";
 import { WriteResource } from "../resource";
+import store from "../store";
 
-const LoginScreen = () => {
+interface StateProps {
+  readonly passwordResetNoticeShown: boolean;
+}
+
+const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
   const [loginResource, setLoginResource] = useState<WriteResource<Login, JWT>>({
     data: {
       email: "",
@@ -42,6 +50,16 @@ const LoginScreen = () => {
           <Heading as="h2" sx={{ textAlign: "left" }}>
             Log in
           </Heading>
+          {passwordResetNoticeShown && (
+            <Alert>
+              Your password has been reset
+              <Close
+                as="a"
+                onClick={() => store.dispatch(showPasswordResetNotice(false))}
+                sx={{ ml: "auto", p: 0 }}
+              />
+            </Alert>
+          )}
           <FormError resource={loginResource} />
           <InputField
             field="email"
@@ -75,8 +93,20 @@ const LoginScreen = () => {
           Sign up for free
         </Styled.a>
       </Box>
+      <Box>
+        Forgot password?{" "}
+        <Styled.a as={Link} to="/forgot-password" sx={{ color: "primary" }}>
+          Password reset
+        </Styled.a>
+      </Box>
     </CenteredContent>
   );
 };
 
-export default LoginScreen;
+function mapStateToProps(state: State): StateProps {
+  return {
+    passwordResetNoticeShown: state.auth.passwordResetNoticeShown
+  };
+}
+
+export default connect(mapStateToProps)(LoginScreen);

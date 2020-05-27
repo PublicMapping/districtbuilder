@@ -59,6 +59,15 @@ export async function registerUser(name: string, email: string, password: string
   });
 }
 
+export async function initiateForgotPassword(email: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/auth/email/forgot-password/${email}`)
+      .then(() => resolve())
+      .catch(error => reject(error.response.data));
+  });
+}
+
 export async function activateAccount(token: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
@@ -69,6 +78,15 @@ export async function activateAccount(token: string): Promise<JWT> {
         resolve(jwt);
       })
       .catch(error => reject(error.message));
+  });
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/auth/email/reset-password/${token}`, { password })
+      .then(() => resolve())
+      .catch(error => reject(error.response.data));
   });
 }
 

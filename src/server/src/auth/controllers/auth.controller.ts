@@ -13,9 +13,11 @@ import {
 } from "@nestjs/common";
 
 import {
+  ForgotPasswordResponse,
   LoginErrors,
   RegisterResponse,
   ResendResponse,
+  ResetPasswordResponse,
   VerifyEmailErrors
 } from "../../../../shared/constants";
 import { JWT } from "../../../../shared/entities";
@@ -73,7 +75,7 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto): Promise<string> {
     try {
       const newUser = await this.userService.create(registerDto);
-      await this.authService.sendVerificationEmail(newUser);
+      await this.authService.sendInitialVerificationEmail(newUser);
       return RegisterResponse.SUCCESS;
     } catch (error) {
       if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {
@@ -92,7 +94,7 @@ export class AuthController {
   @Post("email/verify/:token")
   public async verifyEmail(@Param("token") token: string): Promise<JWT> {
     try {
-      const verifiedUser = await this.authService.verifyEmail(token);
+      const verifiedUser = await this.authService.verifyInitialEmail(token);
       if (verifiedUser === undefined) {
         throw new NotFoundException(
           "Email or user not found for token",
@@ -117,13 +119,61 @@ export class AuthController {
       if (!user) {
         throw new NotFoundException("User not found for this email", ResendResponse.NOT_FOUND);
       }
-      await this.authService.sendVerificationEmail(user);
+      await this.authService.sendInitialVerificationEmail(user);
       return ResendResponse.SUCCESS;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       } else {
         this.logger.error(`Error sending email verification: ${error}`);
+        throw new InternalServerErrorException();
+      }
+    }
+  }
+
+  @Post("email/forgot-password/:email")
+  public async initiateForgotPassword(@Param("email") email: string): Promise<string> {
+    try {
+      const user = await this.userService.findOne({ email });
+      if (!user) {
+        throw new NotFoundException(
+          "User not found for this email",
+          ForgotPasswordResponse.NOT_FOUND
+        );
+      }
+      await this.authService.sendPasswordResetEmail(user);
+      return ForgotPasswordResponse.SUCCESS;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        this.logger.error(`Error sending password reset email: ${error}`);
+        throw new InternalServerErrorException();
+      }
+    }
+  }
+
+  @Post("email/reset-password/:token")
+  public async resetPassword(
+    @Param("token") token: string,
+    @Body("password") password: string
+  ): Promise<string> {
+    try {
+      const verifiedUser = await this.authService.resetPassword(token, password);
+      if (verifiedUser === undefined) {
+        throw new NotFoundException(
+          "Reset link not found, it may have expired or been mistyped",
+          ResetPasswordResponse.NOT_FOUND
+        );
+      }
+      // Could return a JWT here and log the user in but we're choosing to make
+      // them use the new password they just set by redirecting to login
+      return ResetPasswordResponse.SUCCESS;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        this.logger.error(`Error verifying email token: ${error}`);
         throw new InternalServerErrorException();
       }
     }
