@@ -59,7 +59,7 @@ export class TopologyService {
             );
           }
           const topology = JSON.parse(topojsonBody) as Topology;
-          return new GeoUnitTopology(topology, { groups: geoLevelHierarchy });
+          return new GeoUnitTopology(topology, { groups: geoLevelHierarchy.reverse() });
         } else {
           this.logger.error("Invalid TopoJSON or metadata bodies");
         }
