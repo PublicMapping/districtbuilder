@@ -1,3 +1,5 @@
+import { Feature, FeatureCollection, MultiPolygon } from "geojson";
+
 export type UserId = string;
 
 export interface IUser {
@@ -14,6 +16,9 @@ export type DistrictsDefinition = readonly GeoUnitCollection[] | null;
 export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;
 }
+
+export type DistrictFeature = Feature<MultiPolygon, { readonly [name: string]: number }>;
+export type DistrictGeoJSON = FeatureCollection<MultiPolygon, { readonly [name: string]: number }>;
 
 export interface IStaticFile {
   readonly id: string;

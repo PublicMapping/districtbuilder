@@ -30,6 +30,7 @@ services:
     volumes:
       - ./src/server:/home/node/app/server
       - ./src/shared:/home/node/app/shared
+      - ./src/server/node_modules:/home/node/app/shared/node_modules
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
       - $HOME/.aws:/root/.aws:ro
     working_dir: /home/node/app/server

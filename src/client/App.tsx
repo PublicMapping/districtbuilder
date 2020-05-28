@@ -5,7 +5,6 @@ import { ThemeProvider } from "theme-ui";
 import { getJWT, jwtIsExpired } from "./jwt";
 import ActivateAccountScreen from "./screens/ActivateAccountScreen";
 import CreateProjectScreen from "./screens/CreateProjectScreen";
-import DesignProjectScreen from "./screens/DesignProjectScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
@@ -36,7 +35,6 @@ const App = () => (
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
         <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
-        <Route path="/design-project/" exact={true} component={DesignProjectScreen} />
         <PrivateRoute path="/create-project" exact={true} component={CreateProjectScreen} />
       </Switch>
     </Router>

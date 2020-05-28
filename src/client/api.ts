@@ -1,4 +1,5 @@
 import axios from "axios";
+import { FeatureCollection, MultiPolygon } from "geojson";
 
 import {
   CreateProjectData,
@@ -111,6 +112,17 @@ export async function fetchProject(id: ProjectId): Promise<readonly IProject[]> 
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchProjectGeoJson(
+  id: ProjectId
+): Promise<FeatureCollection<MultiPolygon, { readonly [name: string]: number }>> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/projects/${id}/export/geojson`)
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });

@@ -3,7 +3,7 @@ export interface Svg {
   readonly path: string;
 }
 
-const icons: { readonly [iconName: string]: Svg } = {
+const icons = {
   search: {
     viewBox: "0 0 512 512",
     path:
