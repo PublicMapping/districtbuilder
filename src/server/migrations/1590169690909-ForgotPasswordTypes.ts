@@ -9,7 +9,11 @@ export class ForgotPasswordTypes1590169690909 implements MigrationInterface {
       undefined
     );
     await queryRunner.query(
-      `ALTER TABLE "email_verification" ADD "type" "email_verification_type_enum" NOT NULL`,
+      `ALTER TABLE "email_verification" ADD "type" "email_verification_type_enum" DEFAULT 'initial'`,
+      undefined
+    );
+    await queryRunner.query(
+      `ALTER TABLE "email_verification" ALTER COLUMN "type" SET NOT NULL`,
       undefined
     );
     await queryRunner.query(
