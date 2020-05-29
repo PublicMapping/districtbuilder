@@ -4,14 +4,6 @@ import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 
-// const districtsDefinitionTransformer = {
-//   from: (json: string) => {
-//     console.log("json", json);
-//     return JSON.parse(json);
-//   },
-//   to: (geounits: GeoUnitCollection) => JSON.stringify(geounits)
-// };
-
 @Entity()
 export class Project implements IProject {
   @PrimaryGeneratedColumn("uuid")
@@ -31,7 +23,6 @@ export class Project implements IProject {
     type: "jsonb",
     name: "districts_definition",
     nullable: true
-    // transformer: districtsDefinitionTransformer
   })
   districtsDefinition: DistrictsDefinition;
 
