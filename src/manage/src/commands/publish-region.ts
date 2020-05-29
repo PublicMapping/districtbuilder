@@ -49,6 +49,11 @@ export default class PublishRegion extends Command {
     const keyPrefix = `regions/${args.countryCode}/${args.regionCode}/${versionDt.toISOString()}`;
     const filePaths = await readDir(args.staticDataDir);
 
+    if (filePaths.length === 0) {
+      this.log("no files found for publishing, exiting");
+      return;
+    }
+
     cli.action.start(`Uploading ${filePaths.length} files`);
     const s3Client = new S3();
     const uploadPromises = filePaths.map(filePath => {

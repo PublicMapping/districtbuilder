@@ -79,6 +79,10 @@ export class GeoUnitTopology {
       return false;
     };
 
+    if (!definition.districts) {
+      return null;
+    }
+
     const valid =
       definition.districts.length === this.hierarchy.length &&
       definition.districts.every((elem, idx) => addToDistrict(elem, this.hierarchy[idx]));

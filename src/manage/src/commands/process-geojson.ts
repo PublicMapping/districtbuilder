@@ -2,7 +2,7 @@ import { Command, flags } from "@oclif/command";
 import { IArg } from "@oclif/parser/lib/args";
 import cli from "cli-ux";
 import { mapSync } from "event-stream";
-import { createReadStream, readFileSync, writeFileSync } from "fs";
+import { createReadStream, existsSync, readFileSync, writeFileSync } from "fs";
 import { Feature, FeatureCollection, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
@@ -78,6 +78,17 @@ it when necessary (file sizes ~1GB+).
 
   async run(): Promise<void> {
     const { args, flags } = this.parse(ProcessGeojson);
+
+    if (!existsSync(args.file)) {
+      this.log(`file ${args.file} does not exist, exiting`);
+      return;
+    }
+
+    if (!existsSync(flags.outputDir)) {
+      this.log(`output directory ${flags.outputDir} does not exist, exiting`);
+      return;
+    }
+
     const geoLevels = flags.levels.split(",");
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
