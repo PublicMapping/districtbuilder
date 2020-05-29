@@ -102,7 +102,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
               const validatedForm = validate(data);
-              // tslint:disable-next-line no-if-statement
+              // eslint-disable-next-line functional/no-conditional-statement
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data, isPending: true });
                 createProject({

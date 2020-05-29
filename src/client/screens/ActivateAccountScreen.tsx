@@ -12,7 +12,7 @@ const ActivateAccountScreen = () => {
     isPending: false
   });
   useEffect(() => {
-    // tslint:disable-next-line no-if-statement
+    // eslint-disable-next-line functional/no-conditional-statement
     if (token !== undefined) {
       setActivationResource({ isPending: true });
       activateAccount(token)

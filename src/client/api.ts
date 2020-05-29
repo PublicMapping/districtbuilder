@@ -13,12 +13,12 @@ import { getJWT, setJWT } from "./jwt";
 const apiAxios = axios.create();
 
 function setAxiosAuthHeaders(jwt: JWT): void {
-  // tslint:disable-next-line no-object-mutation no-unused-expression
+  // eslint-disable-next-line functional/immutable-data
   apiAxios.defaults.headers.common.Authorization = `Bearer ${jwt}`;
 }
 
 const authToken = getJWT();
-// tslint:disable-next-line no-if-statement
+// eslint-disable-next-line functional/no-conditional-statement
 if (authToken) {
   setAxiosAuthHeaders(authToken);
 }

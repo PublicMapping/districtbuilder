@@ -54,12 +54,12 @@ function getAllIndices(
   arrayBuf: Uint8Array | Uint16Array | Uint32Array,
   val: number
 ): readonly number[] {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   const indices: number[] = [];
   arrayBuf.forEach((el: number, ind: number) => {
-    // tslint:disable-next-line no-if-statement
+    // eslint-disable-next-line functional/no-conditional-statement
     if (el === val) {
-      // tslint:disable-next-line no-object-mutation
+      // eslint-disable-next-line functional/immutable-data
       indices.push(ind);
     }
   });
@@ -110,15 +110,15 @@ const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: P
           layers: [topGeoLevel]
         });
 
-        // tslint:disable-next-line no-if-statement
+        // eslint-disable-next-line functional/no-conditional-statement
         if (features.length === 0 || typeof features[0].id !== "number") {
-          // tslint:disable-next-line
+          // eslint-disable-next-line
           console.log("No features selected, try clicking closer to a feature border. ", features);
           return;
         }
         const feature = features[0];
         const featureId = feature.id as number;
-        // tslint:disable-next-line
+        // eslint-disable-next-line
         console.log(`id: ${feature.id}, properties: `, feature.properties);
 
         // Indices of all base geounits belonging to the clicked feature
@@ -127,14 +127,14 @@ const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: P
         // As a proof of concept, log to the console the aggregated demographic data for the feature
         staticMetadata.demographics.forEach((demographic, ind) => {
           const val = baseIndices.reduce((sum, v) => sum + staticDemographics[ind][v], 0);
-          // tslint:disable-next-line
+          // eslint-disable-next-line
           console.log(`${demographic.id}: ${val}`);
         });
       });
     };
 
     // Can't use ternary operator here because the call to setMap is async
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     if (!map && mapRef.current != null) {
       initializeMap(setMap, mapRef.current);
     }
