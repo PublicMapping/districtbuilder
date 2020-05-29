@@ -1,6 +1,5 @@
 import axios from "axios";
-import { join } from "path";
-import { parse } from "url";
+import { parse, resolve } from "url";
 
 import { HttpsURI, IStaticFile, IStaticMetadata, S3URI } from "../shared/entities";
 
@@ -8,11 +7,11 @@ const s3Axios = axios.create();
 
 export function s3ToHttps(path: S3URI): HttpsURI {
   const uri = parse(path);
-  return join("https://", `${uri.host}.s3.amazonaws.com`, uri.path || "");
+  return resolve(`https://${uri.host}.s3.amazonaws.com`, uri.path || "");
 }
 
 export function staticDataUri(path: S3URI, fileName: string): HttpsURI {
-  return join(s3ToHttps(path), fileName);
+  return resolve(s3ToHttps(path), fileName);
 }
 
 export async function fetchStaticMetadata(path: S3URI): Promise<IStaticMetadata> {
