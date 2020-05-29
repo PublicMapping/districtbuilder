@@ -7,7 +7,7 @@ class RegionConfigIdDto implements Pick<IRegionConfig, "id"> {
   readonly id: RegionConfigId;
 }
 
-// tslint:disable-next-line max-classes-per-file
+// eslint-disable-next-line max-classes-per-file
 export class CreateProjectDto implements CreateProjectData {
   @IsNotEmpty()
   readonly name: string;

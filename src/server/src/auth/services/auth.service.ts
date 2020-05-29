@@ -109,20 +109,19 @@ export class AuthService {
 
   async verifyInitialEmail(token: string): Promise<User | undefined> {
     return this.verifyEmail(token, VerificationType.INITIAL, user => {
-      /* tslint:disable:no-object-mutation */
+      // eslint-disable-next-line functional/immutable-data
       user.isEmailVerified = true;
-      /* tslint:enable */
     });
   }
 
   async resetPassword(token: string, password: string): Promise<User | undefined> {
     return this.verifyEmail(token, VerificationType.FORGOT_PASSWORD, user => {
-      /* tslint:disable:no-object-mutation */
+      /* eslint-disable functional/immutable-data */
       // Token-based password reset goes through email and so will verify email
       // address if that hasn't happened yet
       user.isEmailVerified = true;
       return user.setPassword(password);
-      /* tslint:enable */
+      /* eslint-enable */
     });
   }
 

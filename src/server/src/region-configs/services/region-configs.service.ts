@@ -7,7 +7,7 @@ import { Repository } from "typeorm";
 
 import { RegionConfig } from "../entities/region-config.entity";
 
-// tslint:disable readonly-array
+// eslint-disable functional/immutable-data
 @Injectable()
 export class RegionConfigsService extends TypeOrmCrudService<RegionConfig> {
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {

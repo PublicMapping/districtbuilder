@@ -121,7 +121,7 @@ export class GeoUnitTopology {
     // Without filling in all missing districts with empty arrays we'll get
     // 'null's instead of empty MultiPolygons
     // Need to use a numeric for loop BC Array.map(...) skips the undefined elems
-    // tslint:disable-next-line:no-loop-statement
+    // eslint-disable-next-line functional/no-loop-statement
     for (let i = 0; i < mutableDistrictGeoms.length; i++) {
       if (!mutableDistrictGeoms[i]) {
         mutableDistrictGeoms[i] = [];

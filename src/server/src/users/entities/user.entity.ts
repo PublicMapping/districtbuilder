@@ -43,9 +43,8 @@ export class User implements IUser {
   }
 
   async setPassword(password: string): Promise<void> {
-    /* tslint:disable:no-object-mutation */
+    // eslint-disable-next-line functional/immutable-data
     this.passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-    /* tslint:enable */
     return;
   }
 

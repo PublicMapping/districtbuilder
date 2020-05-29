@@ -14,6 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async validate(payload: JWTPayload): Promise<IUser> {
     return payload;
   }
