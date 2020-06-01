@@ -16,7 +16,7 @@ export class TopologyService {
   private readonly logger = new Logger(TopologyService.name);
   private s3 = new S3();
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
-    repo.find().then(regionConfigs => {
+    void repo.find().then(regionConfigs => {
       this.layers = regionConfigs
         .map(regionConfig => regionConfig.s3URI)
         .reduce(
@@ -53,14 +53,14 @@ export class TopologyService {
         const topojsonBody = topojsonResponse.Body?.toString("utf8");
         if (staticMetadataBody && topojsonBody) {
           const staticMetadata = JSON.parse(staticMetadataBody);
-          const geoLevelHierarchy = staticMetadata.geoLevelHierarchy as string[];
+          const geoLevelHierarchy = staticMetadata.geoLevelHierarchy.reverse() as string[];
           if (!geoLevelHierarchy) {
             this.logger.error(
               `geoLevelHierarchy missing from static metadata for bucket ${bucket} and key ${staticMetadataKey}`
             );
           }
           const topology = JSON.parse(topojsonBody) as Topology;
-          return new GeoUnitTopology(topology, { groups: geoLevelHierarchy.reverse() });
+          return new GeoUnitTopology(topology, { groups: geoLevelHierarchy });
         } else {
           this.logger.error("Invalid TopoJSON or metadata bodies");
         }
