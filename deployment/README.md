@@ -3,6 +3,7 @@
 - [AWS Credentials](#aws-credentials)
 - [Publish Container Images](#publish-container-images)
 - [Terraform](#terraform)
+- [RDS Migrations](#rds-migrations)
 
 ## AWS Credentials
 
@@ -79,3 +80,25 @@ $ ./scripts/infra apply
 ```
 
 This will attempt to apply the plan assembled in the previous step using Amazon's APIs.
+
+## RDS Migrations
+
+Migrations on RDS should be run through ECS using the app task definition.
+
+To run migrations on the staging environment, run a new task using the following parameters:
+
+| Setting               | Value                               |
+|-----------------------|-------------------------------------|
+| Launch type           | `FARGATE`                           |
+| Task definition       | `StagingApp:<most recent revision>` |
+| Platform version      | `LATEST`                            |
+| Cluster               | `ecsStagingCluster`                 |
+| Number of tasks       | `1`                                 |
+| Cluster VPC           | select `vpcDistrictBuilderStaging`  |
+| Subnets               | select both `PrivateSubnet` entries |
+| Security groups       | select `sgStagingAppEcsService`     |
+| Auto-assign public IP | `DISABLED`                          |
+
+Under Advanced Options: Container Overrides, set the `app` command override to `run,migration:run`
+
+Once the task leaves `PENDING` state and enters `RUNNING` state, you can view the migration progress in the task logs.
