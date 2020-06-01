@@ -20,30 +20,57 @@ export interface GeoUnitDefinition {
   groups: ReadonlyArray<string>;
 }
 
-function group(
-  topology: Topology,
+// Creates a list of trees for the nested geometries of the geounits
+// This matches the possible structure of the DistrictDefinition
+//
+// We'll walk this hierarchy in conjuction with the district definition later
+// to get the geometries needed to build our GeoJSON
+function group(topology: Topology, definition: GeoUnitDefinition): ReadonlyArray<GeoUnitHierarchy> {
+  // Run through all topology objects in a single pass and build up a list of
+  // them keyed by their parent geometries ID, which we'll use to quickly look
+  // up child geometries when we build up our list of trees later in getNode
+  const geounitsByParentId = definition.groups.map((groupName, index) => {
+    const parentCollection = topology.objects[groupName] as GeometryCollection;
+    const mappings = Object.fromEntries(
+      parentCollection.geometries.map((geom: GeometryObject<any>) => [
+        geom.properties[groupName],
+        []
+      ])
+    );
+    const childGroupName = definition.groups[index + 1];
+    if (childGroupName) {
+      const childCollection = topology.objects[childGroupName] as GeometryCollection;
+      childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
+        mappings[geometry.properties[groupName]].push(geometry);
+      });
+    }
+    return [groupName, mappings];
+  });
+
+  const firstGroup = definition.groups[0];
+  const toplevelCollection = topology.objects[firstGroup] as GeometryCollection;
+  return toplevelCollection.geometries.map(geom =>
+    getNode(geom, definition, Object.fromEntries(geounitsByParentId))
+  );
+}
+
+function getNode(
+  geometry: GeometryObject<any>,
   definition: GeoUnitDefinition,
-  filter: (geom: GeometryObject) => boolean = _ => true
-): ReadonlyArray<GeoUnitHierarchy> {
+  geounitsByParentId: {
+    [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
+  }
+): GeoUnitHierarchy {
   const firstGroup = definition.groups[0];
   const remainingGroups = definition.groups.slice(1);
-  const collection = topology.objects[firstGroup] as GeometryCollection;
-  const filteredCollection = collection.geometries.filter(filter);
-
-  return filteredCollection.map(
-    geometry =>
-      ({
-        geom: geometry,
-        children:
-          remainingGroups.length === 0
-            ? []
-            : group(topology, { ...definition, groups: remainingGroups }, child => {
-                const childProps = child.properties as any;
-                const parentProps = geometry.properties as any;
-                return childProps[firstGroup] === parentProps[firstGroup];
-              })
-      } as GeoUnitHierarchy)
-  );
+  const geomId = geometry.properties[firstGroup];
+  const childGeoms = geounitsByParentId[firstGroup][geomId];
+  return {
+    geom: geometry,
+    children: childGeoms.map(childGeom =>
+      getNode(childGeom, { ...definition, groups: remainingGroups }, geounitsByParentId)
+    )
+  } as GeoUnitHierarchy;
 }
 
 export class GeoUnitTopology {
