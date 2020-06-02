@@ -253,13 +253,13 @@ it when necessary (file sizes ~1GB+).
 
   // Helper for aggregating properties by addition
   aggProperty(geoms: readonly [Feature], key: string): number {
-    return geoms.map(g => g?.properties?.[key]).reduce((a, b) => a + b, 0);
+    return geoms.map(g => g?.properties?.[key]).reduce((a: number, b: number) => a + b, 0);
   }
 
   // Reader for GeoJSON files under 1GB or so. Faster than the streaming reader.
   async readSmallGeoJson(path: string): Promise<FeatureCollection<Polygon, {}>> {
     const jsonString = readFileSync(path);
-    return JSON.parse(jsonString.toString());
+    return Promise.resolve(JSON.parse(jsonString.toString()));
   }
 
   // Streaming reader for GeoJSON files. Works on files over 1GB, but is slow.
