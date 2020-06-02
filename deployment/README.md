@@ -83,7 +83,7 @@ This will attempt to apply the plan assembled in the previous step using Amazon'
 
 ## RDS Migrations
 
-Migrations on RDS should be run through ECS using the app task definition.
+Migrations on RDS should be run through ECS using the [StagingApp](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions/StagingApp) task definition.
 
 To run migrations on the staging environment, run a new task using the following parameters:
 
