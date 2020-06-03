@@ -73,3 +73,21 @@ resource "aws_route53_record" "www_ipv6" {
     evaluate_target_health = false
   }
 }
+
+resource "aws_route53_record" "ses_verification" {
+  zone_id = aws_route53_zone.external.zone_id
+  name    = "_amazonses.${var.r53_public_hosted_zone}"
+  type    = "TXT"
+  ttl     = "300"
+  records = [aws_ses_domain_identity.app.verification_token]
+}
+
+resource "aws_route53_record" "ses_dkim" {
+  count = 3
+
+  zone_id = aws_route53_zone.external.zone_id
+  name    = "${aws_ses_domain_dkim.app.dkim_tokens[count.index]}._domainkey.${var.r53_public_hosted_zone}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = ["${aws_ses_domain_dkim.app.dkim_tokens[count.index]}.dkim.amazonses.com"]
+}
