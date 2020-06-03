@@ -12,7 +12,9 @@ const ActivateAccountScreen = () => {
     isPending: false
   });
   useEffect(() => {
-    // eslint-disable-next-line functional/no-conditional-statement
+    // Disabling 'functional/no-conditional-statement' without naming it.
+    // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
+    // eslint-disable-next-line
     if (token !== undefined) {
       setActivationResource({ isPending: true });
       activateAccount(token)

@@ -57,9 +57,13 @@ function getAllIndices(
   // eslint-disable-next-line
   const indices: number[] = [];
   arrayBuf.forEach((el: number, ind: number) => {
-    // eslint-disable-next-line functional/no-conditional-statement
+    // Disabling 'functional/no-conditional-statement' without naming it.
+    // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
+    // eslint-disable-next-line
     if (el === val) {
-      // eslint-disable-next-line functional/immutable-data
+      // Disabling 'functional/immutable-data' without naming it.
+      // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
+      // eslint-disable-next-line
       indices.push(ind);
     }
   });
@@ -110,7 +114,9 @@ const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: P
           layers: [topGeoLevel]
         });
 
-        // eslint-disable-next-line functional/no-conditional-statement
+        // Disabling 'functional/no-conditional-statement' without naming it.
+        // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
+        // eslint-disable-next-line
         if (features.length === 0 || typeof features[0].id !== "number") {
           // eslint-disable-next-line
           console.log("No features selected, try clicking closer to a feature border. ", features);
