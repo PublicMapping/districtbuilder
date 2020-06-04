@@ -102,7 +102,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
               const validatedForm = validate(data);
-              // tslint:disable-next-line no-if-statement
+              // Disabling 'functional/no-conditional-statement' without naming it.
+              // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
+              // eslint-disable-next-line
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data, isPending: true });
                 createProject({

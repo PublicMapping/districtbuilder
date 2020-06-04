@@ -16,4 +16,4 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new BadRequestExceptionFilter());
   await app.listen(3005);
 }
-bootstrap();
+bootstrap(); // eslint-disable-line @typescript-eslint/no-floating-promises

@@ -9,8 +9,8 @@
     "eject": "react-scripts eject",
     "compile": "tsc",
     "watch": "tsc --watch",
-    "fix": "tslint -p . --fix",
-    "lint": "tslint -p .",
+    "fix": "eslint --fix 'src/*.{ts,tsx}' 'src/client/**/*.{ts,tsx}' 'src/shared/**/*.ts'",
+    "lint": "eslint 'src/*.{ts,tsx}' 'src/client/**/*.{ts,tsx}' 'src/shared/**/*.ts'",
     "format": "prettier --write 'src/{client,shared}/**/*.{ts,tsx,json,css}'",
     "check-format": "prettier --check 'src/{client,shared}/**/*.{ts,tsx,json,css}'"
   },
@@ -31,9 +31,6 @@
     "ts.data.json": "0.3.0",
     "typesafe-actions": "5.1.0",
     "typescript": "3.7.5"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   },
   "browserslist": {
     "production": [
@@ -56,12 +53,17 @@
     "@types/react-redux": "7.1.5",
     "@types/react-router": "5.1.2",
     "@types/react-router-dom": "5.1.2",
+    "@typescript-eslint/eslint-plugin": "^3.0.2",
+    "@typescript-eslint/parser": "^3.0.2",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-functional": "^3.0.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsdoc": "^26.0.0",
+    "eslint-plugin-prefer-arrow": "^1.2.1",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-react": "^7.20.0",
     "http-proxy-middleware": "0.20.0",
-    "prettier": "1.18.2",
-    "tslint": "5.20.1",
-    "tslint-config-prettier": "1.18.0",
-    "tslint-etc": "1.9.2",
-    "tslint-immutable": "6.0.1",
-    "tslint-react": "4.1.0"
+    "prettier": "1.18.2"
   }
 }
