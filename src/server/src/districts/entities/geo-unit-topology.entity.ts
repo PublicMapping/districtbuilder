@@ -31,7 +31,9 @@ function group(topology: Topology, definition: GeoUnitDefinition): ReadonlyArray
   // up child geometries when we build up our list of trees later in getNode
   const geounitsByParentId = definition.groups.map((groupName, index) => {
     const parentCollection = topology.objects[groupName] as GeometryCollection;
-    const mappings = Object.fromEntries(
+    const mutableMappings: {
+      [geounitId: string]: Array<Polygon | MultiPolygon>;
+    } = Object.fromEntries(
       parentCollection.geometries.map((geom: GeometryObject<any>) => [
         geom.properties[groupName],
         []
@@ -41,10 +43,12 @@ function group(topology: Topology, definition: GeoUnitDefinition): ReadonlyArray
     if (childGroupName) {
       const childCollection = topology.objects[childGroupName] as GeometryCollection;
       childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-        mappings[geometry.properties[groupName]].push(geometry);
+        if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+          mutableMappings[geometry.properties[groupName]].push(geometry);
+        }
       });
     }
-    return [groupName, mappings];
+    return [groupName, mutableMappings];
   });
 
   const firstGroup = definition.groups[0];
