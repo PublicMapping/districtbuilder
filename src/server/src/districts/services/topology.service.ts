@@ -48,6 +48,7 @@ export class TopologyService {
       this.s3.getObject({ Bucket: bucket, Key: staticMetadataKey }).promise()
     ])
       .then(([topojsonResponse, staticMetadataResponse]) => {
+        this.logger.debug(`downloaded data for s3URI ${s3URI}`);
         const staticMetadataBody = staticMetadataResponse.Body?.toString("utf8");
         const topojsonBody = topojsonResponse.Body?.toString("utf8");
         if (staticMetadataBody && topojsonBody) {
