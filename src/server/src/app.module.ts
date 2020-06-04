@@ -19,7 +19,7 @@ import { join } from "path";
 // TODO: Use SESTransport.Options instead if using SES in #54
 const mailTransportOptions: SESTransport.Options = {
   SES: new SES({
-    apiVersion: '2010-12-01'
+    apiVersion: "2010-12-01"
   })
 };
 
