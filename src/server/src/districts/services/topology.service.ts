@@ -1,12 +1,19 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpService, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import S3 from "aws-sdk/clients/s3";
+import S3, { GetObjectRequest } from "aws-sdk/clients/s3";
 import { Topology } from "topojson-specification";
 import { Repository } from "typeorm";
 
-import { S3URI } from "../../../../shared/entities";
+import { IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
+
+function s3Options(path: S3URI, fileName: string): GetObjectRequest {
+  const url = new URL(path);
+  const pathWithoutLeadingSlash = url.pathname.substring(1);
+  const options = { Bucket: url.hostname, Key: `${pathWithoutLeadingSlash}${fileName}` };
+  return options;
+}
 
 @Injectable()
 export class TopologyService {
@@ -15,6 +22,7 @@ export class TopologyService {
   } = {};
   private readonly logger = new Logger(TopologyService.name);
   private s3 = new S3();
+
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
     void repo.find().then(regionConfigs => {
       this.layers = regionConfigs
@@ -38,37 +46,65 @@ export class TopologyService {
   }
 
   private async fetchLayer(s3URI: S3URI): Promise<GeoUnitTopology | void> {
-    const url = new URL(s3URI);
-    const bucket = url.hostname;
-    const pathWithoutLeadingSlash = url.pathname.substring(1);
-    const topojsonKey = `${pathWithoutLeadingSlash}topo.json`;
-    const staticMetadataKey = `${pathWithoutLeadingSlash}static-metadata.json`;
-    return Promise.all([
-      this.s3.getObject({ Bucket: bucket, Key: topojsonKey }).promise(),
-      this.s3.getObject({ Bucket: bucket, Key: staticMetadataKey }).promise()
-    ])
-      .then(([topojsonResponse, staticMetadataResponse]) => {
-        this.logger.debug(`downloaded data for s3URI ${s3URI}`);
-        const staticMetadataBody = staticMetadataResponse.Body?.toString("utf8");
-        const topojsonBody = topojsonResponse.Body?.toString("utf8");
-        if (staticMetadataBody && topojsonBody) {
-          const staticMetadata = JSON.parse(staticMetadataBody);
-          const geoLevelHierarchy = staticMetadata.geoLevelHierarchy.reverse() as string[];
-          if (!geoLevelHierarchy) {
-            this.logger.error(
-              `geoLevelHierarchy missing from static metadata for bucket ${bucket} and key ${staticMetadataKey}`
-            );
-          }
-          const topology = JSON.parse(topojsonBody) as Topology;
-          return new GeoUnitTopology(topology, { groups: geoLevelHierarchy });
-        } else {
-          this.logger.error("Invalid TopoJSON or metadata bodies");
+    try {
+      const [topojsonResponse, staticMetadataResponse] = await Promise.all([
+        this.s3.getObject(s3Options(s3URI, "topo.json")).promise(),
+        this.s3.getObject(s3Options(s3URI, "static-metadata.json")).promise()
+      ]);
+
+      const staticMetadataBody = staticMetadataResponse.Body?.toString("utf8");
+      const topojsonBody = topojsonResponse.Body?.toString("utf8");
+      if (staticMetadataBody && topojsonBody) {
+        const staticMetadata = JSON.parse(staticMetadataBody) as IStaticMetadata;
+        const geoLevelHierarchy = staticMetadata.geoLevelHierarchy;
+        if (!geoLevelHierarchy) {
+          this.logger.error(`geoLevelHierarchy missing from static metadata for ${s3URI}`);
         }
-      })
-      .catch(err =>
-        this.logger.error(
-          `Unable to download static files from bucket ${bucket} with keys ${topojsonKey} and ${staticMetadataKey}: ${err}`
+        const topology = JSON.parse(topojsonBody) as Topology;
+        const [demographics, geoLevels] = await Promise.all([
+          this.fetchStaticFiles(s3URI, staticMetadata.demographics),
+          this.fetchStaticFiles(s3URI, staticMetadata.geoLevels)
+        ]);
+
+        this.logger.debug(`downloaded data for s3URI ${s3URI}`);
+        return new GeoUnitTopology(
+          topology,
+          { groups: geoLevelHierarchy.slice().reverse() },
+          staticMetadata,
+          demographics,
+          geoLevels
+        );
+      } else {
+        this.logger.error("Invalid TopoJSON or metadata bodies");
+      }
+    } catch (err) {
+      this.logger.error(`Unable to download static files from for ${s3URI}: ${err}`);
+    }
+  }
+
+  private async fetchStaticFiles(
+    path: S3URI,
+    files: readonly IStaticFile[]
+  ): Promise<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>> {
+    const requests = files.map(fileMeta =>
+      this.s3.getObject(s3Options(path, fileMeta.fileName)).promise()
+    );
+
+    return new Promise((resolve, reject) => {
+      Promise.all(requests)
+        .then(response =>
+          resolve(
+            response.map((res, ind) => {
+              const bpe = files[ind].bytesPerElement;
+              const typedArrayConstructor =
+                bpe === 1 ? Uint8Array : bpe === 2 ? Uint16Array : Uint32Array;
+
+              const typedArray = new typedArrayConstructor(res.Body as Buffer);
+              return typedArray;
+            })
+          )
         )
-      );
+        .catch(error => reject(error.message));
+    });
   }
 }

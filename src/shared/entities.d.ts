@@ -67,6 +67,7 @@ export interface IProject {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
+  readonly districtsDefinition: DistrictsDefinition;
   readonly user: IUser;
 }
 

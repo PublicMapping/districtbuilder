@@ -5,6 +5,7 @@ import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { IProject, IStaticMetadata } from "../../shared/entities";
+import { getAllIndices, getDemographics } from "../../shared/functions";
 import { s3ToHttps } from "../s3";
 
 const styles = {
@@ -45,29 +46,6 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
     },
     version: 8
   };
-}
-
-// Helper for finding all indices in an array buffer matching a value.
-// Note: mutation is used, because the union type of array buffers proved
-// too difficult to line up types for reduce or map/filter.
-function getAllIndices(
-  arrayBuf: Uint8Array | Uint16Array | Uint32Array,
-  val: number
-): readonly number[] {
-  // eslint-disable-next-line
-  const indices: number[] = [];
-  arrayBuf.forEach((el: number, ind: number) => {
-    // Disabling 'functional/no-conditional-statement' without naming it.
-    // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
-    // eslint-disable-next-line
-    if (el === val) {
-      // Disabling 'functional/immutable-data' without naming it.
-      // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
-      // eslint-disable-next-line
-      indices.push(ind);
-    }
-  });
-  return indices;
 }
 
 const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: Props) => {
@@ -128,14 +106,15 @@ const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: P
         console.log(`id: ${feature.id}, properties: `, feature.properties);
 
         // Indices of all base geounits belonging to the clicked feature
-        const baseIndices = getAllIndices(staticGeoLevels[staticGeoLevels.length - 1], featureId);
+        const baseIndices = getAllIndices(
+          staticGeoLevels[staticGeoLevels.length - 1],
+          new Set([featureId])
+        );
+        const demographics = getDemographics(baseIndices, staticMetadata, staticDemographics);
 
         // As a proof of concept, log to the console the aggregated demographic data for the feature
-        staticMetadata.demographics.forEach((demographic, ind) => {
-          const val = baseIndices.reduce((sum, v) => sum + staticDemographics[ind][v], 0);
-          // eslint-disable-next-line
-          console.log(`${demographic.id}: ${val}`);
-        });
+        // eslint-disable-next-line
+        console.log(demographics);
       });
     };
 
