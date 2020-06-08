@@ -51,7 +51,7 @@ While `server` is running, the [Create React App](https://github.com/facebook/cr
 If you want to develop the `client` locally against a `server` running in the AWS staging environment, you can configure a local proxy using the `BASE_URL` environment variable:
 
 ```#bash
-BASE_URL=https://staging.districtbuilder.azavea.com ./scripts/server
+BASE_URL=https://staging.districtbuilder.azavea.com docker-compose up client
 ```
 
 This will proxy local AJAX requests to `https://staging.districtbuilder.azavea.com`.
