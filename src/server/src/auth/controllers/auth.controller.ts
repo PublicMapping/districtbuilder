@@ -84,9 +84,10 @@ export class AuthController {
           message: { email: [`User with email '${registerDto.email}' already exists`] }
         } as Errors<RegisterDto>);
       } else {
+        throw error;
         // Intentionally not logging errors as they may contain passwords
-        this.logger.error(`Error registering user`);
-        throw new InternalServerErrorException();
+        // this.logger.error(`Error registering user`);
+        // throw new InternalServerErrorException();
       }
     }
   }
