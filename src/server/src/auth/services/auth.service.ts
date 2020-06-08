@@ -83,7 +83,7 @@ export class AuthService {
       template: "verify"
     });
 
-    this.logger.debug(info.envelope, info.message.toString());
+    this.logger.debug(info.envelope, info.raw.toString());
 
     return;
   }
