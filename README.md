@@ -54,7 +54,7 @@ If you want to develop the `client` locally against a `server` running in the AW
 BASE_URL=https://staging.districtbuilder.azavea.com docker-compose up client
 ```
 
-This will proxy local AJAX requests to `https://staging.districtbuilder.azavea.com`.
+This will proxy local all requests directed at `/api` to `https://staging.districtbuilder.azavea.com`.
 
 ### Project Organization
 
