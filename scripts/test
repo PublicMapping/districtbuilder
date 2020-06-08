@@ -52,11 +52,11 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 run --rm --no-deps \
                 -e "CI=${CI}" \
                 server \
-                yarn test --watchAll=false
+                yarn test --watchAll=false --passWithNoTests
         else
             echo "Executing server test suite"
             ./scripts/yarn server \
-                test --watchAll=false
+                test --watchAll=false --passWithNoTests
         fi
     fi
 fi
