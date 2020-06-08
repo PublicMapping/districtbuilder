@@ -21,6 +21,7 @@ services:
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
       - FROM_EMAIL=no-reply@localhost
       - JWT_SECRET=insecure
       - JWT_EXPIRATION_IN_MS=604800000  # 1 week
