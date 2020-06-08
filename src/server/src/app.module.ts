@@ -15,8 +15,6 @@ import { UsersModule } from "./users/users.module";
 
 import { join } from "path";
 
-// In development the email service is a no-op that only logs
-// TODO: Use SESTransport.Options instead if using SES in #54
 const mailTransportOptions: SESTransport.Options = {
   SES: new SES({
     apiVersion: "2010-12-01"
