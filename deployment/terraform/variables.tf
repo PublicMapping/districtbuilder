@@ -258,7 +258,7 @@ variable "fargate_app_cli_memory" {
   type = number
 }
 
-variable "from_email" {
+variable "default_from_email" {
   type    = string
 }
 

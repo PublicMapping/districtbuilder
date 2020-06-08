@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "scoped_email_sending" {
       test     = "StringEquals"
       variable = "ses:FromAddress"
 
-      values = [var.from_email]
+      values = [var.default_from_email]
     }
   }
 }
