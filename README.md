@@ -11,6 +11,7 @@ DistrictBuilder is web-based, open source software for collaborative redistricti
 - [Requirements](#requirements)
 - [Development](#development)
   - [Hot Reloading 🔥](#hot-reloading-)
+  - [Remote Server Proxy](#remote-server-proxy)
   - [Project Organization](#project-organization)
   - [Stack](#stack)
   - [Ports](#ports)
@@ -44,6 +45,16 @@ Run `scripts/setup` to prepare the development environment:
 ### Hot Reloading 🔥
 
 While `server` is running, the [Create React App](https://github.com/facebook/create-react-app/) frontend will automatically [reload](https://github.com/facebook/create-react-app/#whats-included) when changes are made. Additionally, the [NestJS](https://nestjs.com/) backend will [restart](https://docs.nestjs.com/cli/usages#nest-start) when changes are made.
+
+### Remote Server Proxy
+
+If you want to develop the `client` locally against a `server` running in the AWS staging environment, you can configure a local proxy using the `BASE_URL` environment variable:
+
+```#bash
+BASE_URL=https://staging.districtbuilder.azavea.com docker-compose up client
+```
+
+This will proxy local all requests directed at `/api` to `https://staging.districtbuilder.azavea.com`.
 
 ### Project Organization
 
