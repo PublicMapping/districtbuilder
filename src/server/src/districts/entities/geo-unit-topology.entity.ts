@@ -141,7 +141,7 @@ export class GeoUnitTopology {
       const baseIndices = geometries.reduce((indices: number[], levelGeometries, levelIndex) => {
         const levelIds = levelGeometries
           .map(geom => geom.id)
-          .filter(id => id && typeof id === "number") as number[];
+          .filter(id => id !== undefined && typeof id === "number") as number[];
         const levelIndices =
           levelIndex === this.geoLevels.length
             ? levelIds
