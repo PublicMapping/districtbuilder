@@ -99,7 +99,11 @@ export class TopologyService {
               const typedArrayConstructor =
                 bpe === 1 ? Uint8Array : bpe === 2 ? Uint16Array : Uint32Array;
 
-              const typedArray = new typedArrayConstructor(res.Body as Buffer);
+              // Note this is different from how we construct these typed
+              // arrays on the client, due to differences in how Buffer works
+              // in Node.js (see https://nodejs.org/api/buffer.html)
+              const buf = res.Body as Buffer;
+              const typedArray = new typedArrayConstructor(buf.buffer);
               return typedArray;
             })
           )

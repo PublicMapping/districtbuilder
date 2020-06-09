@@ -145,7 +145,7 @@ export class GeoUnitTopology {
         const levelIndices =
           levelIndex === this.geoLevels.length
             ? levelIds
-            : getAllIndices(this.geoLevels[levelIndex], new Set(levelIds));
+            : getAllIndices(this.geoLevels.slice().reverse()[levelIndex], new Set(levelIds));
         return indices.concat(levelIndices);
       }, []);
       mutableGeom.id = idx;
