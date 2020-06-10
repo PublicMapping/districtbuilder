@@ -8,7 +8,8 @@ import {
   Topology
 } from "topojson-specification";
 
-import { GeoUnitCollection } from "../../../../shared/entities";
+import { GeoUnitCollection, IStaticMetadata } from "../../../../shared/entities";
+import { getAllIndices, getDemographics } from "../../../../shared/functions";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
 
 interface GeoUnitHierarchy {
@@ -80,7 +81,13 @@ function getNode(
 export class GeoUnitTopology {
   private readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
 
-  constructor(public readonly topology: Topology, public readonly definition: GeoUnitDefinition) {
+  constructor(
+    public readonly topology: Topology,
+    public readonly definition: GeoUnitDefinition,
+    public readonly staticMetadata: IStaticMetadata,
+    public readonly demographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+    public readonly geoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
+  ) {
     this.hierarchy = group(topology, definition);
   }
 
@@ -88,22 +95,29 @@ export class GeoUnitTopology {
    * Performs a merger of the specified districts into a GeoJSON collection,
    * or returns null if the district definition is invalid
    */
-  merge(definition: DistrictsDefinitionDto): FeatureCollection | null {
-    const mutableDistrictGeoms: Array<Array<MultiPolygon | Polygon>> = [];
-    const addToDistrict = (elem: GeoUnitCollection, hierarchy: GeoUnitHierarchy): boolean => {
+  merge(definition: DistrictsDefinitionDto, numberOfDistricts: number): FeatureCollection | null {
+    // mutableDistrictGeoms contains the individual geometries prior to being merged
+    // indexed by district id then by geolevel index
+    const mutableDistrictGeoms: Array<Array<Array<MultiPolygon | Polygon>>> = Array.from(
+      Array(numberOfDistricts + 1)
+    ).map(_ => this.staticMetadata.geoLevelHierarchy.map(_ => []));
+    const addToDistrict = (
+      elem: GeoUnitCollection,
+      hierarchy: GeoUnitHierarchy,
+      level = 0
+    ): boolean => {
       if (Array.isArray(elem)) {
         // If the array length doesn't match the length of our current place in
         // the hierarchy, the district definition is invalid
         if (elem.length !== hierarchy.children.length) {
           return false;
         }
-        return elem.every((subelem, idx) => addToDistrict(subelem, hierarchy.children[idx]));
+        return elem.every((subelem, idx) =>
+          addToDistrict(subelem, hierarchy.children[idx], level + 1)
+        );
       } else if (typeof elem === "number" && elem >= 0) {
         const districtIndex = elem;
-        if (!mutableDistrictGeoms[districtIndex]) {
-          mutableDistrictGeoms[districtIndex] = [];
-        }
-        mutableDistrictGeoms[districtIndex].push(hierarchy.geom);
+        mutableDistrictGeoms[districtIndex][level].push(hierarchy.geom);
         return true;
       }
       // Elements that are not non-negative numbers or arrays of the same are invalid
@@ -122,19 +136,20 @@ export class GeoUnitTopology {
       return null;
     }
 
-    // Without filling in all missing districts with empty arrays we'll get
-    // 'null's instead of empty MultiPolygons
-    // Need to use a numeric for loop BC Array.map(...) skips the undefined elems
-    // eslint-disable-next-line functional/no-loop-statement
-    for (let i = 0; i < mutableDistrictGeoms.length; i++) {
-      if (!mutableDistrictGeoms[i]) {
-        mutableDistrictGeoms[i] = [];
-      }
-    }
-
     const merged = mutableDistrictGeoms.map((geometries, idx) => {
-      const mutableGeom = topojson.mergeArcs(this.topology, geometries);
+      const mutableGeom = topojson.mergeArcs(this.topology, geometries.flat());
+      const baseIndices = geometries.reduce((indices: number[], levelGeometries, levelIndex) => {
+        const levelIds = levelGeometries
+          .map(geom => geom.id)
+          .filter(id => id !== undefined && typeof id === "number") as number[];
+        const levelIndices =
+          levelIndex === this.geoLevels.length
+            ? levelIds
+            : getAllIndices(this.geoLevels.slice().reverse()[levelIndex], new Set(levelIds));
+        return indices.concat(levelIndices);
+      }, []);
       mutableGeom.id = idx;
+      mutableGeom.properties = getDemographics(baseIndices, this.staticMetadata, this.demographics);
       return mutableGeom;
     });
     return topojson.feature(this.topology, {

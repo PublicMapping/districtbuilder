@@ -108,7 +108,10 @@ export class ProjectsController implements CrudController<Project> {
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
     }
-    const geojson = geoCollection.merge({ districts: project.districtsDefinition });
+    const geojson = geoCollection.merge(
+      { districts: project.districtsDefinition },
+      project.numberOfDistricts
+    );
     if (geojson === null) {
       this.logger.error(`Invalid districts definition for project ${projectId}`);
       throw new BadRequestException(

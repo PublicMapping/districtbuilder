@@ -70,7 +70,7 @@ export class AuthService {
   }
 
   async sendInitialVerificationEmail(user: User): Promise<void> {
-    const emailToken = this.sendEmailVerification(user, VerificationType.INITIAL);
+    const emailToken = await this.sendEmailVerification(user, VerificationType.INITIAL);
 
     const info = await this.mailerService.sendMail({
       to: user.email,

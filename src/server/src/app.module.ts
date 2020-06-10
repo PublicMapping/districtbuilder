@@ -9,8 +9,6 @@ import { HandlebarsAdapter, MailerModule } from "@nestjs-modules/mailer";
 // import * as SESTransport from "nodemailer/lib/ses-transport";
 import * as StreamTransport from "nodemailer/lib/stream-transport";
 
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { ProjectsModule } from "./projects/projects.module";
@@ -56,8 +54,6 @@ const mailTransportOptions: StreamTransport.Options = {
     UsersModule,
     RegionConfigsModule,
     ProjectsModule
-  ],
-  controllers: [AppController],
-  providers: [AppService]
+  ]
 })
 export class AppModule {}
