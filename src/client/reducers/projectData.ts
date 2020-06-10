@@ -1,3 +1,4 @@
+import { FeatureCollection, MultiPolygon } from "geojson";
 import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
@@ -17,7 +18,7 @@ import {
   staticMetadataFetchSuccess
 } from "../actions/projectData";
 
-import { DistrictGeoJSON, IProject, IStaticMetadata } from "../../shared/entities";
+import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
 import { fetchProject, fetchProjectGeoJson } from "../api";
 import { Resource } from "../resource";
 import { fetchStaticFiles, fetchStaticMetadata } from "../s3";
@@ -27,7 +28,7 @@ export interface ProjectDataState {
   readonly staticMetadata: Resource<IStaticMetadata>;
   readonly staticGeoLevels: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
   readonly staticDemographics: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
-  readonly geojson: Resource<DistrictGeoJSON>;
+  readonly geojson: Resource<FeatureCollection<MultiPolygon, DistrictProperties>>;
 }
 
 export const initialState = {
@@ -84,9 +85,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
     case getType(projectFetchGeoJsonSuccess):
       return {
         ...state,
-        geojson: {
-          resource: action.payload
-        }
+        geojson: { resource: action.payload }
       };
     case getType(projectFetchGeoJsonFailure):
       return {

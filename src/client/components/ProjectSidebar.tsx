@@ -1,14 +1,15 @@
 /** @jsx jsx */
+import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 
-import { DistrictFeature, DistrictGeoJSON, IProject } from "../../shared/entities";
+import { DistrictProperties, IProject } from "../../shared/entities";
 
 const ProjectSidebar = ({
   project,
   geojson
 }: {
   readonly project?: IProject;
-  readonly geojson?: DistrictGeoJSON;
+  readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
 }) => (
   <Flex
     sx={{
@@ -62,7 +63,7 @@ const SidebarRow = ({
   district,
   deviation
 }: {
-  readonly district: DistrictFeature;
+  readonly district: Feature<MultiPolygon, DistrictProperties>;
   readonly deviation: number;
 }) => {
   return (
@@ -77,7 +78,10 @@ const SidebarRow = ({
   );
 };
 
-const getSidebarRows = (project: IProject, geojson: DistrictGeoJSON) => {
+const getSidebarRows = (
+  project: IProject,
+  geojson: FeatureCollection<MultiPolygon, DistrictProperties>
+) => {
   const averagePopulation =
     geojson.features.reduce(
       (population, feature) => population + feature.properties.population,

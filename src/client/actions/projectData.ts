@@ -1,5 +1,6 @@
 import { createAction } from "typesafe-actions";
-import { DistrictGeoJSON, IProject, IStaticMetadata, ProjectId } from "../../shared/entities";
+import { FeatureCollection, MultiPolygon } from "geojson";
+import { DistrictProperties, IProject, IStaticMetadata, ProjectId } from "../../shared/entities";
 
 export const projectDataFetch = createAction("Project data fetch")<ProjectId>();
 
@@ -7,7 +8,7 @@ export const projectFetch = createAction("Project fetch")<ProjectId>();
 export const projectFetchSuccess = createAction("Project fetch success")<IProject>();
 export const projectFetchFailure = createAction("Project fetch failure")<string>();
 export const projectFetchGeoJsonSuccess = createAction("Project fetch GeoJSON success")<
-  DistrictGeoJSON
+  FeatureCollection<MultiPolygon, DistrictProperties>
 >();
 export const projectFetchGeoJsonFailure = createAction("Project fetch GeoJSON failure")<string>();
 
