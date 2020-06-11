@@ -258,11 +258,6 @@ variable "fargate_app_cli_memory" {
   type = number
 }
 
-variable "node_env" {
-  default = "staging"
-  type    = string
-}
-
 variable "default_from_email" {
   type = string
 }

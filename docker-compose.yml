@@ -20,7 +20,7 @@ services:
       - POSTGRES_USER=districtbuilder
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
-      - NODE_ENV=development
+      - NODE_ENV=Development
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - JWT_SECRET=insecure

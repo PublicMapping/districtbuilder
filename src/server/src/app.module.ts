@@ -18,7 +18,7 @@ import { join } from "path";
 
 let mailTransportOptions: StreamTransport.Options | SESTransport.Options;
 // In development the email service is a no-op that only logs
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "Development") {
   mailTransportOptions = {
     streamTransport: true,
     buffer: true,
