@@ -118,7 +118,6 @@ const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: P
       });
     };
 
-    // Can't use ternary operator here because the call to setMap is async
     // eslint-disable-next-line
     if (!map && mapRef.current != null) {
       initializeMap(setMap, mapRef.current);

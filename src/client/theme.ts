@@ -1,6 +1,24 @@
 import { Theme as StyledSystemTheme } from "@styled-system/css";
 import { Theme } from "theme-ui";
 
+export const heights = {
+  header: "48px"
+};
+
+const appButtonStyles = {
+  display: "inline-flex",
+  alignItems: "center",
+  flexShrink: 0,
+  justifyContent: "center",
+  height: "48px",
+  maxHeight: "100%",
+  py: 0,
+  "& > svg": {
+    mr: 1
+  },
+  "&[disabled]": { opacity: 0.6 }
+};
+
 const theme: Theme & StyledSystemTheme = {
   fonts: {
     body:
@@ -10,19 +28,30 @@ const theme: Theme & StyledSystemTheme = {
     monospace: "Menlo, monospace"
   },
   colors: {
-    heading: "#000",
-    text: "#444",
+    heading: "#222",
+    text: "#666",
     background: "#f6f6f6",
     primary: "#093EA7",
-    secondary: "#33e",
+    secondary: "#455066",
     muted: "#fff",
     accent: "#29303D",
-    warning: "#C00339"
+    warning: "#C00339",
+    gray: [
+      "#f7fafc",
+      "#edf2f7",
+      "#e2e8f0",
+      "#cbd5e0",
+      "#a0aec0",
+      "#718096",
+      "#4a5568",
+      "#2d3748",
+      "#1a202c"
+    ]
   },
   sizes: {
     form: "500px"
   },
-  fontSizes: [12, 14, 16, 21, 28, 38, 50],
+  fontSizes: [13, 15, 18, 21, 31, 37, 54],
   fontWeights: {
     body: 400,
     heading: 700,
@@ -35,16 +64,45 @@ const theme: Theme & StyledSystemTheme = {
   text: {
     heading: {
       mb: 2,
-      fontWeight: "heading"
+      fontWeight: "heading",
+      color: "heading"
     }
   },
-  space: [4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
+  space: [0, 4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
   buttons: {
-    primary: {
-      "&[disabled]": { opacity: 0.6 }
-    },
+    primary: appButtonStyles,
     secondary: {
-      "&[disabled]": { opacity: 0.6 }
+      ...appButtonStyles,
+      ...{
+        backgroundColor: "secondary"
+      }
+    },
+    subtle: {
+      ...appButtonStyles,
+      ...{
+        backgroundColor: "gray.1",
+        color: "heading"
+      }
+    },
+    minimal: {
+      ...appButtonStyles,
+      ...{
+        background: "none"
+      }
+    },
+    circular: {
+      ...appButtonStyles,
+      ...{
+        borderRadius: "100px"
+      }
+    },
+    circularSubtle: {
+      ...appButtonStyles,
+      ...{
+        borderRadius: "100px",
+        backgroundColor: "gray.1",
+        color: "heading"
+      }
     }
   },
   forms: {
@@ -74,9 +132,47 @@ const theme: Theme & StyledSystemTheme = {
       height: "auto"
     },
     root: {
+      m: 0,
+      p: 0,
       fontFamily: "body",
       lineHeight: "body",
-      fontWeight: "body"
+      fontWeight: "body",
+      fontSize: 1
+    },
+    table: {
+      borderCollapse: "collapse",
+      m: 2
+    },
+    tr: {
+      borderBottomColor: "gray.3",
+      borderBottomWidth: "1px",
+      borderBottomStyle: "solid",
+      "tbody > &:last-child": { borderBottom: "none" }
+    },
+    td: {
+      textAlign: "right"
+    }
+  },
+  header: {
+    app: {
+      height: heights.header,
+      flexShrink: 0,
+      p: 2
+    },
+    left: {
+      justifyContent: "flex-start",
+      alignItems: "center",
+      flex: 1
+    },
+    center: {
+      justifyContent: "center",
+      alignItems: "center",
+      flex: 1
+    },
+    right: {
+      justifyContent: "flex-end",
+      alignItems: "center",
+      flex: 1
     }
   }
 };

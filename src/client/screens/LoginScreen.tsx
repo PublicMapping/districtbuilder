@@ -32,7 +32,9 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
     <Redirect to="/" />
   ) : (
     <CenteredContent>
-      <Heading as="h1">DistrictBuilder</Heading>
+      <Heading as="h1" sx={{ textAlign: "center" }}>
+        DistrictBuilder
+      </Heading>
       <Card sx={{ backgroundColor: "muted", my: 4, p: 4 }}>
         <Flex
           as="form"

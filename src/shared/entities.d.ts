@@ -15,6 +15,8 @@ export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;
 }
 
+export type DistrictProperties = { readonly [name: string]: number };
+
 export interface IStaticFile {
   readonly id: string;
   readonly fileName: string;
