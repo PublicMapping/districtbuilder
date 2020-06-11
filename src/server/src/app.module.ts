@@ -6,6 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { HandlebarsAdapter, MailerModule } from "@nestjs-modules/mailer";
 import { SES } from "aws-sdk";
 import * as SESTransport from "nodemailer/lib/ses-transport";
+import * as StreamTransport from "nodemailer/lib/stream-transport";
 
 import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
@@ -15,11 +16,21 @@ import { UsersModule } from "./users/users.module";
 
 import { join } from "path";
 
-const mailTransportOptions: SESTransport.Options = {
-  SES: new SES({
-    apiVersion: "2010-12-01"
-  })
-};
+let mailTransportOptions: StreamTransport.Options | SESTransport.Options;
+// In development the email service is a no-op that only logs
+if (process.env.NODE_ENV === "development") {
+  mailTransportOptions = {
+    streamTransport: true,
+    buffer: true,
+    newline: "unix"
+  };
+} else {
+  mailTransportOptions = {
+    SES: new SES({
+      apiVersion: "2010-12-01"
+    })
+  };
+}
 
 @Module({
   imports: [

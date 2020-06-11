@@ -83,7 +83,8 @@ export class AuthService {
       template: "verify"
     });
 
-    this.logger.debug(info.envelope, info.raw.toString());
+    const infoBody = info.raw || info.message;
+    this.logger.debug(info.envelope, infoBody.toString());
 
     return;
   }
@@ -102,7 +103,8 @@ export class AuthService {
       template: "passwordreset"
     });
 
-    this.logger.debug(info.envelope, info.message.toString());
+    const infoBody = info.raw || info.message;
+    this.logger.debug(info.envelope, infoBody.toString());
 
     return;
   }
