@@ -23,7 +23,6 @@ services:
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - NODE_ENV=development
-      - DEFAULT_FROM_EMAIL=no-reply@staging.districtbuilder.azavea.com
       - JWT_SECRET=insecure
       - JWT_EXPIRATION_IN_MS=604800000  # 1 week
       - CLIENT_URL=http://localhost:3003  # TODO: make this configurable per environment
