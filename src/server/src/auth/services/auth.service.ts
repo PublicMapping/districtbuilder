@@ -8,7 +8,7 @@ import { getManager, Repository } from "typeorm";
 
 import { LoginErrors } from "../../../../shared/constants";
 import { IUser, JWT, UserId } from "../../../../shared/entities";
-import { EMAIL_VERIFICATION_TOKEN_LENGTH, FROM_EMAIL } from "../../common/constants";
+import { EMAIL_VERIFICATION_TOKEN_LENGTH, DEFAULT_FROM_EMAIL } from "../../common/constants";
 import { User } from "../../users/entities/user.entity";
 import { UsersService } from "../../users/services/users.service";
 import { EmailVerification, VerificationType } from "../entities/email-verification.entity";
@@ -74,7 +74,7 @@ export class AuthService {
 
     const info = await this.mailerService.sendMail({
       to: user.email,
-      from: FROM_EMAIL,
+      from: DEFAULT_FROM_EMAIL,
       subject: "Verify your DistrictBuilder account",
       context: {
         user,
@@ -83,7 +83,8 @@ export class AuthService {
       template: "verify"
     });
 
-    this.logger.debug(info.envelope, info.message.toString());
+    const infoBody = info.raw || info.message;
+    this.logger.debug(info.envelope, infoBody.toString());
 
     return;
   }
@@ -93,7 +94,7 @@ export class AuthService {
 
     const info = await this.mailerService.sendMail({
       to: user.email,
-      from: FROM_EMAIL,
+      from: DEFAULT_FROM_EMAIL,
       subject: "Reset your DistrictBuilder password",
       context: {
         user,
@@ -102,7 +103,8 @@ export class AuthService {
       template: "passwordreset"
     });
 
-    this.logger.debug(info.envelope, info.message.toString());
+    const infoBody = info.raw || info.message;
+    this.logger.debug(info.envelope, infoBody.toString());
 
     return;
   }

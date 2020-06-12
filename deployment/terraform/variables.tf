@@ -258,6 +258,10 @@ variable "fargate_app_cli_memory" {
   type = number
 }
 
+variable "default_from_email" {
+  type = string
+}
+
 variable "jwt_secret" {
   type = string
 }

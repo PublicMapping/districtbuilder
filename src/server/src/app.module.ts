@@ -4,11 +4,11 @@ import { TerminusModule } from "@nestjs/terminus";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { HandlebarsAdapter, MailerModule } from "@nestjs-modules/mailer";
-// TODO: Needed for email, #54
-// import { SES } from "aws-sdk";
-// import * as SESTransport from "nodemailer/lib/ses-transport";
+import { SES } from "aws-sdk";
+import * as SESTransport from "nodemailer/lib/ses-transport";
 import * as StreamTransport from "nodemailer/lib/stream-transport";
 
+import { DEBUG } from "./common/constants";
 import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { ProjectsModule } from "./projects/projects.module";
@@ -17,13 +17,21 @@ import { UsersModule } from "./users/users.module";
 
 import { join } from "path";
 
+let mailTransportOptions: StreamTransport.Options | SESTransport.Options;
 // In development the email service is a no-op that only logs
-// TODO: Use SESTransport.Options instead if using SES in #54
-const mailTransportOptions: StreamTransport.Options = {
-  streamTransport: true,
-  buffer: true,
-  newline: "unix"
-};
+if (DEBUG) {
+  mailTransportOptions = {
+    streamTransport: true,
+    buffer: true,
+    newline: "unix"
+  };
+} else {
+  mailTransportOptions = {
+    SES: new SES({
+      apiVersion: "2010-12-01"
+    })
+  };
+}
 
 @Module({
   imports: [
