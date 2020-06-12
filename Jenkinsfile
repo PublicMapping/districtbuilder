@@ -19,7 +19,7 @@ node {
       }
     }
 
-    if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME.startsWith('test/') || env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME.startsWith('hotfix/') || env.BRANCH_NAME == 'PR-158') {
+    if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME.startsWith('test/') || env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME.startsWith('hotfix/')) {
       // Publish container images built and tested during `cibuild`
       // to the private Amazon Container Registry tagged with the
       // first seven characters of the revision SHA.
