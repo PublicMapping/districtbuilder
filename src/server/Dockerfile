@@ -17,4 +17,4 @@ RUN set -ex \
 COPY . /home/node/app/server
 
 ENTRYPOINT ["yarn"]
-CMD ["run", "start:prod"]
+CMD ["start:prod"]

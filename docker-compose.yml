@@ -38,7 +38,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    command: run start:dev
+    command: start:dev
 
   client:
     image: node:12-slim
