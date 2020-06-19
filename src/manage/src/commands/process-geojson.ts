@@ -13,7 +13,7 @@ import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
 import { IStaticFile, IStaticMetadata } from "../../../shared/entities";
-import { tileJoin, tippecanoe } from "../lib/cmd";
+import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -387,15 +387,21 @@ it when necessary (file sizes ~1GB+).
     maxZooms: readonly string[]
   ): void {
     const mbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
+    const labelsGeojson = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.geojson`));
+    const labelsMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.mbtiles`));
     geoLevels.forEach((geoLevel, idx) => {
       const minimumZoom = minZooms[idx];
       const maximumZoom = maxZooms[idx];
       const output = mbtiles[idx];
+      const labelPath = labelsGeojson[idx];
+      const labelOutput = labelsMbtiles[idx];
+      const path = join(dir, `${geoLevel}.geojson`);
       this.log(`Converting geojson to vectortiles for ${geoLevel}`);
       tippecanoe(
-        [join(dir, `${geoLevel}.geojson`)],
+        path,
         {
           detectSharedBorders: true,
+          excludeAll: true, // Don't include demographic data
           force: true,
           maximumZoom,
           minimumZoom,
@@ -407,11 +413,24 @@ it when necessary (file sizes ~1GB+).
         },
         { echo: true }
       );
+      const geojson = geojsonPolygonLabels(path, { style: "largest" }, { echo: true }).stdout;
+      writeFileSync(labelPath, geojson);
+      tippecanoe(
+        labelPath,
+        {
+          force: true,
+          maximumZoom,
+          minimumZoom,
+          noTileCompression: true,
+          output: labelOutput
+        },
+        { echo: true }
+      );
     });
 
     const outputDir = join(dir, "tiles");
     tileJoin(
-      mbtiles,
+      [...mbtiles, ...labelsMbtiles],
       { force: true, noTileCompression: true, noTileSizeLimit: true, outputToDirectory: outputDir },
       { echo: true }
     );

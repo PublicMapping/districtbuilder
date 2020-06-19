@@ -9,18 +9,7 @@ function shellExec(cmd, args, echo) {
   if (echo) {
     console.log(fullCommand.green);
   }
-  shell.exec(fullCommand);
-  return fullCommand;
-}
-
-function execAsync(cmd, args, echo) {
-  const spawn = require("child-process-promise").spawn;
-  if (echo) {
-    console.log(`${cmd} ${args.join(" ")}`.green);
-  }
-  const promise = spawn(`${cmd}`, args);
-  promise.childProcess.stderr.pipe(process.stdout);
-  return promise;
+  return shell.exec(fullCommand, { silent: true });
 }
 
 function execCmd(cmd, layerFiles = [], params, options = {}) {
@@ -53,14 +42,12 @@ function execCmd(cmd, layerFiles = [], params, options = {}) {
   layerFiles = !Array.isArray(layerFiles) ? [layerFiles] : layerFiles;
 
   const args = [...paramStrs, ...layerFiles.map(quotify)];
-  if (options.async) {
-    return execAsync(cmd, args, options.echo);
-  } else {
-    return shellExec(cmd, args, options.echo);
-  }
+  return shellExec(cmd, args, options.echo);
 }
 
 module.exports = {
+  geojsonPolygonLabels: (geojsonPath, params, options = {}) =>
+    execCmd("node_modules/.bin/geojson-polygon-labels", geojsonPath, params, options),
   tippecanoe: (layerFiles, params, options = {}) =>
     execCmd("tippecanoe", layerFiles, params, options),
   tileJoin: (layerFiles, params, options = {}) => execCmd("tile-join", layerFiles, params, options)
