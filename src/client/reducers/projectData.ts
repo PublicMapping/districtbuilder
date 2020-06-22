@@ -50,6 +50,8 @@ export const initialState = {
   selectedGeounitIds: new Set([])
 };
 
+// TODO: this reducer is getting large. Some of the actions should be split out
+// into a separate module that deals more with district selection.
 const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
   state: ProjectDataState = initialState,
   action: Action
