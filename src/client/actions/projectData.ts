@@ -34,3 +34,4 @@ export const setSelectedDistrictId = createAction("Set selected district id")<nu
 export const addSelectedGeounitIds = createAction("Set selected geounit ids")<
   ReadonlySet<number>
 >();
+export const clearSelectedGeounitIds = createAction("Clear selected geounit ids")();

@@ -5,7 +5,7 @@ import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import { DistrictProperties, IProject } from "../../shared/entities";
 import { getDistrictColor } from "../constants/colors";
 
-import { setSelectedDistrictId } from "../actions/projectData";
+import { clearSelectedGeounitIds, setSelectedDistrictId } from "../actions/projectData";
 import store from "../store";
 
 const ProjectSidebar = ({
@@ -63,7 +63,13 @@ const SidebarHeader = ({
       </Flex>
       {selectedGeounitIds.size ? (
         <Flex sx={{ variant: "header.right" }}>
-          <Button variant="circularSubtle" sx={{ mr: "2", cursor: "pointer" }}>
+          <Button
+            variant="circularSubtle"
+            sx={{ mr: "2", cursor: "pointer" }}
+            onClick={() => {
+              store.dispatch(clearSelectedGeounitIds());
+            }}
+          >
             Cancel
           </Button>
           <Button variant="circular" sx={{ cursor: "pointer" }}>

@@ -4,6 +4,7 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
+  clearSelectedGeounitIds,
   projectDataFetch,
   projectFetch,
   projectFetchFailure,
@@ -177,6 +178,11 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       return {
         ...state,
         selectedGeounitIds: new Set([...state.selectedGeounitIds, ...action.payload])
+      };
+    case getType(clearSelectedGeounitIds):
+      return {
+        ...state,
+        selectedGeounitIds: new Set([])
       };
     default:
       return state as never;

@@ -89,15 +89,14 @@ const Map = ({
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
+  // Conversion from readonly -> mutable to match Mapbox interface
+  const [b0, b1, b2, b3] = staticMetadata.bbox;
+
+  // At the moment, we are only interacting with the top geolevel (e.g. County)
+  const topGeoLevel = staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1];
+
   useEffect(() => {
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
-      // Conversion from readonly -> mutable to match Mapbox interface
-      const [b0, b1, b2, b3] = staticMetadata.bbox;
-
-      // At the moment, we are only interacting with the top geolevel (e.g. County)
-      const topGeoLevel =
-        staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1];
-
       const map = new MapboxGL.Map({
         container: mapContainer,
         style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevelHierarchy),
@@ -195,10 +194,12 @@ const Map = ({
     console.log("selectedDistrictId: ", selectedDistrictId);
   }, [selectedDistrictId]);
 
+  // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
-    // eslint-disable-next-line
-    console.log("selectedGeounitIds: ", selectedGeounitIds);
-  }, [selectedGeounitIds]);
+    map &&
+      selectedGeounitIds.size === 0 &&
+      map.removeFeatureState({ source, sourceLayer: topGeoLevel });
+  }, [map, selectedGeounitIds, topGeoLevel]);
 
   return <div ref={mapRef} style={styles} />;
 };
