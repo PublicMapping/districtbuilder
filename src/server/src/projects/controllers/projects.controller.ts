@@ -30,6 +30,7 @@ import { User } from "../../users/entities/user.entity";
 import { CreateProjectDto } from "../entities/project.dto";
 import { Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
+import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
 
 @Crud({
   model: {
@@ -74,17 +75,40 @@ export class ProjectsController implements CrudController<Project> {
     return this;
   }
   private readonly logger = new Logger(ProjectsController.name);
-  constructor(public service: ProjectsService, public topologyService: TopologyService) {}
+  constructor(
+    public service: ProjectsService,
+    public topologyService: TopologyService,
+    private readonly regionConfigService: RegionConfigsService
+  ) {}
 
   @Override()
   async createOne(
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateProjectDto
   ): Promise<Project> {
-    return await this.service.createOne(req, {
-      ...dto,
-      user: req.parsed.authPersist.userId
-    });
+    try {
+      const regionConfig = await this.regionConfigService.findOne(dto.regionConfig);
+      if (!regionConfig) {
+        throw new NotFoundException(`Unable to find region config: ${dto.regionConfig}`);
+      }
+
+      const geoCollection = await this.topologyService.get(regionConfig.s3URI);
+      if (!geoCollection) {
+        throw new NotFoundException(
+          `Topology ${regionConfig.s3URI} not found`,
+          MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+        );
+      }
+
+      return await this.service.createOne(req, {
+        ...dto,
+        districtsDefinition: new Array(geoCollection.hierarchy.length).fill(0),
+        user: req.parsed.authPersist.userId
+      });
+    } catch (error) {
+      this.logger.error(`Error creating project: ${error}`);
+      throw new InternalServerErrorException();
+    }
   }
 
   @UseInterceptors(CrudRequestInterceptor)
