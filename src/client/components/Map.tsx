@@ -23,6 +23,7 @@ interface Props {
   readonly staticMetadata: IStaticMetadata;
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
+  readonly selectedDistrictId: number;
 }
 
 // Retuns a line layer id given the geolevel
@@ -88,7 +89,14 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
   };
 }
 
-const Map = ({ project, geojson, staticMetadata, staticGeoLevels, staticDemographics }: Props) => {
+const Map = ({
+  project,
+  geojson,
+  staticMetadata,
+  staticGeoLevels,
+  staticDemographics,
+  selectedDistrictId
+}: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +128,7 @@ const Map = ({ project, geojson, staticMetadata, staticGeoLevels, staticDemograp
         // Add a color property to the geojson, so it can be used for styling
         geojson.features.forEach((feature, id) => {
           // @ts-ignore
+          // eslint-disable-next-line
           feature.properties.color = getDistrictColor(id);
         });
 
@@ -189,6 +198,11 @@ const Map = ({ project, geojson, staticMetadata, staticGeoLevels, staticDemograp
     // eslint complains that this useEffect should depend on map, but we're using this to call setMap so that wouldn't make sense
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line
+    console.log("selectedDistrictId: ", selectedDistrictId);
+  }, [selectedDistrictId]);
 
   return <div ref={mapRef} style={styles} />;
 };

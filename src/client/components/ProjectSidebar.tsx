@@ -5,12 +5,17 @@ import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import { DistrictProperties, IProject } from "../../shared/entities";
 import { getDistrictColor } from "../constants/colors";
 
+import { setSelectedDistrictId } from "../actions/projectData";
+import store from "../store";
+
 const ProjectSidebar = ({
   project,
-  geojson
+  geojson,
+  selectedDistrictId
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
+  readonly selectedDistrictId: number;
 }) => (
   <Flex
     sx={{
@@ -37,7 +42,7 @@ const ProjectSidebar = ({
           <Styled.th>Comp.</Styled.th>
         </Styled.tr>
       </thead>
-      <tbody>{project && geojson && getSidebarRows(project, geojson)}</tbody>
+      <tbody>{project && geojson && getSidebarRows(project, geojson, selectedDistrictId)}</tbody>
     </Styled.table>
   </Flex>
 );
@@ -62,13 +67,20 @@ const SidebarHeader = () => {
 
 const SidebarRow = ({
   district,
+  selected,
   deviation
 }: {
   readonly district: Feature<MultiPolygon, DistrictProperties>;
+  readonly selected: boolean;
   readonly deviation: number;
 }) => {
   return (
-    <Styled.tr>
+    <Styled.tr
+      sx={{ backgroundColor: selected ? "#efefef" : "inherit" }}
+      onClick={() => {
+        store.dispatch(setSelectedDistrictId(district.id as number));
+      }}
+    >
       <Styled.td sx={{ textAlign: "left" }}>
         <span
           sx={{
@@ -91,7 +103,8 @@ const SidebarRow = ({
 
 const getSidebarRows = (
   project: IProject,
-  geojson: FeatureCollection<MultiPolygon, DistrictProperties>
+  geojson: FeatureCollection<MultiPolygon, DistrictProperties>,
+  selectedDistrictId: number
 ) => {
   const averagePopulation =
     geojson.features.reduce(
@@ -101,6 +114,7 @@ const getSidebarRows = (
   return geojson.features.map(feature => (
     <SidebarRow
       district={feature}
+      selected={feature.id === selectedDistrictId}
       deviation={feature.properties.population - averagePopulation}
       key={feature.id}
     />

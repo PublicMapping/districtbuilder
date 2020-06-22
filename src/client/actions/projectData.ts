@@ -28,3 +28,5 @@ export const staticDemographicsFetchSuccess = createAction("Static demographics 
 export const staticDemographicsFetchFailure = createAction("Static demographics fetch failure")<
   string
 >();
+
+export const setSelectedDistrictId = createAction("Set selected district id")<number>();

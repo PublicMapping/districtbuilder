@@ -56,7 +56,11 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
     <FullScreenApp>
       <ProjectHeader project={project} />
       <Main>
-        <ProjectSidebar project={project} geojson={geojson} />
+        <ProjectSidebar
+          project={project}
+          geojson={geojson}
+          selectedDistrictId={projectData.selectedDistrictId}
+        />
         <MapContainer>
           <MapHeader />
           {"resource" in projectData.project &&
@@ -70,6 +74,7 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
               staticMetadata={projectData.staticMetadata.resource}
               staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
+              selectedDistrictId={projectData.selectedDistrictId}
             />
           ) : null}
         </MapContainer>
