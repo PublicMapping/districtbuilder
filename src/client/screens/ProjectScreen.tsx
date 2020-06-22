@@ -62,9 +62,11 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
           "resource" in projectData.staticGeoLevels &&
-          "resource" in projectData.staticDemographics ? (
+          "resource" in projectData.staticDemographics &&
+          "resource" in projectData.geojson ? (
             <Map
               project={projectData.project.resource}
+              geojson={projectData.geojson.resource}
               staticMetadata={projectData.staticMetadata.resource}
               staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
