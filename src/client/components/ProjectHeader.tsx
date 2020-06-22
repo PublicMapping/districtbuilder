@@ -1,5 +1,6 @@
 /** @jsx jsx */
 import { Box, Button, Flex, Image, jsx, Text } from "theme-ui";
+import { Link } from "react-router-dom";
 
 import { IProject } from "../../shared/entities";
 import Icon from "../components/Icon";
@@ -21,7 +22,9 @@ const HeaderDivider = () => {
 const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
   <Flex sx={{ variant: "header.app", backgroundColor: "accent" }}>
     <Flex sx={{ variant: "header.left" }}>
-      <Image src="/logo-mark-bw.svg" height="28px" width="28px" />
+      <Link to="/">
+        <Image src="/logo-mark-bw.svg" height="28px" width="28px" />
+      </Link>
       <HeaderDivider />
       <Flex
         sx={{
