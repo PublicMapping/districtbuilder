@@ -60,6 +60,7 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
           project={project}
           geojson={geojson}
           selectedDistrictId={projectData.selectedDistrictId}
+          selectedGeounitIds={projectData.selectedGeounitIds}
         />
         <MapContainer>
           <MapHeader />
@@ -75,6 +76,7 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
               staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
               selectedDistrictId={projectData.selectedDistrictId}
+              selectedGeounitIds={projectData.selectedGeounitIds}
             />
           ) : null}
         </MapContainer>

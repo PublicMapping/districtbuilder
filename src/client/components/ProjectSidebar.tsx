@@ -11,11 +11,13 @@ import store from "../store";
 const ProjectSidebar = ({
   project,
   geojson,
-  selectedDistrictId
+  selectedDistrictId,
+  selectedGeounitIds
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly selectedDistrictId: number;
+  readonly selectedGeounitIds: ReadonlySet<number>;
 }) => (
   <Flex
     sx={{
@@ -30,7 +32,7 @@ const ProjectSidebar = ({
       minWidth: "300px"
     }}
   >
-    <SidebarHeader />
+    <SidebarHeader selectedGeounitIds={selectedGeounitIds} />
     <Styled.table>
       <thead>
         <Styled.tr>
@@ -47,7 +49,7 @@ const ProjectSidebar = ({
   </Flex>
 );
 
-const SidebarHeader = () => {
+const SidebarHeader = ({ selectedGeounitIds }: { readonly selectedGeounitIds: ReadonlySet<number> }) => {
   return (
     <Flex sx={{ variant: "header.app" }}>
       <Flex sx={{ variant: "header.left" }}>
@@ -55,12 +57,14 @@ const SidebarHeader = () => {
           Districts
         </Heading>
       </Flex>
-      <Flex sx={{ variant: "header.right" }}>
-        <Button variant="circularSubtle" sx={{ mr: "2" }}>
-          Cancel
-        </Button>
-        <Button variant="circular">Approve</Button>
-      </Flex>
+      {selectedGeounitIds.size ? (
+        <Flex sx={{ variant: "header.right" }}>
+          <Button variant="circularSubtle" sx={{ mr: "2" }}>
+            Cancel
+          </Button>
+          <Button variant="circular">Approve</Button>
+        </Flex>
+      ) : null}
     </Flex>
   );
 };

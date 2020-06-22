@@ -11,6 +11,7 @@ import {
   projectFetchGeoJsonSuccess,
   projectFetchGeoJsonFailure,
   setSelectedDistrictId,
+  addSelectedGeounitIds,
   staticDemographicsFetchFailure,
   staticDemographicsFetchSuccess,
   staticGeoLevelsFetchFailure,
@@ -31,6 +32,7 @@ export interface ProjectDataState {
   readonly staticDemographics: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
   readonly geojson: Resource<FeatureCollection<MultiPolygon, DistrictProperties>>;
   readonly selectedDistrictId: number;
+  readonly selectedGeounitIds: ReadonlySet<number>;
 }
 
 export const initialState = {
@@ -39,7 +41,8 @@ export const initialState = {
   staticGeoLevels: { isPending: false },
   staticDemographics: { isPending: false },
   geojson: { isPending: false },
-  selectedDistrictId: 1
+  selectedDistrictId: 1,
+  selectedGeounitIds: new Set([])
 };
 
 const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
@@ -169,6 +172,11 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       return {
         ...state,
         selectedDistrictId: action.payload
+      };
+    case getType(addSelectedGeounitIds):
+      return {
+        ...state,
+        selectedGeounitIds: new Set([...state.selectedGeounitIds, ...action.payload])
       };
     default:
       return state as never;

@@ -5,10 +5,12 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
+import { addSelectedGeounitIds } from "../actions/projectData";
 import { getDistrictColor } from "../constants/colors";
 import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
 import { getAllIndices, getDemographics } from "../../shared/functions";
 import { s3ToHttps } from "../s3";
+import store from "../store";
 
 const styles = {
   width: "100%",
@@ -24,6 +26,7 @@ interface Props {
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
+  readonly selectedGeounitIds: ReadonlySet<number>;
 }
 
 // Retuns a line layer id given the geolevel
@@ -80,7 +83,8 @@ const Map = ({
   staticMetadata,
   staticGeoLevels,
   staticDemographics,
-  selectedDistrictId
+  selectedDistrictId,
+  selectedGeounitIds
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -162,6 +166,7 @@ const Map = ({
           { source, id: featureId, sourceLayer: topGeoLevel },
           { selected: true }
         );
+        store.dispatch(addSelectedGeounitIds(new Set([featureId])));
 
         // Indices of all base geounits belonging to the clicked feature
         const baseIndices = getAllIndices(
@@ -180,14 +185,20 @@ const Map = ({
     if (!map && mapRef.current != null) {
       initializeMap(setMap, mapRef.current);
     }
+
     // eslint complains that this useEffect should depend on map, but we're using this to call setMap so that wouldn't make sense
     // eslint-disable-next-line
-  }, []);
+  }, [selectedGeounitIds]);
 
   useEffect(() => {
     // eslint-disable-next-line
     console.log("selectedDistrictId: ", selectedDistrictId);
   }, [selectedDistrictId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line
+    console.log("selectedGeounitIds: ", selectedGeounitIds);
+  }, [selectedGeounitIds]);
 
   return <div ref={mapRef} style={styles} />;
 };
