@@ -23,7 +23,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Clean dist directory
         docker-compose \
             run --rm --no-deps server \
-            bash -c "yarn clean"
+            clean
 
         # Update frontend, Yarn dependencies and build static asset bundle
         docker-compose \
@@ -32,8 +32,8 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
 
         # Update backend, Yarn dependencies and build server
         docker-compose \
-            run --rm --no-deps server \
-            bash -c "yarn install && yarn build"
+            run --rm --no-deps --entrypoint "bash -c" server \
+            "yarn install && yarn build"
 
         # Update manage, Yarn dependencies and build
         docker-compose \

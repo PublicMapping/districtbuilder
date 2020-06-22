@@ -19,10 +19,10 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     elif [[ -z "${1}" ]]; then
         docker-compose \
             run --rm server \
-            yarn run migration:run
+            migration:run
     else
         docker-compose \
             run --rm server \
-            bash -c "yarn run migration:${1} ${*:2}"
+            "migration:${1} ${*:2}"
     fi
 fi
