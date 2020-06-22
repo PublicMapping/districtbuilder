@@ -5,9 +5,14 @@ import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import { DistrictProperties, IProject } from "../../shared/entities";
 import { getDistrictColor } from "../constants/colors";
 
-import { clearSelectedGeounitIds, setSelectedDistrictId } from "../actions/projectData";
+import {
+  clearSelectedGeounitIds,
+  saveDistrictsDefinition,
+  setSelectedDistrictId
+} from "../actions/projectData";
 import store from "../store";
 
+// TODO: need to make it so the sidebar doesn't fully re-render when new information is fetched
 const ProjectSidebar = ({
   project,
   geojson,
@@ -72,7 +77,13 @@ const SidebarHeader = ({
           >
             Cancel
           </Button>
-          <Button variant="circular" sx={{ cursor: "pointer" }}>
+          <Button
+            variant="circular"
+            sx={{ cursor: "pointer" }}
+            onClick={() => {
+              store.dispatch(saveDistrictsDefinition());
+            }}
+          >
             Approve
           </Button>
         </Flex>
@@ -81,6 +92,7 @@ const SidebarHeader = ({
   );
 };
 
+// TODO: need to intermediate changes in populations as districts are selected
 const SidebarRow = ({
   district,
   selected,

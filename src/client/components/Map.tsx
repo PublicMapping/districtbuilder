@@ -25,7 +25,6 @@ interface Props {
   readonly staticMetadata: IStaticMetadata;
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
-  readonly selectedDistrictId: number;
   readonly selectedGeounitIds: ReadonlySet<number>;
 }
 
@@ -77,13 +76,13 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
   };
 }
 
+// TODO: need to make it so the map doesn't fully re-render when new information is fetched
 const Map = ({
   project,
   geojson,
   staticMetadata,
   staticGeoLevels,
   staticDemographics,
-  selectedDistrictId,
   selectedGeounitIds
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
@@ -184,15 +183,9 @@ const Map = ({
     if (!map && mapRef.current != null) {
       initializeMap(setMap, mapRef.current);
     }
-
     // eslint complains that this useEffect should depend on map, but we're using this to call setMap so that wouldn't make sense
     // eslint-disable-next-line
-  }, [selectedGeounitIds]);
-
-  useEffect(() => {
-    // eslint-disable-next-line
-    console.log("selectedDistrictId: ", selectedDistrictId);
-  }, [selectedDistrictId]);
+  }, []);
 
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {

@@ -5,6 +5,7 @@ import { DistrictProperties, IProject, IStaticMetadata, ProjectId } from "../../
 export const projectDataFetch = createAction("Project data fetch")<ProjectId>();
 
 export const projectFetch = createAction("Project fetch")<ProjectId>();
+export const projectFetchGeoJson = createAction("Project fetch geojson")<ProjectId>();
 export const projectFetchSuccess = createAction("Project fetch success")<IProject>();
 export const projectFetchFailure = createAction("Project fetch failure")<string>();
 export const projectFetchGeoJsonSuccess = createAction("Project fetch GeoJSON success")<
@@ -35,3 +36,12 @@ export const addSelectedGeounitIds = createAction("Set selected geounit ids")<
   ReadonlySet<number>
 >();
 export const clearSelectedGeounitIds = createAction("Clear selected geounit ids")();
+
+export const saveDistrictsDefinition = createAction("Save districts definition")();
+
+export const patchDistrictsDefinitionSuccess = createAction("Patch districts definition success")<
+  IProject
+>();
+export const patchDistrictsDefinitionFailure = createAction("Patch districts definition failure")<
+  string
+>();

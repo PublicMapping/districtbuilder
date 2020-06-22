@@ -4,15 +4,19 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
+  addSelectedGeounitIds,
   clearSelectedGeounitIds,
+  patchDistrictsDefinitionSuccess,
+  patchDistrictsDefinitionFailure,
   projectDataFetch,
   projectFetch,
   projectFetchFailure,
-  projectFetchSuccess,
-  projectFetchGeoJsonSuccess,
+  projectFetchGeoJson,
   projectFetchGeoJsonFailure,
+  projectFetchGeoJsonSuccess,
+  projectFetchSuccess,
+  saveDistrictsDefinition,
   setSelectedDistrictId,
-  addSelectedGeounitIds,
   staticDemographicsFetchFailure,
   staticDemographicsFetchSuccess,
   staticGeoLevelsFetchFailure,
@@ -22,7 +26,7 @@ import {
 } from "../actions/projectData";
 
 import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
-import { fetchProject, fetchProjectGeoJson } from "../api";
+import { fetchProject, fetchProjectGeoJson, patchDistrictsDefinition } from "../api";
 import { Resource } from "../resource";
 import { fetchStaticFiles, fetchStaticMetadata } from "../s3";
 
@@ -62,11 +66,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
             failActionCreator: projectFetchFailure,
             args: [action.payload] as Parameters<typeof fetchProject>
           }),
-          Cmd.run(fetchProjectGeoJson, {
-            successActionCreator: projectFetchGeoJsonSuccess,
-            failActionCreator: projectFetchGeoJsonFailure,
-            args: [action.payload] as Parameters<typeof fetchProjectGeoJson>
-          })
+          Cmd.action(projectFetchGeoJson(action.payload))
         ])
       );
     case getType(projectFetchSuccess):
@@ -94,6 +94,18 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         ...state,
         geojson: { resource: action.payload }
       };
+    case getType(projectFetchGeoJson):
+      return loop(
+        {
+          ...state,
+          geojson: { errorMessage: action.payload }
+        },
+        Cmd.run(fetchProjectGeoJson, {
+          successActionCreator: projectFetchGeoJsonSuccess,
+          failActionCreator: projectFetchGeoJsonFailure,
+          args: [action.payload] as Parameters<typeof fetchProjectGeoJson>
+        })
+      );
     case getType(projectFetchGeoJsonFailure):
       return {
         ...state,
@@ -184,6 +196,42 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         ...state,
         selectedGeounitIds: new Set([])
       };
+    case getType(saveDistrictsDefinition):
+      return "resource" in state.project
+        ? loop(
+            state,
+            Cmd.run(patchDistrictsDefinition, {
+              successActionCreator: patchDistrictsDefinitionSuccess,
+              failActionCreator: patchDistrictsDefinitionFailure,
+              args: [
+                state.project.resource.id,
+                // TODO: we are only dealing with the top-most geolevel at the moment, so this
+                // will need to be modified when we support all geolevels.
+                [...state.selectedGeounitIds].reduce((newDistrictsDefinition, geounitId) => {
+                  // @ts-ignore
+                  // eslint-disable-next-line
+                  newDistrictsDefinition[geounitId] = state.selectedDistrictId;
+                  return newDistrictsDefinition;
+                }, state.project.resource.districtsDefinition)
+              ] as Parameters<typeof patchDistrictsDefinition>
+            })
+          )
+        : (state as never);
+    case getType(patchDistrictsDefinitionSuccess):
+      return loop(
+        {
+          ...state,
+          project: { resource: action.payload },
+          selectedGeounitIds: new Set([])
+        },
+        Cmd.action(projectFetchGeoJson(action.payload.id))
+      );
+    case getType(patchDistrictsDefinitionFailure):
+      // TODO: implement a status area to display errors for this and other things
+      // eslint-disable-next-line
+      console.log("Error patching districts definition: ", action.payload);
+      return state;
+
     default:
       return state as never;
   }

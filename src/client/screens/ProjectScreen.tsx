@@ -75,7 +75,6 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
               staticMetadata={projectData.staticMetadata.resource}
               staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
-              selectedDistrictId={projectData.selectedDistrictId}
               selectedGeounitIds={projectData.selectedGeounitIds}
             />
           ) : null}
