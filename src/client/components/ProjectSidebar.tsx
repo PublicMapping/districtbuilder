@@ -3,6 +3,7 @@ import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import { DistrictProperties, IProject } from "../../shared/entities";
+import { getDistrictColor } from "../constants/colors";
 
 const ProjectSidebar = ({
   project,
@@ -68,9 +69,19 @@ const SidebarRow = ({
 }) => {
   return (
     <Styled.tr>
-      <Styled.td>{district.id}</Styled.td>
+      <Styled.td sx={{ textAlign: "left" }}>
+        <span
+          sx={{
+            backgroundColor: getDistrictColor(district.id),
+            marginRight: "7px"
+          }}
+        >
+          &nbsp;&nbsp;&nbsp;
+        </span>
+        {district.id || "∅"}
+      </Styled.td>
       <Styled.td>{district.properties.population.toLocaleString()}</Styled.td>
-      <Styled.td>{(deviation > 0 ? "+" : "") + deviation.toLocaleString()}</Styled.td>
+      <Styled.td>{(deviation > 0 ? "+" : "") + Math.round(deviation).toLocaleString()}</Styled.td>
       <Styled.td>–</Styled.td>
       <Styled.td>–</Styled.td>
       <Styled.td>–</Styled.td>
