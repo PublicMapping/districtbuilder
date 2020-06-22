@@ -31,4 +31,6 @@ export const staticDemographicsFetchFailure = createAction("Static demographics 
 
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
 
-export const addSelectedGeounitIds = createAction("Set selected geounit ids")<ReadonlySet<number>>();
+export const addSelectedGeounitIds = createAction("Set selected geounit ids")<
+  ReadonlySet<number>
+>();

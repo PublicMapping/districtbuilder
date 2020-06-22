@@ -49,7 +49,11 @@ const ProjectSidebar = ({
   </Flex>
 );
 
-const SidebarHeader = ({ selectedGeounitIds }: { readonly selectedGeounitIds: ReadonlySet<number> }) => {
+const SidebarHeader = ({
+  selectedGeounitIds
+}: {
+  readonly selectedGeounitIds: ReadonlySet<number>;
+}) => {
   return (
     <Flex sx={{ variant: "header.app" }}>
       <Flex sx={{ variant: "header.left" }}>
@@ -59,10 +63,12 @@ const SidebarHeader = ({ selectedGeounitIds }: { readonly selectedGeounitIds: Re
       </Flex>
       {selectedGeounitIds.size ? (
         <Flex sx={{ variant: "header.right" }}>
-          <Button variant="circularSubtle" sx={{ mr: "2" }}>
+          <Button variant="circularSubtle" sx={{ mr: "2", cursor: "pointer" }}>
             Cancel
           </Button>
-          <Button variant="circular">Approve</Button>
+          <Button variant="circular" sx={{ cursor: "pointer" }}>
+            Approve
+          </Button>
         </Flex>
       ) : null}
     </Flex>
@@ -80,7 +86,7 @@ const SidebarRow = ({
 }) => {
   return (
     <Styled.tr
-      sx={{ backgroundColor: selected ? "#efefef" : "inherit" }}
+      sx={{ backgroundColor: selected ? "#efefef" : "inherit", cursor: "pointer" }}
       onClick={() => {
         store.dispatch(setSelectedDistrictId(district.id as number));
       }}
