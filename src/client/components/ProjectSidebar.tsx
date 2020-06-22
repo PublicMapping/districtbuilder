@@ -92,7 +92,7 @@ const SidebarHeader = ({
   );
 };
 
-// TODO: need to intermediate changes in populations as districts are selected
+// TODO: need to display intermediate changes in populations as districts are selected
 const SidebarRow = ({
   district,
   selected,
