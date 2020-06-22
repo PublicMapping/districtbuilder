@@ -19,7 +19,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     elif [[ "${1}" == "server" ]]; then
         docker-compose \
             run --rm --no-deps "${1}" \
-            "${*:2}"
+            "${@:2}"
     else
         docker-compose \
             run --rm --no-deps "${1}" \
