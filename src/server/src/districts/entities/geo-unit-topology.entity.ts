@@ -124,8 +124,14 @@ export class GeoUnitTopology {
       return false;
     };
 
+    // An empty (i.e. null) districts definition should instead be an array of zeros the
+    // size of the top-most geolevel. It may make more sense to store it this way upon
+    // project creation. However that will be more work, since we don't currently have access
+    // to this information at the point where a project is being created, so it is being set
+    // here in the interest of time.
     if (!definition.districts) {
-      return null;
+      // @ts-ignore
+      definition.districts = new Array(this.hierarchy.length).fill(0);
     }
 
     const valid =
