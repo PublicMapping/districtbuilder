@@ -1,10 +1,12 @@
+import { FeatureCollection, MultiPolygon } from "geojson";
 import { join } from "path";
 import React, { useEffect, useRef, useState } from "react";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { IProject, IStaticMetadata } from "../../shared/entities";
+import { getDistrictColor } from "../constants/colors";
+import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
 import { getAllIndices, getDemographics } from "../../shared/functions";
 import { s3ToHttps } from "../s3";
 
@@ -13,28 +15,66 @@ const styles = {
   height: "100%"
 };
 
+const source = "db";
+
 interface Props {
   readonly project: IProject;
+  readonly geojson: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly staticMetadata: IStaticMetadata;
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
 }
 
+// Retuns a line layer id given the geolevel
+function levelToLineLayerId(geoLevel: string) {
+  return `${geoLevel}-line`;
+}
+
+// Retuns a fill layer id given the geolevel
+function levelToFillLayerId(geoLevel: string) {
+  return `${geoLevel}-fill`;
+}
+
+// Retuns a selection layer id given the geolevel
+function levelToSelectionLayerId(geoLevel: string) {
+  return `${geoLevel}-hightlight`;
+}
+
 function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.Style {
   return {
-    layers: geoLevels.map(level => {
-      return {
-        id: level,
+    layers: geoLevels.flatMap(level => [
+      {
+        id: levelToLineLayerId(level),
         type: "line",
-        source: "db",
+        source,
         "source-layer": level,
         paint: {
           "line-color": "#000",
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
           "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1, 12, 2]
         }
-      };
-    }),
+      },
+      {
+        id: levelToFillLayerId(level),
+        type: "fill",
+        source,
+        "source-layer": level,
+        paint: {
+          "fill-opacity": 0.5,
+          "fill-color": "transparent"
+        }
+      },
+      {
+        id: levelToSelectionLayerId(level),
+        type: "fill",
+        source,
+        "source-layer": level,
+        paint: {
+          "fill-color": "#000",
+          "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
+        }
+      }
+    ]),
     name: "District Builder",
     sources: {
       db: {
@@ -48,7 +88,7 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
   };
 }
 
-const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: Props) => {
+const Map = ({ project, geojson, staticMetadata, staticGeoLevels, staticDemographics }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -76,20 +116,40 @@ const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: P
 
       map.on("load", () => {
         setMap(map);
+
+        // Add a color property to the geojson, so it can be used for styling
+        geojson.features.forEach((feature, id) => {
+          // @ts-ignore
+          feature.properties.color = getDistrictColor(id);
+        });
+
+        map.addSource("districts", {
+          type: "geojson",
+          data: geojson
+        });
+        map.addLayer({
+          id: "districts",
+          type: "fill",
+          source: "districts",
+          layout: {},
+          paint: {
+            "fill-color": { type: "identity", property: "color" },
+            "fill-opacity": 0.7
+          }
+        });
+
         map.resize();
       });
 
       // Add a click event to the top geolevel that logs demographic information.
-      // Note that since we are dealing with line types, the feature can't be
-      // directly selected under the cursor. Instead we need to extend a bounding
-      // box and select the first feature we find. This is fine for the proof-of-concept,
-      // but we'll want to add better handling when it comes to actually drawing districts.
+      // Note that the feature can't be directly selected under the cursor, so
+      // we need to use a small bounding box and select the first feature we find.
       map.on("click", e => {
-        const buffer = 10;
+        const buffer = 1;
         const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
         const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
         const features = map.queryRenderedFeatures([southWest, northEast], {
-          layers: [topGeoLevel]
+          layers: [levelToFillLayerId(topGeoLevel)]
         });
 
         // Disabling 'functional/no-conditional-statement' without naming it.
@@ -97,13 +157,17 @@ const Map = ({ project, staticMetadata, staticGeoLevels, staticDemographics }: P
         // eslint-disable-next-line
         if (features.length === 0 || typeof features[0].id !== "number") {
           // eslint-disable-next-line
-          console.log("No features selected, try clicking closer to a feature border. ", features);
+          console.log("No features selected. ", features);
           return;
         }
         const feature = features[0];
         const featureId = feature.id as number;
-        // eslint-disable-next-line
-        console.log(`id: ${feature.id}, properties: `, feature.properties);
+
+        // Mark the selected feature
+        map.setFeatureState(
+          { source, id: featureId, sourceLayer: topGeoLevel },
+          { selected: true }
+        );
 
         // Indices of all base geounits belonging to the clicked feature
         const baseIndices = getAllIndices(
