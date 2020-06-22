@@ -31,14 +31,9 @@ function levelToLineLayerId(geoLevel: string) {
   return `${geoLevel}-line`;
 }
 
-// Retuns a fill layer id given the geolevel
-function levelToFillLayerId(geoLevel: string) {
-  return `${geoLevel}-fill`;
-}
-
 // Retuns a selection layer id given the geolevel
 function levelToSelectionLayerId(geoLevel: string) {
-  return `${geoLevel}-hightlight`;
+  return `${geoLevel}-selected`;
 }
 
 function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.Style {
@@ -53,16 +48,6 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
           "line-color": "#000",
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
           "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1, 12, 2]
-        }
-      },
-      {
-        id: levelToFillLayerId(level),
-        type: "fill",
-        source,
-        "source-layer": level,
-        paint: {
-          "fill-opacity": 0.5,
-          "fill-color": "transparent"
         }
       },
       {
@@ -158,7 +143,7 @@ const Map = ({
         const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
         const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
         const features = map.queryRenderedFeatures([southWest, northEast], {
-          layers: [levelToFillLayerId(topGeoLevel)]
+          layers: [levelToSelectionLayerId(topGeoLevel)]
         });
 
         // Disabling 'functional/no-conditional-statement' without naming it.
