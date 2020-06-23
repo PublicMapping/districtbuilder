@@ -69,6 +69,19 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
+  // The @nestjs-modules/mailer MailerService.sendMail method returns a Promise for a
+  // SentMessageInfo object, which @types/nodemailer defines as an any type object. This object
+  // could have a raw or message property defined. We're checking that here to be more explicit
+  // about logging errors vs. informational output.
+  private logSentEmail(info: any): void {
+    const body = info.raw || info.message;
+    if (body) {
+      this.logger.debug(info.envelope, body.toString());
+    } else {
+      this.logger.error("Email body is undefined", info);
+    }
+  }
+
   async sendInitialVerificationEmail(user: User): Promise<void> {
     const emailToken = await this.sendEmailVerification(user, VerificationType.INITIAL);
 
@@ -83,8 +96,7 @@ export class AuthService {
       template: "verify"
     });
 
-    const infoBody = info.raw || info.message;
-    this.logger.debug(info.envelope, infoBody.toString());
+    this.logSentEmail(info);
 
     return;
   }
@@ -103,8 +115,7 @@ export class AuthService {
       template: "passwordreset"
     });
 
-    const infoBody = info.raw || info.message;
-    this.logger.debug(info.envelope, infoBody.toString());
+    this.logSentEmail(info);
 
     return;
   }
