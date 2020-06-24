@@ -53,6 +53,7 @@ export const initialState = {
 
 // TODO: this reducer is getting large. Some of the actions should be split out
 // into a separate module that deals more with district selection.
+https://github.com/PublicMapping/districtbuilder/issues/187
 const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
   state: ProjectDataState = initialState,
   action: Action
@@ -220,6 +221,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
                 state.project.resource.id,
                 // TODO: we are only dealing with the top-most geolevel at the moment, so this
                 // will need to be modified when we support all geolevels.
+                https://github.com/PublicMapping/districtbuilder/issues/113
                 [...state.selectedGeounitIds].reduce((newDistrictsDefinition, geounitId) => {
                   // @ts-ignore
                   // eslint-disable-next-line
@@ -241,6 +243,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       );
     case getType(patchDistrictsDefinitionFailure):
       // TODO: implement a status area to display errors for this and other things
+      https://github.com/PublicMapping/districtbuilder/issues/188
       // eslint-disable-next-line
       console.log("Error patching districts definition: ", action.payload);
       return state;

@@ -13,6 +13,7 @@ import {
 import store from "../store";
 
 // TODO: need to make it so the sidebar doesn't fully re-render when new information is fetched
+https://github.com/PublicMapping/districtbuilder/issues/185
 const ProjectSidebar = ({
   project,
   geojson,
@@ -93,6 +94,7 @@ const SidebarHeader = ({
 };
 
 // TODO: need to display intermediate changes in populations as districts are selected
+https://github.com/PublicMapping/districtbuilder/issues/186
 const SidebarRow = ({
   district,
   selected,
