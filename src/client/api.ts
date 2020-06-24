@@ -3,6 +3,7 @@ import { FeatureCollection, MultiPolygon } from "geojson";
 
 import {
   CreateProjectData,
+  DistrictsDefinition,
   IProject,
   IRegionConfig,
   IUser,
@@ -102,7 +103,7 @@ export async function createProject({
 }: CreateProjectData): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .post(`/api/projects`, { name, numberOfDistricts, regionConfig })
+      .post("/api/projects", { name, numberOfDistricts, regionConfig })
       .then(response => resolve(response.data))
       .catch(error => reject(error.response.data));
   });
@@ -143,5 +144,17 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
       .get("/api/region-configs")
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
+  });
+}
+
+export async function patchDistrictsDefinition(
+  id: ProjectId,
+  districtsDefinition: DistrictsDefinition
+): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .patch(`/api/projects/${id}`, { districtsDefinition })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.response.data));
   });
 }

@@ -79,7 +79,7 @@ function getNode(
 }
 
 export class GeoUnitTopology {
-  private readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
+  public readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
 
   constructor(
     public readonly topology: Topology,
@@ -123,10 +123,6 @@ export class GeoUnitTopology {
       // Elements that are not non-negative numbers or arrays of the same are invalid
       return false;
     };
-
-    if (!definition.districts) {
-      return null;
-    }
 
     const valid =
       definition.districts.length === this.hierarchy.length &&
