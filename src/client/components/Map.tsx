@@ -76,8 +76,7 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
   };
 }
 
-// TODO: need to make it so the map doesn't fully re-render when new information is fetched
-// https://github.com/PublicMapping/districtbuilder/issues/185
+// TODO (#185): need to make it so the map doesn't fully re-render when new information is fetched
 const Map = ({
   project,
   geojson,
