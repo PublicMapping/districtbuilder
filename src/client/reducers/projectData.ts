@@ -15,6 +15,7 @@ import {
   projectFetchGeoJsonFailure,
   projectFetchGeoJsonSuccess,
   projectFetchSuccess,
+  removeSelectedGeounitIds,
   saveDistrictsDefinition,
   setSelectedDistrictId,
   staticDemographicsFetchFailure,
@@ -192,6 +193,16 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       return {
         ...state,
         selectedGeounitIds: new Set([...state.selectedGeounitIds, ...action.payload])
+      };
+    case getType(removeSelectedGeounitIds):
+      // eslint-disable-next-line
+      const mutableSelected = new Set([...state.selectedGeounitIds]);
+      [...action.payload].forEach(function(v) {
+        mutableSelected.delete(v);
+      });
+      return {
+        ...state,
+        selectedGeounitIds: mutableSelected
       };
     case getType(clearSelectedGeounitIds):
       return {

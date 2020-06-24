@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { addSelectedGeounitIds } from "../actions/projectData";
+import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../actions/projectData";
 import { getDistrictColor } from "../constants/colors";
 import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
 import { getAllIndices, getDemographics } from "../../shared/functions";
@@ -159,12 +159,19 @@ const Map = ({
         const feature = features[0];
         const featureId = feature.id as number;
 
-        // Mark the selected feature
-        map.setFeatureState(
-          { source, id: featureId, sourceLayer: topGeoLevel },
-          { selected: true }
-        );
-        store.dispatch(addSelectedGeounitIds(new Set([featureId])));
+        // Set the selected feature, or de-select it if it's already selected
+        const featureStateExpression = { source, id: featureId, sourceLayer: topGeoLevel };
+        const featureState = map.getFeatureState(featureStateExpression);
+        const selectedFeatures = new Set([featureId]);
+        const addFeatures = () => {
+          map.setFeatureState(featureStateExpression, { selected: true });
+          store.dispatch(addSelectedGeounitIds(selectedFeatures));
+        };
+        const removeFeatures = () => {
+          map.setFeatureState(featureStateExpression, { selected: false });
+          store.dispatch(removeSelectedGeounitIds(selectedFeatures));
+        };
+        featureState.selected ? removeFeatures() : addFeatures();
 
         // Indices of all base geounits belonging to the clicked feature
         const baseIndices = getAllIndices(
