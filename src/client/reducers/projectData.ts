@@ -194,8 +194,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         ...state,
         selectedGeounitIds: new Set([...state.selectedGeounitIds, ...action.payload])
       };
-    case getType(removeSelectedGeounitIds):
-      // eslint-disable-next-line
+    case getType(removeSelectedGeounitIds): {
       const mutableSelected = new Set([...state.selectedGeounitIds]);
       [...action.payload].forEach(function(v) {
         mutableSelected.delete(v);
@@ -204,6 +203,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         ...state,
         selectedGeounitIds: mutableSelected
       };
+    }
     case getType(clearSelectedGeounitIds):
       return {
         ...state,
