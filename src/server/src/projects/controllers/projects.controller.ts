@@ -87,9 +87,9 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedBody() dto: CreateProjectDto
   ): Promise<Project> {
     try {
-      const regionConfig = await this.regionConfigService.findOne(dto.regionConfig);
+      const regionConfig = await this.regionConfigService.findOne({ id: dto.regionConfig.id });
       if (!regionConfig) {
-        throw new NotFoundException(`Unable to find region config: ${dto.regionConfig}`);
+        throw new NotFoundException(`Unable to find region config: ${dto.regionConfig.id}`);
       }
 
       const geoCollection = await this.topologyService.get(regionConfig.s3URI);
