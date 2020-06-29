@@ -9,7 +9,7 @@ import {
   clearSelectedGeounitIds,
   saveDistrictsDefinition,
   setSelectedDistrictId
-} from "../actions/projectData";
+} from "../actions/districtDrawing";
 import store from "../store";
 
 // TODO (#185): need to make it so the sidebar doesn't fully re-render when new information is fetched
@@ -37,7 +37,7 @@ const ProjectSidebar = ({
       minWidth: "300px"
     }}
   >
-    <SidebarHeader selectedGeounitIds={selectedGeounitIds} />
+    {project && <SidebarHeader selectedGeounitIds={selectedGeounitIds} project={project} />}
     <Styled.table>
       <thead>
         <Styled.tr>
@@ -55,9 +55,11 @@ const ProjectSidebar = ({
 );
 
 const SidebarHeader = ({
-  selectedGeounitIds
+  selectedGeounitIds,
+  project
 }: {
   readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly project: IProject;
 }) => {
   return (
     <Flex sx={{ variant: "header.app" }}>
@@ -81,7 +83,7 @@ const SidebarHeader = ({
             variant="circular"
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(saveDistrictsDefinition());
+              store.dispatch(saveDistrictsDefinition(project));
             }}
           >
             Approve
