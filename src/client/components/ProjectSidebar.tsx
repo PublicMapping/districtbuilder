@@ -12,7 +12,6 @@ import {
 } from "../actions/districtDrawing";
 import store from "../store";
 
-// TODO (#185): need to make it so the sidebar doesn't fully re-render when new information is fetched
 const ProjectSidebar = ({
   project,
   geojson,

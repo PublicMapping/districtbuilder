@@ -76,7 +76,6 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
   };
 }
 
-// TODO (#185): need to make it so the map doesn't fully re-render when new information is fetched
 const Map = ({
   project,
   geojson,
@@ -193,6 +192,18 @@ const Map = ({
     // eslint complains that this useEffect should depend on map, but we're using this to call setMap so that wouldn't make sense
     // eslint-disable-next-line
   }, []);
+
+  // Update districts source when geojson is fetched
+  useEffect(() => {
+    const districtsSource = map && map.getSource("districts");
+    // Add a color property to the geojson, so it can be used for styling
+    geojson.features.forEach((feature, id) => {
+      // @ts-ignore
+      // eslint-disable-next-line
+      feature.properties.color = getDistrictColor(id);
+    });
+    districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
+  }, [map, geojson]);
 
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {

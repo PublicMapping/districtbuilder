@@ -12,6 +12,10 @@ export interface ResourceSuccess<T> {
 export interface ResourceFailure {
   readonly errorMessage: string;
 }
+export interface ResourceRefreshing<T> {
+  readonly isPending: true;
+  readonly resource: T;
+}
 export interface ResourceWritePending<D> {
   readonly data: D;
   readonly isPending: true;
@@ -25,7 +29,11 @@ export interface ResourceWriteFailure<D> {
   readonly errors: Errors<D>;
 }
 
-export type Resource<T> = ResourcePending | ResourceSuccess<T> | ResourceFailure;
+export type Resource<T> =
+  | ResourcePending
+  | ResourceSuccess<T>
+  | ResourceFailure
+  | ResourceRefreshing<T>;
 
 export type WriteResource<D, T> =
   | ResourceEditing<D>
