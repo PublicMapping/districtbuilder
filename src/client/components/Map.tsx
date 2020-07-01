@@ -93,6 +93,13 @@ const Map = ({
   // At the moment, we are only interacting with the top geolevel (e.g. County)
   const topGeoLevel = staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1];
 
+  // Add a color property to the geojson, so it can be used for styling
+  geojson.features.forEach((feature, id) => {
+    // @ts-ignore
+    // eslint-disable-next-line
+    feature.properties.color = getDistrictColor(id);
+  });
+
   useEffect(() => {
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
       const map = new MapboxGL.Map({
@@ -110,13 +117,6 @@ const Map = ({
 
       map.on("load", () => {
         setMap(map);
-
-        // Add a color property to the geojson, so it can be used for styling
-        geojson.features.forEach((feature, id) => {
-          // @ts-ignore
-          // eslint-disable-next-line
-          feature.properties.color = getDistrictColor(id);
-        });
 
         map.addSource("districts", {
           type: "geojson",
@@ -196,12 +196,6 @@ const Map = ({
   // Update districts source when geojson is fetched
   useEffect(() => {
     const districtsSource = map && map.getSource("districts");
-    // Add a color property to the geojson, so it can be used for styling
-    geojson.features.forEach((feature, id) => {
-      // @ts-ignore
-      // eslint-disable-next-line
-      feature.properties.color = getDistrictColor(id);
-    });
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
   }, [map, geojson]);
 
