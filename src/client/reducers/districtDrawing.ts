@@ -78,8 +78,7 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
       return loop(
         {
           ...state,
-          project: { resource: action.payload },
-          selectedGeounitIds: new Set([])
+          project: { resource: action.payload }
         },
         Cmd.action(projectFetchGeoJson(action.payload.id))
       );

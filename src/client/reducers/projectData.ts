@@ -18,6 +18,7 @@ import {
   staticMetadataFetchFailure,
   staticMetadataFetchSuccess
 } from "../actions/projectData";
+import { clearSelectedGeounitIds } from "../actions/districtDrawing";
 
 import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
 import { fetchProject, fetchProjectGeoJson } from "../api";
@@ -81,10 +82,13 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         project: { errorMessage: action.payload }
       };
     case getType(projectFetchGeoJsonSuccess):
-      return {
-        ...state,
-        geojson: { resource: action.payload }
-      };
+      return loop(
+        {
+          ...state,
+          geojson: { resource: action.payload }
+        },
+        Cmd.action(clearSelectedGeounitIds())
+      );
     case getType(projectFetchGeoJson):
       return loop(
         {
