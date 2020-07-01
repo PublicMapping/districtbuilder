@@ -1,5 +1,9 @@
 import { combineReducers } from "redux-loop";
 import authReducer, { AuthState, initialState as initialAuthState } from "./reducers/auth";
+import districtDrawingReducer, {
+  initialState as initialDistrictDrawingState,
+  DistrictDrawingState
+} from "./reducers/districtDrawing";
 import projectDataReducer, {
   initialState as initialProjectDataState,
   ProjectDataState
@@ -20,6 +24,7 @@ export interface State {
   readonly regionConfig: RegionConfigState;
   readonly projectData: ProjectDataState;
   readonly projects: ProjectsState;
+  readonly districtDrawing: DistrictDrawingState;
 }
 
 export const initialState: State = {
@@ -27,7 +32,8 @@ export const initialState: State = {
   user: initialUserState,
   regionConfig: initialRegionConfigState,
   projectData: initialProjectDataState,
-  projects: initialProjectsState
+  projects: initialProjectsState,
+  districtDrawing: initialDistrictDrawingState
 };
 
 export default combineReducers({
@@ -35,5 +41,6 @@ export default combineReducers({
   user: userReducer,
   regionConfig: regionConfigReducer,
   projectData: projectDataReducer,
-  projects: projectsReducer
+  projects: projectsReducer,
+  districtDrawing: districtDrawingReducer
 });

@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../actions/projectData";
+import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../actions/districtDrawing";
 import { getDistrictColor } from "../constants/colors";
 import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
 import { getAllIndices, getDemographics } from "../../shared/functions";

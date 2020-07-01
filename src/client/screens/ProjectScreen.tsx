@@ -13,6 +13,7 @@ import Map from "../components/Map";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
 import { State } from "../reducers";
+import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { ProjectDataState } from "../reducers/projectData";
 import { Resource } from "../resource";
 import store from "../store";
@@ -20,6 +21,7 @@ import store from "../store";
 interface StateProps {
   readonly projectData: ProjectDataState;
   readonly user: Resource<IUser>;
+  readonly districtDrawing: DistrictDrawingState;
 }
 
 const FullScreenApp = ({ children }: { readonly children: React.ReactNode }) => {
@@ -38,7 +40,7 @@ const MapHeader = () => {
   return <Box sx={{ variant: "header.app", backgroundColor: "burlywood" }}>MapHeader</Box>;
 };
 
-const ProjectScreen = ({ projectData, user }: StateProps) => {
+const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const { projectId } = useParams();
   const project = "resource" in projectData.project ? projectData.project.resource : undefined;
   const geojson = "resource" in projectData.geojson ? projectData.geojson.resource : undefined;
@@ -59,8 +61,8 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
         <ProjectSidebar
           project={project}
           geojson={geojson}
-          selectedDistrictId={projectData.selectedDistrictId}
-          selectedGeounitIds={projectData.selectedGeounitIds}
+          selectedDistrictId={districtDrawing.selectedDistrictId}
+          selectedGeounitIds={districtDrawing.selectedGeounitIds}
         />
         <MapContainer>
           <MapHeader />
@@ -75,7 +77,7 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
               staticMetadata={projectData.staticMetadata.resource}
               staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
-              selectedGeounitIds={projectData.selectedGeounitIds}
+              selectedGeounitIds={districtDrawing.selectedGeounitIds}
             />
           ) : null}
         </MapContainer>
@@ -87,7 +89,8 @@ const ProjectScreen = ({ projectData, user }: StateProps) => {
 function mapStateToProps(state: State): StateProps {
   return {
     projectData: state.projectData,
-    user: state.user
+    user: state.user,
+    districtDrawing: state.districtDrawing
   };
 }
 
