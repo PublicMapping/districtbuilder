@@ -45,7 +45,6 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
   state: ProjectDataState = initialState,
   action: Action
 ): ProjectDataState | Loop<ProjectDataState, Action> => {
-  console.log(action, state);
   switch (action.type) {
     case getType(projectDataFetch):
       return loop(state, Cmd.action(projectFetch(action.payload)));
