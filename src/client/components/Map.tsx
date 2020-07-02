@@ -213,6 +213,8 @@ const Map = ({
           // assigned, wait until districts GeoJSON is updated before removing
           // selected state.
           map.once("idle", () => removeSelectedFeatures(map)));
+    // We don't want to tigger this effect when `selectedDistrictId` changes
+    // eslint-disable-next-line
   }, [map, selectedGeounitIds, topGeoLevel]);
 
   return <div ref={mapRef} style={styles} />;
