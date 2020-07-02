@@ -3,7 +3,9 @@ import { join } from "path";
 import React, { useEffect, useRef, useState } from "react";
 
 import MapboxGL from "mapbox-gl";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
+import MapboxGLDrawRectangleDrag from "mapboxgl-draw-rectangle-drag";
 
 import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../actions/districtDrawing";
 import { getDistrictColor } from "../constants/colors";
@@ -142,6 +144,14 @@ const Map = ({
         fitBoundsOptions: { padding: 20 },
         minZoom: 5,
         maxZoom: 15
+      });
+
+      const draw = new MapboxDraw({
+        displayControlsDefault: false,
+        modes: {
+          ...MapboxDraw.modes,
+          draw_rectangle_drag: MapboxGLDrawRectangleDrag
+        }
       });
 
       map.dragRotate.disable();
