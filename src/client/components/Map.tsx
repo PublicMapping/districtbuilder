@@ -213,7 +213,7 @@ const Map = ({
           // assigned, wait until districts GeoJSON is updated before removing
           // selected state.
           map.once("idle", () => removeSelectedFeatures(map)));
-  }, [map, selectedDistrictId, selectedGeounitIds, topGeoLevel]);
+  }, [map, selectedGeounitIds, topGeoLevel]);
 
   return <div ref={mapRef} style={styles} />;
 };
