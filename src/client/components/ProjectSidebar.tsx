@@ -4,6 +4,7 @@ import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import { DistrictProperties, IProject } from "../../shared/entities";
 import { getDistrictColor } from "../constants/colors";
+import Loading from "./Loading";
 
 import {
   clearSelectedGeounitIds,
@@ -12,10 +13,14 @@ import {
 } from "../actions/districtDrawing";
 import store from "../store";
 
-// TODO (#185): need to make it so the sidebar doesn't fully re-render when new information is fetched
+interface LoadingProps {
+  readonly isLoading: boolean;
+}
+
 const ProjectSidebar = ({
   project,
   geojson,
+  isLoading,
   selectedDistrictId,
   selectedGeounitIds
 }: {
@@ -23,7 +28,7 @@ const ProjectSidebar = ({
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly selectedDistrictId: number;
   readonly selectedGeounitIds: ReadonlySet<number>;
-}) => (
+} & LoadingProps) => (
   <Flex
     sx={{
       background: "#fff",
@@ -37,7 +42,13 @@ const ProjectSidebar = ({
       minWidth: "300px"
     }}
   >
-    {project && <SidebarHeader selectedGeounitIds={selectedGeounitIds} project={project} />}
+    {project && (
+      <SidebarHeader
+        selectedGeounitIds={selectedGeounitIds}
+        project={project}
+        isLoading={isLoading}
+      />
+    )}
     <Styled.table>
       <thead>
         <Styled.tr>
@@ -56,11 +67,12 @@ const ProjectSidebar = ({
 
 const SidebarHeader = ({
   selectedGeounitIds,
-  project
+  project,
+  isLoading
 }: {
   readonly selectedGeounitIds: ReadonlySet<number>;
   readonly project: IProject;
-}) => {
+} & LoadingProps) => {
   return (
     <Flex sx={{ variant: "header.app" }}>
       <Flex sx={{ variant: "header.left" }}>
@@ -68,7 +80,9 @@ const SidebarHeader = ({
           Districts
         </Heading>
       </Flex>
-      {selectedGeounitIds.size ? (
+      {isLoading ? (
+        <Loading />
+      ) : selectedGeounitIds.size ? (
         <Flex sx={{ variant: "header.right" }}>
           <Button
             variant="circularSubtle"

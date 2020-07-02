@@ -26,6 +26,7 @@ interface Props {
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedDistrictId: number;
 }
 
 // Retuns a line layer id given the geolevel
@@ -76,14 +77,14 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
   };
 }
 
-// TODO (#185): need to make it so the map doesn't fully re-render when new information is fetched
 const Map = ({
   project,
   geojson,
   staticMetadata,
   staticGeoLevels,
   staticDemographics,
-  selectedGeounitIds
+  selectedGeounitIds,
+  selectedDistrictId
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -93,6 +94,13 @@ const Map = ({
 
   // At the moment, we are only interacting with the top geolevel (e.g. County)
   const topGeoLevel = staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1];
+
+  // Add a color property to the geojson, so it can be used for styling
+  geojson.features.forEach((feature, id) => {
+    // @ts-ignore
+    // eslint-disable-next-line
+    feature.properties.color = getDistrictColor(id);
+  });
 
   useEffect(() => {
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
@@ -111,13 +119,6 @@ const Map = ({
 
       map.on("load", () => {
         setMap(map);
-
-        // Add a color property to the geojson, so it can be used for styling
-        geojson.features.forEach((feature, id) => {
-          // @ts-ignore
-          // eslint-disable-next-line
-          feature.properties.color = getDistrictColor(id);
-        });
 
         map.addSource("districts", {
           type: "geojson",
@@ -194,11 +195,26 @@ const Map = ({
     // eslint-disable-next-line
   }, []);
 
+  // Update districts source when geojson is fetched
+  useEffect(() => {
+    const districtsSource = map && map.getSource("districts");
+    districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
+  }, [map, geojson]);
+
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
+    const removeSelectedFeatures = (map: MapboxGL.Map) =>
+      map.removeFeatureState({ source, sourceLayer: topGeoLevel });
     map &&
       selectedGeounitIds.size === 0 &&
-      map.removeFeatureState({ source, sourceLayer: topGeoLevel });
+      (selectedDistrictId === 0
+        ? removeSelectedFeatures(map)
+        : // When adding or changing the district to which a geounit is
+          // assigned, wait until districts GeoJSON is updated before removing
+          // selected state.
+          map.once("idle", () => removeSelectedFeatures(map)));
+    // We don't want to tigger this effect when `selectedDistrictId` changes
+    // eslint-disable-next-line
   }, [map, selectedGeounitIds, topGeoLevel]);
 
   return <div ref={mapRef} style={styles} />;

@@ -44,6 +44,9 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const { projectId } = useParams();
   const project = "resource" in projectData.project ? projectData.project.resource : undefined;
   const geojson = "resource" in projectData.geojson ? projectData.geojson.resource : undefined;
+  const isLoading =
+    ("isPending" in projectData.project && projectData.project.isPending) ||
+    ("isPending" in projectData.geojson && projectData.geojson.isPending);
 
   useEffect(() => {
     store.dispatch(userFetch());
@@ -61,6 +64,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
         <ProjectSidebar
           project={project}
           geojson={geojson}
+          isLoading={isLoading}
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
         />
@@ -78,6 +82,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
               selectedGeounitIds={districtDrawing.selectedGeounitIds}
+              selectedDistrictId={districtDrawing.selectedDistrictId}
             />
           ) : null}
         </MapContainer>
