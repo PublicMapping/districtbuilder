@@ -9,6 +9,8 @@ import {
   patchDistrictsDefinitionFailure,
   removeSelectedGeounitIds,
   saveDistrictsDefinition,
+  SelectionTool,
+  setSelectionTool,
   setSelectedDistrictId
 } from "../actions/districtDrawing";
 import { projectFetchGeoJson } from "../actions/projectData";
@@ -18,11 +20,13 @@ import { patchDistrictsDefinition } from "../api";
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
   readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectionTool: SelectionTool;
 }
 
 export const initialState = {
   selectedDistrictId: 1,
-  selectedGeounitIds: new Set([])
+  selectedGeounitIds: new Set([]),
+  selectionTool: SelectionTool.Default
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -87,7 +91,11 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
       // eslint-disable-next-line
       console.log("Error patching districts definition: ", action.payload);
       return state;
-
+    case getType(setSelectionTool):
+      return {
+        ...state,
+        selectionTool: action.payload
+      };
     default:
       return state as never;
   }

@@ -7,7 +7,11 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxGLDrawRectangleDrag from "mapboxgl-draw-rectangle-drag";
 
-import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../actions/districtDrawing";
+import {
+  addSelectedGeounitIds,
+  removeSelectedGeounitIds,
+  SelectionTool
+} from "../actions/districtDrawing";
 import { getDistrictColor } from "../constants/colors";
 import { DistrictProperties, GeoLevelInfo, IProject, IStaticMetadata } from "../../shared/entities";
 import { getAllIndices, getDemographics } from "../../shared/functions";
@@ -30,6 +34,7 @@ interface Props {
   readonly selectedGeounitIds: ReadonlySet<number>;
   readonly selectedDistrictId: number;
   readonly label?: string;
+  readonly selectionTool: SelectionTool;
 }
 
 // Retuns a line layer id given the geolevel
@@ -116,7 +121,8 @@ const Map = ({
   staticDemographics,
   selectedGeounitIds,
   selectedDistrictId,
-  label
+  label,
+  selectionTool
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -135,6 +141,14 @@ const Map = ({
     feature.properties.color = getDistrictColor(id);
   });
 
+  const draw = new MapboxDraw({
+    displayControlsDefault: false,
+    modes: {
+      ...MapboxDraw.modes,
+      draw_rectangle_drag: MapboxGLDrawRectangleDrag
+    }
+  });
+
   useEffect(() => {
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
       const map = new MapboxGL.Map({
@@ -144,14 +158,6 @@ const Map = ({
         fitBoundsOptions: { padding: 20 },
         minZoom: 5,
         maxZoom: 15
-      });
-
-      const draw = new MapboxDraw({
-        displayControlsDefault: false,
-        modes: {
-          ...MapboxDraw.modes,
-          draw_rectangle_drag: MapboxGLDrawRectangleDrag
-        }
       });
 
       map.dragRotate.disable();
@@ -274,6 +280,10 @@ const Map = ({
     map && map.setLayoutProperty("county-label", "visibility", visibility);
     map && map.setLayoutProperty("county-label", "text-field", `{${label}}`);
   }, [map, label]);
+
+  useEffect(() => {
+    draw.changeMode("draw_rectangle_drag");
+  }, [map, selectionTool]);
 
   return <div ref={mapRef} style={styles} />;
 };

@@ -5,6 +5,7 @@ import { Redirect, useParams } from "react-router-dom";
 import { Box, Flex, Label, Select, jsx } from "theme-ui";
 
 import { IUser, IStaticMetadata } from "../../shared/entities";
+import { setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -50,6 +51,10 @@ const MapHeader = ({
     : [];
   return (
     <Box sx={{ variant: "header.app" }}>
+      <button onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}>Hand</button>
+      <button onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}>
+        Rectangle
+      </button>
       <Label>
         Label:
         <Select
@@ -124,6 +129,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               selectedGeounitIds={districtDrawing.selectedGeounitIds}
               selectedDistrictId={districtDrawing.selectedDistrictId}
               label={label}
+              selectionTool={districtDrawing.selectionTool}
             />
           ) : null}
         </MapContainer>
