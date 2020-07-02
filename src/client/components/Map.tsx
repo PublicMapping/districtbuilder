@@ -26,6 +26,7 @@ interface Props {
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedDistrictId: number;
 }
 
 // Retuns a line layer id given the geolevel
@@ -82,7 +83,8 @@ const Map = ({
   staticMetadata,
   staticGeoLevels,
   staticDemographics,
-  selectedGeounitIds
+  selectedGeounitIds,
+  selectedDistrictId
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -201,10 +203,17 @@ const Map = ({
 
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
+    const removeSelectedFeatures = (map: MapboxGL.Map) =>
+      map.removeFeatureState({ source, sourceLayer: topGeoLevel });
     map &&
       selectedGeounitIds.size === 0 &&
-      map.removeFeatureState({ source, sourceLayer: topGeoLevel });
-  }, [map, selectedGeounitIds, topGeoLevel]);
+      (selectedDistrictId === 0
+        ? removeSelectedFeatures(map)
+        : // When adding or changing the district to which a geounit is
+          // assigned, wait until districts GeoJSON is updated before removing
+          // selected state.
+          map.once("idle", () => removeSelectedFeatures(map)));
+  }, [map, selectedDistrictId, selectedGeounitIds, topGeoLevel]);
 
   return <div ref={mapRef} style={styles} />;
 };

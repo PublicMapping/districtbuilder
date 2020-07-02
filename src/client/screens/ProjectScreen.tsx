@@ -82,6 +82,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
               selectedGeounitIds={districtDrawing.selectedGeounitIds}
+              selectedDistrictId={districtDrawing.selectedDistrictId}
             />
           ) : null}
         </MapContainer>
