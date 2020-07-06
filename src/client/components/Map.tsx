@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
-import DrawRectangle from "mapbox-gl-draw-rectangle-mode";
+import DrawRectangle from "./DrawRectangle";
 
 import {
   addSelectedGeounitIds,
@@ -116,7 +116,7 @@ const draw = new MapboxDraw({
   displayControlsDefault: false,
   modes: {
     ...MapboxDraw.modes,
-    draw_rectangle: DrawRectangle
+    draw_rectangle_drag: DrawRectangle
   }
 });
 
@@ -296,7 +296,7 @@ const Map = ({
       if (selectionTool === SelectionTool.Default) {
         draw.changeMode("simple_select");
       } else if (selectionTool === SelectionTool.Rectangle) {
-        draw.changeMode("draw_rectangle");
+        draw.changeMode("draw_rectangle_drag");
       }
     }
   }, [map, selectionTool]);
