@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
-import MapboxGLDrawRectangleDrag from "mapboxgl-draw-rectangle-drag";
+import DrawRectangle from "mapbox-gl-draw-rectangle-mode";
 
 import {
   addSelectedGeounitIds,
@@ -112,6 +112,13 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
     version: 8
   };
 }
+const draw = new MapboxDraw({
+  displayControlsDefault: false,
+  modes: {
+    ...MapboxDraw.modes,
+    draw_rectangle: DrawRectangle
+  }
+});
 
 const Map = ({
   project,
@@ -141,14 +148,6 @@ const Map = ({
     feature.properties.color = getDistrictColor(id);
   });
 
-  const draw = new MapboxDraw({
-    displayControlsDefault: false,
-    modes: {
-      ...MapboxDraw.modes,
-      draw_rectangle_drag: MapboxGLDrawRectangleDrag
-    }
-  });
-
   useEffect(() => {
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
       const map = new MapboxGL.Map({
@@ -163,10 +162,10 @@ const Map = ({
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
       map.doubleClickZoom.disable();
+      map.addControl(draw);
 
       map.on("load", () => {
         setMap(map);
-
         map.addSource("districts", {
           type: "geojson",
           data: geojson
@@ -189,6 +188,9 @@ const Map = ({
       // Note that the feature can't be directly selected under the cursor, so
       // we need to use a small bounding box and select the first feature we find.
       map.on("click", e => {
+        if (selectionTool !== SelectionTool.Default) {
+          return;
+        }
         const buffer = 1;
         const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
         const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
@@ -231,6 +233,14 @@ const Map = ({
         // As a proof of concept, log to the console the aggregated demographic data for the feature
         // eslint-disable-next-line
         console.log(demographics);
+      });
+
+      map.on("draw.create", function(e) {
+        console.log(e.features);
+      });
+
+      map.on("draw.modechange", function(e) {
+        console.log("modechange", e);
       });
     };
 
@@ -282,7 +292,13 @@ const Map = ({
   }, [map, label]);
 
   useEffect(() => {
-    draw.changeMode("draw_rectangle_drag");
+    if (map) {
+      if (selectionTool === SelectionTool.Default) {
+        draw.changeMode("simple_select");
+      } else if (selectionTool === SelectionTool.Rectangle) {
+        draw.changeMode("draw_rectangle");
+      }
+    }
   }, [map, selectionTool]);
 
   return <div ref={mapRef} style={styles} />;

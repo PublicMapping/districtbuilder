@@ -7346,6 +7346,11 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
+mapbox-gl-draw-rectangle-mode@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/mapbox-gl-draw-rectangle-mode/-/mapbox-gl-draw-rectangle-mode-1.0.4.tgz#42987d68872a5fb5cc5d76d3375ee20cd8bab8f7"
+  integrity sha512-BdF6nwEK2p8n9LQoMPzBO8LhddW1fe+d5vK8HQIei+4VcRnUbKNsEj7Z15FsJxCHzsc2BQKXbESx5GaE8x0imQ==
+
 mapbox-gl@1.6.1:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/mapbox-gl/-/mapbox-gl-1.6.1.tgz#bc9beb2d7d6464b0d281a225a3f23bd3a84d9f49"
@@ -7374,11 +7379,6 @@ mapbox-gl@1.6.1:
     supercluster "^7.0.0"
     tinyqueue "^2.0.0"
     vt-pbf "^3.1.1"
-
-mapboxgl-draw-rectangle-drag@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/mapboxgl-draw-rectangle-drag/-/mapboxgl-draw-rectangle-drag-1.0.1.tgz#0e99b2c244537ad5a07cb52e066fc8a0288d8cb3"
-  integrity sha512-+fXPI/nccKeycy5uWGOXL+yPt6rVo0SlVEAZhxZ0+cGFsQI2rLvQvGfQp9uuX5vuua6mPgyZBIOsuW9t2WahKw==
 
 md5.js@^1.3.4:
   version "1.3.5"
