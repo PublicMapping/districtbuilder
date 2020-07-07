@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "mapbox-gl/dist/mapbox-gl.css";
-import DrawRectangle from "mapboxgl-draw-rectangle-drag";
+import DrawRectangle from "mapboxgl-draw-rectangle-drag/build/mapboxgl-draw-rectangle-drag.module";
 
 import {
   addSelectedGeounitIds,
@@ -22,7 +22,6 @@ const styles = {
   width: "100%",
   height: "100%"
 };
-console.log("DrawRectangle", DrawRectangle);
 
 const source = "db";
 
