@@ -15,12 +15,10 @@
     "check-format": "prettier --check 'src/{client,shared}/**/*.{ts,tsx,json,css}'"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-draw": "1.1.2",
     "@types/jwt-decode": "2.2.1",
     "axios": "0.19.0",
     "jwt-decode": "2.2.0",
     "mapbox-gl": "1.6.1",
-    "mapboxgl-draw-rectangle-drag": "1.0.1",
     "react": "16.11.0",
     "react-dom": "16.11.0",
     "react-redux": "7.1.3",
