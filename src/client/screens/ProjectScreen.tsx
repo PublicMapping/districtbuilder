@@ -44,6 +44,14 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const { projectId } = useParams();
   const project = "resource" in projectData.project ? projectData.project.resource : undefined;
   const geojson = "resource" in projectData.geojson ? projectData.geojson.resource : undefined;
+  const staticMetadata =
+    "resource" in projectData.staticMetadata ? projectData.staticMetadata.resource : undefined;
+  const staticGeoLevels =
+    "resource" in projectData.staticGeoLevels ? projectData.staticGeoLevels.resource : undefined;
+  const staticDemographics =
+    "resource" in projectData.staticDemographics
+      ? projectData.staticDemographics.resource
+      : undefined;
   const isLoading =
     ("isPending" in projectData.project && projectData.project.isPending) ||
     ("isPending" in projectData.geojson && projectData.geojson.isPending);
@@ -65,6 +73,9 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           project={project}
           geojson={geojson}
           isLoading={isLoading}
+          staticMetadata={staticMetadata}
+          staticGeoLevels={staticGeoLevels}
+          staticDemographics={staticDemographics}
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
         />
