@@ -271,41 +271,43 @@ const Map = ({
               layers: [levelToSelectionLayerId(topGeoLevel)]
             });
 
-            // const featureStateExpression = (id?: string | number) => ({
-            //   source,
-            //   id,
-            //   sourceLayer: topGeoLevel
-            // });
-            // const isFeatureSelected = (feature: MapboxGL.MapboxGeoJSONFeature) => {
-            //   const featureStateExpression = { source, id: feature.id, sourceLayer: topGeoLevel };
-            //   const featureState = map.getFeatureState(featureStateExpression);
-            //   return featureState.selected;
-            // };
-            // const selectedFeatures = features.filter(
-            //   feature => isFeatureSelected(feature) === true
-            // );
-            // const deselectedFeatures = features.filter(
-            //   feature => isFeatureSelected(feature) === false
-            // );
+            const featureStateExpression = (id?: string | number) => ({
+              source,
+              id,
+              sourceLayer: topGeoLevel
+            });
+            const isFeatureSelected = (feature: MapboxGL.MapboxGeoJSONFeature): boolean => {
+              const featureState = map.getFeatureState(featureStateExpression(feature.id));
+              return featureState.selected === true;
+            };
+            const selectedFeatures = features.filter(
+              feature => isFeatureSelected(feature) === true
+            );
+            const deselectedFeatures = features.filter(
+              feature => isFeatureSelected(feature) === false
+            );
 
-            // selectedFeatures.forEach(feature => {
-            //   map.setFeatureState(featureStateExpression(feature.id), { selected: false });
-            // });
-            // deselectedFeatures.forEach(feature => {
-            //   map.setFeatureState(featureStateExpression(feature.id), { selected: true });
-            // });
-
-            features.forEach(feature => {
-              const featureStateExpression = { source, id: feature.id, sourceLayer: topGeoLevel };
-              map.setFeatureState(featureStateExpression, { selected: true });
+            selectedFeatures.forEach(feature => {
+              map.setFeatureState(featureStateExpression(feature.id), { selected: false });
+            });
+            deselectedFeatures.forEach(feature => {
+              map.setFeatureState(featureStateExpression(feature.id), { selected: true });
             });
 
-            // console.log("selectedFeatures", selectedFeatures);
-            // console.log("deselectedFeatures", deselectedFeatures);
+            const featuresToSet = (features: MapboxGL.MapboxGeoJSONFeature[]): Set<number> =>
+              new Set(
+                features
+                  .map((feature: MapboxGL.MapboxGeoJSONFeature) => feature.id)
+                  .filter((id): id is number => typeof id === "number")
+              );
 
-            // store.dispatch(
-            //   addSelectedGeounitIds(new Set(selectedFeatures.map(feature => feature.id)))
-            // );
+            if (selectedFeatures.length) {
+              store.dispatch(removeSelectedGeounitIds(featuresToSet(selectedFeatures)));
+            }
+
+            if (deselectedFeatures.length) {
+              store.dispatch(addSelectedGeounitIds(featuresToSet(deselectedFeatures)));
+            }
           }
 
           map.dragPan.enable();
