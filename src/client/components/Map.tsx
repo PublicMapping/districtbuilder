@@ -212,7 +212,7 @@ const Map = ({
         : // When adding or changing the district to which a geounit is
         // assigned, wait until districts GeoJSON is updated before removing
         // selected state.
-        map.isStyleLoaded()
+        map.isStyleLoaded() && map.isSourceLoaded("districts")
         ? removeSelectedFeatures(map)
         : map.once("idle", () => removeSelectedFeatures(map)));
     // We don't want to tigger this effect when `selectedDistrictId` changes
