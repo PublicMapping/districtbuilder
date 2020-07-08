@@ -111,6 +111,208 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
   };
 }
 
+interface ISelectionTool {
+  enable: (map: MapboxGL.Map, ...args: any) => void;
+  disable: (map: MapboxGL.Map, ...args: any) => void;
+  [x: string]: any;
+}
+
+const RectangleSelectionTool: ISelectionTool = {
+  // NOTE: Rectangle selection is based off of https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
+  enable: function(map: MapboxGL.Map, topGeoLevel: string) {
+    map.boxZoom.disable();
+    map.dragPan.disable();
+    map.getCanvas().style.cursor = "crosshair";
+
+    const canvas = map.getCanvasContainer();
+
+    // Variable to hold the starting xy coordinates
+    // when `mousedown` occured.
+    let start: MapboxGL.Point;
+
+    // Variable to hold the current xy coordinates
+    // when `mousemove` or `mouseup` occurs.
+    let current: MapboxGL.Point;
+
+    // Variable for the draw box element.
+    let box: HTMLElement | null;
+
+    canvas.addEventListener("mousedown", mouseDown);
+    // Save mouseDown for removal upon disabling
+    this.mouseDown = mouseDown;
+
+    // Return the xy coordinates of the mouse position
+    function mousePos(e: MouseEvent) {
+      const rect = canvas.getBoundingClientRect();
+      return new MapboxGL.Point(
+        e.clientX - rect.left - canvas.clientLeft,
+        e.clientY - rect.top - canvas.clientTop
+      );
+    }
+
+    function mouseDown(e: MouseEvent) {
+      // Call functions for the following events
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+
+      // Capture the first xy coordinates
+      start = mousePos(e);
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      // Capture the ongoing xy coordinates
+      current = mousePos(e);
+
+      // Append the box element if it doesnt exist
+      if (!box) {
+        box = document.createElement("div");
+        box.classList.add("boxdraw");
+        canvas.appendChild(box);
+      }
+
+      const minX = Math.min(start.x, current.x),
+        maxX = Math.max(start.x, current.x),
+        minY = Math.min(start.y, current.y),
+        maxY = Math.max(start.y, current.y);
+
+      // Adjust width and xy position of the box element ongoing
+      const pos = "translate(" + minX + "px," + minY + "px)";
+      box.style.transform = pos;
+      box.style.webkitTransform = pos;
+      box.style.width = maxX - minX + "px";
+      box.style.height = maxY - minY + "px";
+    }
+
+    function onMouseUp(e: MouseEvent) {
+      // Capture xy coordinates
+      finish([start, mousePos(e)]);
+    }
+
+    function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
+      // Remove these events now that finish has been called.
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+
+      if (box) {
+        box.parentNode && box.parentNode.removeChild(box);
+        box = null;
+      }
+
+      // If bbox exists. use this value as the argument for `queryRenderedFeatures`
+      if (bbox) {
+        const features = map.queryRenderedFeatures(bbox, {
+          layers: [levelToSelectionLayerId(topGeoLevel)]
+        });
+
+        const featureStateExpression = (id?: string | number) => ({
+          source,
+          id,
+          sourceLayer: topGeoLevel
+        });
+        const isFeatureSelected = (feature: MapboxGL.MapboxGeoJSONFeature): boolean => {
+          const featureState = map.getFeatureState(featureStateExpression(feature.id));
+          return featureState.selected === true;
+        };
+        const selectedFeatures = features.filter(feature => isFeatureSelected(feature) === true);
+        const deselectedFeatures = features.filter(feature => isFeatureSelected(feature) === false);
+
+        selectedFeatures.forEach(feature => {
+          map.setFeatureState(featureStateExpression(feature.id), { selected: false });
+        });
+        deselectedFeatures.forEach(feature => {
+          map.setFeatureState(featureStateExpression(feature.id), { selected: true });
+        });
+
+        const featuresToSet = (features: MapboxGL.MapboxGeoJSONFeature[]): Set<number> =>
+          new Set(
+            features
+              .map((feature: MapboxGL.MapboxGeoJSONFeature) => feature.id)
+              .filter((id): id is number => typeof id === "number")
+          );
+
+        if (selectedFeatures.length) {
+          store.dispatch(removeSelectedGeounitIds(featuresToSet(selectedFeatures)));
+        }
+
+        if (deselectedFeatures.length) {
+          store.dispatch(addSelectedGeounitIds(featuresToSet(deselectedFeatures)));
+        }
+      }
+    }
+  },
+  disable: function(map: MapboxGL.Map) {
+    map.boxZoom.enable();
+    map.dragPan.enable();
+    map.getCanvas().style.cursor = "grab";
+    map.getCanvasContainer().removeEventListener("mousedown", this.mouseDown);
+  }
+};
+
+const DefaultSelectionTool: ISelectionTool = {
+  enable: function(
+    map: MapboxGL.Map,
+    topGeoLevel: string,
+    staticMetadata: IStaticMetadata,
+    staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+    staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
+  ) {
+    map.getCanvas().style.cursor = "pointer";
+    // Add a click event to the top geolevel that logs demographic information.
+    // Note that the feature can't be directly selected under the cursor, so
+    // we need to use a small bounding box and select the first feature we find.
+    const clickHandler = (e: MapboxGL.MapMouseEvent) => {
+      const buffer = 1;
+      const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
+      const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
+      const features = map.queryRenderedFeatures([southWest, northEast], {
+        layers: [levelToSelectionLayerId(topGeoLevel)]
+      });
+
+      // Disabling 'functional/no-conditional-statement' without naming it.
+      // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
+      // eslint-disable-next-line
+      if (features.length === 0 || typeof features[0].id !== "number") {
+        // eslint-disable-next-line
+        console.log("No features selected. ", features);
+        return;
+      }
+      const feature = features[0];
+      const featureId = feature.id as number;
+
+      // Set the selected feature, or de-select it if it's already selected
+      const featureStateExpression = { source, id: featureId, sourceLayer: topGeoLevel };
+      const featureState = map.getFeatureState(featureStateExpression);
+      const selectedFeatures = new Set([featureId]);
+      const addFeatures = () => {
+        map.setFeatureState(featureStateExpression, { selected: true });
+        store.dispatch(addSelectedGeounitIds(selectedFeatures));
+      };
+      const removeFeatures = () => {
+        map.setFeatureState(featureStateExpression, { selected: false });
+        store.dispatch(removeSelectedGeounitIds(selectedFeatures));
+      };
+      featureState.selected ? removeFeatures() : addFeatures();
+
+      // Indices of all base geounits belonging to the clicked feature
+      const baseIndices = getAllIndices(
+        staticGeoLevels[staticGeoLevels.length - 1],
+        new Set([featureId])
+      );
+      const demographics = getDemographics(baseIndices, staticMetadata, staticDemographics);
+
+      // As a proof of concept, log to the console the aggregated demographic data for the feature
+      // eslint-disable-next-line
+      console.log(demographics);
+    };
+    map.on("click", clickHandler);
+    // Save the click handler function so it can be removed later
+    this.clickHandler = clickHandler;
+  },
+  disable: function(map: MapboxGL.Map) {
+    map.off("click", this.clickHandler);
+  }
+};
+
 const Map = ({
   project,
   geojson,
@@ -153,23 +355,9 @@ const Map = ({
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
       map.doubleClickZoom.disable();
-      // Disable default box zooming for rectangle selection
-      map.boxZoom.disable();
 
       map.on("load", () => {
         setMap(map);
-        const canvas = map.getCanvasContainer();
-
-        // Variable to hold the starting xy coordinates
-        // when `mousedown` occured.
-        var start: MapboxGL.Point;
-
-        // Variable to hold the current xy coordinates
-        // when `mousemove` or `mouseup` occurs.
-        var current: MapboxGL.Point;
-
-        // Variable for the draw box element.
-        var box: HTMLElement | null;
 
         map.addSource("districts", {
           type: "geojson",
@@ -187,182 +375,6 @@ const Map = ({
         });
 
         map.resize();
-
-        // NOTE: Rectangle selection is based off of https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
-
-        // Set `true` to dispatch the event before other functions
-        // call it. This is necessary for disabling the default map
-        // dragging behaviour.
-        canvas.addEventListener("mousedown", mouseDown, true);
-
-        // Return the xy coordinates of the mouse position
-        function mousePos(e: MouseEvent) {
-          var rect = canvas.getBoundingClientRect();
-          return new MapboxGL.Point(
-            e.clientX - rect.left - canvas.clientLeft,
-            e.clientY - rect.top - canvas.clientTop
-          );
-        }
-
-        function mouseDown(e: MouseEvent) {
-          // Continue the rest of the function if the shiftkey is pressed.
-          if (!(e.shiftKey && e.button === 0)) return;
-
-          // Disable default drag zooming when the shift key is held down.
-          map.dragPan.disable();
-
-          // Call functions for the following events
-          document.addEventListener("mousemove", onMouseMove);
-          document.addEventListener("mouseup", onMouseUp);
-          document.addEventListener("keydown", onKeyDown);
-
-          // Capture the first xy coordinates
-          start = mousePos(e);
-        }
-
-        function onMouseMove(e: MouseEvent) {
-          // Capture the ongoing xy coordinates
-          current = mousePos(e);
-
-          // Append the box element if it doesnt exist
-          if (!box) {
-            box = document.createElement("div");
-            box.classList.add("boxdraw");
-            canvas.appendChild(box);
-          }
-
-          var minX = Math.min(start.x, current.x),
-            maxX = Math.max(start.x, current.x),
-            minY = Math.min(start.y, current.y),
-            maxY = Math.max(start.y, current.y);
-
-          // Adjust width and xy position of the box element ongoing
-          var pos = "translate(" + minX + "px," + minY + "px)";
-          box.style.transform = pos;
-          box.style.webkitTransform = pos;
-          box.style.width = maxX - minX + "px";
-          box.style.height = maxY - minY + "px";
-        }
-
-        function onMouseUp(e: MouseEvent) {
-          // Capture xy coordinates
-          finish([start, mousePos(e)]);
-        }
-
-        function onKeyDown(e: KeyboardEvent) {
-          // If the ESC key is pressed
-          if (e.keyCode === 27) finish();
-        }
-
-        function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
-          // Remove these events now that finish has been called.
-          document.removeEventListener("mousemove", onMouseMove);
-          document.removeEventListener("keydown", onKeyDown);
-          document.removeEventListener("mouseup", onMouseUp);
-
-          if (box) {
-            box.parentNode && box.parentNode.removeChild(box);
-            box = null;
-          }
-
-          // If bbox exists. use this value as the argument for `queryRenderedFeatures`
-          if (bbox) {
-            const features = map.queryRenderedFeatures(bbox, {
-              layers: [levelToSelectionLayerId(topGeoLevel)]
-            });
-
-            const featureStateExpression = (id?: string | number) => ({
-              source,
-              id,
-              sourceLayer: topGeoLevel
-            });
-            const isFeatureSelected = (feature: MapboxGL.MapboxGeoJSONFeature): boolean => {
-              const featureState = map.getFeatureState(featureStateExpression(feature.id));
-              return featureState.selected === true;
-            };
-            const selectedFeatures = features.filter(
-              feature => isFeatureSelected(feature) === true
-            );
-            const deselectedFeatures = features.filter(
-              feature => isFeatureSelected(feature) === false
-            );
-
-            selectedFeatures.forEach(feature => {
-              map.setFeatureState(featureStateExpression(feature.id), { selected: false });
-            });
-            deselectedFeatures.forEach(feature => {
-              map.setFeatureState(featureStateExpression(feature.id), { selected: true });
-            });
-
-            const featuresToSet = (features: MapboxGL.MapboxGeoJSONFeature[]): Set<number> =>
-              new Set(
-                features
-                  .map((feature: MapboxGL.MapboxGeoJSONFeature) => feature.id)
-                  .filter((id): id is number => typeof id === "number")
-              );
-
-            if (selectedFeatures.length) {
-              store.dispatch(removeSelectedGeounitIds(featuresToSet(selectedFeatures)));
-            }
-
-            if (deselectedFeatures.length) {
-              store.dispatch(addSelectedGeounitIds(featuresToSet(deselectedFeatures)));
-            }
-          }
-
-          map.dragPan.enable();
-        }
-
-        // Add a click event to the top geolevel that logs demographic information.
-        // Note that the feature can't be directly selected under the cursor, so
-        // we need to use a small bounding box and select the first feature we find.
-        map.on("click", e => {
-          if (selectionTool !== SelectionTool.Default) {
-            return;
-          }
-          const buffer = 1;
-          const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
-          const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
-          const features = map.queryRenderedFeatures([southWest, northEast], {
-            layers: [levelToSelectionLayerId(topGeoLevel)]
-          });
-
-          // Disabling 'functional/no-conditional-statement' without naming it.
-          // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
-          // eslint-disable-next-line
-          if (features.length === 0 || typeof features[0].id !== "number") {
-            // eslint-disable-next-line
-            console.log("No features selected. ", features);
-            return;
-          }
-          const feature = features[0];
-          const featureId = feature.id as number;
-
-          // Set the selected feature, or de-select it if it's already selected
-          const featureStateExpression = { source, id: featureId, sourceLayer: topGeoLevel };
-          const featureState = map.getFeatureState(featureStateExpression);
-          const selectedFeatures = new Set([featureId]);
-          const addFeatures = () => {
-            map.setFeatureState(featureStateExpression, { selected: true });
-            store.dispatch(addSelectedGeounitIds(selectedFeatures));
-          };
-          const removeFeatures = () => {
-            map.setFeatureState(featureStateExpression, { selected: false });
-            store.dispatch(removeSelectedGeounitIds(selectedFeatures));
-          };
-          featureState.selected ? removeFeatures() : addFeatures();
-
-          // Indices of all base geounits belonging to the clicked feature
-          const baseIndices = getAllIndices(
-            staticGeoLevels[staticGeoLevels.length - 1],
-            new Set([featureId])
-          );
-          const demographics = getDemographics(baseIndices, staticMetadata, staticDemographics);
-
-          // As a proof of concept, log to the console the aggregated demographic data for the feature
-          // eslint-disable-next-line
-          console.log(demographics);
-        });
       });
     };
 
@@ -415,13 +427,21 @@ const Map = ({
 
   useEffect(() => {
     if (map) {
-      // if (selectionTool === SelectionTool.Default) {
-      //   draw.changeMode("simple_select");
-      // } else if (selectionTool === SelectionTool.Rectangle) {
-      //   draw.changeMode("draw_rectangle_drag");
-      // }
+      if (selectionTool === SelectionTool.Default) {
+        DefaultSelectionTool.enable(
+          map,
+          topGeoLevel,
+          staticMetadata,
+          staticGeoLevels,
+          staticDemographics
+        );
+        RectangleSelectionTool.disable(map);
+      } else if (selectionTool === SelectionTool.Rectangle) {
+        DefaultSelectionTool.disable(map);
+        RectangleSelectionTool.enable(map, topGeoLevel);
+      }
     }
-  }, [map, selectionTool]);
+  }, [map, selectionTool, topGeoLevel, staticMetadata, staticDemographics, staticGeoLevels]);
 
   return <div ref={mapRef} style={styles} />;
 };
