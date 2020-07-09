@@ -111,35 +111,37 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
   };
 }
 
+/* eslint-disable */
 interface ISelectionTool {
   enable: (map: MapboxGL.Map, ...args: any) => void;
   disable: (map: MapboxGL.Map, ...args: any) => void;
   [x: string]: any;
 }
+/* eslint-enable */
 
 // NOTE: Rectangle selection is based off of https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
 const RectangleSelectionTool: ISelectionTool = {
   enable: function(map: MapboxGL.Map, topGeoLevel: string) {
     map.boxZoom.disable();
     map.dragPan.disable();
-    map.getCanvas().style.cursor = "crosshair";
+    map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line functional/immutable-data
 
     const canvas = map.getCanvasContainer();
 
     // Variable to hold the starting xy coordinates
     // when `mousedown` occured.
-    let start: MapboxGL.Point;
+    let start: MapboxGL.Point; // eslint-disable-line functional/no-let
 
     // Variable to hold the current xy coordinates
     // when `mousemove` or `mouseup` occurs.
-    let current: MapboxGL.Point;
+    let current: MapboxGL.Point; // eslint-disable-line functional/no-let
 
     // Variable for the draw box element.
-    let box: HTMLElement | null;
+    let box: HTMLElement | null; // eslint-disable-line functional/no-let
 
     canvas.addEventListener("mousedown", mouseDown);
     // Save mouseDown for removal upon disabling
-    this.mouseDown = mouseDown;
+    this.mouseDown = mouseDown; // eslint-disable-line functional/immutable-data, functional/no-this-expression
 
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
@@ -164,6 +166,7 @@ const RectangleSelectionTool: ISelectionTool = {
       current = mousePos(e);
 
       // Append the box element if it doesnt exist
+      // eslint-disable-next-line functional/no-conditional-statement
       if (!box) {
         box = document.createElement("div");
         box.classList.add("boxdraw");
@@ -176,11 +179,13 @@ const RectangleSelectionTool: ISelectionTool = {
         maxY = Math.max(start.y, current.y);
 
       // Adjust width and xy position of the box element ongoing
+      /* eslint-disable functional/immutable-data, @typescript-eslint/restrict-plus-operands */
       const pos = "translate(" + minX + "px," + minY + "px)";
       box.style.transform = pos;
       box.style.webkitTransform = pos;
       box.style.width = maxX - minX + "px";
       box.style.height = maxY - minY + "px";
+      /* eslint-enable functional/immutable-data, @typescript-eslint/restrict-plus-operands */
     }
 
     function onMouseUp(e: MouseEvent) {
@@ -188,17 +193,20 @@ const RectangleSelectionTool: ISelectionTool = {
       finish([start, mousePos(e)]);
     }
 
+    // eslint-disable-next-line functional/prefer-readonly-type
     function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       // Remove these events now that finish has been called.
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
 
+      // eslint-disable-next-line functional/no-conditional-statement
       if (box) {
         box.parentNode && box.parentNode.removeChild(box);
         box = null;
       }
 
       // If bbox exists. use this value as the argument for `queryRenderedFeatures`
+      // eslint-disable-next-line functional/no-conditional-statement
       if (bbox) {
         const features = map.queryRenderedFeatures(bbox, {
           layers: [levelToSelectionLayerId(topGeoLevel)]
@@ -221,23 +229,26 @@ const RectangleSelectionTool: ISelectionTool = {
           map.setFeatureState(featureStateExpression(feature.id), { selected: true });
         });
 
-        const featuresToSet = (features: MapboxGL.MapboxGeoJSONFeature[]): Set<number> =>
+        const featuresToSet = (
+          features: readonly MapboxGL.MapboxGeoJSONFeature[]
+        ): ReadonlySet<number> =>
           new Set(
             features
               .map((feature: MapboxGL.MapboxGeoJSONFeature) => feature.id)
               .filter((id): id is number => typeof id === "number")
           );
 
-        if (newlySelectedFeatures.length) {
+        newlySelectedFeatures.length &&
           store.dispatch(addSelectedGeounitIds(featuresToSet(newlySelectedFeatures)));
-        }
       }
     }
   },
   disable: function(map: MapboxGL.Map) {
     map.boxZoom.enable();
     map.dragPan.enable();
+    // eslint-disable-next-line functional/immutable-data
     map.getCanvas().style.cursor = "grab";
+    // eslint-disable-next-line functional/immutable-data, functional/no-this-expression
     this.mouseDown && map.getCanvasContainer().removeEventListener("mousedown", this.mouseDown);
   }
 };
@@ -250,10 +261,12 @@ const DefaultSelectionTool: ISelectionTool = {
     staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
     staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
   ) {
+    /* eslint-disable functional/immutable-data, functional/no-this-expression */
     this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
     this.unsetCursor = () => (map.getCanvas().style.cursor = "");
     map.on("mousemove", "districts", this.setCursor);
     map.on("mouseleave", "districts", this.unsetCursor);
+    /* eslint-enable functional/immutable-data, functional/no-this-expression */
 
     // Add a click event to the top geolevel that logs demographic information.
     // Note that the feature can't be directly selected under the cursor, so
@@ -304,12 +317,14 @@ const DefaultSelectionTool: ISelectionTool = {
     };
     map.on("click", clickHandler);
     // Save the click handler function so it can be removed later
-    this.clickHandler = clickHandler;
+    this.clickHandler = clickHandler; // eslint-disable-line functional/immutable-data, functional/no-this-expression
   },
   disable: function(map: MapboxGL.Map) {
+    /* eslint-disable functional/immutable-data, functional/no-this-expression */
     this.clickHandler && map.off("click", this.clickHandler);
     this.setCursor && map.off("mousemove", "districts", this.setCursor);
     this.unsetCursor && map.off("mouseleave", "districts", this.unsetCursor);
+    /* eslint-enable functional/immutable-data, functional/no-this-expression */
   }
 };
 
@@ -426,6 +441,7 @@ const Map = ({
   }, [map, label]);
 
   useEffect(() => {
+    /* eslint-disable functional/no-conditional-statement */
     if (map) {
       if (selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
@@ -440,6 +456,7 @@ const Map = ({
         DefaultSelectionTool.disable(map);
         RectangleSelectionTool.enable(map, topGeoLevel);
       }
+      /* eslint-enable functional/no-conditional-statement */
     }
   }, [map, selectionTool, topGeoLevel, staticMetadata, staticDemographics, staticGeoLevels]);
 
