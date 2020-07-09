@@ -213,13 +213,11 @@ const RectangleSelectionTool: ISelectionTool = {
           const featureState = map.getFeatureState(featureStateExpression(feature.id));
           return featureState.selected === true;
         };
-        const selectedFeatures = features.filter(feature => isFeatureSelected(feature) === true);
-        const deselectedFeatures = features.filter(feature => isFeatureSelected(feature) === false);
+        const newlySelectedFeatures = features.filter(
+          feature => isFeatureSelected(feature) === false
+        );
 
-        selectedFeatures.forEach(feature => {
-          map.setFeatureState(featureStateExpression(feature.id), { selected: false });
-        });
-        deselectedFeatures.forEach(feature => {
+        newlySelectedFeatures.forEach(feature => {
           map.setFeatureState(featureStateExpression(feature.id), { selected: true });
         });
 
@@ -230,12 +228,8 @@ const RectangleSelectionTool: ISelectionTool = {
               .filter((id): id is number => typeof id === "number")
           );
 
-        if (selectedFeatures.length) {
-          store.dispatch(removeSelectedGeounitIds(featuresToSet(selectedFeatures)));
-        }
-
-        if (deselectedFeatures.length) {
-          store.dispatch(addSelectedGeounitIds(featuresToSet(deselectedFeatures)));
+        if (newlySelectedFeatures.length) {
+          store.dispatch(addSelectedGeounitIds(featuresToSet(newlySelectedFeatures)));
         }
       }
     }
