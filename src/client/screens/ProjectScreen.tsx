@@ -40,26 +40,36 @@ const MapContainer = ({ children }: { readonly children: React.ReactNode }) => {
 const MapHeader = ({
   label,
   setMapLabel,
-  metadata
+  metadata,
+  selectionTool
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
+  readonly selectionTool: SelectionTool;
 }) => {
   const options = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
+  const buttonStyles = (isSelected: boolean) => ({
+    backgroundColor: isSelected ? "#efefef" : "#fff",
+    borderRadius: "4px 0 0 4px",
+    border: "1px solid #e3e6e8",
+    padding: "7px 12px"
+  });
   return (
     <Box sx={{ variant: "header.app", backgroundColor: "white" }}>
-      <button>
-        <Box onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}>
-          <Icon name="hand-pointer" />
-        </Box>
+      <button
+        onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
+        style={buttonStyles(selectionTool === SelectionTool.Default)}
+      >
+        <Icon name="hand-pointer" />
       </button>
-      <button>
-        <Box onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}>
-          <Icon name="draw-square" />
-        </Box>
+      <button
+        onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
+        style={buttonStyles(selectionTool === SelectionTool.Rectangle)}
+      >
+        <Icon name="draw-square" />
       </button>
       <Label>
         Label:
@@ -120,7 +130,12 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
         />
         <MapContainer>
-          <MapHeader label={label} setMapLabel={setMapLabel} metadata={staticMetadata} />
+          <MapHeader
+            label={label}
+            setMapLabel={setMapLabel}
+            metadata={staticMetadata}
+            selectionTool={districtDrawing.selectionTool}
+          />
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
           "resource" in projectData.staticGeoLevels &&
