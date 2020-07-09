@@ -1,10 +1,10 @@
 /** @jsx jsx */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
-import { Box, Flex, jsx } from "theme-ui";
+import { Box, Flex, Label, Select, jsx } from "theme-ui";
 
-import { IUser } from "../../shared/entities";
+import { IUser, IStaticMetadata } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -36,8 +36,35 @@ const MapContainer = ({ children }: { readonly children: React.ReactNode }) => {
   return <Flex sx={{ flexDirection: "column", flex: 1 }}>{children}</Flex>;
 };
 
-const MapHeader = () => {
-  return <Box sx={{ variant: "header.app", backgroundColor: "burlywood" }}>MapHeader</Box>;
+const MapHeader = ({
+  label,
+  setMapLabel,
+  metadata
+}: {
+  readonly label?: string;
+  readonly setMapLabel: (label?: string) => void;
+  readonly metadata?: IStaticMetadata;
+}) => {
+  const options = metadata
+    ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
+    : [];
+  return (
+    <Box sx={{ variant: "header.app" }}>
+      <Label>
+        Label:
+        <Select
+          value={label}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            const label = e.currentTarget.value;
+            setMapLabel(label);
+          }}
+        >
+          <option></option>
+          {options}
+        </Select>
+      </Label>
+    </Box>
+  );
 };
 
 const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
@@ -55,6 +82,8 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const isLoading =
     ("isPending" in projectData.project && projectData.project.isPending) ||
     ("isPending" in projectData.geojson && projectData.geojson.isPending);
+
+  const [label, setMapLabel] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     store.dispatch(userFetch());
@@ -80,7 +109,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
         />
         <MapContainer>
-          <MapHeader />
+          <MapHeader label={label} setMapLabel={setMapLabel} metadata={staticMetadata} />
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
           "resource" in projectData.staticGeoLevels &&
@@ -94,6 +123,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               staticDemographics={projectData.staticDemographics.resource}
               selectedGeounitIds={districtDrawing.selectedGeounitIds}
               selectedDistrictId={districtDrawing.selectedDistrictId}
+              label={label}
             />
           ) : null}
         </MapContainer>
