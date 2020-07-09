@@ -117,8 +117,8 @@ interface ISelectionTool {
   [x: string]: any;
 }
 
+// NOTE: Rectangle selection is based off of https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
 const RectangleSelectionTool: ISelectionTool = {
-  // NOTE: Rectangle selection is based off of https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
   enable: function(map: MapboxGL.Map, topGeoLevel: string) {
     map.boxZoom.disable();
     map.dragPan.disable();
@@ -238,7 +238,7 @@ const RectangleSelectionTool: ISelectionTool = {
     map.boxZoom.enable();
     map.dragPan.enable();
     map.getCanvas().style.cursor = "grab";
-    map.getCanvasContainer().removeEventListener("mousedown", this.mouseDown);
+    this.mouseDown && map.getCanvasContainer().removeEventListener("mousedown", this.mouseDown);
   }
 };
 
@@ -307,9 +307,9 @@ const DefaultSelectionTool: ISelectionTool = {
     this.clickHandler = clickHandler;
   },
   disable: function(map: MapboxGL.Map) {
-    map.off("click", this.clickHandler);
-    map.off("mousemove", "districts", this.setCursor);
-    map.off("mouseleave", "districts", this.unsetCursor);
+    this.clickHandler && map.off("click", this.clickHandler);
+    this.setCursor && map.off("mousemove", "districts", this.setCursor);
+    this.unsetCursor && map.off("mouseleave", "districts", this.unsetCursor);
   }
 };
 
