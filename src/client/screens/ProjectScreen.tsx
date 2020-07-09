@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
+import Icon from "../components/Icon";
 import { Box, Flex, Label, Select, jsx } from "theme-ui";
-
 import { IUser, IStaticMetadata } from "../../shared/entities";
 import { setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import { projectDataFetch } from "../actions/projectData";
@@ -50,10 +50,16 @@ const MapHeader = ({
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
   return (
-    <Box sx={{ variant: "header.app" }}>
-      <button onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}>Hand</button>
-      <button onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}>
-        Rectangle
+    <Box sx={{ variant: "header.app", backgroundColor: "white" }}>
+      <button>
+        <Box onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}>
+          <Icon name="hand-pointer" />
+        </Box>
+      </button>
+      <button>
+        <Box onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}>
+          <Icon name="draw-square" />
+        </Box>
       </button>
       <Label>
         Label:
