@@ -427,6 +427,7 @@ it when necessary (file sizes ~1GB+).
           maximumZoom,
           minimumZoom,
           noTileCompression: true,
+          dropRate: 1,
           output: labelOutput
         },
         { echo: true }
