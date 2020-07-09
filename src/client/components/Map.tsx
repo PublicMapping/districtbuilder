@@ -250,7 +250,11 @@ const DefaultSelectionTool: ISelectionTool = {
     staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
     staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
   ) {
-    map.getCanvas().style.cursor = "pointer";
+    this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
+    this.unsetCursor = () => (map.getCanvas().style.cursor = "");
+    map.on("mousemove", "districts", this.setCursor);
+    map.on("mouseleave", "districts", this.unsetCursor);
+
     // Add a click event to the top geolevel that logs demographic information.
     // Note that the feature can't be directly selected under the cursor, so
     // we need to use a small bounding box and select the first feature we find.
@@ -304,6 +308,8 @@ const DefaultSelectionTool: ISelectionTool = {
   },
   disable: function(map: MapboxGL.Map) {
     map.off("click", this.clickHandler);
+    map.off("mousemove", "districts", this.setCursor);
+    map.off("mouseleave", "districts", this.unsetCursor);
   }
 };
 
