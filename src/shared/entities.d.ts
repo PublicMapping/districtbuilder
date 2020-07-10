@@ -23,11 +23,17 @@ export interface IStaticFile {
   readonly bytesPerElement: number;
 }
 
+export interface GeoLevelInfo {
+  readonly id: string;
+  readonly maxZoom: number;
+  readonly minZoom: number;
+}
+
 export interface IStaticMetadata {
   readonly demographics: readonly IStaticFile[];
   readonly geoLevels: readonly IStaticFile[];
   readonly bbox: readonly [number, number, number, number];
-  readonly geoLevelHierarchy: readonly string[];
+  readonly geoLevelHierarchy: readonly GeoLevelInfo[];
 }
 
 export interface Login {
