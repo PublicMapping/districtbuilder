@@ -73,7 +73,7 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
         id: levelToLabelLayerId(level.id),
         type: "symbol",
         source,
-        "source-layer": `${level}labels`,
+        "source-layer": `${level.id}labels`,
         layout: {
           "text-size": 12,
           "text-padding": 3,
