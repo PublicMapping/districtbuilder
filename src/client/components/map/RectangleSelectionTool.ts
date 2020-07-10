@@ -80,11 +80,50 @@ const RectangleSelectionTool: ISelectionTool = {
       box.style.width = maxX - minX + "px";
       box.style.height = maxY - minY + "px";
       /* eslint-enable */
+
+      getNewlySelectedFeatures([start, current]).forEach(feature => {
+        map.setFeatureState(featureStateExpression(feature.id), { selected: true });
+      });
     }
 
     function onMouseUp(e: MouseEvent) {
       // Capture xy coordinates
       finish([start, mousePos(e)]);
+    }
+
+    function featureStateExpression(id?: string | number) {
+      return {
+        source: GEOLEVELS_SOURCE_ID,
+        id,
+        sourceLayer: topGeoLevel
+      };
+    }
+
+    function featuresToSet(
+      features: readonly MapboxGL.MapboxGeoJSONFeature[]
+    ): ReadonlySet<number> {
+      return new Set(
+        features
+          .map((feature: MapboxGL.MapboxGeoJSONFeature) => feature.id)
+          .filter((id): id is number => typeof id === "number")
+      );
+    }
+
+    function isFeatureSelected(feature: MapboxGL.MapboxGeoJSONFeature): boolean {
+      const featureState = map.getFeatureState(featureStateExpression(feature.id));
+      return featureState.selected === true;
+    }
+
+    // eslint-disable-next-line
+    function getAllSelectedFeatures(bbox: [MapboxGL.PointLike, MapboxGL.PointLike]) {
+      return map.queryRenderedFeatures(bbox, {
+        layers: [levelToSelectionLayerId(topGeoLevel)]
+      });
+    }
+
+    // eslint-disable-next-line
+    function getNewlySelectedFeatures(bbox: [MapboxGL.PointLike, MapboxGL.PointLike]) {
+      return getAllSelectedFeatures(bbox).filter(feature => isFeatureSelected(feature) === false);
     }
 
     // eslint-disable-next-line
@@ -102,36 +141,7 @@ const RectangleSelectionTool: ISelectionTool = {
       // If bbox exists. use this value as the argument for `queryRenderedFeatures`
       // eslint-disable-next-line
       if (bbox) {
-        const features = map.queryRenderedFeatures(bbox, {
-          layers: [levelToSelectionLayerId(topGeoLevel)]
-        });
-
-        const featureStateExpression = (id?: string | number) => ({
-          source: GEOLEVELS_SOURCE_ID,
-          id,
-          sourceLayer: topGeoLevel
-        });
-        const isFeatureSelected = (feature: MapboxGL.MapboxGeoJSONFeature): boolean => {
-          const featureState = map.getFeatureState(featureStateExpression(feature.id));
-          return featureState.selected === true;
-        };
-        const newlySelectedFeatures = features.filter(
-          feature => isFeatureSelected(feature) === false
-        );
-
-        newlySelectedFeatures.forEach(feature => {
-          map.setFeatureState(featureStateExpression(feature.id), { selected: true });
-        });
-
-        const featuresToSet = (
-          features: readonly MapboxGL.MapboxGeoJSONFeature[]
-        ): ReadonlySet<number> =>
-          new Set(
-            features
-              .map((feature: MapboxGL.MapboxGeoJSONFeature) => feature.id)
-              .filter((id): id is number => typeof id === "number")
-          );
-
+        const newlySelectedFeatures = getAllSelectedFeatures(bbox);
         newlySelectedFeatures.length &&
           store.dispatch(addSelectedGeounitIds(featuresToSet(newlySelectedFeatures)));
       }
