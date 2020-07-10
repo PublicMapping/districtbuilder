@@ -2,8 +2,19 @@
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 
-import { DistrictProperties, IProject } from "../../shared/entities";
-import { getDistrictColor } from "../constants/colors";
+import {
+  DistrictsDefinition,
+  DistrictProperties,
+  IProject,
+  IStaticMetadata
+} from "../../shared/entities";
+import { getAllIndices, getDemographics } from "../../shared/functions";
+import {
+  getDistrictColor,
+  negativeChangeColor,
+  positiveChangeColor,
+  selectedDistrictColor
+} from "../constants/colors";
 import Loading from "./Loading";
 
 import {
@@ -21,11 +32,17 @@ const ProjectSidebar = ({
   project,
   geojson,
   isLoading,
+  staticMetadata,
+  staticGeoLevels,
+  staticDemographics,
   selectedDistrictId,
   selectedGeounitIds
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
+  readonly staticMetadata?: IStaticMetadata;
+  readonly staticGeoLevels?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
+  readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
   readonly selectedGeounitIds: ReadonlySet<number>;
 } & LoadingProps) => (
@@ -60,7 +77,22 @@ const ProjectSidebar = ({
           <Styled.th>Comp.</Styled.th>
         </Styled.tr>
       </thead>
-      <tbody>{project && geojson && getSidebarRows(project, geojson, selectedDistrictId)}</tbody>
+      <tbody>
+        {project &&
+          geojson &&
+          staticMetadata &&
+          staticGeoLevels &&
+          staticDemographics &&
+          getSidebarRows(
+            project,
+            geojson,
+            staticMetadata,
+            staticGeoLevels,
+            staticDemographics,
+            selectedDistrictId,
+            selectedGeounitIds
+          )}
+      </tbody>
     </Styled.table>
   </Flex>
 );
@@ -108,19 +140,33 @@ const SidebarHeader = ({
   );
 };
 
-// TODO (#186): need to display intermediate changes in populations as districts are selected
 const SidebarRow = ({
   district,
   selected,
+  selectedPopulationDifference,
   deviation
 }: {
   readonly district: Feature<MultiPolygon, DistrictProperties>;
   readonly selected: boolean;
+  readonly selectedPopulationDifference: number;
   readonly deviation: number;
 }) => {
+  const showPopulationChange = selectedPopulationDifference !== 0;
+  const textColor = showPopulationChange
+    ? selectedPopulationDifference > 0
+      ? positiveChangeColor
+      : negativeChangeColor
+    : "inherit";
+  const intermediatePopulation = district.properties.population + selectedPopulationDifference;
+  const intermediateDeviation = deviation + selectedPopulationDifference;
+  const populationDisplay = intermediatePopulation.toLocaleString();
+  const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
+    intermediateDeviation
+  ).toLocaleString()}`;
+
   return (
     <Styled.tr
-      sx={{ backgroundColor: selected ? "#efefef" : "inherit", cursor: "pointer" }}
+      sx={{ backgroundColor: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
       onClick={() => {
         store.dispatch(setSelectedDistrictId(district.id as number));
       }}
@@ -136,8 +182,8 @@ const SidebarRow = ({
         </span>
         {district.id || "∅"}
       </Styled.td>
-      <Styled.td>{district.properties.population.toLocaleString()}</Styled.td>
-      <Styled.td>{(deviation > 0 ? "+" : "") + Math.round(deviation).toLocaleString()}</Styled.td>
+      <Styled.td sx={{ color: textColor }}>{populationDisplay}</Styled.td>
+      <Styled.td sx={{ color: textColor }}>{deviationDisplay}</Styled.td>
       <Styled.td>–</Styled.td>
       <Styled.td>–</Styled.td>
       <Styled.td>–</Styled.td>
@@ -145,24 +191,132 @@ const SidebarRow = ({
   );
 };
 
+// Aggregate all demographics that are included in the selection
+const getTotalSelectedDemographics = (
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  selectedGeounitIds: ReadonlySet<number>,
+  geoLevelIndex: number
+) => {
+  const selectedBaseIndices = getAllIndices(
+    staticGeoLevels.slice().reverse()[geoLevelIndex],
+    selectedGeounitIds
+  );
+  return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
+};
+
+// Drill into the district definition and collect the base geounits for
+// every district that's part of the selection
+const getSavedDistrictSelectedDemographics = (
+  project: IProject,
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  selectedGeounitIds: ReadonlySet<number>,
+  geoLevelIndex: number
+) => {
+  // eslint-disable-next-line
+  const mutableDistrictGeounitAccum: number[][] = Array(project.numberOfDistricts + 1).fill([]);
+
+  // Note: this function was originally intended to be recursive, and had logic to go through
+  // the district definition tree and collect all base geounits found in the tree.
+  // However, there currently isn't enough information on the client-side to be able to
+  // effectively accomplish this, so it is only working with the top-most geolevel at the moment.
+  // We will need to determine a way to make this work with all geolevels. In order to allow that
+  // to happen, there are a couple potential options:
+  //   1) Perform this logic on the server-side, where we have access to the topology
+  //      (not ideal, since we want very fast updates)
+  //   2) Send more data to the client-side in order to allow matching up base geounits to
+  //      the district definition. This may be prohibitively large, so it will require research.
+  const accumulateGeounits = (
+    geounitIndex: number,
+    subDefinition: DistrictsDefinition,
+    levelIndex: number
+  ) => {
+    const item = subDefinition[geounitIndex];
+    // eslint-disable-next-line
+    if (typeof item === "number") {
+      // eslint-disable-next-line
+      mutableDistrictGeounitAccum[item] = mutableDistrictGeounitAccum[item].concat(
+        getAllIndices(staticGeoLevels.slice().reverse()[levelIndex], new Set([geounitIndex]))
+      );
+    }
+  };
+  selectedGeounitIds.forEach(selectedGeounitId => {
+    accumulateGeounits(selectedGeounitId, project.districtsDefinition, geoLevelIndex);
+  });
+
+  return mutableDistrictGeounitAccum.map(baseGeounitIdsForDistrict =>
+    getDemographics(baseGeounitIdsForDistrict, staticMetadata, staticDemographics)
+  );
+};
+
 const getSidebarRows = (
   project: IProject,
   geojson: FeatureCollection<MultiPolygon, DistrictProperties>,
-  selectedDistrictId: number
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  selectedDistrictId: number,
+  selectedGeounitIds: ReadonlySet<number>
 ) => {
+  // This assumes we are selecting the top-most geolevel. When the geolevel selector is
+  // added, this will need to be updated accordingly.
+  const geoLevelIndex = 0;
+
+  // Aggregated demographics for the geounit selection
+  const totalSelectedDemographics = getTotalSelectedDemographics(
+    staticMetadata,
+    staticGeoLevels,
+    staticDemographics,
+    selectedGeounitIds,
+    geoLevelIndex
+  );
+
+  // The demographic composition of the selection for each saved district
+  const savedDistrictSelectedDemographics = getSavedDistrictSelectedDemographics(
+    project,
+    staticMetadata,
+    staticGeoLevels,
+    staticDemographics,
+    selectedGeounitIds,
+    geoLevelIndex
+  );
+
+  // The target population is based on the average population of all districts,
+  // not including the unassigned district, so we use the number of districts,
+  // rather than the district feature count (which includes the unassigned district)
   const averagePopulation =
     geojson.features.reduce(
       (population, feature) => population + feature.properties.population,
       0
-    ) / geojson.features.length;
-  return geojson.features.map(feature => (
-    <SidebarRow
-      district={feature}
-      selected={feature.id === selectedDistrictId}
-      deviation={feature.properties.population - averagePopulation}
-      key={feature.id}
-    />
-  ));
+    ) / project.numberOfDistricts;
+
+  return geojson.features.map(feature => {
+    const districtId = typeof feature.id === "number" ? feature.id : 0;
+    const selected = districtId === selectedDistrictId;
+    const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
+    const selectedPopulationDifference = selected
+      ? totalSelectedDemographics.population - selectedPopulation
+      : -1 * selectedPopulation;
+
+    return (
+      <SidebarRow
+        district={feature}
+        selected={selected}
+        selectedPopulationDifference={selectedPopulationDifference}
+        deviation={
+          // The population goal for the unassigned district is 0,
+          // so it's deviation is equal to its population
+          districtId === 0
+            ? feature.properties.population
+            : feature.properties.population - averagePopulation
+        }
+        key={districtId}
+      />
+    );
+  });
 };
 
 export default ProjectSidebar;

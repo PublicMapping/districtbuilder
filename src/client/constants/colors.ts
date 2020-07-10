@@ -98,3 +98,7 @@ export const getDistrictColor = (id?: string | number) => {
   // Cycle through the list in case there are a very large number of districts
   return districtColors[index % districtColors.length];
 };
+
+export const positiveChangeColor = "#2dbeae";
+export const negativeChangeColor = "#f5677a";
+export const selectedDistrictColor = "#efefef";
