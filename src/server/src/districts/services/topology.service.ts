@@ -56,7 +56,7 @@ export class TopologyService {
       const topojsonBody = topojsonResponse.Body?.toString("utf8");
       if (staticMetadataBody && topojsonBody) {
         const staticMetadata = JSON.parse(staticMetadataBody) as IStaticMetadata;
-        const geoLevelHierarchy = staticMetadata.geoLevelHierarchy;
+        const geoLevelHierarchy = staticMetadata.geoLevelHierarchy.map(gl => gl.id);
         if (!geoLevelHierarchy) {
           this.logger.error(`geoLevelHierarchy missing from static metadata for ${s3URI}`);
         }

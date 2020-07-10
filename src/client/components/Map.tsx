@@ -7,7 +7,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../actions/districtDrawing";
 import { getDistrictColor } from "../constants/colors";
-import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
+import { DistrictProperties, GeoLevelInfo, IProject, IStaticMetadata } from "../../shared/entities";
 import { getAllIndices, getDemographics } from "../../shared/functions";
 import { s3ToHttps } from "../s3";
 import store from "../store";
@@ -39,14 +39,14 @@ function levelToSelectionLayerId(geoLevel: string) {
   return `${geoLevel}-selected`;
 }
 
-function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.Style {
+function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): MapboxGL.Style {
   return {
     layers: geoLevels.flatMap(level => [
       {
-        id: levelToLineLayerId(level),
+        id: levelToLineLayerId(level.id),
         type: "line",
         source,
-        "source-layer": level,
+        "source-layer": level.id,
         paint: {
           "line-color": "#000",
           "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
@@ -54,10 +54,10 @@ function getMapboxStyle(path: string, geoLevels: readonly string[]): MapboxGL.St
         }
       },
       {
-        id: levelToSelectionLayerId(level),
+        id: levelToSelectionLayerId(level.id),
         type: "fill",
         source,
-        "source-layer": level,
+        "source-layer": level.id,
         paint: {
           "fill-color": "#000",
           "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
@@ -93,7 +93,8 @@ const Map = ({
   const [b0, b1, b2, b3] = staticMetadata.bbox;
 
   // At the moment, we are only interacting with the top geolevel (e.g. County)
-  const topGeoLevel = staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1];
+  const topGeoLevel =
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id;
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {

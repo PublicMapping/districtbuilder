@@ -12,7 +12,7 @@ import { feature as topo2feature, mergeArcs } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
-import { IStaticFile, IStaticMetadata } from "../../../shared/entities";
+import { GeoLevelInfo, IStaticFile, IStaticMetadata } from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 
 export default class ProcessGeojson extends Command {
@@ -144,7 +144,12 @@ it when necessary (file sizes ~1GB+).
 
     this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevels);
 
-    this.writeVectorTiles(flags.outputDir, geoLevels, minZooms, maxZooms);
+    const geoLevelHierarchyInfo = this.writeVectorTiles(
+      flags.outputDir,
+      geoLevels,
+      minZooms,
+      maxZooms
+    );
 
     const demographicMetaData = this.writeDemographicData(
       flags.outputDir,
@@ -164,7 +169,7 @@ it when necessary (file sizes ~1GB+).
       demographicMetaData,
       geoLevelMetaData,
       bbox,
-      geoLevels
+      geoLevelHierarchyInfo
     );
   }
 
@@ -353,7 +358,7 @@ it when necessary (file sizes ~1GB+).
     demographicMetadata: IStaticFile[],
     geoLevelMetadata: IStaticFile[],
     bbox: [number, number, number, number],
-    geoLevelHierarchy: string[]
+    geoLevelHierarchy: GeoLevelInfo[]
   ): void {
     this.log("Writing static metadata file");
     const staticMetadata: IStaticMetadata = {
@@ -385,7 +390,7 @@ it when necessary (file sizes ~1GB+).
     geoLevels: readonly string[],
     minZooms: readonly string[],
     maxZooms: readonly string[]
-  ): void {
+  ): GeoLevelInfo[] {
     const mbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
     const labelsGeojson = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.geojson`));
     const labelsMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.mbtiles`));
@@ -434,5 +439,33 @@ it when necessary (file sizes ~1GB+).
       { force: true, noTileCompression: true, noTileSizeLimit: true, outputToDirectory: outputDir },
       { echo: true }
     );
+
+    // Read the metadata json file created by tippecanoe, in order to extract geolevel zoom levels.
+    // It is done in this manner, rather than pulling the zoom levels defined in the arguments to
+    // this script, because it's possible to use zoom arguments such as 'g', which will request
+    // tippecanoe to guess an appropriate zoom level. What's written out in the metadata file are
+    // the actual zoom levels that were chosen.
+    const tileMetadata = JSON.parse(readFileSync(join(outputDir, "metadata.json")).toString());
+
+    // There is a `vector_layers` property that has a JSON string of additional layer information,
+    // which needs to be parsed.
+    const vectorLayers = JSON.parse(tileMetadata.json).vector_layers;
+
+    // Put the layer information into a dictionary keyed by id for easier access.
+    // We don't type information for what's in this file, so `any`s are used.
+    // There are several fields defined, but we only care about: id, maxzoom, minzoom
+    const layersById = vectorLayers.reduce((obj: any, item: any) => {
+      obj[item.id] = item;
+      return obj;
+    }, {});
+
+    return geoLevels.map(id => {
+      const layerInfo = layersById[id];
+      return {
+        id: layerInfo.id,
+        maxZoom: layerInfo.maxzoom,
+        minZoom: layerInfo.minzoom
+      };
+    });
   }
 }
