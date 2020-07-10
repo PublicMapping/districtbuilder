@@ -21,7 +21,12 @@ const styles = {
   height: "100%"
 };
 
-const source = "db";
+// Vector tiles with geolevel data for this geography
+const GEOLEVELS_SOURCE_ID = "db";
+// GeoJSON district data for district as currently drawn
+const DISTRICTS_SOURCE_ID = "districts";
+// Id for districts layer
+const DISTRICTS_LAYER_ID = "districts";
 
 interface Props {
   readonly project: IProject;
@@ -56,7 +61,7 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
       {
         id: levelToLineLayerId(level.id),
         type: "line",
-        source,
+        source: GEOLEVELS_SOURCE_ID,
         "source-layer": level.id,
         paint: {
           "line-color": "#000",
@@ -67,7 +72,7 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
       {
         id: levelToSelectionLayerId(level.id),
         type: "fill",
-        source,
+        source: GEOLEVELS_SOURCE_ID,
         "source-layer": level.id,
         paint: {
           "fill-color": "#000",
@@ -77,7 +82,7 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
       {
         id: levelToLabelLayerId(level.id),
         type: "symbol",
-        source,
+        source: GEOLEVELS_SOURCE_ID,
         "source-layer": `${level.id}labels`,
         layout: {
           "text-size": 12,
@@ -100,7 +105,7 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
     glyphs: window.location.origin + "/fonts/{fontstack}/{range}.pbf",
     name: "District Builder",
     sources: {
-      db: {
+      [GEOLEVELS_SOURCE_ID]: {
         type: "vector",
         tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
         minzoom: 4,
@@ -213,7 +218,7 @@ const RectangleSelectionTool: ISelectionTool = {
         });
 
         const featureStateExpression = (id?: string | number) => ({
-          source,
+          source: GEOLEVELS_SOURCE_ID,
           id,
           sourceLayer: topGeoLevel
         });
@@ -264,8 +269,8 @@ const DefaultSelectionTool: ISelectionTool = {
     /* eslint-disable */
     this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
     this.unsetCursor = () => (map.getCanvas().style.cursor = "");
-    map.on("mousemove", "districts", this.setCursor);
-    map.on("mouseleave", "districts", this.unsetCursor);
+    map.on("mousemove", DISTRICTS_LAYER_ID, this.setCursor);
+    map.on("mouseleave", DISTRICTS_LAYER_ID, this.unsetCursor);
     /* eslint-enable */
 
     // Add a click event to the top geolevel that logs demographic information.
@@ -291,7 +296,11 @@ const DefaultSelectionTool: ISelectionTool = {
       const featureId = feature.id as number;
 
       // Set the selected feature, or de-select it if it's already selected
-      const featureStateExpression = { source, id: featureId, sourceLayer: topGeoLevel };
+      const featureStateExpression = {
+        source: GEOLEVELS_SOURCE_ID,
+        id: featureId,
+        sourceLayer: topGeoLevel
+      };
       const featureState = map.getFeatureState(featureStateExpression);
       const selectedFeatures = new Set([featureId]);
       const addFeatures = () => {
@@ -322,8 +331,8 @@ const DefaultSelectionTool: ISelectionTool = {
   disable: function(map: MapboxGL.Map) {
     /* eslint-disable */
     this.clickHandler && map.off("click", this.clickHandler);
-    this.setCursor && map.off("mousemove", "districts", this.setCursor);
-    this.unsetCursor && map.off("mouseleave", "districts", this.unsetCursor);
+    this.setCursor && map.off("mousemove", DISTRICTS_LAYER_ID, this.setCursor);
+    this.unsetCursor && map.off("mouseleave", DISTRICTS_LAYER_ID, this.unsetCursor);
     /* eslint-enable */
   }
 };
@@ -374,14 +383,14 @@ const Map = ({
       map.on("load", () => {
         setMap(map);
 
-        map.addSource("districts", {
+        map.addSource(DISTRICTS_SOURCE_ID, {
           type: "geojson",
           data: geojson
         });
         map.addLayer({
-          id: "districts",
+          id: DISTRICTS_LAYER_ID,
           type: "fill",
-          source: "districts",
+          source: DISTRICTS_SOURCE_ID,
           layout: {},
           paint: {
             "fill-color": { type: "identity", property: "color" },
@@ -403,14 +412,14 @@ const Map = ({
 
   // Update districts source when geojson is fetched
   useEffect(() => {
-    const districtsSource = map && map.getSource("districts");
+    const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
   }, [map, geojson]);
 
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
     const removeSelectedFeatures = (map: MapboxGL.Map) =>
-      map.removeFeatureState({ source, sourceLayer: topGeoLevel });
+      map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: topGeoLevel });
     map &&
       selectedGeounitIds.size === 0 &&
       (selectedDistrictId === 0
