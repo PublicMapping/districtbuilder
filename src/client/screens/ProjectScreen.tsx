@@ -10,7 +10,7 @@ import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
 import "../App.css";
 import CenteredContent from "../components/CenteredContent";
-import Map from "../components/Map";
+import Map from "../components/map/Map";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
 import { State } from "../reducers";
