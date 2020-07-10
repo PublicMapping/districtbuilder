@@ -27,6 +27,7 @@ interface Props {
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedGeounitIds: ReadonlySet<number>;
   readonly selectedDistrictId: number;
+  readonly label?: string;
 }
 
 // Retuns a line layer id given the geolevel
@@ -37,6 +38,11 @@ function levelToLineLayerId(geoLevel: string) {
 // Retuns a selection layer id given the geolevel
 function levelToSelectionLayerId(geoLevel: string) {
   return `${geoLevel}-selected`;
+}
+
+// Retuns a label layer id given the geolevel
+function levelToLabelLayerId(geoLevel: string) {
+  return `${geoLevel}-label`;
 }
 
 function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): MapboxGL.Style {
@@ -62,8 +68,31 @@ function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): Mapbo
           "fill-color": "#000",
           "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
         }
+      },
+      {
+        id: levelToLabelLayerId(level.id),
+        type: "symbol",
+        source,
+        "source-layer": `${level}labels`,
+        layout: {
+          "text-size": 12,
+          "text-padding": 3,
+          "text-field": "{population}",
+          "text-max-width": 10,
+          "text-font": ["GR"],
+          "text-ignore-placement": true,
+          visibility: "none"
+        },
+        paint: {
+          "text-color": "#000",
+          "text-opacity": 0.9,
+          "text-halo-color": "#fff",
+          "text-halo-width": 1.25,
+          "text-halo-blur": 0
+        }
       }
     ]),
+    glyphs: window.location.origin + "/fonts/{fontstack}/{range}.pbf",
     name: "District Builder",
     sources: {
       db: {
@@ -84,7 +113,8 @@ const Map = ({
   staticGeoLevels,
   staticDemographics,
   selectedGeounitIds,
-  selectedDistrictId
+  selectedDistrictId,
+  label
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -219,6 +249,21 @@ const Map = ({
     // We don't want to tigger this effect when `selectedDistrictId` changes
     // eslint-disable-next-line
   }, [map, selectedGeounitIds, topGeoLevel]);
+
+  // Update districts source when geojson is fetched
+  useEffect(() => {
+    const districtsSource = map && map.getSource("districts");
+    districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
+  }, [map, geojson]);
+
+  // Update labels when selection is changed
+  useEffect(() => {
+    const visibility = label === undefined ? "none" : "visible";
+    // TODO: hardcoding county because we can't set the geolevel yet. This
+    // should instead display only for the current geolevel (GH#200)
+    map && map.setLayoutProperty("county-label", "visibility", visibility);
+    map && map.setLayoutProperty("county-label", "text-field", `{${label}}`);
+  }, [map, label]);
 
   return <div ref={mapRef} style={styles} />;
 };
