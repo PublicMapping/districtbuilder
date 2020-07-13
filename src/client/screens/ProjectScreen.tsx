@@ -51,39 +51,42 @@ const MapHeader = ({
   const options = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
-  const buttonStyles = (isSelected: boolean) => ({
-    backgroundColor: isSelected ? "#efefef" : "#fff",
-    borderRadius: "4px 0 0 4px",
-    border: "1px solid #e3e6e8",
-    padding: "7px 12px"
-  });
+  const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
   return (
-    <Box sx={{ variant: "header.app", backgroundColor: "white" }}>
-      <button
-        onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
-        style={buttonStyles(selectionTool === SelectionTool.Default)}
-      >
-        <Icon name="hand-pointer" />
-      </button>
-      <button
-        onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
-        style={buttonStyles(selectionTool === SelectionTool.Rectangle)}
-      >
-        <Icon name="draw-square" />
-      </button>
-      <Label>
-        Label:
-        <Select
-          value={label}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-            const label = e.currentTarget.value;
-            setMapLabel(label);
-          }}
-        >
-          <option></option>
-          {options}
-        </Select>
-      </Label>
+    <Box sx={{ variant: "header.app", backgroundColor: "white" }} className="map-actions">
+      <Box className="actions-left">
+        <Box className="button-group">
+          <button
+            className={buttonClassName(selectionTool === SelectionTool.Default)}
+            onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
+          >
+            <Icon name="hand-pointer" />
+          </button>
+          <button
+            className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
+            onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
+          >
+            <Icon name="draw-square" />
+          </button>
+        </Box>
+      </Box>
+      <Box className="actions-right">
+        <Box className="dropdown">
+          <Label>
+            Label:
+            <Select
+              value={label}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                const label = e.currentTarget.value;
+                setMapLabel(label);
+              }}
+            >
+              <option></option>
+              {options}
+            </Select>
+          </Label>
+        </Box>
+      </Box>
     </Box>
   );
 };
