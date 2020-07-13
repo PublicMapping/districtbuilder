@@ -8,3 +8,78 @@ body {
 #root {
   height: 100%;
 }
+
+.boxdraw {
+  background: rgba(56, 135, 190, 0.1);
+  border: 2px solid #3887be;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+.map-actions {
+  z-index: 20;
+  background: #ffffff;
+  border-bottom: 1px solid #e3e6e8;
+  display: flex;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.actions-right {
+  flex: 1;
+  text-align: right;
+  padding: 8px 4px;
+}
+
+.actions-right .dropdown {
+  margin-left: 10px;
+}
+
+.actions-right label {
+  justify-content: right;
+}
+
+.actions-right label > div {
+  margin: -8px 0 0 5px;
+}
+
+.actions-right select {
+  line-height: 1em;
+}
+
+.map-action {
+  background: none;
+  border-radius: 2px;
+  padding: 7px 10px;
+}
+
+.map-action:focus {
+  background: #fcfcfc;
+  outline: none;
+}
+
+.map-actions .button-group {
+  display: inline-block;
+}
+
+.map-actions .button-group button {
+  border: 1px solid #e3e6e8;
+  border-radius: 0;
+  border-right-width: 0;
+}
+
+.map-actions .button-group button.selected {
+  background-color: #efefef;
+}
+
+.map-actions .button-group button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.map-actions .button-group button:last-child {
+  border-radius: 0 4px 4px 0;
+  border-right-width: 1px;
+}

@@ -2,14 +2,15 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
+import Icon from "../components/Icon";
 import { Box, Flex, Label, Select, jsx } from "theme-ui";
-
 import { IUser, IStaticMetadata } from "../../shared/entities";
+import { setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
 import "../App.css";
 import CenteredContent from "../components/CenteredContent";
-import Map from "../components/Map";
+import Map from "../components/map/Map";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
 import { State } from "../reducers";
@@ -39,30 +40,53 @@ const MapContainer = ({ children }: { readonly children: React.ReactNode }) => {
 const MapHeader = ({
   label,
   setMapLabel,
-  metadata
+  metadata,
+  selectionTool
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
+  readonly selectionTool: SelectionTool;
 }) => {
   const options = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
+  const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
   return (
-    <Box sx={{ variant: "header.app" }}>
-      <Label>
-        Label:
-        <Select
-          value={label}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-            const label = e.currentTarget.value;
-            setMapLabel(label);
-          }}
-        >
-          <option></option>
-          {options}
-        </Select>
-      </Label>
+    <Box sx={{ variant: "header.app", backgroundColor: "white" }} className="map-actions">
+      <Box className="actions-left">
+        <Box className="button-group">
+          <button
+            className={buttonClassName(selectionTool === SelectionTool.Default)}
+            onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
+          >
+            <Icon name="hand-pointer" />
+          </button>
+          <button
+            className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
+            onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
+          >
+            <Icon name="draw-square" />
+          </button>
+        </Box>
+      </Box>
+      <Box className="actions-right">
+        <Box className="dropdown">
+          <Label>
+            Label:
+            <Select
+              value={label}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                const label = e.currentTarget.value;
+                setMapLabel(label);
+              }}
+            >
+              <option></option>
+              {options}
+            </Select>
+          </Label>
+        </Box>
+      </Box>
     </Box>
   );
 };
@@ -109,7 +133,12 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
         />
         <MapContainer>
-          <MapHeader label={label} setMapLabel={setMapLabel} metadata={staticMetadata} />
+          <MapHeader
+            label={label}
+            setMapLabel={setMapLabel}
+            metadata={staticMetadata}
+            selectionTool={districtDrawing.selectionTool}
+          />
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
           "resource" in projectData.staticGeoLevels &&
@@ -124,6 +153,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               selectedGeounitIds={districtDrawing.selectedGeounitIds}
               selectedDistrictId={districtDrawing.selectedDistrictId}
               label={label}
+              selectionTool={districtDrawing.selectionTool}
             />
           ) : null}
         </MapContainer>
