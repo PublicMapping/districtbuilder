@@ -3,19 +3,21 @@ import { Box, Label, jsx, Select } from "theme-ui";
 import { IStaticMetadata } from "../../shared/entities";
 
 import Icon from "./Icon";
-import { setSelectionTool, SelectionTool } from "../actions/districtDrawing";
+import { setGeolevel, Geolevel, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 
 const MapHeader = ({
   label,
   setMapLabel,
   metadata,
-  selectionTool
+  selectionTool,
+  geolevel
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
+  readonly geolevel: Geolevel;
 }) => {
   const options = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
@@ -36,6 +38,26 @@ const MapHeader = ({
             onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
           >
             <Icon name="draw-square" />
+          </button>
+        </Box>
+        <Box className="button-group">
+          <button
+            className={buttonClassName(geolevel === Geolevel.Counties)}
+            onClick={() => store.dispatch(setGeolevel(Geolevel.Counties))}
+          >
+            Counties
+          </button>
+          <button
+            className={buttonClassName(geolevel === Geolevel.Blockgroups)}
+            onClick={() => store.dispatch(setGeolevel(Geolevel.Blockgroups))}
+          >
+            Blockgroups
+          </button>
+          <button
+            className={buttonClassName(geolevel === Geolevel.Blocks)}
+            onClick={() => store.dispatch(setGeolevel(Geolevel.Blocks))}
+          >
+            Blocks
           </button>
         </Box>
       </Box>

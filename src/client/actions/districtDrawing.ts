@@ -6,6 +6,12 @@ export enum SelectionTool {
   Rectangle = "RECTANGLE"
 }
 
+export enum Geolevel {
+  Counties = "COUNTIES",
+  Blockgroups = "BLOCKGROUPS",
+  Blocks = "BLOCKS"
+}
+
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
 
 export const addSelectedGeounitIds = createAction("Add selected geounit ids")<
@@ -26,3 +32,5 @@ export const patchDistrictsDefinitionFailure = createAction("Patch districts def
 >();
 
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
+
+export const setGeolevel = createAction("Set geolevel")<Geolevel>();

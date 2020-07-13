@@ -79,6 +79,10 @@ body {
   border-radius: 4px 0 0 4px;
 }
 
+.map-actions .button-group:not(:first-child) {
+  margin-left: 10px;
+}
+
 .map-actions .button-group button:last-child {
   border-radius: 0 4px 4px 0;
   border-right-width: 1px;

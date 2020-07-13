@@ -5,13 +5,15 @@ import { Action } from "../actions";
 import {
   addSelectedGeounitIds,
   clearSelectedGeounitIds,
+  Geolevel,
   patchDistrictsDefinitionSuccess,
   patchDistrictsDefinitionFailure,
   removeSelectedGeounitIds,
   saveDistrictsDefinition,
   SelectionTool,
   setSelectionTool,
-  setSelectedDistrictId
+  setSelectedDistrictId,
+  setGeolevel
 } from "../actions/districtDrawing";
 import { projectFetchGeoJson } from "../actions/projectData";
 
@@ -21,12 +23,14 @@ export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
   readonly selectedGeounitIds: ReadonlySet<number>;
   readonly selectionTool: SelectionTool;
+  readonly geolevel: Geolevel;
 }
 
 export const initialState = {
   selectedDistrictId: 1,
   selectedGeounitIds: new Set([]),
-  selectionTool: SelectionTool.Default
+  selectionTool: SelectionTool.Default,
+  geolevel: Geolevel.Counties
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -95,6 +99,11 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
       return {
         ...state,
         selectionTool: action.payload
+      };
+    case getType(setGeolevel):
+      return {
+        ...state,
+        geolevel: action.payload
       };
     default:
       return state as never;
