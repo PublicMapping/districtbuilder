@@ -42,6 +42,10 @@ body {
   justify-content: right;
 }
 
+.actions-right label > div {
+  margin: -8px 0 0 5px;
+}
+
 .actions-right select {
   line-height: 1em;
 }
