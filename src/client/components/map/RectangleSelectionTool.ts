@@ -95,6 +95,7 @@ const RectangleSelectionTool: ISelectionTool = {
       });
 
       // Set any features that were previously selected and just became unselected to unselected
+      // eslint-disable-next-line
       if (prevSelectedFeatures) {
         const setOfPrevSelectedFeatures = featuresToSet(prevSelectedFeatures);
         const setOfSelectedFeatures = featuresToSet(selectedFeatures);
