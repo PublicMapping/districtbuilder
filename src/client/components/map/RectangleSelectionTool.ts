@@ -56,6 +56,9 @@ const RectangleSelectionTool: ISelectionTool = {
     }
 
     function onMouseMove(e: MouseEvent) {
+      // Find selected features before updating `current` to tell if any features were deselected
+      const prevSelectedFeatures = current && getAllSelectedFeatures([start, current]);
+
       // Capture the ongoing xy coordinates
       current = mousePos(e);
 
@@ -81,9 +84,26 @@ const RectangleSelectionTool: ISelectionTool = {
       box.style.height = maxY - minY + "px";
       /* eslint-enable */
 
-      getNewlySelectedFeatures([start, current]).forEach(feature => {
+      const selectedFeatures = getAllSelectedFeatures([start, current]);
+
+      // Set any newly selected features on the map within the bounding box to selected state
+      const newlySelectedFeatures = selectedFeatures.filter(
+        feature => isFeatureSelected(feature) === false
+      );
+      newlySelectedFeatures.forEach(feature => {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
+
+      // Set any features that were previously selected and just became unselected to unselected
+      if (prevSelectedFeatures) {
+        const setOfPrevSelectedFeatures = featuresToSet(prevSelectedFeatures);
+        const setOfSelectedFeatures = featuresToSet(selectedFeatures);
+        [...setOfPrevSelectedFeatures]
+          .filter(id => !setOfSelectedFeatures.has(id))
+          .forEach(id => {
+            map.setFeatureState(featureStateExpression(id), { selected: false });
+          });
+      }
     }
 
     function onMouseUp(e: MouseEvent) {
@@ -122,11 +142,6 @@ const RectangleSelectionTool: ISelectionTool = {
     }
 
     // eslint-disable-next-line
-    function getNewlySelectedFeatures(bbox: [MapboxGL.PointLike, MapboxGL.PointLike]) {
-      return getAllSelectedFeatures(bbox).filter(feature => isFeatureSelected(feature) === false);
-    }
-
-    // eslint-disable-next-line
     function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       // Remove these events now that finish has been called.
       document.removeEventListener("mousemove", onMouseMove);
@@ -141,9 +156,9 @@ const RectangleSelectionTool: ISelectionTool = {
       // If bbox exists. use this value as the argument for `queryRenderedFeatures`
       // eslint-disable-next-line
       if (bbox) {
-        const newlySelectedFeatures = getAllSelectedFeatures(bbox);
-        newlySelectedFeatures.length &&
-          store.dispatch(addSelectedGeounitIds(featuresToSet(newlySelectedFeatures)));
+        const selectedFeatures = getAllSelectedFeatures(bbox);
+        selectedFeatures.length &&
+          store.dispatch(addSelectedGeounitIds(featuresToSet(selectedFeatures)));
       }
     }
   },
