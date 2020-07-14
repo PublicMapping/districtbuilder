@@ -12,17 +12,14 @@ import { feature as topo2feature, mergeArcs } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
-import { GeoLevelInfo, IStaticFile, IStaticMetadata } from "../../../shared/entities";
+import {
+  GeoLevelInfo,
+  GeoUnitDefinition,
+  HierarchyDefinition,
+  IStaticFile,
+  IStaticMetadata
+} from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
-
-interface GeoUnitHierarchy {
-  i: string;
-  c: ReadonlyArray<GeoUnitHierarchy>;
-}
-
-interface GeoUnitDefinition {
-  groups: ReadonlyArray<string>;
-}
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -490,8 +487,8 @@ it when necessary (file sizes ~1GB+).
     writeFileSync(join(dir, "geounit-hierarchy.json"), JSON.stringify(geounitHierarchy));
   }
 
-  // Groups a topology into a hierarchy of geounit nodes, matching a district definition
-  group(topology: Topology, definition: GeoUnitDefinition): ReadonlyArray<GeoUnitHierarchy> {
+  // Groups a topology into a hierarchy of geounits corresponding to a district definition structure
+  group(topology: Topology, definition: GeoUnitDefinition): HierarchyDefinition {
     const geounitsByParentId = definition.groups.map((groupName, index) => {
       const parentCollection = topology.objects[groupName] as GeometryCollection;
       const mutableMappings: {
@@ -506,9 +503,7 @@ it when necessary (file sizes ~1GB+).
       if (childGroupName) {
         const childCollection = topology.objects[childGroupName] as GeometryCollection;
         childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-          if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
-            mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
-          }
+          mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
         });
       }
       return [groupName, mutableMappings];
@@ -528,20 +523,21 @@ it when necessary (file sizes ~1GB+).
     geounitsByParentId: {
       [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
     }
-  ): GeoUnitHierarchy {
+  ): HierarchyDefinition {
     const firstGroup = definition.groups[0];
     const remainingGroups = definition.groups.slice(1);
     const geomId = geometry.properties[firstGroup];
     const childGeoms = geounitsByParentId[firstGroup][geomId];
-    return {
-      i: geomId,
-      c: childGeoms.map(childGeom =>
-        this.getNode(
-          (childGeom as unknown) as GeometryObject<any>,
-          { ...definition, groups: remainingGroups },
-          geounitsByParentId
+
+    // Recurse until we get to the base geolevel, at which point we list the base geounit indices
+    return remainingGroups.length > 1
+      ? childGeoms.map(childGeom =>
+          this.getNode(
+            (childGeom as unknown) as GeometryObject<any>,
+            { ...definition, groups: remainingGroups },
+            geounitsByParentId
+          )
         )
-      )
-    };
+      : childGeoms.map((childGeom: any) => childGeom.id);
   }
 }
