@@ -3,7 +3,7 @@ import { IArg } from "@oclif/parser/lib/args";
 import cli from "cli-ux";
 import { mapSync } from "event-stream";
 import { createReadStream, existsSync, readFileSync, writeFileSync } from "fs";
-import { Feature, FeatureCollection, Polygon } from "geojson";
+import { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
@@ -14,6 +14,15 @@ import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
 import { GeoLevelInfo, IStaticFile, IStaticMetadata } from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
+
+interface GeoUnitHierarchy {
+  i: string;
+  c: ReadonlyArray<GeoUnitHierarchy>;
+}
+
+interface GeoUnitDefinition {
+  groups: ReadonlyArray<string>;
+}
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -163,6 +172,8 @@ it when necessary (file sizes ~1GB+).
       topoJsonHierarchy,
       geoLevels
     );
+
+    this.writeGeounitHierarchy(flags.outputDir, topoJsonHierarchy, geoLevels);
 
     this.writeStaticMetadata(
       flags.outputDir,
@@ -468,5 +479,69 @@ it when necessary (file sizes ~1GB+).
         minZoom: layerInfo.minzoom
       };
     });
+  }
+
+  // Writes a slimmed down JSON hierarchy of geounits to disk
+  writeGeounitHierarchy(dir: string, topology: Topology, geoLevels: readonly string[]): void {
+    const definition = { groups: geoLevels.slice().reverse() };
+    const geounitHierarchy = this.group(topology, definition);
+
+    this.log("Writing geounit hierarchy file");
+    writeFileSync(join(dir, "geounit-hierarchy.json"), JSON.stringify(geounitHierarchy));
+  }
+
+  // Groups a topology into a hierarchy of geounit nodes, matching a district definition
+  group(topology: Topology, definition: GeoUnitDefinition): ReadonlyArray<GeoUnitHierarchy> {
+    const geounitsByParentId = definition.groups.map((groupName, index) => {
+      const parentCollection = topology.objects[groupName] as GeometryCollection;
+      const mutableMappings: {
+        [geounitId: string]: Array<Polygon | MultiPolygon>;
+      } = Object.fromEntries(
+        parentCollection.geometries.map((geom: GeometryObject<any>) => [
+          geom.properties[groupName],
+          []
+        ])
+      );
+      const childGroupName = definition.groups[index + 1];
+      if (childGroupName) {
+        const childCollection = topology.objects[childGroupName] as GeometryCollection;
+        childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
+          if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+            mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+          }
+        });
+      }
+      return [groupName, mutableMappings];
+    });
+
+    const firstGroup = definition.groups[0];
+    const toplevelCollection = topology.objects[firstGroup] as GeometryCollection;
+    return toplevelCollection.geometries.map(geom =>
+      this.getNode(geom, definition, Object.fromEntries(geounitsByParentId))
+    );
+  }
+
+  // Helper for recursively collecting geounit hierarchy node information
+  getNode(
+    geometry: GeometryObject<any>,
+    definition: GeoUnitDefinition,
+    geounitsByParentId: {
+      [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
+    }
+  ): GeoUnitHierarchy {
+    const firstGroup = definition.groups[0];
+    const remainingGroups = definition.groups.slice(1);
+    const geomId = geometry.properties[firstGroup];
+    const childGeoms = geounitsByParentId[firstGroup][geomId];
+    return {
+      i: geomId,
+      c: childGeoms.map(childGeom =>
+        this.getNode(
+          (childGeom as unknown) as GeometryObject<any>,
+          { ...definition, groups: remainingGroups },
+          geounitsByParentId
+        )
+      )
+    };
   }
 }
