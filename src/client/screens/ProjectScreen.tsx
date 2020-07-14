@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx } from "theme-ui";
 import { IUser } from "../../shared/entities";
+import { GeoLevel } from "../actions/districtDrawing";
 import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -36,6 +37,21 @@ const MapContainer = ({ children }: { readonly children: React.ReactNode }) => {
   return <Flex sx={{ flexDirection: "column", flex: 1 }}>{children}</Flex>;
 };
 
+export function geoLevelToHierarchyIndex(geoLevel: GeoLevel): number {
+  switch (geoLevel) {
+    case GeoLevel.Counties:
+      return 0;
+    case GeoLevel.Blockgroups:
+      return 1;
+    case GeoLevel.Blocks:
+      return 2;
+    default: {
+      const exhaustive: never = geoLevel;
+      return exhaustive;
+    }
+  }
+}
+
 const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const { projectId } = useParams();
   const project = "resource" in projectData.project ? projectData.project.resource : undefined;
@@ -53,6 +69,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
     ("isPending" in projectData.geojson && projectData.geojson.isPending);
 
   const [label, setMapLabel] = useState<string | undefined>(undefined);
+  const geoLevelIndex = geoLevelToHierarchyIndex(districtDrawing.geoLevel);
 
   useEffect(() => {
     store.dispatch(userFetch());
@@ -76,7 +93,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           staticDemographics={staticDemographics}
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
-          geoLevel={districtDrawing.geoLevel}
+          geoLevelIndex={geoLevelIndex}
         />
         <MapContainer>
           <MapHeader
@@ -100,7 +117,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               selectedGeounitIds={districtDrawing.selectedGeounitIds}
               selectedDistrictId={districtDrawing.selectedDistrictId}
               selectionTool={districtDrawing.selectionTool}
-              geoLevel={districtDrawing.geoLevel}
+              geoLevelIndex={geoLevelIndex}
               label={label}
             />
           ) : null}

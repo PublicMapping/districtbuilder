@@ -12,9 +12,9 @@ import {
   SelectionTool,
   setSelectionTool,
   setSelectedDistrictId,
-  setGeoLevel
+  setGeoLevel,
+  GeoLevel
 } from "../actions/districtDrawing";
-import { GeoLevel } from "../../shared/entities";
 import { projectFetchGeoJson } from "../actions/projectData";
 
 import { patchDistrictsDefinition } from "../api";

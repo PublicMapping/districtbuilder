@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { Box, Label, jsx, Select } from "theme-ui";
-import { GeoLevel, IStaticMetadata } from "../../shared/entities";
+import { IStaticMetadata } from "../../shared/entities";
 
 import Icon from "./Icon";
-import { setGeoLevel, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
+import { GeoLevel, setGeoLevel, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 
 const MapHeader = ({

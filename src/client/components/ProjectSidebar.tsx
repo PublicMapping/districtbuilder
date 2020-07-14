@@ -5,11 +5,10 @@ import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import {
   DistrictsDefinition,
   DistrictProperties,
-  GeoLevel,
   IProject,
   IStaticMetadata
 } from "../../shared/entities";
-import { geoLevelToHierarchyIndex, getAllIndices, getDemographics } from "../../shared/functions";
+import { getAllIndices, getDemographics } from "../../shared/functions";
 import {
   getDistrictColor,
   negativeChangeColor,
@@ -38,7 +37,7 @@ const ProjectSidebar = ({
   staticDemographics,
   selectedDistrictId,
   selectedGeounitIds,
-  geoLevel
+  geoLevelIndex
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -47,7 +46,7 @@ const ProjectSidebar = ({
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
   readonly selectedGeounitIds: ReadonlySet<number>;
-  readonly geoLevel: GeoLevel;
+  readonly geoLevelIndex: number;
 } & LoadingProps) => (
   <Flex
     sx={{
@@ -94,7 +93,7 @@ const ProjectSidebar = ({
             staticDemographics,
             selectedDistrictId,
             selectedGeounitIds,
-            geoLevel
+            geoLevelIndex
           )}
       </tbody>
     </Styled.table>
@@ -264,10 +263,8 @@ const getSidebarRows = (
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   selectedDistrictId: number,
   selectedGeounitIds: ReadonlySet<number>,
-  geoLevel: GeoLevel
+  geoLevelIndex: number
 ) => {
-  const geoLevelIndex = geoLevelToHierarchyIndex(geoLevel);
-
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
     staticMetadata,

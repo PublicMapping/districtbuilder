@@ -6,8 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
-import { DistrictProperties, GeoLevel, IProject, IStaticMetadata } from "../../../shared/entities";
-import { geoLevelToHierarchyIndex } from "../../../shared/functions";
+import { DistrictProperties, IProject, IStaticMetadata } from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -31,7 +30,7 @@ interface Props {
   readonly selectedGeounitIds: ReadonlySet<number>;
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
-  readonly geoLevel: GeoLevel;
+  readonly geoLevelIndex: number;
   readonly label?: string;
 }
 
@@ -44,7 +43,7 @@ const Map = ({
   selectedGeounitIds,
   selectedDistrictId,
   selectionTool,
-  geoLevel,
+  geoLevelIndex,
   label
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
@@ -53,9 +52,8 @@ const Map = ({
   // Conversion from readonly -> mutable to match Mapbox interface
   const [b0, b1, b2, b3] = staticMetadata.bbox;
 
-  const geolevelIndex = geoLevelToHierarchyIndex(geoLevel);
   const selectedGeolevel =
-    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geolevelIndex]
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geoLevelIndex]
       .id;
 
   // Add a color property to the geojson, so it can be used for styling

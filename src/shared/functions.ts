@@ -1,4 +1,4 @@
-import { GeoLevel, IStaticMetadata } from "../shared/entities";
+import { IStaticMetadata } from "../shared/entities";
 
 type ArrayBuffer = Uint8Array | Uint16Array | Uint32Array;
 
@@ -37,18 +37,4 @@ export function getDemographics(
     // eslint-disable-next-line
     {} as { [id: string]: number }
   );
-}
-
-export function geoLevelToHierarchyIndex(geoLevel: GeoLevel): number {
-  switch (geoLevel) {
-    case GeoLevel.Counties:
-      return 0;
-    case GeoLevel.Blockgroups:
-      return 1;
-    case GeoLevel.Blocks:
-      return 2;
-    default:
-      const exhaustive: never = geoLevel;
-      return exhaustive;
-  }
 }

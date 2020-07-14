@@ -99,9 +99,3 @@ export interface IChamber {
   readonly numberOfDistricts: number;
   readonly regionConfig: IRegionConfig;
 }
-
-export enum GeoLevel {
-  Counties = "COUNTIES",
-  Blockgroups = "BLOCKGROUPS",
-  Blocks = "BLOCKS"
-}
