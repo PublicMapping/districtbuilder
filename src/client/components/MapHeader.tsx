@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { Box, Label, jsx, Select } from "theme-ui";
-import { IStaticMetadata } from "../../shared/entities";
+import { GeoLevel, IStaticMetadata } from "../../shared/entities";
 
 import Icon from "./Icon";
-import { setGeolevel, Geolevel, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
+import { setGeoLevel, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 
 const MapHeader = ({
@@ -11,13 +11,13 @@ const MapHeader = ({
   setMapLabel,
   metadata,
   selectionTool,
-  geolevel
+  geoLevel
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
-  readonly geolevel: Geolevel;
+  readonly geoLevel: GeoLevel;
 }) => {
   const options = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
@@ -42,20 +42,20 @@ const MapHeader = ({
         </Box>
         <Box className="button-group">
           <button
-            className={buttonClassName(geolevel === Geolevel.Counties)}
-            onClick={() => store.dispatch(setGeolevel(Geolevel.Counties))}
+            className={buttonClassName(geoLevel === GeoLevel.Counties)}
+            onClick={() => store.dispatch(setGeoLevel(GeoLevel.Counties))}
           >
             Counties
           </button>
           <button
-            className={buttonClassName(geolevel === Geolevel.Blockgroups)}
-            onClick={() => store.dispatch(setGeolevel(Geolevel.Blockgroups))}
+            className={buttonClassName(geoLevel === GeoLevel.Blockgroups)}
+            onClick={() => store.dispatch(setGeoLevel(GeoLevel.Blockgroups))}
           >
             Blockgroups
           </button>
           <button
-            className={buttonClassName(geolevel === Geolevel.Blocks)}
-            onClick={() => store.dispatch(setGeolevel(Geolevel.Blocks))}
+            className={buttonClassName(geoLevel === GeoLevel.Blocks)}
+            onClick={() => store.dispatch(setGeoLevel(GeoLevel.Blocks))}
           >
             Blocks
           </button>

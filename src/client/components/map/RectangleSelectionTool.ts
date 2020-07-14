@@ -15,7 +15,7 @@ import { GEOLEVELS_SOURCE_ID, levelToSelectionLayerId, ISelectionTool } from "./
  * https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
  */
 const RectangleSelectionTool: ISelectionTool = {
-  enable: function(map: MapboxGL.Map, topGeoLevel: string) {
+  enable: function(map: MapboxGL.Map, geoLevel: string) {
     map.boxZoom.disable();
     map.dragPan.disable();
     map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line
@@ -120,7 +120,7 @@ const RectangleSelectionTool: ISelectionTool = {
       return {
         source: GEOLEVELS_SOURCE_ID,
         id,
-        sourceLayer: topGeoLevel
+        sourceLayer: geoLevel
       };
     }
 
@@ -142,7 +142,7 @@ const RectangleSelectionTool: ISelectionTool = {
     // eslint-disable-next-line
     function getFeaturesInBoundingBox(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       return map.queryRenderedFeatures(bbox, {
-        layers: [levelToSelectionLayerId(topGeoLevel)]
+        layers: [levelToSelectionLayerId(geoLevel)]
       });
     }
 

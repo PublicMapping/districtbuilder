@@ -1,15 +1,9 @@
 import { createAction } from "typesafe-actions";
-import { IProject } from "../../shared/entities";
+import { GeoLevel, IProject } from "../../shared/entities";
 
 export enum SelectionTool {
   Default = "DEFAULT",
   Rectangle = "RECTANGLE"
-}
-
-export enum Geolevel {
-  Counties = "COUNTIES",
-  Blockgroups = "BLOCKGROUPS",
-  Blocks = "BLOCKS"
 }
 
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
@@ -33,4 +27,4 @@ export const patchDistrictsDefinitionFailure = createAction("Patch districts def
 
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
 
-export const setGeolevel = createAction("Set geolevel")<Geolevel>();
+export const setGeoLevel = createAction("Set geoLevel")<GeoLevel>();

@@ -76,6 +76,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           staticDemographics={staticDemographics}
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
+          geoLevel={districtDrawing.geoLevel}
         />
         <MapContainer>
           <MapHeader
@@ -83,7 +84,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
             setMapLabel={setMapLabel}
             metadata={staticMetadata}
             selectionTool={districtDrawing.selectionTool}
-            geolevel={districtDrawing.geolevel}
+            geoLevel={districtDrawing.geoLevel}
           />
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
@@ -98,8 +99,9 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               staticDemographics={projectData.staticDemographics.resource}
               selectedGeounitIds={districtDrawing.selectedGeounitIds}
               selectedDistrictId={districtDrawing.selectedDistrictId}
-              label={label}
               selectionTool={districtDrawing.selectionTool}
+              geoLevel={districtDrawing.geoLevel}
+              label={label}
             />
           ) : null}
         </MapContainer>

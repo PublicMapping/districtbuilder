@@ -16,7 +16,7 @@ import { getAllIndices, getDemographics } from "../../../shared/functions";
 const DefaultSelectionTool: ISelectionTool = {
   enable: function(
     map: MapboxGL.Map,
-    topGeoLevel: string,
+    geoLevel: string,
     staticMetadata: IStaticMetadata,
     staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
     staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
@@ -36,7 +36,7 @@ const DefaultSelectionTool: ISelectionTool = {
       const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
       const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
       const features = map.queryRenderedFeatures([southWest, northEast], {
-        layers: [levelToSelectionLayerId(topGeoLevel)]
+        layers: [levelToSelectionLayerId(geoLevel)]
       });
 
       // Disabling 'functional/no-conditional-statement' without naming it.
@@ -54,7 +54,7 @@ const DefaultSelectionTool: ISelectionTool = {
       const featureStateExpression = {
         source: GEOLEVELS_SOURCE_ID,
         id: featureId,
-        sourceLayer: topGeoLevel
+        sourceLayer: geoLevel
       };
       const featureState = map.getFeatureState(featureStateExpression);
       const selectedFeatures = new Set([featureId]);

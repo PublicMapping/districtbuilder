@@ -6,7 +6,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
-import { DistrictProperties, IProject, IStaticMetadata } from "../../../shared/entities";
+import { DistrictProperties, GeoLevel, IProject, IStaticMetadata } from "../../../shared/entities";
+import { geoLevelToHierarchyIndex } from "../../../shared/functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -30,6 +31,7 @@ interface Props {
   readonly selectedGeounitIds: ReadonlySet<number>;
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
+  readonly geoLevel: GeoLevel;
   readonly label?: string;
 }
 
@@ -42,6 +44,7 @@ const Map = ({
   selectedGeounitIds,
   selectedDistrictId,
   selectionTool,
+  geoLevel,
   label
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
@@ -50,9 +53,10 @@ const Map = ({
   // Conversion from readonly -> mutable to match Mapbox interface
   const [b0, b1, b2, b3] = staticMetadata.bbox;
 
-  // At the moment, we are only interacting with the top geolevel (e.g. County)
-  const topGeoLevel =
-    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id;
+  const geolevelIndex = geoLevelToHierarchyIndex(geoLevel);
+  const selectedGeolevel =
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geolevelIndex]
+      .id;
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
@@ -115,7 +119,7 @@ const Map = ({
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
     const removeSelectedFeatures = (map: MapboxGL.Map) =>
-      map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: topGeoLevel });
+      map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: selectedGeolevel });
     map &&
       selectedGeounitIds.size === 0 &&
       (selectedDistrictId === 0
@@ -126,7 +130,7 @@ const Map = ({
           map.once("idle", () => removeSelectedFeatures(map)));
     // We don't want to tigger this effect when `selectedDistrictId` changes
     // eslint-disable-next-line
-  }, [map, selectedGeounitIds, topGeoLevel]);
+  }, [map, selectedGeounitIds, selectedGeolevel]);
 
   // Update districts source when geojson is fetched
   useEffect(() => {
@@ -149,7 +153,7 @@ const Map = ({
       if (selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
           map,
-          topGeoLevel,
+          selectedGeolevel,
           staticMetadata,
           staticGeoLevels,
           staticDemographics
@@ -157,11 +161,11 @@ const Map = ({
         RectangleSelectionTool.disable(map);
       } else if (selectionTool === SelectionTool.Rectangle) {
         DefaultSelectionTool.disable(map);
-        RectangleSelectionTool.enable(map, topGeoLevel);
+        RectangleSelectionTool.enable(map, selectedGeolevel);
       }
       /* eslint-enable */
     }
-  }, [map, selectionTool, topGeoLevel, staticMetadata, staticDemographics, staticGeoLevels]);
+  }, [map, selectionTool, selectedGeolevel, staticMetadata, staticDemographics, staticGeoLevels]);
 
   return <div ref={mapRef} style={styles} />;
 };
