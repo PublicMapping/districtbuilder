@@ -114,10 +114,12 @@ const Map = ({
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
   }, [map, geojson]);
 
+  const removeSelectedFeatures = (map: MapboxGL.Map) => {
+    map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: selectedGeolevel });
+  };
+
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
-    const removeSelectedFeatures = (map: MapboxGL.Map) =>
-      map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: selectedGeolevel });
     map &&
       selectedGeounitIds.size === 0 &&
       (selectedDistrictId === 0
@@ -128,7 +130,7 @@ const Map = ({
           map.once("idle", () => removeSelectedFeatures(map)));
     // We don't want to tigger this effect when `selectedDistrictId` changes
     // eslint-disable-next-line
-  }, [map, selectedGeounitIds, selectedGeolevel]);
+  }, [map, selectedGeounitIds]);
 
   // Update districts source when geojson is fetched
   useEffect(() => {
@@ -148,22 +150,33 @@ const Map = ({
   useEffect(() => {
     /* eslint-disable */
     if (map) {
+      // Disable any existing selection tools
+      DefaultSelectionTool.disable(map);
+      RectangleSelectionTool.disable(map);
+      // Enable appropriate tool
       if (selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
           map,
           selectedGeolevel,
+          geoLevelIndex,
           staticMetadata,
           staticGeoLevels,
           staticDemographics
         );
-        RectangleSelectionTool.disable(map);
       } else if (selectionTool === SelectionTool.Rectangle) {
-        DefaultSelectionTool.disable(map);
         RectangleSelectionTool.enable(map, selectedGeolevel);
       }
       /* eslint-enable */
     }
-  }, [map, selectionTool, selectedGeolevel, staticMetadata, staticDemographics, staticGeoLevels]);
+  }, [
+    map,
+    selectionTool,
+    selectedGeolevel,
+    geoLevelIndex,
+    staticMetadata,
+    staticDemographics,
+    staticGeoLevels
+  ]);
 
   return <div ref={mapRef} style={styles} />;
 };

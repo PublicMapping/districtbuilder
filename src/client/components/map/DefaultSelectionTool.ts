@@ -17,6 +17,7 @@ const DefaultSelectionTool: ISelectionTool = {
   enable: function(
     map: MapboxGL.Map,
     geoLevel: string,
+    geoLevelIndex: number,
     staticMetadata: IStaticMetadata,
     staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
     staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
@@ -70,8 +71,8 @@ const DefaultSelectionTool: ISelectionTool = {
 
       // Indices of all base geounits belonging to the clicked feature
       const baseIndices = getAllIndices(
-        staticGeoLevels[staticGeoLevels.length - 1],
-        new Set([featureId])
+        staticGeoLevels[staticGeoLevels.length - 1 - geoLevelIndex],
+        selectedFeatures
       );
       const demographics = getDemographics(baseIndices, staticMetadata, staticDemographics);
 
