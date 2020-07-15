@@ -3,7 +3,7 @@ import { Box, Label, jsx, Select } from "theme-ui";
 import { IStaticMetadata } from "../../shared/entities";
 
 import Icon from "./Icon";
-import { GeoLevel, setGeoLevel, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
+import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 
 const MapHeader = ({
@@ -11,18 +11,32 @@ const MapHeader = ({
   setMapLabel,
   metadata,
   selectionTool,
-  geoLevel
+  geoLevelIndex
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
-  readonly geoLevel: GeoLevel;
+  readonly geoLevelIndex: number;
 }) => {
-  const options = metadata
+  const labelOptions = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
   const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
+  const geoLevelOptions = metadata
+    ? metadata.geoLevelHierarchy
+        .slice()
+        .reverse()
+        .map((val, index) => (
+          <button
+            key={index}
+            className={buttonClassName(geoLevelIndex === index)}
+            onClick={() => store.dispatch(setGeoLevelIndex(index))}
+          >
+            {val.id}
+          </button>
+        ))
+    : [];
   return (
     <Box sx={{ variant: "header.app", backgroundColor: "white" }} className="map-actions">
       <Box className="actions-left">
@@ -40,26 +54,7 @@ const MapHeader = ({
             <Icon name="draw-square" />
           </button>
         </Box>
-        <Box className="button-group">
-          <button
-            className={buttonClassName(geoLevel === GeoLevel.Counties)}
-            onClick={() => store.dispatch(setGeoLevel(GeoLevel.Counties))}
-          >
-            Counties
-          </button>
-          <button
-            className={buttonClassName(geoLevel === GeoLevel.Blockgroups)}
-            onClick={() => store.dispatch(setGeoLevel(GeoLevel.Blockgroups))}
-          >
-            Blockgroups
-          </button>
-          <button
-            className={buttonClassName(geoLevel === GeoLevel.Blocks)}
-            onClick={() => store.dispatch(setGeoLevel(GeoLevel.Blocks))}
-          >
-            Blocks
-          </button>
-        </Box>
+        <Box className="button-group">{geoLevelOptions}</Box>
       </Box>
       <Box className="actions-right">
         <Box className="dropdown">
@@ -73,7 +68,7 @@ const MapHeader = ({
               }}
             >
               <option></option>
-              {options}
+              {labelOptions}
             </Select>
           </Label>
         </Box>

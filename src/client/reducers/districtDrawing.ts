@@ -12,8 +12,7 @@ import {
   SelectionTool,
   setSelectionTool,
   setSelectedDistrictId,
-  setGeoLevel,
-  GeoLevel
+  setGeoLevelIndex
 } from "../actions/districtDrawing";
 import { projectFetchGeoJson } from "../actions/projectData";
 
@@ -23,14 +22,14 @@ export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
   readonly selectedGeounitIds: ReadonlySet<number>;
   readonly selectionTool: SelectionTool;
-  readonly geoLevel: GeoLevel;
+  readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
 }
 
 export const initialState = {
   selectedDistrictId: 1,
   selectedGeounitIds: new Set([]),
   selectionTool: SelectionTool.Default,
-  geoLevel: GeoLevel.Counties
+  geoLevelIndex: 0
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -100,10 +99,10 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         ...state,
         selectionTool: action.payload
       };
-    case getType(setGeoLevel):
+    case getType(setGeoLevelIndex):
       return {
         ...state,
-        geoLevel: action.payload
+        geoLevelIndex: action.payload
       };
     default:
       return state as never;
