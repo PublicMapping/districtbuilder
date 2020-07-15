@@ -53,7 +53,9 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
 
-      setOfInitiallySelectedFeatures = featuresToSet(getAllSelectedFeatures());
+      setOfInitiallySelectedFeatures = featuresToSet(
+        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(feature) === true)
+      );
 
       // Capture the first xy coordinates
       start = mousePos(e);
@@ -61,7 +63,7 @@ const RectangleSelectionTool: ISelectionTool = {
 
     function onMouseMove(e: MouseEvent) {
       // Find selected features before updating `current` to tell if any features were deselected
-      const prevSelectedFeatures = current && getAllSelectedFeatures([start, current]);
+      const prevFeatures = current && getFeaturesInBoundingBox([start, current]);
 
       // Capture the ongoing xy coordinates
       current = mousePos(e);
@@ -88,23 +90,21 @@ const RectangleSelectionTool: ISelectionTool = {
       box.style.height = maxY - minY + "px";
       /* eslint-enable */
 
-      const selectedFeatures = getAllSelectedFeatures([start, current]);
+      const features = getFeaturesInBoundingBox([start, current]);
 
       // Set any newly selected features on the map within the bounding box to selected state
-      const newlySelectedFeatures = selectedFeatures.filter(
-        feature => isFeatureSelected(feature) === false
-      );
-      newlySelectedFeatures.forEach(feature => {
+      const newFeatures = features.filter(feature => isFeatureSelected(feature) === false);
+      newFeatures.forEach(feature => {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
 
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
-      if (prevSelectedFeatures) {
-        const setOfPrevSelectedFeatures = featuresToSet(prevSelectedFeatures);
-        const setOfSelectedFeatures = featuresToSet(selectedFeatures);
-        [...setOfPrevSelectedFeatures]
-          .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfSelectedFeatures.has(id))
+      if (prevFeatures) {
+        const setOfPrevFeatures = featuresToSet(prevFeatures);
+        const setOfFeatures = featuresToSet(features);
+        [...setOfPrevFeatures]
+          .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfFeatures.has(id))
           .forEach(id => {
             map.setFeatureState(featureStateExpression(id), { selected: false });
           });
@@ -140,7 +140,7 @@ const RectangleSelectionTool: ISelectionTool = {
     }
 
     // eslint-disable-next-line
-    function getAllSelectedFeatures(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
+    function getFeaturesInBoundingBox(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       return map.queryRenderedFeatures(bbox, {
         layers: [levelToSelectionLayerId(topGeoLevel)]
       });
@@ -161,7 +161,7 @@ const RectangleSelectionTool: ISelectionTool = {
       // If bbox exists. use this value as the argument for `queryRenderedFeatures`
       // eslint-disable-next-line
       if (bbox) {
-        const selectedFeatures = getAllSelectedFeatures(bbox);
+        const selectedFeatures = getFeaturesInBoundingBox(bbox);
         selectedFeatures.length &&
           store.dispatch(addSelectedGeounitIds(featuresToSet(selectedFeatures)));
       }
