@@ -37,6 +37,8 @@ const RectangleSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
+    let setOfInitiallySelectedFeatures: ReadonlySet<number>;
+
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
       const rect = canvas.getBoundingClientRect();
@@ -50,6 +52,8 @@ const RectangleSelectionTool: ISelectionTool = {
       // Call functions for the following events
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
+
+      setOfInitiallySelectedFeatures = featuresToSet(getAllSelectedFeatures());
 
       // Capture the first xy coordinates
       start = mousePos(e);
@@ -100,7 +104,7 @@ const RectangleSelectionTool: ISelectionTool = {
         const setOfPrevSelectedFeatures = featuresToSet(prevSelectedFeatures);
         const setOfSelectedFeatures = featuresToSet(selectedFeatures);
         [...setOfPrevSelectedFeatures]
-          .filter(id => !setOfSelectedFeatures.has(id))
+          .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfSelectedFeatures.has(id))
           .forEach(id => {
             map.setFeatureState(featureStateExpression(id), { selected: false });
           });
@@ -136,7 +140,7 @@ const RectangleSelectionTool: ISelectionTool = {
     }
 
     // eslint-disable-next-line
-    function getAllSelectedFeatures(bbox: [MapboxGL.PointLike, MapboxGL.PointLike]) {
+    function getAllSelectedFeatures(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       return map.queryRenderedFeatures(bbox, {
         layers: [levelToSelectionLayerId(topGeoLevel)]
       });
