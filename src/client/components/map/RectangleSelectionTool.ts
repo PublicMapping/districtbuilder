@@ -37,7 +37,7 @@ const RectangleSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
-    let setOfInitiallySelectedFeatures: ReadonlySet<number>;
+    let setOfInitiallySelectedFeatures: ReadonlySet<number>; // eslint-disable-line
 
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
