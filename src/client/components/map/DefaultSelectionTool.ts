@@ -70,11 +70,11 @@ const DefaultSelectionTool: ISelectionTool = {
       featureState.selected ? removeFeatures() : addFeatures();
 
       // Indices of all base geounits belonging to the clicked feature
-      const baseIndices = getAllIndices(
-        staticGeoLevels[staticGeoLevels.length - 1 - geoLevelIndex],
-        selectedFeatures
-      );
-      const demographics = getDemographics(baseIndices, staticMetadata, staticDemographics);
+      const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
+      const selectedBaseIndices = baseIndices
+        ? getAllIndices(baseIndices, selectedFeatures)
+        : Array.from(selectedFeatures);
+      const demographics = getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 
       // As a proof of concept, log to the console the aggregated demographic data for the feature
       // eslint-disable-next-line

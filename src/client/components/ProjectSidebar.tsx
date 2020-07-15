@@ -202,10 +202,10 @@ const getTotalSelectedDemographics = (
   selectedGeounitIds: ReadonlySet<number>,
   geoLevelIndex: number
 ) => {
-  const selectedBaseIndices = getAllIndices(
-    staticGeoLevels.slice().reverse()[geoLevelIndex],
-    selectedGeounitIds
-  );
+  const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
+  const selectedBaseIndices = baseIndices
+    ? getAllIndices(baseIndices, selectedGeounitIds)
+    : Array.from(selectedGeounitIds);
   return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 };
 
