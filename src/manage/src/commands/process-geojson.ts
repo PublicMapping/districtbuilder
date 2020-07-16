@@ -148,6 +148,8 @@ it when necessary (file sizes ~1GB+).
 
     this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
+    this.addParentGeoLevelIndices(topoJsonHierarchy, geoLevels);
+
     this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevels);
 
     const geoLevelHierarchyInfo = this.writeVectorTiles(
@@ -379,6 +381,43 @@ it when necessary (file sizes ~1GB+).
     writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));
   }
 
+  // Add parent geolevel indices to each geounit
+  addParentGeoLevelIndices(topology: Topology<Objects<{}>>, geoLevels: readonly string[]): void {
+    const descGeoLevels = geoLevels.slice().reverse();
+    const parentGeoLevels: string[] = [];
+    const indexLookupPerGeoLevel: {
+      [geoLevel: string]: { [geounitId: string]: number };
+    } = Object.fromEntries(descGeoLevels.map(gl => [gl, {}]));
+
+    for (const geoLevel of descGeoLevels) {
+      const topoObject: any = topology.objects[geoLevel];
+      if (!parentGeoLevels.length) {
+        // We're at the top-most geolevel, no parents, so we only need to add indices to lookup
+        topoObject.geometries.forEach((geometry: any, index: number) => {
+          const geounitId: string = geometry.properties[geoLevel];
+          indexLookupPerGeoLevel[geoLevel][geounitId] = index;
+        });
+      } else {
+        // Add indices to lookup, and update geom properties to have references to all parent ids
+        const parentGeoLevel = parentGeoLevels[parentGeoLevels.length - 1];
+        const grouped = groupBy(topoObject.geometries, f => f.properties[parentGeoLevel || ""]);
+        for (const geoms of Object.values(grouped)) {
+          geoms.forEach((geometry: any, index: number) => {
+            const geounitId: string = geometry.properties[geoLevel];
+            indexLookupPerGeoLevel[geoLevel][geounitId] = index;
+
+            // Update geom properties with all references to parent ids in hierarchy
+            for (const parentKey of parentGeoLevels) {
+              geometry.properties[`${parentKey}Idx`] =
+                indexLookupPerGeoLevel[parentKey][geometry.properties[parentKey]];
+            }
+          });
+        }
+      }
+      parentGeoLevels.push(geoLevel);
+    }
+  }
+
   // Convert TopoJSON to GeoJSON and write to disk
   writeIntermediaryGeoJson(
     dir: string,
@@ -389,7 +428,7 @@ it when necessary (file sizes ~1GB+).
       this.log(`Converting topojson to geojson for ${geoLevel}`);
       const featureCollection = topo2feature(topology, topology.objects[geoLevel]);
 
-      // We only want to keep parent geolevel properties, removing all others.
+      // We only want to keep parent geolevel index properties, removing all others.
       // The properties being deleted at this stage are still needed by subsequent
       // operations, so a parse/stringify is being performed in order to ensure we
       // don't modify property objects still in memory.
@@ -397,11 +436,10 @@ it when necessary (file sizes ~1GB+).
       // to have multiple of the same argument used (one for each property), which is
       // something our cmd wrapper doesn't support.
       const geojson: FeatureCollection = JSON.parse(JSON.stringify(featureCollection));
+      const geoLevelIdxs = geoLevels.map(gl => `${gl}Idx`);
       for (const feature of geojson.features) {
         const allPropertyKeys = Object.keys(feature.properties as {});
-        const propertyKeysToRemove = allPropertyKeys.filter(
-          k => k === geoLevel || !geoLevels.includes(k)
-        );
+        const propertyKeysToRemove = allPropertyKeys.filter(k => !geoLevelIdxs.includes(k));
         for (const key of propertyKeysToRemove) {
           feature.properties && delete feature.properties[key];
         }
