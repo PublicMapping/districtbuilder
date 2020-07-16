@@ -387,7 +387,26 @@ it when necessary (file sizes ~1GB+).
   ): void {
     geoLevels.forEach(geoLevel => {
       this.log(`Converting topojson to geojson for ${geoLevel}`);
-      const geojson = topo2feature(topology, topology.objects[geoLevel]);
+      const featureCollection = topo2feature(topology, topology.objects[geoLevel]);
+
+      // We only want to keep parent geolevel properties, removing all others.
+      // The properties being deleted at this stage are still needed by subsequent
+      // operations, so a parse/stringify is being performed in order to ensure we
+      // don't modify property objects still in memory.
+      // Note that tippecanoe has an '--include' argument, which can do this, but needs
+      // to have multiple of the same argument used (one for each property), which is
+      // something our cmd wrapper doesn't support.
+      const geojson: FeatureCollection = JSON.parse(JSON.stringify(featureCollection));
+      for (const feature of geojson.features) {
+        const allPropertyKeys = Object.keys(feature.properties as {});
+        const propertyKeysToRemove = allPropertyKeys.filter(
+          k => k === geoLevel || !geoLevels.includes(k)
+        );
+        for (const key of propertyKeysToRemove) {
+          feature.properties && delete feature.properties[key];
+        }
+      }
+
       writeFileSync(join(dir, `${geoLevel}.geojson`), JSON.stringify(geojson));
     });
   }
@@ -414,7 +433,6 @@ it when necessary (file sizes ~1GB+).
         path,
         {
           detectSharedBorders: true,
-          excludeAll: true, // Don't include demographic data
           force: true,
           maximumZoom,
           minimumZoom,
