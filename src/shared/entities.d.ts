@@ -14,6 +14,7 @@ export interface GeoUnitDefinition {
 }
 
 export type DistrictsDefinition = readonly GeoUnitCollection[];
+export type GeoUnitHierarchy = readonly GeoUnitCollection[];
 
 export type HierarchyDefinition = readonly GeoUnitCollection[];
 
