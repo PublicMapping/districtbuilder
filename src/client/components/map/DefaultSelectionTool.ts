@@ -8,7 +8,7 @@ import {
   ISelectionTool
 } from "./index";
 import { IStaticMetadata } from "../../../shared/entities";
-import { getAllIndices, getDemographics } from "../../../shared/functions";
+import { featuresToSet, getAllIndices, getDemographics } from "../../../shared/functions";
 
 /*
  * Allows users to individually select/deselect specific geounits by clicking them.
@@ -58,7 +58,7 @@ const DefaultSelectionTool: ISelectionTool = {
         sourceLayer: geoLevel
       };
       const featureState = map.getFeatureState(featureStateExpression);
-      const selectedFeatures = new Set([featureId]);
+      const selectedFeatures = featuresToSet([feature], staticMetadata.geoLevelHierarchy);
       const addFeatures = () => {
         map.setFeatureState(featureStateExpression, { selected: true });
         store.dispatch(addSelectedGeounitIds(selectedFeatures));
@@ -71,9 +71,10 @@ const DefaultSelectionTool: ISelectionTool = {
 
       // Indices of all base geounits belonging to the clicked feature
       const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
+      const selectedFeatureIds = new Set([...selectedFeatures].map(feature => feature[0]));
       const selectedBaseIndices = baseIndices
-        ? getAllIndices(baseIndices, selectedFeatures)
-        : Array.from(selectedFeatures);
+        ? getAllIndices(baseIndices, selectedFeatureIds)
+        : Array.from(selectedFeatureIds);
       const demographics = getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 
       // As a proof of concept, log to the console the aggregated demographic data for the feature

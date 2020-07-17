@@ -15,12 +15,14 @@ import {
   setGeoLevelIndex
 } from "../actions/districtDrawing";
 import { projectFetchGeoJson } from "../actions/projectData";
+import { assignGeounitsToDistrict } from "../../shared/functions";
+import { GeoUnitData } from "../../shared/entities";
 
 import { patchDistrictsDefinition } from "../api";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
-  readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedGeounitIds: ReadonlySet<GeoUnitData>;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
 }
@@ -69,15 +71,14 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
           successActionCreator: patchDistrictsDefinitionSuccess,
           failActionCreator: patchDistrictsDefinitionFailure,
           args: [
-            action.payload.id,
-            // TODO (#113): we are only dealing with the top-most geolevel at the moment, so this
-            // will need to be modified when we support all geolevels.
-            [...state.selectedGeounitIds].reduce((newDistrictsDefinition, geounitId) => {
-              // @ts-ignore
-              // eslint-disable-next-line
-              newDistrictsDefinition[geounitId] = state.selectedDistrictId;
-              return newDistrictsDefinition;
-            }, action.payload.districtsDefinition)
+            action.payload.project.id,
+            assignGeounitsToDistrict(
+              action.payload.project.districtsDefinition,
+              action.payload.geoUnitHierarchy,
+              state.selectedGeounitIds,
+              state.selectedDistrictId,
+              state.geoLevelIndex
+            )
           ] as Parameters<typeof patchDistrictsDefinition>
         })
       );

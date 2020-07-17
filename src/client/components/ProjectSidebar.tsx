@@ -5,7 +5,9 @@ import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import {
   DistrictsDefinition,
   DistrictProperties,
+  GeoUnitHierarchy,
   IProject,
+  GeoUnitData,
   IStaticMetadata
 } from "../../shared/entities";
 import { getAllIndices, getDemographics } from "../../shared/functions";
@@ -37,7 +39,8 @@ const ProjectSidebar = ({
   staticDemographics,
   selectedDistrictId,
   selectedGeounitIds,
-  geoLevelIndex
+  geoLevelIndex,
+  geoUnitHierarchy
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -45,8 +48,9 @@ const ProjectSidebar = ({
   readonly staticGeoLevels?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
-  readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedGeounitIds: ReadonlySet<GeoUnitData>;
   readonly geoLevelIndex: number;
+  readonly geoUnitHierarchy?: GeoUnitHierarchy;
 } & LoadingProps) => (
   <Flex
     sx={{
@@ -61,9 +65,10 @@ const ProjectSidebar = ({
       minWidth: "300px"
     }}
   >
-    {project && (
+    {project && geoUnitHierarchy && (
       <SidebarHeader
-        selectedGeounitIds={selectedGeounitIds}
+        selectedGeounitIds={new Set([...selectedGeounitIds].map(feature => feature[0]))}
+        geoUnitHierarchy={geoUnitHierarchy}
         project={project}
         isLoading={isLoading}
       />
@@ -92,7 +97,7 @@ const ProjectSidebar = ({
             staticGeoLevels,
             staticDemographics,
             selectedDistrictId,
-            selectedGeounitIds,
+            new Set([...selectedGeounitIds].map(feature => feature[0])),
             geoLevelIndex
           )}
       </tbody>
@@ -102,10 +107,12 @@ const ProjectSidebar = ({
 
 const SidebarHeader = ({
   selectedGeounitIds,
+  geoUnitHierarchy,
   project,
   isLoading
 }: {
   readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
   readonly project: IProject;
 } & LoadingProps) => {
   return (
@@ -132,7 +139,7 @@ const SidebarHeader = ({
             variant="circular"
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(saveDistrictsDefinition(project));
+              store.dispatch(saveDistrictsDefinition({ project, geoUnitHierarchy }));
             }}
           >
             Approve

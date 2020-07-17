@@ -100,3 +100,10 @@ export interface IChamber {
   readonly numberOfDistricts: number;
   readonly regionConfig: IRegionConfig;
 }
+
+// export interface GeoUnitData {
+//   readonly id: number;
+//   readonly [x: string]: number; // Store ids for parent/grandparent geolevels
+// }
+
+export type GeoUnitData = number[];

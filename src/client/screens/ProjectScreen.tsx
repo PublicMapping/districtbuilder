@@ -48,6 +48,8 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
     "resource" in projectData.staticDemographics
       ? projectData.staticDemographics.resource
       : undefined;
+  const geoUnitHierarchy =
+    "resource" in projectData.geoUnitHierarchy ? projectData.geoUnitHierarchy.resource : undefined;
   const isLoading =
     ("isPending" in projectData.project && projectData.project.isPending) ||
     ("isPending" in projectData.geojson && projectData.geojson.isPending);
@@ -77,6 +79,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounitIds={districtDrawing.selectedGeounitIds}
           geoLevelIndex={districtDrawing.geoLevelIndex}
+          geoUnitHierarchy={geoUnitHierarchy}
         />
         <MapContainer>
           <MapHeader

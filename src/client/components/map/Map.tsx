@@ -6,7 +6,12 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
-import { DistrictProperties, IProject, IStaticMetadata } from "../../../shared/entities";
+import {
+  DistrictProperties,
+  GeoUnitData,
+  IProject,
+  IStaticMetadata
+} from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -27,7 +32,7 @@ interface Props {
   readonly staticMetadata: IStaticMetadata;
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
-  readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedGeounitIds: ReadonlySet<GeoUnitData>;
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
@@ -164,7 +169,7 @@ const Map = ({
           staticDemographics
         );
       } else if (selectionTool === SelectionTool.Rectangle) {
-        RectangleSelectionTool.enable(map, selectedGeolevel);
+        RectangleSelectionTool.enable(map, selectedGeolevel, staticMetadata);
       }
       /* eslint-enable */
     }
