@@ -8,17 +8,13 @@ import {
   Topology
 } from "topojson-specification";
 
-import { GeoUnitCollection, IStaticMetadata } from "../../../../shared/entities";
+import { GeoUnitCollection, GeoUnitDefinition, IStaticMetadata } from "../../../../shared/entities";
 import { getAllIndices, getDemographics } from "../../../../shared/functions";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
 
 interface GeoUnitHierarchy {
   geom: Polygon | MultiPolygon;
   children: ReadonlyArray<GeoUnitHierarchy>;
-}
-
-export interface GeoUnitDefinition {
-  groups: ReadonlyArray<string>;
 }
 
 // Creates a list of trees for the nested geometries of the geounits

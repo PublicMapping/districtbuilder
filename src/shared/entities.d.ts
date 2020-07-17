@@ -9,7 +9,13 @@ export interface IUser {
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
 
+export interface GeoUnitDefinition {
+  readonly groups: ReadonlyArray<string>;
+}
+
 export type DistrictsDefinition = readonly GeoUnitCollection[];
+
+export type HierarchyDefinition = readonly GeoUnitCollection[];
 
 export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;

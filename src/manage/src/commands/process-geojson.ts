@@ -3,7 +3,7 @@ import { IArg } from "@oclif/parser/lib/args";
 import cli from "cli-ux";
 import { mapSync } from "event-stream";
 import { createReadStream, existsSync, readFileSync, writeFileSync } from "fs";
-import { Feature, FeatureCollection, Polygon } from "geojson";
+import { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
@@ -12,7 +12,13 @@ import { feature as topo2feature, mergeArcs } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
-import { GeoLevelInfo, IStaticFile, IStaticMetadata } from "../../../shared/entities";
+import {
+  GeoLevelInfo,
+  GeoUnitDefinition,
+  HierarchyDefinition,
+  IStaticFile,
+  IStaticMetadata
+} from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 
 export default class ProcessGeojson extends Command {
@@ -142,6 +148,8 @@ it when necessary (file sizes ~1GB+).
 
     this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
+    this.addParentGeoLevelIndices(topoJsonHierarchy, geoLevels);
+
     this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevels);
 
     const geoLevelHierarchyInfo = this.writeVectorTiles(
@@ -163,6 +171,8 @@ it when necessary (file sizes ~1GB+).
       topoJsonHierarchy,
       geoLevels
     );
+
+    this.writeGeounitHierarchy(flags.outputDir, topoJsonHierarchy, geoLevels);
 
     this.writeStaticMetadata(
       flags.outputDir,
@@ -371,6 +381,43 @@ it when necessary (file sizes ~1GB+).
     writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));
   }
 
+  // Add parent geolevel indices to each geounit
+  addParentGeoLevelIndices(topology: Topology<Objects<{}>>, geoLevels: readonly string[]): void {
+    const descGeoLevels = geoLevels.slice().reverse();
+    const parentGeoLevels: string[] = [];
+    const indexLookupPerGeoLevel: {
+      [geoLevel: string]: { [geounitId: string]: number };
+    } = Object.fromEntries(descGeoLevels.map(gl => [gl, {}]));
+
+    for (const geoLevel of descGeoLevels) {
+      const topoObject: any = topology.objects[geoLevel];
+      if (!parentGeoLevels.length) {
+        // We're at the top-most geolevel, no parents, so we only need to add indices to lookup
+        topoObject.geometries.forEach((geometry: any, index: number) => {
+          const geounitId: string = geometry.properties[geoLevel];
+          indexLookupPerGeoLevel[geoLevel][geounitId] = index;
+        });
+      } else {
+        // Add indices to lookup, and update geom properties to have references to all parent ids
+        const parentGeoLevel = parentGeoLevels[parentGeoLevels.length - 1];
+        const grouped = groupBy(topoObject.geometries, f => f.properties[parentGeoLevel || ""]);
+        for (const geoms of Object.values(grouped)) {
+          geoms.forEach((geometry: any, index: number) => {
+            const geounitId: string = geometry.properties[geoLevel];
+            indexLookupPerGeoLevel[geoLevel][geounitId] = index;
+
+            // Update geom properties with all references to parent ids in hierarchy
+            for (const parentKey of parentGeoLevels) {
+              geometry.properties[`${parentKey}Idx`] =
+                indexLookupPerGeoLevel[parentKey][geometry.properties[parentKey]];
+            }
+          });
+        }
+      }
+      parentGeoLevels.push(geoLevel);
+    }
+  }
+
   // Convert TopoJSON to GeoJSON and write to disk
   writeIntermediaryGeoJson(
     dir: string,
@@ -406,8 +453,9 @@ it when necessary (file sizes ~1GB+).
         path,
         {
           detectSharedBorders: true,
-          excludeAll: true, // Don't include demographic data
           force: true,
+          // The only properties we want are geounit hierarchy indices
+          include: geoLevels.slice(1).map(gl => `${gl}Idx`),
           maximumZoom,
           minimumZoom,
           noTileCompression: true,
@@ -468,5 +516,68 @@ it when necessary (file sizes ~1GB+).
         minZoom: layerInfo.minzoom
       };
     });
+  }
+
+  // Writes a slimmed down JSON hierarchy of geounits to disk
+  writeGeounitHierarchy(dir: string, topology: Topology, geoLevels: readonly string[]): void {
+    const definition = { groups: geoLevels.slice().reverse() };
+    const geounitHierarchy = this.group(topology, definition);
+
+    this.log("Writing geounit hierarchy file");
+    writeFileSync(join(dir, "geounit-hierarchy.json"), JSON.stringify(geounitHierarchy));
+  }
+
+  // Groups a topology into a hierarchy of geounits corresponding to a district definition structure
+  group(topology: Topology, definition: GeoUnitDefinition): HierarchyDefinition {
+    const geounitsByParentId = definition.groups.map((groupName, index) => {
+      const parentCollection = topology.objects[groupName] as GeometryCollection;
+      const mutableMappings: {
+        [geounitId: string]: Array<Polygon | MultiPolygon>;
+      } = Object.fromEntries(
+        parentCollection.geometries.map((geom: GeometryObject<any>) => [
+          geom.properties[groupName],
+          []
+        ])
+      );
+      const childGroupName = definition.groups[index + 1];
+      if (childGroupName) {
+        const childCollection = topology.objects[childGroupName] as GeometryCollection;
+        childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
+          mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+        });
+      }
+      return [groupName, mutableMappings];
+    });
+
+    const firstGroup = definition.groups[0];
+    const toplevelCollection = topology.objects[firstGroup] as GeometryCollection;
+    return toplevelCollection.geometries.map(geom =>
+      this.getNode(geom, definition, Object.fromEntries(geounitsByParentId))
+    );
+  }
+
+  // Helper for recursively collecting geounit hierarchy node information
+  getNode(
+    geometry: GeometryObject<any>,
+    definition: GeoUnitDefinition,
+    geounitsByParentId: {
+      [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
+    }
+  ): HierarchyDefinition {
+    const firstGroup = definition.groups[0];
+    const remainingGroups = definition.groups.slice(1);
+    const geomId = geometry.properties[firstGroup];
+    const childGeoms = geounitsByParentId[firstGroup][geomId];
+
+    // Recurse until we get to the base geolevel, at which point we list the base geounit indices
+    return remainingGroups.length > 1
+      ? childGeoms.map(childGeom =>
+          this.getNode(
+            (childGeom as unknown) as GeometryObject<any>,
+            { ...definition, groups: remainingGroups },
+            geounitsByParentId
+          )
+        )
+      : childGeoms.map((childGeom: any) => childGeom.id);
   }
 }
