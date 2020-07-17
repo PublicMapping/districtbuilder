@@ -54,7 +54,7 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mouseup", onMouseUp);
 
       setOfInitiallySelectedFeatures = featuresToSet(
-        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(feature) === true)
+        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(feature))
       );
 
       // Capture the first xy coordinates
@@ -93,7 +93,7 @@ const RectangleSelectionTool: ISelectionTool = {
       const features = getFeaturesInBoundingBox([start, current]);
 
       // Set any newly selected features on the map within the bounding box to selected state
-      const newFeatures = features.filter(feature => isFeatureSelected(feature) === false);
+      const newFeatures = features.filter(feature => !isFeatureSelected(feature));
       newFeatures.forEach(feature => {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
