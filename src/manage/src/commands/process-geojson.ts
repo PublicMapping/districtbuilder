@@ -426,25 +426,7 @@ it when necessary (file sizes ~1GB+).
   ): void {
     geoLevels.forEach(geoLevel => {
       this.log(`Converting topojson to geojson for ${geoLevel}`);
-      const featureCollection = topo2feature(topology, topology.objects[geoLevel]);
-
-      // We only want to keep parent geolevel index properties, removing all others.
-      // The properties being deleted at this stage are still needed by subsequent
-      // operations, so a parse/stringify is being performed in order to ensure we
-      // don't modify property objects still in memory.
-      // Note that tippecanoe has an '--include' argument, which can do this, but needs
-      // to have multiple of the same argument used (one for each property), which is
-      // something our cmd wrapper doesn't support.
-      const geojson: FeatureCollection = JSON.parse(JSON.stringify(featureCollection));
-      const geoLevelIdxs = geoLevels.map(gl => `${gl}Idx`);
-      for (const feature of geojson.features) {
-        const allPropertyKeys = Object.keys(feature.properties as {});
-        const propertyKeysToRemove = allPropertyKeys.filter(k => !geoLevelIdxs.includes(k));
-        for (const key of propertyKeysToRemove) {
-          feature.properties && delete feature.properties[key];
-        }
-      }
-
+      const geojson = topo2feature(topology, topology.objects[geoLevel]);
       writeFileSync(join(dir, `${geoLevel}.geojson`), JSON.stringify(geojson));
     });
   }
@@ -472,6 +454,8 @@ it when necessary (file sizes ~1GB+).
         {
           detectSharedBorders: true,
           force: true,
+          // The only properties we want are geounit hierarchy indices
+          include: geoLevels.slice(1).map(gl => `${gl}Idx`),
           maximumZoom,
           minimumZoom,
           noTileCompression: true,
