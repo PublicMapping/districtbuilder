@@ -17,7 +17,7 @@ export type DistrictsDefinition = GeoUnitCollection[];
 
 interface NestedArray<T> extends Array<T | NestedArray<T>> {}
 
-export type GeoUnitHierarchy = readonly NestedArray<number>;
+export type GeoUnitHierarchy = NestedArray<number>;
 
 export type HierarchyDefinition = readonly GeoUnitCollection[];
 

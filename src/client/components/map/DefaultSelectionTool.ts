@@ -5,10 +5,11 @@ import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
   levelToSelectionLayerId,
-  ISelectionTool
+  ISelectionTool,
+  featuresToSet
 } from "./index";
 import { IStaticMetadata } from "../../../shared/entities";
-import { featuresToSet, getAllIndices, getDemographics } from "../../../shared/functions";
+import { getAllIndices, getDemographics } from "../../../shared/functions";
 
 /*
  * Allows users to individually select/deselect specific geounits by clicking them.

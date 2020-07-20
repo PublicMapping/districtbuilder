@@ -1,5 +1,3 @@
-import { MapboxGeoJSONFeature } from "mapbox-gl";
-import { zip } from "lodash";
 import {
   DistrictsDefinition,
   GeoLevelInfo,
@@ -106,24 +104,4 @@ export function assignGeounitsToDistrict(
     }
     return newDistrictsDefinition;
   }, districtsDefinition);
-}
-
-export function featuresToSet(
-  features: readonly MapboxGeoJSONFeature[],
-  geoLevelHierarchy: readonly GeoLevelInfo[]
-): ReadonlySet<GeoUnitData> {
-  const geoLevelHierarchyKeys = geoLevelHierarchy.map(geoLevel => `${geoLevel.id}Idx`);
-  return new Set(
-    features.map((feature: MapboxGeoJSONFeature) =>
-      geoLevelHierarchyKeys.reduce(
-        (geounitData, key) => {
-          const geounitId = feature.properties && feature.properties[key];
-          return geounitId !== undefined && geounitId !== null
-            ? [geounitId, ...geounitData]
-            : geounitData;
-        },
-        [feature.id] as number[]
-      )
-    )
-  );
 }

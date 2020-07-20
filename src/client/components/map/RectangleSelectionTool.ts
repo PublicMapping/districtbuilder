@@ -1,10 +1,14 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import { addSelectedGeounitIds } from "../../actions/districtDrawing";
-import { GEOLEVELS_SOURCE_ID, levelToSelectionLayerId, ISelectionTool } from "./index";
+import {
+  featuresToSet,
+  GEOLEVELS_SOURCE_ID,
+  levelToSelectionLayerId,
+  ISelectionTool
+} from "./index";
 
 import { GeoUnitData, IStaticMetadata } from "../../../shared/entities";
-import { featuresToSet } from "../../../shared/functions";
 /*
  * Allows user to click and drag to select all geounits within the rectangle
  * (bounding box) drawn.
