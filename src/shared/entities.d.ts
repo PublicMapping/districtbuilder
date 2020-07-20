@@ -7,14 +7,17 @@ export interface IUser {
   readonly isEmailVerified: boolean;
 }
 
-export type GeoUnitCollection = number | readonly GeoUnitCollection[];
+export type GeoUnitCollection = number | GeoUnitCollection[];
 
 export interface GeoUnitDefinition {
   readonly groups: ReadonlyArray<string>;
 }
 
-export type DistrictsDefinition = readonly GeoUnitCollection[];
-export type GeoUnitHierarchy = readonly GeoUnitCollection[];
+export type DistrictsDefinition = GeoUnitCollection[];
+
+interface NestedArray<T> extends Array<T | NestedArray<T>> {}
+
+export type GeoUnitHierarchy = readonly NestedArray<number>;
 
 export type HierarchyDefinition = readonly GeoUnitCollection[];
 

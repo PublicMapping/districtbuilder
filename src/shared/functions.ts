@@ -3,9 +3,11 @@ import { zip } from "lodash";
 import {
   DistrictsDefinition,
   GeoLevelInfo,
+  GeoUnitCollection,
   GeoUnitData,
   GeoUnitHierarchy,
-  IStaticMetadata
+  IStaticMetadata,
+  NestedArray
 } from "../shared/entities";
 
 type ArrayBuffer = Uint8Array | Uint16Array | Uint32Array;
@@ -54,26 +56,55 @@ export function assignGeounitsToDistrict(
   districtsDefinition: DistrictsDefinition,
   geoUnitHierarchy: GeoUnitHierarchy,
   geounitDataSet: ReadonlySet<GeoUnitData>,
-  districtId: number,
-  geoLevelIndex: number
+  districtId: number
 ): DistrictsDefinition {
-  console.log("districtsDefinition", districtsDefinition);
-  console.log("geoUnitHierarchy", geoUnitHierarchy);
-  console.log("geounitIds", geounitDataSet);
-  console.log("districtId", districtId);
-  console.log("sub-geounits", zip(geoUnitHierarchy)[geoLevelIndex]);
-  debugger;
   return [...geounitDataSet].reduce((newDistrictsDefinition, geounitData) => {
-    const geounitId = geounitData[geoLevelIndex];
-    if (typeof newDistrictsDefinition[geounitId] === "number") {
-      // @ts-ignore
+    // Example geounitData for county selected: [0]
+    // Example geounitData for tract selected: [0, 58]
+    // Example geounitData for block selected: [0, 58, 1385]
+    const assignGeounits = (
+      currentDistrictsDefinition: GeoUnitCollection,
+      currentGeounitData: number[],
+      currentGeoUnitHierarchy: GeoUnitHierarchy
+    ): GeoUnitCollection => {
+      const [currentLevelGeounitId, ...remainingLevelsGeounitIds] = currentGeounitData;
+      if (currentLevelGeounitId === undefined) {
+        return currentDistrictsDefinition;
+      }
+      // Update districts definition using existing values or explode out district id using hierarchy
+      const geounitsInHierarchyAtNewLevel = currentGeoUnitHierarchy[
+        currentLevelGeounitId
+      ] as number[];
+      let newDefinition =
+        typeof currentDistrictsDefinition !== "number"
+          ? // Copy existing district ids at this level
+            currentDistrictsDefinition
+          : // Auto-fill district ids using current value based on number of geounits at this level
+            new Array(geounitsInHierarchyAtNewLevel.length).fill(currentDistrictsDefinition);
+      if (remainingLevelsGeounitIds.length) {
+        // We need to go deeper...
+        assignGeounits(newDefinition, currentGeounitData.slice(1), geounitsInHierarchyAtNewLevel);
+      } else {
+        // End of the line. Update value with new district id
+        newDefinition[currentLevelGeounitId] = districtId;
+      }
+      return newDefinition;
+    };
+
+    const initialGeounitId = geounitData[0];
+    if (geounitData.length === 0) {
+      // Assign entire county
       // eslint-disable-next-line
-      newDistrictsDefinition[geounitId] = districtId;
-      return newDistrictsDefinition;
+      newDistrictsDefinition[initialGeounitId] = districtId;
     } else {
-      // newDistrictsDefinition[geounitId] = assignGeounitsToDistrict(
-      return newDistrictsDefinition; //assignGeounitsToDistrict(newDistrictsDefinition,
+      // eslint-disable-next-line
+      newDistrictsDefinition[initialGeounitId] = assignGeounits(
+        newDistrictsDefinition[initialGeounitId],
+        geounitData,
+        geoUnitHierarchy
+      );
     }
+    return newDistrictsDefinition;
   }, districtsDefinition);
 }
 
@@ -88,7 +119,7 @@ export function featuresToSet(
         (geounitData, key) => {
           const geounitId = feature.properties && feature.properties[key];
           return geounitId !== undefined && geounitId !== null
-            ? [...geounitData, geounitId]
+            ? [geounitId, ...geounitData]
             : geounitData;
         },
         [feature.id] as number[]

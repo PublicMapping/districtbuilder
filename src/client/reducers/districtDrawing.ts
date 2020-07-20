@@ -76,8 +76,7 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
               action.payload.project.districtsDefinition,
               action.payload.geoUnitHierarchy,
               state.selectedGeounitIds,
-              state.selectedDistrictId,
-              state.geoLevelIndex
+              state.selectedDistrictId
             )
           ] as Parameters<typeof patchDistrictsDefinition>
         })
