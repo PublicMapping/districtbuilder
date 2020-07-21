@@ -1,6 +1,5 @@
 import {
   DistrictsDefinition,
-  GeoLevelInfo,
   GeoUnitCollection,
   GeoUnitData,
   GeoUnitHierarchy,
@@ -66,31 +65,29 @@ export function assignGeounitsToDistrict(
       currentGeoUnitHierarchy: GeoUnitHierarchy
     ): GeoUnitCollection => {
       const [currentLevelGeounitId, ...remainingLevelsGeounitIds] = currentGeounitData;
-      if (currentLevelGeounitId === undefined) {
-        return currentDistrictsDefinition;
-      }
       // Update districts definition using existing values or explode out district id using hierarchy
-      const geounitsInHierarchyAtNewLevel = currentGeoUnitHierarchy[
-        currentLevelGeounitId
-      ] as number[];
       let newDefinition =
         typeof currentDistrictsDefinition !== "number"
           ? // Copy existing district ids at this level
             currentDistrictsDefinition
           : // Auto-fill district ids using current value based on number of geounits at this level
-            new Array(geounitsInHierarchyAtNewLevel.length).fill(currentDistrictsDefinition);
+            new Array(currentGeoUnitHierarchy.length).fill(currentDistrictsDefinition);
       if (remainingLevelsGeounitIds.length) {
         // We need to go deeper...
-        assignGeounits(newDefinition, currentGeounitData.slice(1), geounitsInHierarchyAtNewLevel);
+        return assignGeounits(
+          newDefinition[currentLevelGeounitId],
+          currentGeounitData.slice(1),
+          currentGeoUnitHierarchy[currentLevelGeounitId] as number[]
+        );
       } else {
         // End of the line. Update value with new district id
         newDefinition[currentLevelGeounitId] = districtId;
+        return newDefinition;
       }
-      return newDefinition;
     };
 
     const initialGeounitId = geounitData[0];
-    if (geounitData.length === 0) {
+    if (geounitData.length === 1) {
       // Assign entire county
       // eslint-disable-next-line
       newDistrictsDefinition[initialGeounitId] = districtId;
@@ -98,8 +95,8 @@ export function assignGeounitsToDistrict(
       // eslint-disable-next-line
       newDistrictsDefinition[initialGeounitId] = assignGeounits(
         newDistrictsDefinition[initialGeounitId],
-        geounitData,
-        geoUnitHierarchy
+        geounitData.slice(1),
+        geoUnitHierarchy[initialGeounitId] as NestedArray<number>
       );
     }
     return newDistrictsDefinition;
