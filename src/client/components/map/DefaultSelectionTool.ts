@@ -71,6 +71,7 @@ const DefaultSelectionTool: ISelectionTool = {
       featureState.selected ? removeFeatures() : addFeatures();
 
       // Indices of all base geounits belonging to the clicked feature
+      // TODO: Make demographic calculations work for all geolevels (#202)
       const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
       const selectedFeatureIds = new Set([...selectedFeatures].map(feature => feature[0]));
       const selectedBaseIndices = baseIndices

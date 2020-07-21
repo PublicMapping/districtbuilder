@@ -209,6 +209,7 @@ const getTotalSelectedDemographics = (
   selectedGeounitIds: ReadonlySet<number>,
   geoLevelIndex: number
 ) => {
+  // TODO: Make demographic calculations work for all geolevels (#202)
   const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
   const selectedBaseIndices = baseIndices
     ? getAllIndices(baseIndices, selectedGeounitIds)
@@ -247,11 +248,12 @@ const getSavedDistrictSelectedDemographics = (
     const item = subDefinition[geounitIndex];
     // eslint-disable-next-line
     if (typeof item === "number") {
-      // eslint-disable-next-line
+      // TODO: Make demographic calculations work for all geolevels (#202)
       const baseIndices = staticGeoLevels.slice().reverse()[levelIndex];
       const selectedBaseIndices = baseIndices
         ? getAllIndices(baseIndices, selectedGeounitIds)
         : Array.from(selectedGeounitIds);
+      // eslint-disable-next-line
       mutableDistrictGeounitAccum[item] = mutableDistrictGeounitAccum[item].concat(
         selectedBaseIndices
       );
