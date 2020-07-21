@@ -99,7 +99,7 @@ export function featuresToSet(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
 ): ReadonlySet<GeoUnitData> {
-  const geoLevelHierarchyKeys = geoLevelHierarchy.map(geoLevel => `${geoLevel.id}Idx`);
+  const geoLevelHierarchyKeys = ["idx", ...geoLevelHierarchy.map(geoLevel => `${geoLevel.id}Idx`)];
   return new Set(
     features.map((feature: MapboxGeoJSONFeature) =>
       geoLevelHierarchyKeys.reduce(
@@ -109,7 +109,7 @@ export function featuresToSet(
             ? [geounitId, ...geounitData]
             : geounitData;
         },
-        [feature.id] as number[]
+        [] as number[]
       )
     )
   );
