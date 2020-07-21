@@ -2,7 +2,8 @@ import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
-import { GeoLevelInfo, GeoUnitData } from "../../../shared/entities";
+import { GeoLevelInfo, GeoUnitIndices } from "../../../shared/entities";
+import { UniqueObjectsSet } from "../../../shared";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -98,9 +99,9 @@ export interface ISelectionTool {
 export function featuresToSet(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
-): ReadonlySet<GeoUnitData> {
+): ReadonlySet<GeoUnitIndices> {
   const geoLevelHierarchyKeys = ["idx", ...geoLevelHierarchy.map(geoLevel => `${geoLevel.id}Idx`)];
-  return new Set(
+  return new UniqueObjectsSet(
     features.map((feature: MapboxGeoJSONFeature) =>
       geoLevelHierarchyKeys.reduce(
         (geounitData, key) => {

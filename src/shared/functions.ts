@@ -1,7 +1,7 @@
 import {
   DistrictsDefinition,
   GeoUnitCollection,
-  GeoUnitData,
+  GeoUnitIndices,
   GeoUnitHierarchy,
   IStaticMetadata,
   NestedArray
@@ -81,7 +81,7 @@ function assignGeounit(
 export function assignGeounitsToDistrict(
   districtsDefinition: DistrictsDefinition,
   geoUnitHierarchy: GeoUnitHierarchy,
-  geounitDataSet: ReadonlySet<GeoUnitData>,
+  geounitDataSet: ReadonlySet<GeoUnitIndices>,
   districtId: number
 ): DistrictsDefinition {
   return [...geounitDataSet].reduce((newDistrictsDefinition, geounitData) => {

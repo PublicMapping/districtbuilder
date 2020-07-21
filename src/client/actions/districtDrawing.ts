@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { GeoUnitData, GeoUnitHierarchy, IProject } from "../../shared/entities";
+import { GeoUnitIndices, GeoUnitHierarchy, IProject } from "../../shared/entities";
 
 export enum SelectionTool {
   Default = "DEFAULT",
@@ -9,10 +9,10 @@ export enum SelectionTool {
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
 
 export const addSelectedGeounitIds = createAction("Add selected geounit ids")<
-  ReadonlySet<GeoUnitData>
+  ReadonlySet<GeoUnitIndices>
 >();
 export const removeSelectedGeounitIds = createAction("Remove selected geounit ids")<
-  ReadonlySet<GeoUnitData>
+  ReadonlySet<GeoUnitIndices>
 >();
 export const clearSelectedGeounitIds = createAction("Clear selected geounit ids")();
 

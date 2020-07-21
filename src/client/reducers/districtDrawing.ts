@@ -16,20 +16,21 @@ import {
 } from "../actions/districtDrawing";
 import { projectFetchGeoJson } from "../actions/projectData";
 import { assignGeounitsToDistrict } from "../../shared/functions";
-import { GeoUnitData } from "../../shared/entities";
+import { GeoUnitIndices } from "../../shared/entities";
+import { UniqueObjectsSet } from "../../shared";
 
 import { patchDistrictsDefinition } from "../api";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
-  readonly selectedGeounitIds: ReadonlySet<GeoUnitData>;
+  readonly selectedGeounits: ReadonlySet<GeoUnitIndices>;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
 }
 
 export const initialState = {
   selectedDistrictId: 1,
-  selectedGeounitIds: new Set([]),
+  selectedGeounits: new UniqueObjectsSet([]),
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0
 };
@@ -47,22 +48,21 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
     case getType(addSelectedGeounitIds):
       return {
         ...state,
-        selectedGeounitIds: new Set([...state.selectedGeounitIds, ...action.payload])
+        selectedGeounits: new UniqueObjectsSet([...state.selectedGeounits, ...action.payload])
       };
     case getType(removeSelectedGeounitIds): {
-      const mutableSelected = new Set([...state.selectedGeounitIds]);
-      [...action.payload].forEach(function(v) {
-        mutableSelected.delete(v);
-      });
+      const objectsToDelete = [...action.payload].map(d => JSON.stringify(d));
       return {
         ...state,
-        selectedGeounitIds: mutableSelected
+        selectedGeounits: new UniqueObjectsSet(
+          [...state.selectedGeounits].filter(g => !objectsToDelete.includes(JSON.stringify(g)))
+        )
       };
     }
     case getType(clearSelectedGeounitIds):
       return {
         ...state,
-        selectedGeounitIds: new Set([])
+        selectedGeounits: new UniqueObjectsSet([])
       };
     case getType(saveDistrictsDefinition):
       return loop(
@@ -75,7 +75,7 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
             assignGeounitsToDistrict(
               action.payload.project.districtsDefinition,
               action.payload.geoUnitHierarchy,
-              state.selectedGeounitIds,
+              state.selectedGeounits,
               state.selectedDistrictId
             )
           ] as Parameters<typeof patchDistrictsDefinition>

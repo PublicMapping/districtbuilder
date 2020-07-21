@@ -104,9 +104,11 @@ export interface IChamber {
   readonly regionConfig: IRegionConfig;
 }
 
-// export interface GeoUnitData {
-//   readonly id: number;
-//   readonly [x: string]: number; // Store ids for parent/grandparent geolevels
-// }
-
-export type GeoUnitData = number[];
+// For a given geounit, the indices at each geolevel from largest to smallest geounits.
+// The smaller the geounit, the more indices will be present to place it in the hierarchy.
+// This is used to place a geounit within the geounit hierarchy when building district definitions.
+// For example:
+// a block may have indices [0, 81, 124] where 0 = county, 81 = tract, 124 = block
+// a tract may have indices [0, 81] where 0 = county, 81 = tract
+// a county may have indices [0] where 0 = county
+export type GeoUnitIndices = number[];

@@ -8,7 +8,7 @@ import { SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
   DistrictProperties,
-  GeoUnitData,
+  GeoUnitIndices,
   IProject,
   IStaticMetadata
 } from "../../../shared/entities";
@@ -32,7 +32,7 @@ interface Props {
   readonly staticMetadata: IStaticMetadata;
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
-  readonly selectedGeounitIds: ReadonlySet<GeoUnitData>;
+  readonly selectedGeounitIds: ReadonlySet<GeoUnitIndices>;
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;

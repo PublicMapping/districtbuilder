@@ -8,7 +8,7 @@ import {
   ISelectionTool
 } from "./index";
 
-import { GeoUnitData, IStaticMetadata } from "../../../shared/entities";
+import { GeoUnitIndices, IStaticMetadata } from "../../../shared/entities";
 /*
  * Allows user to click and drag to select all geounits within the rectangle
  * (bounding box) drawn.
@@ -43,7 +43,7 @@ const RectangleSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
-    let setOfInitiallySelectedFeatures: ReadonlySet<GeoUnitData>; // eslint-disable-line
+    let setOfInitiallySelectedFeatures: ReadonlySet<GeoUnitIndices>; // eslint-disable-line
 
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
