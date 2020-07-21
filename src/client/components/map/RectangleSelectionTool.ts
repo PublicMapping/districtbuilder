@@ -1,8 +1,14 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import { addSelectedGeounitIds } from "../../actions/districtDrawing";
-import { GEOLEVELS_SOURCE_ID, levelToSelectionLayerId, ISelectionTool } from "./index";
+import {
+  featuresToSet,
+  GEOLEVELS_SOURCE_ID,
+  levelToSelectionLayerId,
+  ISelectionTool
+} from "./index";
 
+import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
 /*
  * Allows user to click and drag to select all geounits within the rectangle
  * (bounding box) drawn.
@@ -15,7 +21,7 @@ import { GEOLEVELS_SOURCE_ID, levelToSelectionLayerId, ISelectionTool } from "./
  * https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
  */
 const RectangleSelectionTool: ISelectionTool = {
-  enable: function(map: MapboxGL.Map, topGeoLevel: string) {
+  enable: function(map: MapboxGL.Map, geoLevel: string, staticMetadata: IStaticMetadata) {
     map.boxZoom.disable();
     map.dragPan.disable();
     map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line
@@ -37,7 +43,7 @@ const RectangleSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
-    let setOfInitiallySelectedFeatures: ReadonlySet<number>; // eslint-disable-line
+    let setOfInitiallySelectedFeatures: GeoUnits; // eslint-disable-line
 
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
@@ -54,7 +60,8 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mouseup", onMouseUp);
 
       setOfInitiallySelectedFeatures = featuresToSet(
-        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(feature))
+        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(feature)),
+        staticMetadata.geoLevelHierarchy
       );
 
       // Capture the first xy coordinates
@@ -101,9 +108,9 @@ const RectangleSelectionTool: ISelectionTool = {
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
       if (prevFeatures) {
-        const setOfPrevFeatures = featuresToSet(prevFeatures);
-        const setOfFeatures = featuresToSet(features);
-        [...setOfPrevFeatures]
+        const setOfPrevFeatures = featuresToSet(prevFeatures, staticMetadata.geoLevelHierarchy);
+        const setOfFeatures = featuresToSet(features, staticMetadata.geoLevelHierarchy);
+        Array.from(setOfPrevFeatures.keys())
           .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfFeatures.has(id))
           .forEach(id => {
             map.setFeatureState(featureStateExpression(id), { selected: false });
@@ -120,18 +127,8 @@ const RectangleSelectionTool: ISelectionTool = {
       return {
         source: GEOLEVELS_SOURCE_ID,
         id,
-        sourceLayer: topGeoLevel
+        sourceLayer: geoLevel
       };
-    }
-
-    function featuresToSet(
-      features: readonly MapboxGL.MapboxGeoJSONFeature[]
-    ): ReadonlySet<number> {
-      return new Set(
-        features
-          .map((feature: MapboxGL.MapboxGeoJSONFeature) => feature.id)
-          .filter((id): id is number => typeof id === "number")
-      );
     }
 
     function isFeatureSelected(feature: MapboxGL.MapboxGeoJSONFeature): boolean {
@@ -139,10 +136,12 @@ const RectangleSelectionTool: ISelectionTool = {
       return featureState.selected === true;
     }
 
-    // eslint-disable-next-line
-    function getFeaturesInBoundingBox(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
+    function getFeaturesInBoundingBox(
+      // eslint-disable-next-line
+      bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]
+    ): readonly MapboxGL.MapboxGeoJSONFeature[] {
       return map.queryRenderedFeatures(bbox, {
-        layers: [levelToSelectionLayerId(topGeoLevel)]
+        layers: [levelToSelectionLayerId(geoLevel)]
       });
     }
 
@@ -163,7 +162,9 @@ const RectangleSelectionTool: ISelectionTool = {
       if (bbox) {
         const selectedFeatures = getFeaturesInBoundingBox(bbox);
         selectedFeatures.length &&
-          store.dispatch(addSelectedGeounitIds(featuresToSet(selectedFeatures)));
+          store.dispatch(
+            addSelectedGeounitIds(featuresToSet(selectedFeatures, staticMetadata.geoLevelHierarchy))
+          );
       }
     }
   },

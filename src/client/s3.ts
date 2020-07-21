@@ -1,7 +1,13 @@
 import axios from "axios";
 import { parse, resolve } from "url";
 
-import { HttpsURI, IStaticFile, IStaticMetadata, S3URI } from "../shared/entities";
+import {
+  GeoUnitHierarchy,
+  HttpsURI,
+  IStaticFile,
+  IStaticMetadata,
+  S3URI
+} from "../shared/entities";
 
 const s3Axios = axios.create();
 
@@ -18,6 +24,15 @@ export async function fetchStaticMetadata(path: S3URI): Promise<IStaticMetadata>
   return new Promise((resolve, reject) => {
     s3Axios
       .get(staticDataUri(path, "static-metadata.json"))
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchGeoUnitHierarchy(path: S3URI): Promise<GeoUnitHierarchy> {
+  return new Promise((resolve, reject) => {
+    s3Axios
+      .get(staticDataUri(path, "geounit-hierarchy.json"))
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });

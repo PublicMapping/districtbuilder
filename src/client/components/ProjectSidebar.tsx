@@ -5,6 +5,8 @@ import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import {
   DistrictsDefinition,
   DistrictProperties,
+  GeoUnitHierarchy,
+  GeoUnits,
   IProject,
   IStaticMetadata
 } from "../../shared/entities";
@@ -36,7 +38,9 @@ const ProjectSidebar = ({
   staticGeoLevels,
   staticDemographics,
   selectedDistrictId,
-  selectedGeounitIds
+  selectedGeounits,
+  geoLevelIndex,
+  geoUnitHierarchy
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -44,65 +48,75 @@ const ProjectSidebar = ({
   readonly staticGeoLevels?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
-  readonly selectedGeounitIds: ReadonlySet<number>;
-} & LoadingProps) => (
-  <Flex
-    sx={{
-      background: "#fff",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      zIndex: 20,
-      position: "relative",
-      flexShrink: 0,
-      boxShadow: "0 0 1px #a9acae",
-      minWidth: "300px"
-    }}
-  >
-    {project && (
-      <SidebarHeader
-        selectedGeounitIds={selectedGeounitIds}
-        project={project}
-        isLoading={isLoading}
-      />
-    )}
-    <Styled.table>
-      <thead>
-        <Styled.tr>
-          <Styled.th>Number</Styled.th>
-          <Styled.th>Population</Styled.th>
-          <Styled.th>Deviation</Styled.th>
-          <Styled.th>Race</Styled.th>
-          <Styled.th>Pol.</Styled.th>
-          <Styled.th>Comp.</Styled.th>
-        </Styled.tr>
-      </thead>
-      <tbody>
-        {project &&
-          geojson &&
-          staticMetadata &&
-          staticGeoLevels &&
-          staticDemographics &&
-          getSidebarRows(
-            project,
-            geojson,
-            staticMetadata,
-            staticGeoLevels,
-            staticDemographics,
-            selectedDistrictId,
-            selectedGeounitIds
-          )}
-      </tbody>
-    </Styled.table>
-  </Flex>
-);
+  readonly selectedGeounits: GeoUnits;
+  readonly geoLevelIndex: number;
+  readonly geoUnitHierarchy?: GeoUnitHierarchy;
+} & LoadingProps) => {
+  // TODO: Make demographic calculations work for all geolevels (#202)
+  const topLevelSelectedGeounitIds = new Set([...selectedGeounits].map(geounit => geounit[0]));
+  return (
+    <Flex
+      sx={{
+        background: "#fff",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        zIndex: 20,
+        position: "relative",
+        flexShrink: 0,
+        boxShadow: "0 0 1px #a9acae",
+        minWidth: "300px"
+      }}
+    >
+      {project && geoUnitHierarchy && (
+        <SidebarHeader
+          selectedGeounits={selectedGeounits}
+          geoUnitHierarchy={geoUnitHierarchy}
+          project={project}
+          isLoading={isLoading}
+        />
+      )}
+      <Styled.table>
+        <thead>
+          <Styled.tr>
+            <Styled.th>Number</Styled.th>
+            <Styled.th>Population</Styled.th>
+            <Styled.th>Deviation</Styled.th>
+            <Styled.th>Race</Styled.th>
+            <Styled.th>Pol.</Styled.th>
+            <Styled.th>Comp.</Styled.th>
+          </Styled.tr>
+        </thead>
+        <tbody>
+          {project &&
+            geojson &&
+            staticMetadata &&
+            staticGeoLevels &&
+            staticDemographics &&
+            getSidebarRows(
+              project,
+              geojson,
+              staticMetadata,
+              staticGeoLevels,
+              staticDemographics,
+              selectedDistrictId,
+              topLevelSelectedGeounitIds,
+              geoLevelIndex
+            )}
+        </tbody>
+      </Styled.table>
+    </Flex>
+  );
+};
 
 const SidebarHeader = ({
-  selectedGeounitIds,
+  selectedGeounits,
+  geoUnitHierarchy,
   project,
   isLoading
 }: {
-  readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedGeounits: GeoUnits;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
   readonly project: IProject;
 } & LoadingProps) => {
   return (
@@ -114,7 +128,7 @@ const SidebarHeader = ({
       </Flex>
       {isLoading ? (
         <Loading />
-      ) : selectedGeounitIds.size ? (
+      ) : selectedGeounits.size ? (
         <Flex sx={{ variant: "header.right" }}>
           <Button
             variant="circularSubtle"
@@ -129,7 +143,7 @@ const SidebarHeader = ({
             variant="circular"
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(saveDistrictsDefinition(project));
+              store.dispatch(saveDistrictsDefinition({ project, geoUnitHierarchy }));
             }}
           >
             Approve
@@ -199,10 +213,11 @@ const getTotalSelectedDemographics = (
   selectedGeounitIds: ReadonlySet<number>,
   geoLevelIndex: number
 ) => {
-  const selectedBaseIndices = getAllIndices(
-    staticGeoLevels.slice().reverse()[geoLevelIndex],
-    selectedGeounitIds
-  );
+  // TODO: Make demographic calculations work for all geolevels (#202)
+  const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
+  const selectedBaseIndices = baseIndices
+    ? getAllIndices(baseIndices, selectedGeounitIds)
+    : Array.from(selectedGeounitIds);
   return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 };
 
@@ -237,9 +252,14 @@ const getSavedDistrictSelectedDemographics = (
     const item = subDefinition[geounitIndex];
     // eslint-disable-next-line
     if (typeof item === "number") {
+      // TODO: Make demographic calculations work for all geolevels (#202)
+      const baseIndices = staticGeoLevels.slice().reverse()[levelIndex];
+      const selectedBaseIndices = baseIndices
+        ? getAllIndices(baseIndices, selectedGeounitIds)
+        : Array.from(selectedGeounitIds);
       // eslint-disable-next-line
       mutableDistrictGeounitAccum[item] = mutableDistrictGeounitAccum[item].concat(
-        getAllIndices(staticGeoLevels.slice().reverse()[levelIndex], new Set([geounitIndex]))
+        selectedBaseIndices
       );
     }
   };
@@ -259,12 +279,9 @@ const getSidebarRows = (
   staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   selectedDistrictId: number,
-  selectedGeounitIds: ReadonlySet<number>
+  selectedGeounitIds: ReadonlySet<number>,
+  geoLevelIndex: number
 ) => {
-  // This assumes we are selecting the top-most geolevel. When the geolevel selector is
-  // added, this will need to be updated accordingly.
-  const geoLevelIndex = 0;
-
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
     staticMetadata,

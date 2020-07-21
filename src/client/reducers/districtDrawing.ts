@@ -11,22 +11,27 @@ import {
   saveDistrictsDefinition,
   SelectionTool,
   setSelectionTool,
-  setSelectedDistrictId
+  setSelectedDistrictId,
+  setGeoLevelIndex
 } from "../actions/districtDrawing";
 import { projectFetchGeoJson } from "../actions/projectData";
+import { assignGeounitsToDistrict } from "../../shared/functions";
+import { GeoUnits } from "../../shared/entities";
 
 import { patchDistrictsDefinition } from "../api";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
-  readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
+  readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
 }
 
 export const initialState = {
   selectedDistrictId: 1,
-  selectedGeounitIds: new Set([]),
-  selectionTool: SelectionTool.Default
+  selectedGeounits: new Map(),
+  selectionTool: SelectionTool.Default,
+  geoLevelIndex: 0
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -42,22 +47,22 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
     case getType(addSelectedGeounitIds):
       return {
         ...state,
-        selectedGeounitIds: new Set([...state.selectedGeounitIds, ...action.payload])
+        selectedGeounits: new Map([...state.selectedGeounits, ...action.payload])
       };
     case getType(removeSelectedGeounitIds): {
-      const mutableSelected = new Set([...state.selectedGeounitIds]);
-      [...action.payload].forEach(function(v) {
-        mutableSelected.delete(v);
+      const mutableSelected = new Map(state.selectedGeounits);
+      action.payload.forEach((_value, key) => {
+        mutableSelected.delete(key);
       });
       return {
         ...state,
-        selectedGeounitIds: mutableSelected
+        selectedGeounits: mutableSelected
       };
     }
     case getType(clearSelectedGeounitIds):
       return {
         ...state,
-        selectedGeounitIds: new Set([])
+        selectedGeounits: new Map()
       };
     case getType(saveDistrictsDefinition):
       return loop(
@@ -66,15 +71,13 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
           successActionCreator: patchDistrictsDefinitionSuccess,
           failActionCreator: patchDistrictsDefinitionFailure,
           args: [
-            action.payload.id,
-            // TODO (#113): we are only dealing with the top-most geolevel at the moment, so this
-            // will need to be modified when we support all geolevels.
-            [...state.selectedGeounitIds].reduce((newDistrictsDefinition, geounitId) => {
-              // @ts-ignore
-              // eslint-disable-next-line
-              newDistrictsDefinition[geounitId] = state.selectedDistrictId;
-              return newDistrictsDefinition;
-            }, action.payload.districtsDefinition)
+            action.payload.project.id,
+            assignGeounitsToDistrict(
+              action.payload.project.districtsDefinition,
+              action.payload.geoUnitHierarchy,
+              Array.from(state.selectedGeounits.values()),
+              state.selectedDistrictId
+            )
           ] as Parameters<typeof patchDistrictsDefinition>
         })
       );
@@ -95,6 +98,11 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
       return {
         ...state,
         selectionTool: action.payload
+      };
+    case getType(setGeoLevelIndex):
+      return {
+        ...state,
+        geoLevelIndex: action.payload
       };
     default:
       return state as never;

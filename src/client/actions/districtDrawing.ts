@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { IProject } from "../../shared/entities";
+import { GeoUnits, GeoUnitHierarchy, IProject } from "../../shared/entities";
 
 export enum SelectionTool {
   Default = "DEFAULT",
@@ -8,15 +8,14 @@ export enum SelectionTool {
 
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
 
-export const addSelectedGeounitIds = createAction("Add selected geounit ids")<
-  ReadonlySet<number>
->();
-export const removeSelectedGeounitIds = createAction("Remove selected geounit ids")<
-  ReadonlySet<number>
->();
+export const addSelectedGeounitIds = createAction("Add selected geounit ids")<GeoUnits>();
+export const removeSelectedGeounitIds = createAction("Remove selected geounit ids")<GeoUnits>();
 export const clearSelectedGeounitIds = createAction("Clear selected geounit ids")();
 
-export const saveDistrictsDefinition = createAction("Save districts definition")<IProject>();
+export const saveDistrictsDefinition = createAction("Save districts definition")<{
+  readonly project: IProject;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
+}>();
 
 export const patchDistrictsDefinitionSuccess = createAction("Patch districts definition success")<
   IProject
@@ -26,3 +25,5 @@ export const patchDistrictsDefinitionFailure = createAction("Patch districts def
 >();
 
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
+
+export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();

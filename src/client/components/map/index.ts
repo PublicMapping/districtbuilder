@@ -1,8 +1,8 @@
-import MapboxGL from "mapbox-gl";
+import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
-import { GeoLevelInfo } from "../../../shared/entities";
+import { GeoLevelInfo, GeoUnits } from "../../../shared/entities";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -94,3 +94,29 @@ export interface ISelectionTool {
   [x: string]: any;
 }
 /* eslint-enable */
+
+export function featuresToSet(
+  features: readonly MapboxGeoJSONFeature[],
+  geoLevelHierarchy: readonly GeoLevelInfo[]
+): GeoUnits {
+  const geoLevelHierarchyKeys = ["idx", ...geoLevelHierarchy.map(geoLevel => `${geoLevel.id}Idx`)];
+  // Map is used here instead of Set because Sets don't work well for handling
+  // objects (multiple copies of an object with the same values can exist in
+  // the same set). Here the feature id is used as the key which we also want
+  // to keep track of for map management. Note that if keys are duplicated the
+  // value set last will be used (thus achieving the uniqueness of sets).
+  return new Map(
+    features.map((feature: MapboxGeoJSONFeature) => [
+      feature.id as number,
+      geoLevelHierarchyKeys.reduce(
+        (geounitData, key) => {
+          const geounitId = feature.properties && feature.properties[key];
+          return geounitId !== undefined && geounitId !== null
+            ? [geounitId, ...geounitData]
+            : geounitData;
+        },
+        [] as readonly number[]
+      )
+    ])
+  );
+}

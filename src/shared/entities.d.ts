@@ -9,11 +9,19 @@ export interface IUser {
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
 
+// eslint-disable-next-line
+export type MutableGeoUnitCollection = number | GeoUnitCollection[];
+
 export interface GeoUnitDefinition {
   readonly groups: ReadonlyArray<string>;
 }
 
-export type DistrictsDefinition = readonly GeoUnitCollection[];
+// eslint-disable-next-line
+export type DistrictsDefinition = MutableGeoUnitCollection[];
+
+type NestedArray<T> = ReadonlyArray<T | NestedArray<T>>;
+
+export type GeoUnitHierarchy = NestedArray<number>;
 
 export type HierarchyDefinition = readonly GeoUnitCollection[];
 
@@ -99,3 +107,14 @@ export interface IChamber {
   readonly numberOfDistricts: number;
   readonly regionConfig: IRegionConfig;
 }
+
+// For a given geounit, the indices at each geolevel from largest to smallest geounits.
+// The smaller the geounit, the more indices will be present to place it in the hierarchy.
+// This is used to place a geounit within the geounit hierarchy when building district definitions.
+// For example:
+// a block may have indices [0, 81, 124] where 0 = county, 81 = tract, 124 = block
+// a tract may have indices [0, 81] where 0 = county, 81 = tract
+// a county may have indices [0] where 0 = county
+export type GeoUnitIndices = readonly number[];
+
+export type GeoUnits = ReadonlyMap<number, GeoUnitIndices>;

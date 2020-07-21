@@ -148,7 +148,7 @@ it when necessary (file sizes ~1GB+).
 
     this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
-    this.addParentGeoLevelIndices(topoJsonHierarchy, geoLevels);
+    this.addGeoLevelIndices(topoJsonHierarchy, geoLevels);
 
     this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevels);
 
@@ -381,8 +381,8 @@ it when necessary (file sizes ~1GB+).
     writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));
   }
 
-  // Add parent geolevel indices to each geounit
-  addParentGeoLevelIndices(topology: Topology<Objects<{}>>, geoLevels: readonly string[]): void {
+  // Add index and parent geolevel indices to each geounit
+  addGeoLevelIndices(topology: Topology<Objects<{}>>, geoLevels: readonly string[]): void {
     const descGeoLevels = geoLevels.slice().reverse();
     const parentGeoLevels: string[] = [];
     const indexLookupPerGeoLevel: {
@@ -396,6 +396,7 @@ it when necessary (file sizes ~1GB+).
         topoObject.geometries.forEach((geometry: any, index: number) => {
           const geounitId: string = geometry.properties[geoLevel];
           indexLookupPerGeoLevel[geoLevel][geounitId] = index;
+          geometry.properties.idx = index;
         });
       } else {
         // Add indices to lookup, and update geom properties to have references to all parent ids
@@ -405,6 +406,7 @@ it when necessary (file sizes ~1GB+).
           geoms.forEach((geometry: any, index: number) => {
             const geounitId: string = geometry.properties[geoLevel];
             indexLookupPerGeoLevel[geoLevel][geounitId] = index;
+            geometry.properties.idx = index;
 
             // Update geom properties with all references to parent ids in hierarchy
             for (const parentKey of parentGeoLevels) {
@@ -455,7 +457,7 @@ it when necessary (file sizes ~1GB+).
           detectSharedBorders: true,
           force: true,
           // The only properties we want are geounit hierarchy indices
-          include: geoLevels.slice(1).map(gl => `${gl}Idx`),
+          include: [...geoLevels.slice(1).map(gl => `${gl}Idx`), "idx"],
           maximumZoom,
           minimumZoom,
           noTileCompression: true,

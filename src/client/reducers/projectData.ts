@@ -15,15 +15,22 @@ import {
   staticDemographicsFetchSuccess,
   staticGeoLevelsFetchFailure,
   staticGeoLevelsFetchSuccess,
+  staticGeounitHierarchyFetchFailure,
+  staticGeounitHierarchyFetchSuccess,
   staticMetadataFetchFailure,
   staticMetadataFetchSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounitIds } from "../actions/districtDrawing";
 
-import { DistrictProperties, IProject, IStaticMetadata } from "../../shared/entities";
+import {
+  DistrictProperties,
+  GeoUnitHierarchy,
+  IProject,
+  IStaticMetadata
+} from "../../shared/entities";
 import { fetchProject, fetchProjectGeoJson } from "../api";
 import { Resource } from "../resource";
-import { fetchStaticFiles, fetchStaticMetadata } from "../s3";
+import { fetchStaticFiles, fetchStaticMetadata, fetchGeoUnitHierarchy } from "../s3";
 
 export interface ProjectDataState {
   readonly project: Resource<IProject>;
@@ -31,6 +38,7 @@ export interface ProjectDataState {
   readonly staticGeoLevels: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
   readonly staticDemographics: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
   readonly geojson: Resource<FeatureCollection<MultiPolygon, DistrictProperties>>;
+  readonly geoUnitHierarchy: Resource<GeoUnitHierarchy>;
 }
 
 export const initialState = {
@@ -38,7 +46,8 @@ export const initialState = {
   staticMetadata: { isPending: false },
   staticGeoLevels: { isPending: false },
   staticDemographics: { isPending: false },
-  geojson: { isPending: false }
+  geojson: { isPending: false },
+  geoUnitHierarchy: { isPending: false }
 };
 
 const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
@@ -69,11 +78,18 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
             isPending: true
           }
         },
-        Cmd.run(fetchStaticMetadata, {
-          successActionCreator: staticMetadataFetchSuccess,
-          failActionCreator: staticMetadataFetchFailure,
-          args: [action.payload.regionConfig.s3URI] as Parameters<typeof fetchStaticMetadata>
-        })
+        Cmd.list<Action>([
+          Cmd.run(fetchStaticMetadata, {
+            successActionCreator: staticMetadataFetchSuccess,
+            failActionCreator: staticMetadataFetchFailure,
+            args: [action.payload.regionConfig.s3URI] as Parameters<typeof fetchStaticMetadata>
+          }),
+          Cmd.run(fetchGeoUnitHierarchy, {
+            successActionCreator: staticGeounitHierarchyFetchSuccess,
+            failActionCreator: staticGeounitHierarchyFetchFailure,
+            args: [action.payload.regionConfig.s3URI] as Parameters<typeof fetchGeoUnitHierarchy>
+          })
+        ])
       );
     case getType(projectFetchFailure):
       return {
@@ -175,6 +191,20 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       return {
         ...state,
         staticDemographics: {
+          errorMessage: action.payload
+        }
+      };
+    case getType(staticGeounitHierarchyFetchSuccess):
+      return {
+        ...state,
+        geoUnitHierarchy: {
+          resource: action.payload
+        }
+      };
+    case getType(staticGeounitHierarchyFetchFailure):
+      return {
+        ...state,
+        geoUnitHierarchy: {
           errorMessage: action.payload
         }
       };
