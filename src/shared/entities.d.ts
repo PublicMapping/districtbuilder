@@ -7,15 +7,17 @@ export interface IUser {
   readonly isEmailVerified: boolean;
 }
 
+export type GeoUnitCollection = number | readonly GeoUnitCollection[];
+
 // eslint-disable-next-line
-export type GeoUnitCollection = number | GeoUnitCollection[];
+export type MutableGeoUnitCollection = number | GeoUnitCollection[];
 
 export interface GeoUnitDefinition {
   readonly groups: ReadonlyArray<string>;
 }
 
 // eslint-disable-next-line
-export type DistrictsDefinition = GeoUnitCollection[];
+export type DistrictsDefinition = MutableGeoUnitCollection[];
 
 type NestedArray<T> = ReadonlyArray<T | NestedArray<T>>;
 

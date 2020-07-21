@@ -1,6 +1,6 @@
 import {
   DistrictsDefinition,
-  GeoUnitCollection,
+  MutableGeoUnitCollection,
   GeoUnitIndices,
   GeoUnitHierarchy,
   IStaticMetadata,
@@ -53,14 +53,14 @@ export function getDemographics(
  * district id as we recurse more deeply.
  */
 function assignNestedGeounit(
-  currentDistrictsDefinition: GeoUnitCollection,
+  currentDistrictsDefinition: MutableGeoUnitCollection,
   currentGeounitData: readonly number[],
   currentGeoUnitHierarchy: GeoUnitHierarchy,
   districtId: number
-): GeoUnitCollection {
+): MutableGeoUnitCollection {
   const [currentLevelGeounitId, ...remainingLevelsGeounitIds] = currentGeounitData;
   // Update districts definition using existing values or explode out district id using hierarchy
-  const newDefinition: GeoUnitCollection =
+  const newDefinition: MutableGeoUnitCollection =
     typeof currentDistrictsDefinition !== "number"
       ? // Copy existing district ids at this level
         currentDistrictsDefinition
@@ -70,7 +70,7 @@ function assignNestedGeounit(
   newDefinition[currentLevelGeounitId] = remainingLevelsGeounitIds.length
     ? // We need to go deeper...
       assignNestedGeounit(
-        newDefinition[currentLevelGeounitId],
+        newDefinition[currentLevelGeounitId] as MutableGeoUnitCollection,
         currentGeounitData.slice(1),
         currentGeoUnitHierarchy[currentLevelGeounitId] as readonly number[],
         districtId
