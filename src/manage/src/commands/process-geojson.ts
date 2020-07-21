@@ -396,7 +396,7 @@ it when necessary (file sizes ~1GB+).
         topoObject.geometries.forEach((geometry: any, index: number) => {
           const geounitId: string = geometry.properties[geoLevel];
           indexLookupPerGeoLevel[geoLevel][geounitId] = index;
-          geometry.properties[`idx`] = index;
+          geometry.properties.idx = index;
         });
       } else {
         // Add indices to lookup, and update geom properties to have references to all parent ids
