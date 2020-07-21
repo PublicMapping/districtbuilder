@@ -46,6 +46,35 @@ export function getDemographics(
   );
 }
 
+function assignGeounit(
+  currentDistrictsDefinition: GeoUnitCollection,
+  currentGeounitData: number[],
+  currentGeoUnitHierarchy: GeoUnitHierarchy,
+  districtId: number
+): GeoUnitCollection {
+  const [currentLevelGeounitId, ...remainingLevelsGeounitIds] = currentGeounitData;
+  // Update districts definition using existing values or explode out district id using hierarchy
+  let newDefinition =
+    typeof currentDistrictsDefinition !== "number"
+      ? // Copy existing district ids at this level
+        currentDistrictsDefinition
+      : // Auto-fill district ids using current value based on number of geounits at this level
+        new Array(currentGeoUnitHierarchy.length).fill(currentDistrictsDefinition);
+  if (remainingLevelsGeounitIds.length) {
+    // We need to go deeper...
+    newDefinition[currentLevelGeounitId] = assignGeounit(
+      newDefinition[currentLevelGeounitId],
+      currentGeounitData.slice(1),
+      currentGeoUnitHierarchy[currentLevelGeounitId] as number[],
+      districtId
+    );
+  } else {
+    // End of the line. Update value with new district id
+    newDefinition[currentLevelGeounitId] = districtId;
+  }
+  return newDefinition;
+}
+
 /*
  * Return new districts definition after assigning the selected geounit ids to the current district
  */
@@ -56,36 +85,6 @@ export function assignGeounitsToDistrict(
   districtId: number
 ): DistrictsDefinition {
   return [...geounitDataSet].reduce((newDistrictsDefinition, geounitData) => {
-    // Example geounitData for county selected: [0]
-    // Example geounitData for tract selected: [0, 58]
-    // Example geounitData for block selected: [0, 58, 1385]
-    const assignGeounits = (
-      currentDistrictsDefinition: GeoUnitCollection,
-      currentGeounitData: number[],
-      currentGeoUnitHierarchy: GeoUnitHierarchy
-    ): GeoUnitCollection => {
-      const [currentLevelGeounitId, ...remainingLevelsGeounitIds] = currentGeounitData;
-      // Update districts definition using existing values or explode out district id using hierarchy
-      let newDefinition =
-        typeof currentDistrictsDefinition !== "number"
-          ? // Copy existing district ids at this level
-            currentDistrictsDefinition
-          : // Auto-fill district ids using current value based on number of geounits at this level
-            new Array(currentGeoUnitHierarchy.length).fill(currentDistrictsDefinition);
-      if (remainingLevelsGeounitIds.length) {
-        // We need to go deeper...
-        newDefinition[currentLevelGeounitId] = assignGeounits(
-          newDefinition[currentLevelGeounitId],
-          currentGeounitData.slice(1),
-          currentGeoUnitHierarchy[currentLevelGeounitId] as number[]
-        );
-      } else {
-        // End of the line. Update value with new district id
-        newDefinition[currentLevelGeounitId] = districtId;
-      }
-      return newDefinition;
-    };
-
     const initialGeounitId = geounitData[0];
     if (geounitData.length === 1) {
       // Assign entire county
@@ -93,10 +92,11 @@ export function assignGeounitsToDistrict(
       newDistrictsDefinition[initialGeounitId] = districtId;
     } else {
       // eslint-disable-next-line
-      newDistrictsDefinition[initialGeounitId] = assignGeounits(
+      newDistrictsDefinition[initialGeounitId] = assignGeounit(
         newDistrictsDefinition[initialGeounitId],
         geounitData.slice(1),
-        geoUnitHierarchy[initialGeounitId] as NestedArray<number>
+        geoUnitHierarchy[initialGeounitId] as NestedArray<number>,
+        districtId
       );
     }
     return newDistrictsDefinition;
