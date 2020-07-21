@@ -46,7 +46,13 @@ export function getDemographics(
   );
 }
 
-function assignGeounit(
+/*
+ * Assign nested geounit to district.
+ *
+ * This can require the creation of intermediate levels using the current
+ * district id as we recurse more deeply.
+ */
+function assignNestedGeounit(
   currentDistrictsDefinition: GeoUnitCollection,
   currentGeounitData: readonly number[],
   currentGeoUnitHierarchy: GeoUnitHierarchy,
@@ -63,7 +69,7 @@ function assignGeounit(
   // eslint-disable-next-line
   newDefinition[currentLevelGeounitId] = remainingLevelsGeounitIds.length
     ? // We need to go deeper...
-      assignGeounit(
+      assignNestedGeounit(
         newDefinition[currentLevelGeounitId],
         currentGeounitData.slice(1),
         currentGeoUnitHierarchy[currentLevelGeounitId] as readonly number[],
@@ -91,7 +97,7 @@ export function assignGeounitsToDistrict(
         ? // Assign entire county
           districtId
         : // Need to assign nested geounit
-          assignGeounit(
+          assignNestedGeounit(
             newDistrictsDefinition[initialGeounitId],
             geounitData.slice(1),
             geoUnitHierarchy[initialGeounitId] as NestedArray<number>,
