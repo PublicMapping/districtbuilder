@@ -13,8 +13,8 @@ export const removeSelectedGeounitIds = createAction("Remove selected geounit id
 export const clearSelectedGeounitIds = createAction("Clear selected geounit ids")();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")<{
-  project: IProject;
-  geoUnitHierarchy: GeoUnitHierarchy;
+  readonly project: IProject;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
 }>();
 
 export const patchDistrictsDefinitionSuccess = createAction("Patch districts definition success")<

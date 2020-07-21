@@ -48,7 +48,7 @@ const ProjectSidebar = ({
   readonly staticGeoLevels?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
-  readonly selectedGeounits: GeoUnitIndices[];
+  readonly selectedGeounits: readonly GeoUnitIndices[];
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
 } & LoadingProps) => (

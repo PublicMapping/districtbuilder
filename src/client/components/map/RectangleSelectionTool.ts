@@ -136,10 +136,10 @@ const RectangleSelectionTool: ISelectionTool = {
       return featureState.selected === true;
     }
 
-    // eslint-disable-next-line
     function getFeaturesInBoundingBox(
+      // eslint-disable-next-line
       bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]
-    ): MapboxGL.MapboxGeoJSONFeature[] {
+    ): readonly MapboxGL.MapboxGeoJSONFeature[] {
       return map.queryRenderedFeatures(bbox, {
         layers: [levelToSelectionLayerId(geoLevel)]
       });

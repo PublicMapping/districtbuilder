@@ -7,15 +7,17 @@ export interface IUser {
   readonly isEmailVerified: boolean;
 }
 
+// eslint-disable-next-line
 export type GeoUnitCollection = number | GeoUnitCollection[];
 
 export interface GeoUnitDefinition {
   readonly groups: ReadonlyArray<string>;
 }
 
+// eslint-disable-next-line
 export type DistrictsDefinition = GeoUnitCollection[];
 
-interface NestedArray<T> extends Array<T | NestedArray<T>> {}
+type NestedArray<T> = ReadonlyArray<T | NestedArray<T>>;
 
 export type GeoUnitHierarchy = NestedArray<number>;
 
@@ -111,6 +113,6 @@ export interface IChamber {
 // a block may have indices [0, 81, 124] where 0 = county, 81 = tract, 124 = block
 // a tract may have indices [0, 81] where 0 = county, 81 = tract
 // a county may have indices [0] where 0 = county
-export type GeoUnitIndices = number[];
+export type GeoUnitIndices = readonly number[];
 
-export type GeoUnits = Map<number, GeoUnitIndices>;
+export type GeoUnits = ReadonlyMap<number, GeoUnitIndices>;

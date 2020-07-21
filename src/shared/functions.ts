@@ -48,30 +48,29 @@ export function getDemographics(
 
 function assignGeounit(
   currentDistrictsDefinition: GeoUnitCollection,
-  currentGeounitData: number[],
+  currentGeounitData: readonly number[],
   currentGeoUnitHierarchy: GeoUnitHierarchy,
   districtId: number
 ): GeoUnitCollection {
   const [currentLevelGeounitId, ...remainingLevelsGeounitIds] = currentGeounitData;
   // Update districts definition using existing values or explode out district id using hierarchy
-  let newDefinition =
+  const newDefinition: GeoUnitCollection =
     typeof currentDistrictsDefinition !== "number"
       ? // Copy existing district ids at this level
         currentDistrictsDefinition
       : // Auto-fill district ids using current value based on number of geounits at this level
         new Array(currentGeoUnitHierarchy.length).fill(currentDistrictsDefinition);
-  if (remainingLevelsGeounitIds.length) {
-    // We need to go deeper...
-    newDefinition[currentLevelGeounitId] = assignGeounit(
-      newDefinition[currentLevelGeounitId],
-      currentGeounitData.slice(1),
-      currentGeoUnitHierarchy[currentLevelGeounitId] as number[],
-      districtId
-    );
-  } else {
-    // End of the line. Update value with new district id
-    newDefinition[currentLevelGeounitId] = districtId;
-  }
+  // eslint-disable-next-line
+  newDefinition[currentLevelGeounitId] = remainingLevelsGeounitIds.length
+    ? // We need to go deeper...
+      assignGeounit(
+        newDefinition[currentLevelGeounitId],
+        currentGeounitData.slice(1),
+        currentGeoUnitHierarchy[currentLevelGeounitId] as readonly number[],
+        districtId
+      )
+    : // End of the line. Update value with new district id
+      districtId;
   return newDefinition;
 }
 
@@ -81,24 +80,23 @@ function assignGeounit(
 export function assignGeounitsToDistrict(
   districtsDefinition: DistrictsDefinition,
   geoUnitHierarchy: GeoUnitHierarchy,
-  geounitIndices: GeoUnitIndices[],
+  geounitIndices: readonly GeoUnitIndices[],
   districtId: number
 ): DistrictsDefinition {
   return geounitIndices.reduce((newDistrictsDefinition, geounitData) => {
     const initialGeounitId = geounitData[0];
-    if (geounitData.length === 1) {
-      // Assign entire county
-      // eslint-disable-next-line
-      newDistrictsDefinition[initialGeounitId] = districtId;
-    } else {
-      // eslint-disable-next-line
-      newDistrictsDefinition[initialGeounitId] = assignGeounit(
-        newDistrictsDefinition[initialGeounitId],
-        geounitData.slice(1),
-        geoUnitHierarchy[initialGeounitId] as NestedArray<number>,
-        districtId
-      );
-    }
+    // eslint-disable-next-line
+    newDistrictsDefinition[initialGeounitId] =
+      geounitData.length === 1
+        ? // Assign entire county
+          districtId
+        : // Need to assign nested geounit
+          assignGeounit(
+            newDistrictsDefinition[initialGeounitId],
+            geounitData.slice(1),
+            geoUnitHierarchy[initialGeounitId] as NestedArray<number>,
+            districtId
+          );
     return newDistrictsDefinition;
   }, districtsDefinition);
 }

@@ -114,7 +114,7 @@ export function featuresToSet(
             ? [geounitId, ...geounitData]
             : geounitData;
         },
-        [] as number[]
+        [] as readonly number[]
       )
     ])
   );
