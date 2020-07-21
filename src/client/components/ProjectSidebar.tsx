@@ -248,8 +248,12 @@ const getSavedDistrictSelectedDemographics = (
     // eslint-disable-next-line
     if (typeof item === "number") {
       // eslint-disable-next-line
+      const baseIndices = staticGeoLevels.slice().reverse()[levelIndex];
+      const selectedBaseIndices = baseIndices
+        ? getAllIndices(baseIndices, selectedGeounitIds)
+        : Array.from(selectedGeounitIds);
       mutableDistrictGeounitAccum[item] = mutableDistrictGeounitAccum[item].concat(
-        getAllIndices(staticGeoLevels.slice().reverse()[levelIndex], new Set([geounitIndex]))
+        selectedBaseIndices
       );
     }
   };
