@@ -74,7 +74,7 @@ export function assignGeounitsToDistrict(
             new Array(currentGeoUnitHierarchy.length).fill(currentDistrictsDefinition);
       if (remainingLevelsGeounitIds.length) {
         // We need to go deeper...
-        return assignGeounits(
+        newDefinition[currentLevelGeounitId] = assignGeounits(
           newDefinition[currentLevelGeounitId],
           currentGeounitData.slice(1),
           currentGeoUnitHierarchy[currentLevelGeounitId] as number[]
@@ -82,8 +82,8 @@ export function assignGeounitsToDistrict(
       } else {
         // End of the line. Update value with new district id
         newDefinition[currentLevelGeounitId] = districtId;
-        return newDefinition;
       }
+      return newDefinition;
     };
 
     const initialGeounitId = geounitData[0];
