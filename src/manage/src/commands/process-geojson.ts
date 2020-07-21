@@ -406,7 +406,7 @@ it when necessary (file sizes ~1GB+).
           geoms.forEach((geometry: any, index: number) => {
             const geounitId: string = geometry.properties[geoLevel];
             indexLookupPerGeoLevel[geoLevel][geounitId] = index;
-            geometry.properties[`idx`] = index;
+            geometry.properties.idx = index;
 
             // Update geom properties with all references to parent ids in hierarchy
             for (const parentKey of parentGeoLevels) {
