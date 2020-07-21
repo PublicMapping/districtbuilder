@@ -77,7 +77,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           staticGeoLevels={staticGeoLevels}
           staticDemographics={staticDemographics}
           selectedDistrictId={districtDrawing.selectedDistrictId}
-          selectedGeounits={Array.from(districtDrawing.selectedGeounits.values())}
+          selectedGeounits={districtDrawing.selectedGeounits}
           geoLevelIndex={districtDrawing.geoLevelIndex}
           geoUnitHierarchy={geoUnitHierarchy}
         />
