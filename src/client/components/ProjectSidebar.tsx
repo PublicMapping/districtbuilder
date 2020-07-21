@@ -38,7 +38,7 @@ const ProjectSidebar = ({
   staticGeoLevels,
   staticDemographics,
   selectedDistrictId,
-  selectedGeounitIds,
+  selectedGeounits,
   geoLevelIndex,
   geoUnitHierarchy
 }: {
@@ -48,7 +48,7 @@ const ProjectSidebar = ({
   readonly staticGeoLevels?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
-  readonly selectedGeounitIds: ReadonlySet<GeoUnitIndices>;
+  readonly selectedGeounits: GeoUnitIndices[];
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
 } & LoadingProps) => (
@@ -67,7 +67,7 @@ const ProjectSidebar = ({
   >
     {project && geoUnitHierarchy && (
       <SidebarHeader
-        selectedGeounitIds={new Set([...selectedGeounitIds].map(feature => feature[0]))}
+        selectedGeounits={new Set([...selectedGeounits].map(feature => feature[0]))}
         geoUnitHierarchy={geoUnitHierarchy}
         project={project}
         isLoading={isLoading}
@@ -97,7 +97,7 @@ const ProjectSidebar = ({
             staticGeoLevels,
             staticDemographics,
             selectedDistrictId,
-            new Set([...selectedGeounitIds].map(feature => feature[0])),
+            new Set(Array.from(selectedGeounits.values()).map(geounits => geounits[0])),
             geoLevelIndex
           )}
       </tbody>
@@ -106,12 +106,12 @@ const ProjectSidebar = ({
 );
 
 const SidebarHeader = ({
-  selectedGeounitIds,
+  selectedGeounits,
   geoUnitHierarchy,
   project,
   isLoading
 }: {
-  readonly selectedGeounitIds: ReadonlySet<number>;
+  readonly selectedGeounits: ReadonlySet<number>;
   readonly geoUnitHierarchy: GeoUnitHierarchy;
   readonly project: IProject;
 } & LoadingProps) => {
@@ -124,7 +124,7 @@ const SidebarHeader = ({
       </Flex>
       {isLoading ? (
         <Loading />
-      ) : selectedGeounitIds.size ? (
+      ) : selectedGeounits.size ? (
         <Flex sx={{ variant: "header.right" }}>
           <Button
             variant="circularSubtle"

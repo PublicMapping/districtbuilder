@@ -6,12 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
-import {
-  DistrictProperties,
-  GeoUnitIndices,
-  IProject,
-  IStaticMetadata
-} from "../../../shared/entities";
+import { DistrictProperties, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -32,7 +27,7 @@ interface Props {
   readonly staticMetadata: IStaticMetadata;
   readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
-  readonly selectedGeounitIds: ReadonlySet<GeoUnitIndices>;
+  readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
@@ -45,7 +40,7 @@ const Map = ({
   staticMetadata,
   staticGeoLevels,
   staticDemographics,
-  selectedGeounitIds,
+  selectedGeounits,
   selectedDistrictId,
   selectionTool,
   geoLevelIndex,
@@ -126,7 +121,7 @@ const Map = ({
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
     map &&
-      selectedGeounitIds.size === 0 &&
+      selectedGeounits.size === 0 &&
       (selectedDistrictId === 0
         ? removeSelectedFeatures(map)
         : // When adding or changing the district to which a geounit is
@@ -135,7 +130,7 @@ const Map = ({
           map.once("idle", () => removeSelectedFeatures(map)));
     // We don't want to tigger this effect when `selectedDistrictId` changes
     // eslint-disable-next-line
-  }, [map, selectedGeounitIds]);
+  }, [map, selectedGeounits]);
 
   // Update districts source when geojson is fetched
   useEffect(() => {

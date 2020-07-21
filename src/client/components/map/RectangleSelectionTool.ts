@@ -8,7 +8,7 @@ import {
   ISelectionTool
 } from "./index";
 
-import { GeoUnitIndices, IStaticMetadata } from "../../../shared/entities";
+import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
 /*
  * Allows user to click and drag to select all geounits within the rectangle
  * (bounding box) drawn.
@@ -43,7 +43,7 @@ const RectangleSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
-    let setOfInitiallySelectedFeatures: ReadonlySet<GeoUnitIndices>; // eslint-disable-line
+    let setOfInitiallySelectedFeatures: GeoUnits; // eslint-disable-line
 
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
@@ -107,16 +107,15 @@ const RectangleSelectionTool: ISelectionTool = {
 
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
-      // TODO: Make this work again
-      // if (prevFeatures) {
-      //   const setOfPrevFeatures = featuresToSet(prevFeatures);
-      //   const setOfFeatures = featuresToSet(features);
-      //   [...setOfPrevFeatures]
-      //     .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfFeatures.has(id))
-      //     .forEach(id => {
-      //       map.setFeatureState(featureStateExpression(id), { selected: false });
-      //     });
-      // }
+      if (prevFeatures) {
+        const setOfPrevFeatures = featuresToSet(prevFeatures, staticMetadata.geoLevelHierarchy);
+        const setOfFeatures = featuresToSet(features, staticMetadata.geoLevelHierarchy);
+        Array.from(setOfPrevFeatures.keys())
+          .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfFeatures.has(id))
+          .forEach(id => {
+            map.setFeatureState(featureStateExpression(id), { selected: false });
+          });
+      }
     }
 
     function onMouseUp(e: MouseEvent) {

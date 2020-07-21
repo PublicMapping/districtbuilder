@@ -76,15 +76,15 @@ function assignGeounit(
 }
 
 /*
- * Return new districts definition after assigning the selected geounit ids to the current district
+ * Return new districts definition after assigning the selected geounits to the current district
  */
 export function assignGeounitsToDistrict(
   districtsDefinition: DistrictsDefinition,
   geoUnitHierarchy: GeoUnitHierarchy,
-  geounitDataSet: ReadonlySet<GeoUnitIndices>,
+  geounitIndices: GeoUnitIndices[],
   districtId: number
 ): DistrictsDefinition {
-  return [...geounitDataSet].reduce((newDistrictsDefinition, geounitData) => {
+  return geounitIndices.reduce((newDistrictsDefinition, geounitData) => {
     const initialGeounitId = geounitData[0];
     if (geounitData.length === 1) {
       // Assign entire county

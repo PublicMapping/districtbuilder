@@ -112,3 +112,5 @@ export interface IChamber {
 // a tract may have indices [0, 81] where 0 = county, 81 = tract
 // a county may have indices [0] where 0 = county
 export type GeoUnitIndices = number[];
+
+export type GeoUnits = Map<number, GeoUnitIndices>;

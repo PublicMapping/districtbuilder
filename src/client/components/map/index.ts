@@ -2,8 +2,7 @@ import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
-import { GeoLevelInfo, GeoUnitIndices } from "../../../shared/entities";
-import { UniqueObjectsSet } from "../../../shared";
+import { GeoLevelInfo, GeoUnits } from "../../../shared/entities";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -99,10 +98,15 @@ export interface ISelectionTool {
 export function featuresToSet(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
-): ReadonlySet<GeoUnitIndices> {
+): GeoUnits {
   const geoLevelHierarchyKeys = ["idx", ...geoLevelHierarchy.map(geoLevel => `${geoLevel.id}Idx`)];
-  return new UniqueObjectsSet(
-    features.map((feature: MapboxGeoJSONFeature) =>
+  // Map is used here instead of Set because Sets don't work well for handling
+  // objects (multiple copies of an object with the same values can exist in
+  // the same set). Here the feature id is used as the key which we also want
+  // to keep track of for map management.
+  return new Map(
+    features.map((feature: MapboxGeoJSONFeature) => [
+      feature.id as number,
       geoLevelHierarchyKeys.reduce(
         (geounitData, key) => {
           const geounitId = feature.properties && feature.properties[key];
@@ -112,6 +116,6 @@ export function featuresToSet(
         },
         [] as number[]
       )
-    )
+    ])
   );
 }

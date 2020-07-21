@@ -16,21 +16,20 @@ import {
 } from "../actions/districtDrawing";
 import { projectFetchGeoJson } from "../actions/projectData";
 import { assignGeounitsToDistrict } from "../../shared/functions";
-import { GeoUnitIndices } from "../../shared/entities";
-import { UniqueObjectsSet } from "../../shared";
+import { GeoUnits } from "../../shared/entities";
 
 import { patchDistrictsDefinition } from "../api";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
-  readonly selectedGeounits: ReadonlySet<GeoUnitIndices>;
+  readonly selectedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
 }
 
 export const initialState = {
   selectedDistrictId: 1,
-  selectedGeounits: new UniqueObjectsSet([]),
+  selectedGeounits: new Map(),
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0
 };
@@ -48,21 +47,22 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
     case getType(addSelectedGeounitIds):
       return {
         ...state,
-        selectedGeounits: new UniqueObjectsSet([...state.selectedGeounits, ...action.payload])
+        selectedGeounits: new Map([...state.selectedGeounits, ...action.payload])
       };
     case getType(removeSelectedGeounitIds): {
-      const objectsToDelete = [...action.payload].map(d => JSON.stringify(d));
+      const mutableSelected = new Map(state.selectedGeounits);
+      action.payload.forEach((_value, key) => {
+        mutableSelected.delete(key);
+      });
       return {
         ...state,
-        selectedGeounits: new UniqueObjectsSet(
-          [...state.selectedGeounits].filter(g => !objectsToDelete.includes(JSON.stringify(g)))
-        )
+        selectedGeounits: mutableSelected
       };
     }
     case getType(clearSelectedGeounitIds):
       return {
         ...state,
-        selectedGeounits: new UniqueObjectsSet([])
+        selectedGeounits: new Map()
       };
     case getType(saveDistrictsDefinition):
       return loop(
@@ -75,7 +75,7 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
             assignGeounitsToDistrict(
               action.payload.project.districtsDefinition,
               action.payload.geoUnitHierarchy,
-              state.selectedGeounits,
+              Array.from(state.selectedGeounits.values()),
               state.selectedDistrictId
             )
           ] as Parameters<typeof patchDistrictsDefinition>
