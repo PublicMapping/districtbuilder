@@ -103,7 +103,8 @@ export function featuresToSet(
   // Map is used here instead of Set because Sets don't work well for handling
   // objects (multiple copies of an object with the same values can exist in
   // the same set). Here the feature id is used as the key which we also want
-  // to keep track of for map management.
+  // to keep track of for map management. Note that if keys are duplicated the
+  // value set last will be used (thus achieving the uniqueness of sets).
   return new Map(
     features.map((feature: MapboxGeoJSONFeature) => [
       feature.id as number,
