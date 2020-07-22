@@ -60,23 +60,32 @@ function assignNestedGeounit(
 ): MutableGeoUnitCollection {
   const [currentLevelGeounitId, ...remainingLevelsGeounitIds] = currentGeounitData;
   // Update districts definition using existing values or explode out district id using hierarchy
-  const newDefinition: MutableGeoUnitCollection =
-    typeof currentDistrictsDefinition !== "number"
-      ? // Copy existing district ids at this level
-        currentDistrictsDefinition
-      : // Auto-fill district ids using current value based on number of geounits at this level
-        new Array(currentGeoUnitHierarchy.length).fill(currentDistrictsDefinition);
   // eslint-disable-next-line
-  newDefinition[currentLevelGeounitId] = remainingLevelsGeounitIds.length
-    ? // We need to go deeper...
-      assignNestedGeounit(
-        newDefinition[currentLevelGeounitId] as MutableGeoUnitCollection,
-        currentGeounitData.slice(1),
-        currentGeoUnitHierarchy[currentLevelGeounitId] as readonly number[],
-        districtId
-      )
-    : // End of the line. Update value with new district id
-      districtId;
+  let newDefinition: MutableGeoUnitCollection =
+    typeof currentDistrictsDefinition === "number"
+      ? // Auto-fill district ids using current value based on number of geounits at this level
+        new Array(currentGeoUnitHierarchy.length).fill(currentDistrictsDefinition)
+      : // Copy existing district ids at this level
+        currentDistrictsDefinition;
+  /* eslint-disable */
+  if (remainingLevelsGeounitIds.length) {
+    // We need to go deeper...
+    newDefinition[currentLevelGeounitId] = assignNestedGeounit(
+      newDefinition[currentLevelGeounitId] as MutableGeoUnitCollection,
+      currentGeounitData.slice(1),
+      currentGeoUnitHierarchy[currentLevelGeounitId] as readonly number[],
+      districtId
+    );
+  } else {
+    // End of the line. Update value with new district id
+    newDefinition[currentLevelGeounitId] = districtId;
+    if (newDefinition.every(value => value === districtId)) {
+      // Update district definition for this level to be just the district id
+      // eg. instead of [3, 3, 3, 3, ...] for every geounit at this level, just 3
+      newDefinition = districtId;
+    }
+  }
+  /* eslint-enable */
   return newDefinition;
 }
 
