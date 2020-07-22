@@ -11,13 +11,15 @@ const MapHeader = ({
   setMapLabel,
   metadata,
   selectionTool,
-  geoLevelIndex
+  geoLevelIndex,
+  isBaseGeoUnitVisible
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
+  readonly isBaseGeoUnitVisible: boolean;
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
@@ -27,15 +29,22 @@ const MapHeader = ({
     ? metadata.geoLevelHierarchy
         .slice()
         .reverse()
-        .map((val, index) => (
-          <button
-            key={index}
-            className={buttonClassName(geoLevelIndex === index)}
-            onClick={() => store.dispatch(setGeoLevelIndex(index))}
-          >
-            {val.id}
-          </button>
-        ))
+        .map((val, index) => {
+          const isButtonDisabled =
+            index === metadata.geoLevelHierarchy.length - 1 && !isBaseGeoUnitVisible;
+          const otherProps = isButtonDisabled ? { title: "Zoom in to see blocks" } : {};
+          return (
+            <button
+              key={index}
+              className={buttonClassName(geoLevelIndex === index)}
+              onClick={() => store.dispatch(setGeoLevelIndex(index))}
+              disabled={isButtonDisabled}
+              {...otherProps}
+            >
+              {val.id}
+            </button>
+          );
+        })
     : [];
   return (
     <Box sx={{ variant: "header.app", backgroundColor: "white" }} className="map-actions">

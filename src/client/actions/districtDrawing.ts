@@ -27,3 +27,5 @@ export const patchDistrictsDefinitionFailure = createAction("Patch districts def
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
 
 export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();
+
+export const setBaseGeoUnitVisible = createAction("Set base geounit visible")<boolean>();

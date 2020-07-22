@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { SelectionTool } from "../../actions/districtDrawing";
+import { setBaseGeoUnitVisible, SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import { DistrictProperties, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
 import {
@@ -15,6 +15,7 @@ import {
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import RectangleSelectionTool from "./RectangleSelectionTool";
+import store from "../../store";
 
 const styles = {
   width: "100%",
@@ -97,6 +98,12 @@ const Map = ({
         });
 
         map.resize();
+      });
+
+      map.on("zoomend", () => {
+        const baseGeoUnit = staticMetadata.geoLevelHierarchy[0];
+        const baseGeoUnitMinZoom = baseGeoUnit.minZoom;
+        store.dispatch(setBaseGeoUnitVisible(map.getZoom() >= baseGeoUnitMinZoom));
       });
     };
 
