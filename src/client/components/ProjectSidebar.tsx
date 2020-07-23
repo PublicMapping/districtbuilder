@@ -69,12 +69,7 @@ const ProjectSidebar = ({
       }}
     >
       {project && geoUnitHierarchy && (
-        <SidebarHeader
-          selectedGeounits={selectedGeounits}
-          geoUnitHierarchy={geoUnitHierarchy}
-          project={project}
-          isLoading={isLoading}
-        />
+        <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       )}
       <Styled.table>
         <thead>
@@ -111,13 +106,9 @@ const ProjectSidebar = ({
 
 const SidebarHeader = ({
   selectedGeounits,
-  geoUnitHierarchy,
-  project,
   isLoading
 }: {
   readonly selectedGeounits: GeoUnits;
-  readonly geoUnitHierarchy: GeoUnitHierarchy;
-  readonly project: IProject;
 } & LoadingProps) => {
   return (
     <Flex sx={{ variant: "header.app" }}>
