@@ -198,14 +198,7 @@ const Map = ({
       RectangleSelectionTool.disable(map);
       // Enable appropriate tool
       if (selectionTool === SelectionTool.Default) {
-        DefaultSelectionTool.enable(
-          map,
-          selectedGeolevel.id,
-          geoLevelIndex,
-          staticMetadata,
-          staticGeoLevels,
-          staticDemographics
-        );
+        DefaultSelectionTool.enable(map, selectedGeolevel.id, staticMetadata);
       } else if (selectionTool === SelectionTool.Rectangle) {
         RectangleSelectionTool.enable(map, selectedGeolevel.id, staticMetadata);
       }
