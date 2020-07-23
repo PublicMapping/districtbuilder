@@ -11,7 +11,9 @@ import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
-  getMapboxStyle
+  getMapboxStyle,
+  isBaseGeoUnitVisible,
+  areFeaturesSelected
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import RectangleSelectionTool from "./RectangleSelectionTool";
@@ -54,8 +56,7 @@ const Map = ({
   const [b0, b1, b2, b3] = staticMetadata.bbox;
 
   const selectedGeolevel =
-    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geoLevelIndex]
-      .id;
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geoLevelIndex];
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
@@ -101,9 +102,7 @@ const Map = ({
       });
 
       map.on("zoomend", () => {
-        const baseGeoUnit = staticMetadata.geoLevelHierarchy[0];
-        const baseGeoUnitMinZoom = baseGeoUnit.minZoom;
-        store.dispatch(setBaseGeoUnitVisible(map.getZoom() >= baseGeoUnitMinZoom));
+        store.dispatch(setBaseGeoUnitVisible(isBaseGeoUnitVisible(map, staticMetadata)));
       });
     };
 
@@ -122,7 +121,7 @@ const Map = ({
   }, [map, geojson]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map) => {
-    map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: selectedGeolevel });
+    map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: selectedGeolevel.id });
   };
 
   // Remove selected features from map when selected geounit ids has been emptied
@@ -157,6 +156,27 @@ const Map = ({
   }, [map, label]);
 
   useEffect(() => {
+    // eslint-disable-next-line
+    if (map) {
+      // Restrict zoom levels as per geolevel hierarchy if features are selected.
+      // Without this, zooming too far out before approving/cancelling a
+      // selection could make the user's selection disappear since not all
+      // layers are shown at each zoom level.
+      const restrictZoom = () => {
+        // eslint-disable-next-line
+        if (areFeaturesSelected(map, staticMetadata)) {
+          map.setMinZoom(selectedGeolevel.minZoom);
+          map.setMaxZoom(selectedGeolevel.maxZoom);
+        }
+      };
+      map.on("zoomstart", restrictZoom);
+      return () => {
+        map.off("zoomstart", restrictZoom);
+      };
+    }
+  }, [map, selectedGeolevel, staticMetadata]);
+
+  useEffect(() => {
     /* eslint-disable */
     if (map) {
       // Disable any existing selection tools
@@ -166,14 +186,14 @@ const Map = ({
       if (selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
           map,
-          selectedGeolevel,
+          selectedGeolevel.id,
           geoLevelIndex,
           staticMetadata,
           staticGeoLevels,
           staticDemographics
         );
       } else if (selectionTool === SelectionTool.Rectangle) {
-        RectangleSelectionTool.enable(map, selectedGeolevel, staticMetadata);
+        RectangleSelectionTool.enable(map, selectedGeolevel.id, staticMetadata);
       }
       /* eslint-enable */
     }

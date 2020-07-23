@@ -2,7 +2,7 @@ import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
-import { GeoLevelInfo, GeoUnits } from "../../../shared/entities";
+import { GeoLevelInfo, GeoUnits, IStaticMetadata } from "../../../shared/entities";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -104,6 +104,24 @@ export function isFeatureSelected(
 ): boolean {
   const featureState = map.getFeatureState(featureStateExpression(feature));
   return featureState.selected === true;
+}
+
+export function isBaseGeoUnitVisible(map: MapboxGL.Map, staticMetadata: IStaticMetadata): boolean {
+  const baseGeoUnit = staticMetadata.geoLevelHierarchy[0];
+  const baseGeoUnitMinZoom = baseGeoUnit.minZoom;
+  return map.getZoom() >= baseGeoUnitMinZoom;
+}
+
+export function areFeaturesSelected(map: MapboxGL.Map, staticMetadata: IStaticMetadata): boolean {
+  const allGeoLevelIds = staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.id);
+  const geoLevelIds = isBaseGeoUnitVisible(map, staticMetadata)
+    ? allGeoLevelIds
+    : allGeoLevelIds.slice(1);
+  const layers = geoLevelIds.map(levelToSelectionLayerId);
+  const allSelectedFeatures = map
+    .queryRenderedFeatures(undefined, { layers })
+    .filter(feature => isFeatureSelected(map, feature));
+  return allSelectedFeatures.length > 0;
 }
 
 /* eslint-disable */
