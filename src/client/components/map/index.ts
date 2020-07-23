@@ -2,7 +2,7 @@ import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
-import { GeoLevelInfo, GeoUnits, IStaticMetadata } from "../../../shared/entities";
+import { FeatureId, GeoLevelInfo, GeoUnits, IStaticMetadata } from "../../../shared/entities";
 
 export const DEFAULT_MIN_ZOOM = 5;
 export const DEFAULT_MAX_ZOOM = 15;
@@ -135,7 +135,7 @@ export function featuresToSet(
   // value set last will be used (thus achieving the uniqueness of sets).
   return new Map(
     features.map((feature: MapboxGeoJSONFeature) => [
-      feature.id as number,
+      feature.id as FeatureId,
       geoLevelHierarchyKeys.reduce(
         (geounitData, key) => {
           const geounitId = feature.properties && feature.properties[key];
