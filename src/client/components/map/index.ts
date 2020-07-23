@@ -87,6 +87,25 @@ export function levelToSelectionLayerId(geoLevel: string) {
   return `${geoLevel}-selected`;
 }
 
+/*
+ * Used for getting/setting feature state.
+ */
+export function featureStateExpression(feature: MapboxGL.MapboxGeoJSONFeature) {
+  return {
+    source: GEOLEVELS_SOURCE_ID,
+    id: feature.id,
+    sourceLayer: feature.sourceLayer
+  };
+}
+
+export function isFeatureSelected(
+  map: MapboxGL.Map,
+  feature: MapboxGL.MapboxGeoJSONFeature
+): boolean {
+  const featureState = map.getFeatureState(featureStateExpression(feature));
+  return featureState.selected === true;
+}
+
 /* eslint-disable */
 export interface ISelectionTool {
   enable: (map: MapboxGL.Map, ...args: any) => void;
