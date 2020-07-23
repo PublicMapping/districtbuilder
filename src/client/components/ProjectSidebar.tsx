@@ -143,7 +143,7 @@ const SidebarHeader = ({
             variant="circular"
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(saveDistrictsDefinition({ project, geoUnitHierarchy }));
+              store.dispatch(saveDistrictsDefinition());
             }}
           >
             Approve

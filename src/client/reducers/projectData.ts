@@ -4,6 +4,9 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
+  updateDistrictsDefinition,
+  updateDistrictsDefinitionFailure,
+  updateDistrictsDefinitionSuccess,
   projectDataFetch,
   projectFetch,
   projectFetchFailure,
@@ -28,7 +31,8 @@ import {
   IProject,
   IStaticMetadata
 } from "../../shared/entities";
-import { fetchProject, fetchProjectGeoJson } from "../api";
+import { assignGeounitsToDistrict } from "../../shared/functions";
+import { fetchProject, fetchProjectGeoJson, patchDistrictsDefinition } from "../api";
 import { Resource } from "../resource";
 import { fetchStaticFiles, fetchStaticMetadata, fetchGeoUnitHierarchy } from "../s3";
 
@@ -208,6 +212,38 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
           errorMessage: action.payload
         }
       };
+    case getType(updateDistrictsDefinition):
+      return "resource" in state.project && "resource" in state.geoUnitHierarchy
+        ? loop(
+            state,
+            Cmd.run(patchDistrictsDefinition, {
+              successActionCreator: updateDistrictsDefinitionSuccess,
+              failActionCreator: updateDistrictsDefinitionFailure,
+              args: [
+                state.project.resource.id,
+                assignGeounitsToDistrict(
+                  state.project.resource.districtsDefinition,
+                  state.geoUnitHierarchy.resource,
+                  Array.from(action.payload.selectedGeounits.values()),
+                  action.payload.selectedDistrictId
+                )
+              ] as Parameters<typeof patchDistrictsDefinition>
+            })
+          )
+        : state;
+    case getType(updateDistrictsDefinitionSuccess):
+      return loop(
+        {
+          ...state,
+          project: { resource: action.payload }
+        },
+        Cmd.action(projectFetchGeoJson(action.payload.id))
+      );
+    case getType(updateDistrictsDefinitionFailure):
+      // TODO (#188): implement a status area to display errors for this and other things
+      // eslint-disable-next-line
+      console.log("Error patching districts definition: ", action.payload);
+      return state;
     default:
       return state as never;
   }

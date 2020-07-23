@@ -3,6 +3,7 @@ import { FeatureCollection, MultiPolygon } from "geojson";
 import {
   DistrictProperties,
   GeoUnitHierarchy,
+  GeoUnits,
   IProject,
   IStaticMetadata,
   ProjectId
@@ -42,3 +43,15 @@ export const staticGeounitHierarchyFetchSuccess = createAction(
 export const staticGeounitHierarchyFetchFailure = createAction(
   "Static geounit hierarchy fetch failure"
 )<string>();
+
+export const updateDistrictsDefinition = createAction("Update districts definition")<{
+  readonly selectedGeounits: GeoUnits;
+  readonly selectedDistrictId: number;
+}>();
+
+export const updateDistrictsDefinitionSuccess = createAction("Update districts definition success")<
+  IProject
+>();
+export const updateDistrictsDefinitionFailure = createAction("Update districts definition failure")<
+  string
+>();

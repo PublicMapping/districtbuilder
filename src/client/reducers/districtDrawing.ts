@@ -5,21 +5,16 @@ import { Action } from "../actions";
 import {
   addSelectedGeounitIds,
   clearSelectedGeounitIds,
-  patchDistrictsDefinitionSuccess,
-  patchDistrictsDefinitionFailure,
   removeSelectedGeounitIds,
-  saveDistrictsDefinition,
   SelectionTool,
+  saveDistrictsDefinition,
   setSelectionTool,
   setSelectedDistrictId,
   setGeoLevelIndex,
   setBaseGeoUnitVisible
 } from "../actions/districtDrawing";
-import { projectFetchGeoJson } from "../actions/projectData";
-import { assignGeounitsToDistrict } from "../../shared/functions";
+import { updateDistrictsDefinition } from "../actions/projectData";
 import { GeoUnits } from "../../shared/entities";
-
-import { patchDistrictsDefinition } from "../api";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
@@ -67,46 +62,29 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         ...state,
         selectedGeounits: new Map()
       };
-    case getType(saveDistrictsDefinition):
-      return loop(
-        state,
-        Cmd.run(patchDistrictsDefinition, {
-          successActionCreator: patchDistrictsDefinitionSuccess,
-          failActionCreator: patchDistrictsDefinitionFailure,
-          args: [
-            action.payload.project.id,
-            assignGeounitsToDistrict(
-              action.payload.project.districtsDefinition,
-              action.payload.geoUnitHierarchy,
-              Array.from(state.selectedGeounits.values()),
-              state.selectedDistrictId
-            )
-          ] as Parameters<typeof patchDistrictsDefinition>
-        })
-      );
-    case getType(patchDistrictsDefinitionSuccess):
-      return loop(
-        {
-          ...state,
-          project: { resource: action.payload }
-        },
-        Cmd.action(projectFetchGeoJson(action.payload.id))
-      );
-    case getType(patchDistrictsDefinitionFailure):
-      // TODO (#188): implement a status area to display errors for this and other things
-      // eslint-disable-next-line
-      console.log("Error patching districts definition: ", action.payload);
-      return state;
     case getType(setSelectionTool):
       return {
         ...state,
         selectionTool: action.payload
       };
     case getType(setGeoLevelIndex):
-      return {
-        ...state,
-        geoLevelIndex: action.payload
-      };
+      return loop(
+        {
+          ...state,
+          geoLevelIndex: action.payload
+        },
+        state.selectedGeounits.size > 0 ? Cmd.action(saveDistrictsDefinition()) : Cmd.none
+      );
+    case getType(saveDistrictsDefinition):
+      return loop(
+        state,
+        Cmd.action(
+          updateDistrictsDefinition({
+            selectedGeounits: state.selectedGeounits,
+            selectedDistrictId: state.selectedDistrictId
+          })
+        )
+      );
     case getType(setBaseGeoUnitVisible):
       return {
         ...state,
