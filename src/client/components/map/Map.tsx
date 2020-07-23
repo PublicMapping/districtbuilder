@@ -8,6 +8,8 @@ import { setBaseGeoUnitVisible, SelectionTool } from "../../actions/districtDraw
 import { getDistrictColor } from "../../constants/colors";
 import { DistrictProperties, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
 import {
+  DEFAULT_MIN_ZOOM,
+  DEFAULT_MAX_ZOOM,
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
@@ -71,8 +73,8 @@ const Map = ({
         style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevelHierarchy),
         bounds: [b0, b1, b2, b3],
         fitBoundsOptions: { padding: 20 },
-        minZoom: 5,
-        maxZoom: 15
+        minZoom: DEFAULT_MIN_ZOOM,
+        maxZoom: DEFAULT_MAX_ZOOM
       });
 
       map.dragRotate.disable();
@@ -162,11 +164,7 @@ const Map = ({
       // selection could make the user's selection disappear since not all
       // layers are shown at each zoom level.
       const restrictZoom = () => {
-        // eslint-disable-next-line
-        if (selectedGeounits.size > 0) {
-          map.setMinZoom(selectedGeolevel.minZoom);
-          map.setMaxZoom(selectedGeolevel.maxZoom);
-        }
+        map.setMinZoom(selectedGeounits.size > 0 ? selectedGeolevel.minZoom : DEFAULT_MIN_ZOOM);
       };
       map.on("zoomstart", restrictZoom);
       return () => {

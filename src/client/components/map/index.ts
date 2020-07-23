@@ -4,6 +4,9 @@ import { s3ToHttps } from "../../s3";
 
 import { GeoLevelInfo, GeoUnits, IStaticMetadata } from "../../../shared/entities";
 
+export const DEFAULT_MIN_ZOOM = 5;
+export const DEFAULT_MAX_ZOOM = 15;
+
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
 // GeoJSON district data for district as currently drawn
