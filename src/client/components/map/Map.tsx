@@ -121,8 +121,15 @@ const Map = ({
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
   }, [map, geojson]);
 
-  const removeSelectedFeatures = (map: MapboxGL.Map) => {
-    map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: selectedGeolevel.id });
+  const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
+    staticMetadata.geoLevelHierarchy
+      .map(geoLevel => geoLevel.id)
+      .forEach(sourceLayer =>
+        map.removeFeatureState({
+          source: GEOLEVELS_SOURCE_ID,
+          sourceLayer
+        })
+      );
   };
 
   // Remove selected features from map when selected geounit ids has been emptied
@@ -130,16 +137,16 @@ const Map = ({
     map &&
       selectedGeounits.size === 0 &&
       (selectedDistrictId === 0
-        ? removeSelectedFeatures(map)
+        ? removeSelectedFeatures(map, staticMetadata)
         : // When adding or changing the district to which a geounit is
         // assigned, wait until districts GeoJSON is updated before removing
         // selected state.
         map.isStyleLoaded() && map.isSourceLoaded(DISTRICTS_SOURCE_ID)
-        ? removeSelectedFeatures(map)
-        : map.once("idle", () => removeSelectedFeatures(map)));
+        ? removeSelectedFeatures(map, staticMetadata)
+        : map.once("idle", () => removeSelectedFeatures(map, staticMetadata)));
     // We don't want to tigger this effect when `selectedDistrictId` changes
     // eslint-disable-next-line
-  }, [map, selectedGeounits]);
+  }, [map, selectedGeounits, staticMetadata]);
 
   // Update districts source when geojson is fetched
   useEffect(() => {
