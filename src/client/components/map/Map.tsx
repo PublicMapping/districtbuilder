@@ -12,8 +12,7 @@ import {
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
   getMapboxStyle,
-  isBaseGeoUnitVisible,
-  areFeaturesSelected
+  isBaseGeoUnitVisible
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import RectangleSelectionTool from "./RectangleSelectionTool";
@@ -164,7 +163,7 @@ const Map = ({
       // layers are shown at each zoom level.
       const restrictZoom = () => {
         // eslint-disable-next-line
-        if (areFeaturesSelected(map, staticMetadata)) {
+        if (selectedGeounits.size > 0) {
           map.setMinZoom(selectedGeolevel.minZoom);
           map.setMaxZoom(selectedGeolevel.maxZoom);
         }
@@ -174,7 +173,7 @@ const Map = ({
         map.off("zoomstart", restrictZoom);
       };
     }
-  }, [map, selectedGeolevel, staticMetadata]);
+  }, [map, selectedGeolevel, staticMetadata, selectedGeounits]);
 
   useEffect(() => {
     /* eslint-disable */

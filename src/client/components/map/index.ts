@@ -112,18 +112,6 @@ export function isBaseGeoUnitVisible(map: MapboxGL.Map, staticMetadata: IStaticM
   return map.getZoom() >= baseGeoUnitMinZoom;
 }
 
-export function areFeaturesSelected(map: MapboxGL.Map, staticMetadata: IStaticMetadata): boolean {
-  const allGeoLevelIds = staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.id);
-  const geoLevelIds = isBaseGeoUnitVisible(map, staticMetadata)
-    ? allGeoLevelIds
-    : allGeoLevelIds.slice(1);
-  const layers = geoLevelIds.map(levelToSelectionLayerId);
-  const allSelectedFeatures = map
-    .queryRenderedFeatures(undefined, { layers })
-    .filter(feature => isFeatureSelected(map, feature));
-  return allSelectedFeatures.length > 0;
-}
-
 /* eslint-disable */
 export interface ISelectionTool {
   enable: (map: MapboxGL.Map, ...args: any) => void;
