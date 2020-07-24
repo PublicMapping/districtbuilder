@@ -16,6 +16,6 @@ export const setSelectionTool = createAction("Set selection tool")<SelectionTool
 
 export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();
 
-export const setBaseGeoUnitVisible = createAction("Set base geounit visible")<boolean>();
+export const setGeoLevelVisibility = createAction("Set geolevel visibility")<readonly boolean[]>();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();

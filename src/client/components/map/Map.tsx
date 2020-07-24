@@ -4,17 +4,15 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { setBaseGeoUnitVisible, SelectionTool } from "../../actions/districtDrawing";
+import { setGeoLevelVisibility, SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import { DistrictProperties, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
 import {
-  DEFAULT_MIN_ZOOM,
-  DEFAULT_MAX_ZOOM,
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
   getMapboxStyle,
-  isBaseGeoUnitVisible
+  getGeoLevelVisibility
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import RectangleSelectionTool from "./RectangleSelectionTool";
@@ -59,6 +57,9 @@ const Map = ({
   const selectedGeolevel =
     staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geoLevelIndex];
 
+  const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
+  const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
+
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
     // @ts-ignore
@@ -73,13 +74,17 @@ const Map = ({
         style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevelHierarchy),
         bounds: [b0, b1, b2, b3],
         fitBoundsOptions: { padding: 20 },
-        minZoom: DEFAULT_MIN_ZOOM,
-        maxZoom: DEFAULT_MAX_ZOOM
+        minZoom,
+        maxZoom
       });
 
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
       map.doubleClickZoom.disable();
+
+      const setLevelVisibility = () =>
+        store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
+      setLevelVisibility();
 
       map.on("load", () => {
         setMap(map);
@@ -102,9 +107,7 @@ const Map = ({
         map.resize();
       });
 
-      map.on("zoomend", () => {
-        store.dispatch(setBaseGeoUnitVisible(isBaseGeoUnitVisible(map, staticMetadata)));
-      });
+      map.on("zoomend", setLevelVisibility);
     };
 
     // eslint-disable-next-line
@@ -171,7 +174,7 @@ const Map = ({
       // selection could make the user's selection disappear since not all
       // layers are shown at each zoom level.
       const restrictZoom = () => {
-        map.setMinZoom(selectedGeounits.size > 0 ? selectedGeolevel.minZoom : DEFAULT_MIN_ZOOM);
+        map.setMinZoom(selectedGeounits.size > 0 ? selectedGeolevel.minZoom : minZoom);
       };
       map.on("zoomstart", restrictZoom);
       return () => {

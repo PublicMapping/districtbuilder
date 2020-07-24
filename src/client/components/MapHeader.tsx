@@ -12,14 +12,14 @@ const MapHeader = ({
   metadata,
   selectionTool,
   geoLevelIndex,
-  isBaseGeoUnitVisible
+  geoLevelVisibility
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
-  readonly isBaseGeoUnitVisible: boolean;
+  readonly geoLevelVisibility: readonly boolean[];
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
@@ -30,8 +30,7 @@ const MapHeader = ({
         .slice()
         .reverse()
         .map((val, index) => {
-          const isButtonDisabled =
-            index === metadata.geoLevelHierarchy.length - 1 && !isBaseGeoUnitVisible;
+          const isButtonDisabled = geoLevelVisibility[index] === false;
           const otherProps = isButtonDisabled ? { title: "Zoom in to see blocks" } : {};
           return (
             <button

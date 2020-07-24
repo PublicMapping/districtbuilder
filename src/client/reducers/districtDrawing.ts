@@ -11,7 +11,7 @@ import {
   setSelectionTool,
   setSelectedDistrictId,
   setGeoLevelIndex,
-  setBaseGeoUnitVisible
+  setGeoLevelVisibility
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition } from "../actions/projectData";
 import { GeoUnits } from "../../shared/entities";
@@ -21,7 +21,7 @@ export interface DistrictDrawingState {
   readonly selectedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
-  readonly isBaseGeoUnitVisible: boolean;
+  readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
 }
 
 export const initialState = {
@@ -29,7 +29,7 @@ export const initialState = {
   selectedGeounits: new Map(),
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0,
-  isBaseGeoUnitVisible: false
+  geoLevelVisibility: []
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -85,10 +85,10 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
           })
         )
       );
-    case getType(setBaseGeoUnitVisible):
+    case getType(setGeoLevelVisibility):
       return {
         ...state,
-        isBaseGeoUnitVisible: action.payload
+        geoLevelVisibility: action.payload
       };
     default:
       return state as never;

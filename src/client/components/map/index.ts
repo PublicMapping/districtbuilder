@@ -4,9 +4,6 @@ import { s3ToHttps } from "../../s3";
 
 import { FeatureId, GeoLevelInfo, GeoUnits, IStaticMetadata } from "../../../shared/entities";
 
-export const DEFAULT_MIN_ZOOM = 5;
-export const DEFAULT_MAX_ZOOM = 15;
-
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
 // GeoJSON district data for district as currently drawn
@@ -109,10 +106,15 @@ export function isFeatureSelected(
   return featureState.selected === true;
 }
 
-export function isBaseGeoUnitVisible(map: MapboxGL.Map, staticMetadata: IStaticMetadata): boolean {
-  const baseGeoUnit = staticMetadata.geoLevelHierarchy[0];
-  const baseGeoUnitMinZoom = baseGeoUnit.minZoom;
-  return map.getZoom() >= baseGeoUnitMinZoom;
+export function getGeoLevelVisibility(
+  map: MapboxGL.Map,
+  staticMetadata: IStaticMetadata
+): readonly boolean[] {
+  const mapZoom = map.getZoom();
+  return staticMetadata.geoLevelHierarchy
+    .slice()
+    .reverse()
+    .map(geoLevel => mapZoom <= geoLevel.maxZoom && mapZoom >= geoLevel.minZoom);
 }
 
 /* eslint-disable */
