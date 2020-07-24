@@ -6,6 +6,21 @@ import Icon from "./Icon";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 
+const geoLevelLabel = (id: string) => {
+  switch (id) {
+    case "block":
+      return "Blocks";
+    case "tract":
+      return "Tracts";
+    case "blockgroup":
+      return "Blockgroups";
+    case "county":
+      return "Counties";
+    default:
+      return "";
+  }
+};
+
 const MapHeader = ({
   label,
   setMapLabel,
@@ -31,7 +46,9 @@ const MapHeader = ({
         .reverse()
         .map((val, index) => {
           const isButtonDisabled = geoLevelVisibility[index] === false;
-          const otherProps = isButtonDisabled ? { title: "Zoom in to see blocks" } : {};
+          const otherProps = isButtonDisabled
+            ? { title: `Zoom in to see ${geoLevelLabel(val.id).toLowerCase()}` }
+            : {};
           return (
             <button
               key={index}
@@ -40,7 +57,7 @@ const MapHeader = ({
               disabled={isButtonDisabled}
               {...otherProps}
             >
-              {val.id}
+              {geoLevelLabel(val.id)}
             </button>
           );
         })
