@@ -181,7 +181,7 @@ const Map = ({
         map.off("zoomstart", restrictZoom);
       };
     }
-  }, [map, selectedGeolevel, staticMetadata, selectedGeounits]);
+  }, [map, selectedGeolevel, staticMetadata, selectedGeounits, minZoom]);
 
   useEffect(() => {
     /* eslint-disable */
