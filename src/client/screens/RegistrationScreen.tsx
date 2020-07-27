@@ -3,7 +3,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
 
+import { RegisterResponse } from "../../shared/constants";
 import { Register } from "../../shared/entities";
+import { validate as validatePassword } from "../../shared/password-validator";
 import { registerUser } from "../api";
 import CenteredContent from "../components/CenteredContent";
 import { InputField } from "../components/Field";
@@ -30,10 +32,34 @@ const RegistrationScreen = () => {
   });
   const { data } = registrationResource;
 
-  const setForm = (field: keyof RegistrationForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setRegistrationResource({
-      data: { ...data, [field]: e.currentTarget.value }
-    });
+  const setForm = (field: keyof RegistrationForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.currentTarget;
+    const userAttributes =
+      field === "email"
+        ? [value, data.name]
+        : field === "name"
+        ? [data.email, value]
+        : [data.email, data.name];
+    const pwErrors =
+      field === "password"
+        ? validatePassword(value, userAttributes)
+        : validatePassword(data.password, userAttributes);
+    const otherErrors =
+      "errors" in registrationResource && typeof registrationResource.errors.message !== "string"
+        ? registrationResource.errors.message
+        : {};
+    pwErrors
+      ? setRegistrationResource({
+          errors: {
+            error: RegisterResponse.INVALID,
+            message: { ...otherErrors, password: pwErrors }
+          },
+          data: { ...data, [field]: e.currentTarget.value }
+        })
+      : setRegistrationResource({
+          data: { ...data, [field]: e.currentTarget.value }
+        });
+  };
 
   return (
     <CenteredContent>
