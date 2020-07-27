@@ -4,17 +4,19 @@ import React, { useEffect, useRef, useState } from "react";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { SelectionTool } from "../../actions/districtDrawing";
+import { setGeoLevelVisibility, SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import { DistrictProperties, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
-  getMapboxStyle
+  getMapboxStyle,
+  getGeoLevelVisibility
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import RectangleSelectionTool from "./RectangleSelectionTool";
+import store from "../../store";
 
 const styles = {
   width: "100%",
@@ -53,8 +55,10 @@ const Map = ({
   const [b0, b1, b2, b3] = staticMetadata.bbox;
 
   const selectedGeolevel =
-    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geoLevelIndex]
-      .id;
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geoLevelIndex];
+
+  const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
+  const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
@@ -70,13 +74,17 @@ const Map = ({
         style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevelHierarchy),
         bounds: [b0, b1, b2, b3],
         fitBoundsOptions: { padding: 20 },
-        minZoom: 5,
-        maxZoom: 15
+        minZoom,
+        maxZoom
       });
 
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
       map.doubleClickZoom.disable();
+
+      const setLevelVisibility = () =>
+        store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
+      setLevelVisibility();
 
       map.on("load", () => {
         setMap(map);
@@ -98,6 +106,8 @@ const Map = ({
 
         map.resize();
       });
+
+      map.on("zoomend", setLevelVisibility);
     };
 
     // eslint-disable-next-line
@@ -114,8 +124,15 @@ const Map = ({
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
   }, [map, geojson]);
 
-  const removeSelectedFeatures = (map: MapboxGL.Map) => {
-    map.removeFeatureState({ source: GEOLEVELS_SOURCE_ID, sourceLayer: selectedGeolevel });
+  const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
+    staticMetadata.geoLevelHierarchy
+      .map(geoLevel => geoLevel.id)
+      .forEach(sourceLayer =>
+        map.removeFeatureState({
+          source: GEOLEVELS_SOURCE_ID,
+          sourceLayer
+        })
+      );
   };
 
   // Remove selected features from map when selected geounit ids has been emptied
@@ -123,16 +140,16 @@ const Map = ({
     map &&
       selectedGeounits.size === 0 &&
       (selectedDistrictId === 0
-        ? removeSelectedFeatures(map)
+        ? removeSelectedFeatures(map, staticMetadata)
         : // When adding or changing the district to which a geounit is
         // assigned, wait until districts GeoJSON is updated before removing
         // selected state.
         map.isStyleLoaded() && map.isSourceLoaded(DISTRICTS_SOURCE_ID)
-        ? removeSelectedFeatures(map)
-        : map.once("idle", () => removeSelectedFeatures(map)));
+        ? removeSelectedFeatures(map, staticMetadata)
+        : map.once("idle", () => removeSelectedFeatures(map, staticMetadata)));
     // We don't want to tigger this effect when `selectedDistrictId` changes
     // eslint-disable-next-line
-  }, [map, selectedGeounits]);
+  }, [map, selectedGeounits, staticMetadata]);
 
   // Update districts source when geojson is fetched
   useEffect(() => {
@@ -150,6 +167,23 @@ const Map = ({
   }, [map, label]);
 
   useEffect(() => {
+    // eslint-disable-next-line
+    if (map) {
+      // Restrict zoom levels as per geolevel hierarchy if features are selected.
+      // Without this, zooming too far out before approving/cancelling a
+      // selection could make the user's selection disappear since not all
+      // layers are shown at each zoom level.
+      const restrictZoom = () => {
+        map.setMinZoom(selectedGeounits.size > 0 ? selectedGeolevel.minZoom : minZoom);
+      };
+      map.on("zoomstart", restrictZoom);
+      return () => {
+        map.off("zoomstart", restrictZoom);
+      };
+    }
+  }, [map, selectedGeolevel, staticMetadata, selectedGeounits, minZoom]);
+
+  useEffect(() => {
     /* eslint-disable */
     if (map) {
       // Disable any existing selection tools
@@ -159,14 +193,14 @@ const Map = ({
       if (selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
           map,
-          selectedGeolevel,
+          selectedGeolevel.id,
           geoLevelIndex,
           staticMetadata,
           staticGeoLevels,
           staticDemographics
         );
       } else if (selectionTool === SelectionTool.Rectangle) {
-        RectangleSelectionTool.enable(map, selectedGeolevel, staticMetadata);
+        RectangleSelectionTool.enable(map, selectedGeolevel.id, staticMetadata);
       }
       /* eslint-enable */
     }

@@ -2,8 +2,9 @@ import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../../actions/districtDrawing";
 import {
-  GEOLEVELS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
+  isFeatureSelected,
+  featureStateExpression,
   levelToSelectionLayerId,
   ISelectionTool,
   featuresToSet
@@ -17,7 +18,7 @@ import { getAllIndices, getDemographics } from "../../../shared/functions";
 const DefaultSelectionTool: ISelectionTool = {
   enable: function(
     map: MapboxGL.Map,
-    geoLevel: string,
+    geoLevelId: string,
     geoLevelIndex: number,
     staticMetadata: IStaticMetadata,
     staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
@@ -38,37 +39,27 @@ const DefaultSelectionTool: ISelectionTool = {
       const southWest: MapboxGL.PointLike = [e.point.x - buffer, e.point.y - buffer];
       const northEast: MapboxGL.PointLike = [e.point.x + buffer, e.point.y + buffer];
       const features = map.queryRenderedFeatures([southWest, northEast], {
-        layers: [levelToSelectionLayerId(geoLevel)]
+        layers: [levelToSelectionLayerId(geoLevelId)]
       });
 
       // Disabling 'functional/no-conditional-statement' without naming it.
       // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
       // eslint-disable-next-line
       if (features.length === 0 || typeof features[0].id !== "number") {
-        // eslint-disable-next-line
-        console.log("No features selected. ", features);
         return;
       }
       const feature = features[0];
-      const featureId = feature.id as number;
 
-      // Set the selected feature, or de-select it if it's already selected
-      const featureStateExpression = {
-        source: GEOLEVELS_SOURCE_ID,
-        id: featureId,
-        sourceLayer: geoLevel
-      };
-      const featureState = map.getFeatureState(featureStateExpression);
       const selectedFeatures = featuresToSet([feature], staticMetadata.geoLevelHierarchy);
       const addFeatures = () => {
-        map.setFeatureState(featureStateExpression, { selected: true });
+        map.setFeatureState(featureStateExpression(feature), { selected: true });
         store.dispatch(addSelectedGeounitIds(selectedFeatures));
       };
       const removeFeatures = () => {
-        map.setFeatureState(featureStateExpression, { selected: false });
+        map.setFeatureState(featureStateExpression(feature), { selected: false });
         store.dispatch(removeSelectedGeounitIds(selectedFeatures));
       };
-      featureState.selected ? removeFeatures() : addFeatures();
+      isFeatureSelected(map, feature) ? removeFeatures() : addFeatures();
 
       // Indices of all base geounits belonging to the clicked feature
       // TODO: Make demographic calculations work for all geolevels (#202)

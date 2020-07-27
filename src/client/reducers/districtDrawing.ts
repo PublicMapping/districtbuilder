@@ -5,33 +5,31 @@ import { Action } from "../actions";
 import {
   addSelectedGeounitIds,
   clearSelectedGeounitIds,
-  patchDistrictsDefinitionSuccess,
-  patchDistrictsDefinitionFailure,
   removeSelectedGeounitIds,
-  saveDistrictsDefinition,
   SelectionTool,
+  saveDistrictsDefinition,
   setSelectionTool,
   setSelectedDistrictId,
-  setGeoLevelIndex
+  setGeoLevelIndex,
+  setGeoLevelVisibility
 } from "../actions/districtDrawing";
-import { projectFetchGeoJson } from "../actions/projectData";
-import { assignGeounitsToDistrict } from "../../shared/functions";
+import { updateDistrictsDefinition } from "../actions/projectData";
 import { GeoUnits } from "../../shared/entities";
-
-import { patchDistrictsDefinition } from "../api";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
+  readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
 }
 
 export const initialState = {
   selectedDistrictId: 1,
   selectedGeounits: new Map(),
   selectionTool: SelectionTool.Default,
-  geoLevelIndex: 0
+  geoLevelIndex: 0,
+  geoLevelVisibility: []
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -64,45 +62,33 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         ...state,
         selectedGeounits: new Map()
       };
-    case getType(saveDistrictsDefinition):
-      return loop(
-        state,
-        Cmd.run(patchDistrictsDefinition, {
-          successActionCreator: patchDistrictsDefinitionSuccess,
-          failActionCreator: patchDistrictsDefinitionFailure,
-          args: [
-            action.payload.project.id,
-            assignGeounitsToDistrict(
-              action.payload.project.districtsDefinition,
-              action.payload.geoUnitHierarchy,
-              Array.from(state.selectedGeounits.values()),
-              state.selectedDistrictId
-            )
-          ] as Parameters<typeof patchDistrictsDefinition>
-        })
-      );
-    case getType(patchDistrictsDefinitionSuccess):
-      return loop(
-        {
-          ...state,
-          project: { resource: action.payload }
-        },
-        Cmd.action(projectFetchGeoJson(action.payload.id))
-      );
-    case getType(patchDistrictsDefinitionFailure):
-      // TODO (#188): implement a status area to display errors for this and other things
-      // eslint-disable-next-line
-      console.log("Error patching districts definition: ", action.payload);
-      return state;
     case getType(setSelectionTool):
       return {
         ...state,
         selectionTool: action.payload
       };
     case getType(setGeoLevelIndex):
+      return loop(
+        {
+          ...state,
+          geoLevelIndex: action.payload
+        },
+        state.selectedGeounits.size > 0 ? Cmd.action(saveDistrictsDefinition()) : Cmd.none
+      );
+    case getType(saveDistrictsDefinition):
+      return loop(
+        state,
+        Cmd.action(
+          updateDistrictsDefinition({
+            selectedGeounits: state.selectedGeounits,
+            selectedDistrictId: state.selectedDistrictId
+          })
+        )
+      );
+    case getType(setGeoLevelVisibility):
       return {
         ...state,
-        geoLevelIndex: action.payload
+        geoLevelVisibility: action.payload
       };
     default:
       return state as never;

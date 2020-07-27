@@ -117,4 +117,6 @@ export interface IChamber {
 // a county may have indices [0] where 0 = county
 export type GeoUnitIndices = readonly number[];
 
-export type GeoUnits = ReadonlyMap<number, GeoUnitIndices>;
+export type FeatureId = number;
+
+export type GeoUnits = ReadonlyMap<FeatureId, GeoUnitIndices>;

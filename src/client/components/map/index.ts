@@ -2,7 +2,7 @@ import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
-import { GeoLevelInfo, GeoUnits } from "../../../shared/entities";
+import { FeatureId, GeoLevelInfo, GeoUnits, IStaticMetadata } from "../../../shared/entities";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -87,6 +87,36 @@ export function levelToSelectionLayerId(geoLevel: string) {
   return `${geoLevel}-selected`;
 }
 
+/*
+ * Used for getting/setting feature state.
+ */
+export function featureStateExpression(feature: MapboxGL.MapboxGeoJSONFeature) {
+  return {
+    source: GEOLEVELS_SOURCE_ID,
+    id: feature.id,
+    sourceLayer: feature.sourceLayer
+  };
+}
+
+export function isFeatureSelected(
+  map: MapboxGL.Map,
+  feature: MapboxGL.MapboxGeoJSONFeature
+): boolean {
+  const featureState = map.getFeatureState(featureStateExpression(feature));
+  return featureState.selected === true;
+}
+
+export function getGeoLevelVisibility(
+  map: MapboxGL.Map,
+  staticMetadata: IStaticMetadata
+): readonly boolean[] {
+  const mapZoom = map.getZoom();
+  return staticMetadata.geoLevelHierarchy
+    .slice()
+    .reverse()
+    .map(geoLevel => mapZoom <= geoLevel.maxZoom && mapZoom >= geoLevel.minZoom);
+}
+
 /* eslint-disable */
 export interface ISelectionTool {
   enable: (map: MapboxGL.Map, ...args: any) => void;
@@ -107,7 +137,7 @@ export function featuresToSet(
   // value set last will be used (thus achieving the uniqueness of sets).
   return new Map(
     features.map((feature: MapboxGeoJSONFeature) => [
-      feature.id as number,
+      feature.id as FeatureId,
       geoLevelHierarchyKeys.reduce(
         (geounitData, key) => {
           const geounitId = feature.properties && feature.properties[key];

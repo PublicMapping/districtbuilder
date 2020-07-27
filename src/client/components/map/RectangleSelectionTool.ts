@@ -4,6 +4,7 @@ import { addSelectedGeounitIds } from "../../actions/districtDrawing";
 import {
   featuresToSet,
   GEOLEVELS_SOURCE_ID,
+  isFeatureSelected,
   levelToSelectionLayerId,
   ISelectionTool
 } from "./index";
@@ -21,7 +22,7 @@ import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
  * https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
  */
 const RectangleSelectionTool: ISelectionTool = {
-  enable: function(map: MapboxGL.Map, geoLevel: string, staticMetadata: IStaticMetadata) {
+  enable: function(map: MapboxGL.Map, geoLevelId: string, staticMetadata: IStaticMetadata) {
     map.boxZoom.disable();
     map.dragPan.disable();
     map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line
@@ -60,7 +61,7 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mouseup", onMouseUp);
 
       setOfInitiallySelectedFeatures = featuresToSet(
-        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(feature)),
+        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
         staticMetadata.geoLevelHierarchy
       );
 
@@ -100,7 +101,7 @@ const RectangleSelectionTool: ISelectionTool = {
       const features = getFeaturesInBoundingBox([start, current]);
 
       // Set any newly selected features on the map within the bounding box to selected state
-      const newFeatures = features.filter(feature => !isFeatureSelected(feature));
+      const newFeatures = features.filter(feature => !isFeatureSelected(map, feature));
       newFeatures.forEach(feature => {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
@@ -127,13 +128,8 @@ const RectangleSelectionTool: ISelectionTool = {
       return {
         source: GEOLEVELS_SOURCE_ID,
         id,
-        sourceLayer: geoLevel
+        sourceLayer: geoLevelId
       };
-    }
-
-    function isFeatureSelected(feature: MapboxGL.MapboxGeoJSONFeature): boolean {
-      const featureState = map.getFeatureState(featureStateExpression(feature.id));
-      return featureState.selected === true;
     }
 
     function getFeaturesInBoundingBox(
@@ -141,7 +137,7 @@ const RectangleSelectionTool: ISelectionTool = {
       bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]
     ): readonly MapboxGL.MapboxGeoJSONFeature[] {
       return map.queryRenderedFeatures(bbox, {
-        layers: [levelToSelectionLayerId(geoLevel)]
+        layers: [levelToSelectionLayerId(geoLevelId)]
       });
     }
 
