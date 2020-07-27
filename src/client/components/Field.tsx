@@ -1,17 +1,6 @@
 /** @jsx jsx */
 import React, { RefAttributes } from "react";
-import {
-  Box,
-  Flex,
-  Heading,
-  Input,
-  InputProps,
-  jsx,
-  Label,
-  Select,
-  SelectProps,
-  Styled
-} from "theme-ui";
+import { Box, Flex, Input, InputProps, jsx, Label, Select, SelectProps, Styled } from "theme-ui";
 
 import { validate as validatePassword } from "../../shared/password-validator";
 import { ErrorMap } from "../../shared/types";
@@ -164,27 +153,25 @@ export function PasswordField<D, R>({
                 display: "none",
                 position: "absolute",
                 backgroundColor: "white",
-                left: "0",
                 right: "0",
                 padding: "8px",
-                bottom: "0",
-                transform: "translateY(100%)",
+                top: "0",
+                transform: "translateY(-100%)",
                 zIndex: 1,
                 border: "1px solid"
               }}
             >
-              <Heading as="h3">Password must:</Heading>
               <PasswordConstraint invalid={pwErrors.minLength}>
-                Have at least 8 characters
+                At least 8 characters
               </PasswordConstraint>
               <PasswordConstraint invalid={pwErrors.hasNonNumeric}>
-                Contain at least 1 letter
+                At least 1 letter
               </PasswordConstraint>
               <PasswordConstraint invalid={pwErrors.common}>
-                Not be a commonly used password, like “password”
+                Not a commonly used password
               </PasswordConstraint>
               <PasswordConstraint invalid={pwErrors.similar}>
-                Differ from your email or name
+                Different from your email or name
               </PasswordConstraint>
             </Box>
           </React.Fragment>
