@@ -17,7 +17,7 @@ const geoLevelLabel = (id: string) => {
     case "county":
       return "Counties";
     default:
-      return "";
+      return id;
   }
 };
 
