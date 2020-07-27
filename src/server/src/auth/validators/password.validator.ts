@@ -13,8 +13,8 @@ export class PasswordValidator implements ValidatorConstraintInterface {
     const user = args ? (args.object as Register) : undefined;
     if (user) {
       const errors = validate(obj, [user.email, user.name]);
-      return errors === undefined;
+      return !Object.values(errors).some(hasError => hasError);
     }
-    return false;
+    return true;
   }
 }

@@ -2,24 +2,21 @@ import COMMON_PASSWORDS from "./common-passwords";
 import { SequenceMatcher } from "./difflib";
 
 export function minLength(value: string, minLength: number) {
-  const tooShort = value.length < minLength;
-  return tooShort ? [`Password must be at least ${minLength} characters long`] : [];
+  return value.length < minLength;
 }
 
 export function common(value: string) {
-  const isCommon = COMMON_PASSWORDS.indexOf(value) !== -1;
-  return isCommon ? ["Password must not match a commonly used password"] : [];
+  return COMMON_PASSWORDS.indexOf(value) !== -1;
 }
 
-export function entirelyNumeric(value: string) {
-  const onlyNumeric = /^\d+$/.test(value);
-  return onlyNumeric ? ["Password must contain at least 1 letter"] : [];
+export function hasNonNumeric(value: string) {
+  return value.length === 0 || /^\d+$/.test(value);
 }
 
 // Port of Django's UserAttributeSimilarityValidator
 export function similar(value: string, disallowed: readonly string[]) {
   if (!value || !disallowed) {
-    return [];
+    return false;
   } else {
     const isAllowed = disallowed.every(disallowedVal => {
       if (!disallowedVal) {
@@ -32,19 +29,18 @@ export function similar(value: string, disallowed: readonly string[]) {
         });
       }
     });
-    return isAllowed ? [] : ["Password must not be too similar to email or name"];
+    return !isAllowed;
   }
 }
 
 export function validate(
   value: string,
   userAttributes: readonly string[]
-): readonly string[] | undefined {
-  const errors = [
-    ...minLength(value, 8),
-    ...common(value),
-    ...entirelyNumeric(value),
-    ...similar(value, userAttributes)
-  ];
-  return value.length !== 0 && errors.length > 0 ? errors : undefined;
+): { readonly [field in "minLength" | "common" | "hasNonNumeric" | "similar"]: boolean } {
+  return {
+    minLength: minLength(value, 8),
+    common: common(value),
+    hasNonNumeric: hasNonNumeric(value),
+    similar: similar(value, userAttributes)
+  };
 }
