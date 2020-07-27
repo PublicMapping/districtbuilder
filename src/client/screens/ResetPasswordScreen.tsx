@@ -7,7 +7,7 @@ import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
 import { showPasswordResetNotice } from "../actions/auth";
 import { resetPassword } from "../api";
 import CenteredContent from "../components/CenteredContent";
-import { InputField } from "../components/Field";
+import { InputField, PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
 import store from "../store";
@@ -60,9 +60,12 @@ const ResetPasswordScreen = () => {
             Reset your password
           </Heading>
           <FormError resource={passwordResource} />
-          <InputField
+          {/* Note 'userAttributes' below is empty because we don't have access to user data yet as we're not logged in. A full validation will happen server-side*/}
+          <PasswordField
             field="password"
             label="Password"
+            password={passwordResource.data.password}
+            userAttributes={[]}
             resource={passwordResource}
             inputProps={{
               required: true,
