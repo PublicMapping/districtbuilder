@@ -1,4 +1,4 @@
-import { FeatureCollection } from "geojson";
+import { Feature, FeatureCollection } from "geojson";
 import * as topojson from "topojson-client";
 import {
   GeometryCollection,
@@ -8,6 +8,10 @@ import {
   Topology
 } from "topojson-specification";
 
+import area from "@turf/area";
+import length from "@turf/length";
+import polygonToLine from "@turf/polygon-to-line";
+
 import { GeoUnitCollection, GeoUnitDefinition, IStaticMetadata } from "../../../../shared/entities";
 import { getAllIndices, getDemographics } from "../../../../shared/functions";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
@@ -15,6 +19,19 @@ import { DistrictsDefinitionDto } from "./district-definition.dto";
 interface GeoUnitHierarchy {
   geom: Polygon | MultiPolygon;
   children: ReadonlyArray<GeoUnitHierarchy>;
+}
+
+/*
+ * Calculate Polsby-Popper compactness
+ *
+ * See https://fisherzachary.github.io/public/r-output.html#polsby-popper
+ */
+function calcPolsbyPopper(feature: Feature): number {
+  const districtArea: number = area(feature);
+  // @ts-ignore
+  const outline = polygonToLine(feature);
+  const districtPerimeter: number = length(outline, { units: "meters" });
+  return (4 * Math.PI * districtArea) / districtPerimeter ** 2;
 }
 
 // Creates a list of trees for the nested geometries of the geounits
@@ -144,9 +161,19 @@ export class GeoUnitTopology {
       mutableGeom.properties = getDemographics(baseIndices, this.staticMetadata, this.demographics);
       return mutableGeom;
     });
-    return topojson.feature(this.topology, {
+    const featureCollection = topojson.feature(this.topology, {
       type: "GeometryCollection",
       geometries: merged
     });
+    return {
+      ...featureCollection,
+      features: featureCollection.features.map(feature => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          compactness: calcPolsbyPopper(feature)
+        }
+      }))
+    };
   }
 }
