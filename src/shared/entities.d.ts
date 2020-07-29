@@ -59,6 +59,10 @@ export interface Register extends Login {
   readonly name: string;
 }
 
+export interface ResetPassword {
+  readonly password: string;
+}
+
 export type JWT = string;
 
 export type JWTPayload = IUser & {

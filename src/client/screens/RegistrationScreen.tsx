@@ -6,7 +6,7 @@ import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
 import { Register } from "../../shared/entities";
 import { registerUser } from "../api";
 import CenteredContent from "../components/CenteredContent";
-import { InputField } from "../components/Field";
+import { InputField, PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
 
@@ -79,11 +79,13 @@ const RegistrationScreen = () => {
                 resource={registrationResource}
                 inputProps={{ onChange: setForm("email") }}
               />
-              <InputField
+              <PasswordField
                 field="password"
+                userAttributes={[data.email, data.name]}
+                password={data.password}
                 label="Password"
                 resource={registrationResource}
-                inputProps={{ onChange: setForm("password"), type: "password" }}
+                inputProps={{ onChange: setForm("password") }}
               />
               <InputField
                 field="confirmPassword"

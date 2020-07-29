@@ -26,6 +26,7 @@ import { UsersService } from "../../users/services/users.service";
 
 import { LoginDto } from "../entities/login.dto";
 import { RegisterDto } from "../entities/register.dto";
+import { ResetPasswordDto } from "../entities/reset-password.dto";
 import { AuthService } from "../services/auth.service";
 
 /*
@@ -156,10 +157,10 @@ export class AuthController {
   @Post("email/reset-password/:token")
   public async resetPassword(
     @Param("token") token: string,
-    @Body("password") password: string
+    @Body() resetPasswordDto: ResetPasswordDto
   ): Promise<string> {
     try {
-      const verifiedUser = await this.authService.resetPassword(token, password);
+      const verifiedUser = await this.authService.resetPassword(token, resetPasswordDto.password);
       if (verifiedUser === undefined) {
         throw new NotFoundException(
           "Reset link not found, it may have expired or been mistyped",

@@ -1,7 +1,8 @@
 /** @jsx jsx */
 import React, { RefAttributes } from "react";
-import { Box, Input, InputProps, jsx, Label, Select, SelectProps, Styled } from "theme-ui";
+import { Box, Flex, Input, InputProps, jsx, Label, Select, SelectProps, Styled } from "theme-ui";
 
+import { validate as validatePassword } from "../../shared/password-validator";
 import { ErrorMap } from "../../shared/types";
 import { WriteResource } from "../resource";
 
@@ -96,5 +97,86 @@ export function SelectField<D, R>({
         </React.Fragment>
       )}
     </Field>
+  );
+}
+
+interface PasswordFieldProps<D, R> extends FieldProps<D, R> {
+  readonly label: string;
+  readonly password: string;
+  readonly userAttributes: readonly string[];
+  readonly inputProps: RefAttributes<HTMLInputElement> & InputProps;
+}
+
+const PasswordConstraint = ({
+  invalid,
+  children
+}: {
+  readonly invalid: boolean;
+  readonly children: React.ReactNode;
+}) => {
+  const color = invalid ? "warning" : "inherit";
+  return (
+    <Flex sx={{ flexDirection: "row", flex: 1 }}>
+      <Box sx={{ width: "1rem", height: "1rem" }}>{!invalid && "✓"}</Box>
+      <Box sx={{ flex: "auto", color }}>{children}</Box>
+    </Flex>
+  );
+};
+
+export function PasswordField<D, R>({
+  field,
+  label,
+  password,
+  userAttributes,
+  resource,
+  inputProps
+}: PasswordFieldProps<D, R>): React.ReactElement {
+  const pwErrors = validatePassword(password, userAttributes);
+  const hasErrors = password && Object.values(pwErrors).some(hasError => hasError);
+  return (
+    <Box sx={{ position: "relative" }}>
+      <Field field={field} resource={resource}>
+        {() => (
+          <React.Fragment>
+            <span sx={{ display: "block" }}>{label}</span>
+            <Input
+              {...inputProps}
+              type="password"
+              id={field.toString()}
+              sx={{ borderColor: hasErrors ? "warning" : undefined }}
+            />
+            <Box
+              sx={{
+                "input:focus + &": {
+                  display: "block"
+                },
+                display: "none",
+                position: "absolute",
+                backgroundColor: "white",
+                right: "0",
+                padding: "8px",
+                top: "0",
+                transform: "translateY(-100%)",
+                zIndex: 1,
+                border: "1px solid"
+              }}
+            >
+              <PasswordConstraint invalid={pwErrors.minLength}>
+                At least 8 characters
+              </PasswordConstraint>
+              <PasswordConstraint invalid={pwErrors.hasNonNumeric}>
+                At least 1 letter
+              </PasswordConstraint>
+              <PasswordConstraint invalid={pwErrors.common}>
+                Not a commonly used password
+              </PasswordConstraint>
+              <PasswordConstraint invalid={pwErrors.similar}>
+                Different from your email or name
+              </PasswordConstraint>
+            </Box>
+          </React.Fragment>
+        )}
+      </Field>
+    </Box>
   );
 }
