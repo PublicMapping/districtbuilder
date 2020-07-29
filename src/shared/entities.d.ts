@@ -120,3 +120,5 @@ export type GeoUnitIndices = readonly number[];
 export type FeatureId = number;
 
 export type GeoUnits = ReadonlyMap<FeatureId, GeoUnitIndices>;
+
+export type CompactnessScore = number | null | "non-contiguous";

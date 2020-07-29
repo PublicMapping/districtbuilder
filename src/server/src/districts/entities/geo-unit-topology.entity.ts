@@ -12,7 +12,12 @@ import area from "@turf/area";
 import length from "@turf/length";
 import polygonToLine from "@turf/polygon-to-line";
 
-import { GeoUnitCollection, GeoUnitDefinition, IStaticMetadata } from "../../../../shared/entities";
+import {
+  CompactnessScore,
+  GeoUnitCollection,
+  GeoUnitDefinition,
+  IStaticMetadata
+} from "../../../../shared/entities";
 import { getAllIndices, getDemographics } from "../../../../shared/functions";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
 
@@ -26,7 +31,21 @@ interface GeoUnitHierarchy {
  *
  * See https://fisherzachary.github.io/public/r-output.html#polsby-popper
  */
-function calcPolsbyPopper(feature: Feature): number {
+function calcPolsbyPopper(feature: Feature): CompactnessScore {
+  if (
+    feature.geometry &&
+    feature.geometry.type === "MultiPolygon" &&
+    feature.geometry.coordinates.length === 0
+  ) {
+    return null;
+  }
+  if (
+    feature.geometry &&
+    feature.geometry.type === "MultiPolygon" &&
+    feature.geometry.coordinates.length > 1
+  ) {
+    return "non-contiguous";
+  }
   const districtArea: number = area(feature);
   // @ts-ignore
   const outline = polygonToLine(feature);
