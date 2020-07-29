@@ -46,7 +46,6 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
           "text-field": "{population}",
           "text-max-width": 10,
           "text-font": ["GR"],
-          "text-ignore-placement": true,
           visibility: "none"
         },
         paint: {

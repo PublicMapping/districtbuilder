@@ -159,12 +159,19 @@ const Map = ({
 
   // Update labels when selection is changed
   useEffect(() => {
-    const visibility = label === undefined ? "none" : "visible";
-    // TODO: hardcoding county because we can't set the geolevel yet. This
-    // should instead display only for the current geolevel (GH#200)
-    map && map.setLayoutProperty("county-label", "visibility", visibility);
-    map && map.setLayoutProperty("county-label", "text-field", `{${label}}`);
-  }, [map, label]);
+    // eslint-disable-next-line
+    if (map) {
+      staticMetadata.geoLevelHierarchy.forEach(geoLevel =>
+        map.setLayoutProperty(`${geoLevel.id}-label`, "visibility", "none")
+      );
+      map.setLayoutProperty(`${selectedGeolevel.id}-label`, "visibility", "visible");
+      map.setLayoutProperty(
+        `${selectedGeolevel.id}-label`,
+        "text-field",
+        label ? `{${label}}` : ""
+      );
+    }
+  }, [map, label, staticMetadata, geoLevelIndex]);
 
   useEffect(() => {
     // eslint-disable-next-line
