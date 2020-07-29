@@ -19,6 +19,7 @@ import {
   selectedDistrictColor
 } from "../constants/colors";
 import Loading from "./Loading";
+import Icon from "./Icon";
 
 import {
   clearSelectedGeounitIds,
@@ -154,7 +155,9 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
   ) : typeof compactness === "number" ? (
     <span title="Polsby-Popper score">{Math.floor(compactness * 100)}%</span>
   ) : compactness === "non-contiguous" ? (
-    <span title="Non-contiguous">&#x274C;</span>
+    <span title="Non-contiguous">
+      <Icon name="times-circle" />
+    </span>
   ) : (
     assertNever(compactness)
   );
