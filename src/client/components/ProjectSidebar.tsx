@@ -168,6 +168,14 @@ const SidebarRow = ({
   const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
     intermediateDeviation
   ).toLocaleString()}`;
+  const compactnessDisplay =
+    typeof district.properties.compactness === "number" ? (
+      <span title="Polsby-Popper score">{Math.floor(district.properties.compactness * 100)}%</span>
+    ) : district.properties.compactness === null ? (
+      "–"
+    ) : (
+      <span title="Non-contiguous">&#x274C;</span>
+    );
 
   return (
     <Styled.tr
@@ -191,7 +199,7 @@ const SidebarRow = ({
       <Styled.td sx={{ color: textColor }}>{deviationDisplay}</Styled.td>
       <Styled.td>–</Styled.td>
       <Styled.td>–</Styled.td>
-      <Styled.td>–</Styled.td>
+      <Styled.td>{compactnessDisplay}</Styled.td>
     </Styled.tr>
   );
 };
