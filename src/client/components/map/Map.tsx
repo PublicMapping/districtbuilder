@@ -171,7 +171,7 @@ const Map = ({
         label ? `{${label}}` : ""
       );
     }
-  }, [map, label, staticMetadata, geoLevelIndex]);
+  }, [map, label, staticMetadata, selectedGeolevel]);
 
   useEffect(() => {
     // eslint-disable-next-line
