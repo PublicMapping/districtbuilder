@@ -19,7 +19,6 @@ const DemographicsChart = ({
 }: {
   readonly demographics: { readonly [id: string]: number };
 }) => {
-  console.log("demographics", demographics);
   const percentages = mapValues(
     demographics,
     (population: number) =>

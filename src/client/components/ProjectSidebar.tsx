@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
-import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
+import { useState } from "react";
+import { Box, Button, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import {
   CompactnessScore,
@@ -19,6 +20,7 @@ import {
   selectedDistrictColor
 } from "../constants/colors";
 import DemographicsChart from "./DemographicsChart";
+import DemographicsTooltip from "./DemographicsTooltip";
 import Loading from "./Loading";
 import Icon from "./Icon";
 
@@ -177,6 +179,8 @@ const SidebarRow = ({
   readonly demographics: { readonly [id: string]: number };
   readonly deviation: number;
 }) => {
+  const [demographicsTooltipVisible, setDemographicsTooltipVisible] = useState(false);
+
   const showPopulationChange = selectedPopulationDifference !== 0;
   const textColor = showPopulationChange
     ? selectedPopulationDifference > 0
@@ -211,8 +215,17 @@ const SidebarRow = ({
       </Styled.td>
       <Styled.td sx={{ color: textColor }}>{populationDisplay}</Styled.td>
       <Styled.td sx={{ color: textColor }}>{deviationDisplay}</Styled.td>
-      <Styled.td sx={{ width: "100%", height: "100%" }}>
+      <Styled.td
+        sx={{ width: "100%", height: "100%" }}
+        onMouseOver={() => setDemographicsTooltipVisible(true)}
+        onMouseOut={() => setDemographicsTooltipVisible(false)}
+      >
         <DemographicsChart demographics={demographics} />
+        {demographicsTooltipVisible && (
+          <Box sx={{ position: "absolute" }}>
+            <DemographicsTooltip demographics={demographics} />
+          </Box>
+        )}
       </Styled.td>
       <Styled.td>{BLANK_VALUE}</Styled.td>
       <Styled.td>{compactnessDisplay}</Styled.td>
