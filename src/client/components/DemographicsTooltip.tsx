@@ -21,18 +21,15 @@ const Row = ({
       border: "none"
     }}
   >
-    <Styled.td>
+    <Styled.td sx={{ textAlign: "left", padding: "0 3px" }}>{label}</Styled.td>
+    <Styled.td sx={{ minWidth: "100px" }}>
       <Box
         sx={{
-          width: "1rem",
+          width: `${percent}%`,
           height: "1rem",
           backgroundColor: color
         }}
       />
-    </Styled.td>
-    <Styled.td sx={{ textAlign: "left", padding: "0 3px" }}>{label}</Styled.td>
-    <Styled.td sx={{ textAlign: "right", padding: "0 3px" }}>
-      {population ? population.toLocaleString() : "0"}
     </Styled.td>
     <Styled.td sx={{ flex: "auto", textAlign: "right" }}>
       {percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0"}
