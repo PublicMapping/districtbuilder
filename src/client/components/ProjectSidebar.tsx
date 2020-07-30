@@ -221,7 +221,7 @@ const SidebarRow = ({
         onMouseOut={() => setDemographicsTooltipVisible(false)}
       >
         <DemographicsChart demographics={demographics} />
-        {demographicsTooltipVisible && (
+        {demographicsTooltipVisible && demographics.population > 0 && (
           <Box sx={{ position: "absolute" }}>
             <DemographicsTooltip demographics={demographics} />
           </Box>
