@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
-import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
+import { useState } from "react";
+import { Box, Button, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import {
   CompactnessScore,
@@ -18,6 +19,8 @@ import {
   positiveChangeColor,
   selectedDistrictColor
 } from "../constants/colors";
+import DemographicsChart from "./DemographicsChart";
+import DemographicsTooltip from "./DemographicsTooltip";
 import Loading from "./Loading";
 import Icon from "./Icon";
 
@@ -167,13 +170,17 @@ const SidebarRow = ({
   district,
   selected,
   selectedPopulationDifference,
+  demographics,
   deviation
 }: {
   readonly district: Feature<MultiPolygon, DistrictProperties>;
   readonly selected: boolean;
   readonly selectedPopulationDifference: number;
+  readonly demographics: { readonly [id: string]: number };
   readonly deviation: number;
 }) => {
+  const [demographicsTooltipVisible, setDemographicsTooltipVisible] = useState(false);
+
   const showPopulationChange = selectedPopulationDifference !== 0;
   const textColor = showPopulationChange
     ? selectedPopulationDifference > 0
@@ -208,7 +215,18 @@ const SidebarRow = ({
       </Styled.td>
       <Styled.td sx={{ color: textColor }}>{populationDisplay}</Styled.td>
       <Styled.td sx={{ color: textColor }}>{deviationDisplay}</Styled.td>
-      <Styled.td>{BLANK_VALUE}</Styled.td>
+      <Styled.td
+        sx={{ width: "100%", height: "100%" }}
+        onMouseOver={() => setDemographicsTooltipVisible(true)}
+        onMouseOut={() => setDemographicsTooltipVisible(false)}
+      >
+        <DemographicsChart demographics={demographics} />
+        {demographicsTooltipVisible && demographics.population > 0 && (
+          <Box sx={{ position: "absolute" }}>
+            <DemographicsTooltip demographics={demographics} />
+          </Box>
+        )}
+      </Styled.td>
       <Styled.td>{BLANK_VALUE}</Styled.td>
       <Styled.td>{compactnessDisplay}</Styled.td>
     </Styled.tr>
@@ -323,6 +341,7 @@ const getSidebarRows = (
   return geojson.features.map(feature => {
     const districtId = typeof feature.id === "number" ? feature.id : 0;
     const selected = districtId === selectedDistrictId;
+    const demographics = feature.properties;
     const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
     const selectedPopulationDifference = selected
       ? totalSelectedDemographics.population - selectedPopulation
@@ -333,6 +352,7 @@ const getSidebarRows = (
         district={feature}
         selected={selected}
         selectedPopulationDifference={selectedPopulationDifference}
+        demographics={demographics}
         deviation={
           // The population goal for the unassigned district is 0,
           // so it's deviation is equal to its population

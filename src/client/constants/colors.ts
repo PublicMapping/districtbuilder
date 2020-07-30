@@ -102,3 +102,11 @@ export const getDistrictColor = (id?: string | number) => {
 export const positiveChangeColor = "#2dbeae";
 export const negativeChangeColor = "#f5677a";
 export const selectedDistrictColor = "#efefef";
+
+export const demographicsColors = {
+  white: "#F5B472",
+  black: "#6AC59B",
+  asian: "#F194C4",
+  hispanic: "#C8BFF2",
+  other: "#999999"
+};
