@@ -3,6 +3,7 @@ import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import { Button, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import {
+  CompactnessScore,
   DistrictsDefinition,
   DistrictProperties,
   GeoUnitHierarchy,
@@ -10,7 +11,7 @@ import {
   IProject,
   IStaticMetadata
 } from "../../shared/entities";
-import { getAllIndices, getDemographics } from "../../shared/functions";
+import { assertNever, getAllIndices, getDemographics } from "../../shared/functions";
 import {
   getDistrictColor,
   negativeChangeColor,
@@ -18,6 +19,7 @@ import {
   selectedDistrictColor
 } from "../constants/colors";
 import Loading from "./Loading";
+import Icon from "./Icon";
 
 import {
   clearSelectedGeounitIds,
@@ -145,6 +147,22 @@ const SidebarHeader = ({
   );
 };
 
+const BLANK_VALUE = "–";
+
+function getCompactnessDisplay(compactness: CompactnessScore) {
+  return compactness === null ? (
+    BLANK_VALUE
+  ) : typeof compactness === "number" ? (
+    <span title="Polsby-Popper score">{Math.floor(compactness * 100)}%</span>
+  ) : compactness === "non-contiguous" ? (
+    <span title="Non-contiguous">
+      <Icon name="times-circle" />
+    </span>
+  ) : (
+    assertNever(compactness)
+  );
+}
+
 const SidebarRow = ({
   district,
   selected,
@@ -168,7 +186,8 @@ const SidebarRow = ({
   const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
     intermediateDeviation
   ).toLocaleString()}`;
-
+  const compactnessDisplay =
+    district.id === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
   return (
     <Styled.tr
       sx={{ backgroundColor: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
@@ -189,9 +208,9 @@ const SidebarRow = ({
       </Styled.td>
       <Styled.td sx={{ color: textColor }}>{populationDisplay}</Styled.td>
       <Styled.td sx={{ color: textColor }}>{deviationDisplay}</Styled.td>
-      <Styled.td>–</Styled.td>
-      <Styled.td>–</Styled.td>
-      <Styled.td>–</Styled.td>
+      <Styled.td>{BLANK_VALUE}</Styled.td>
+      <Styled.td>{BLANK_VALUE}</Styled.td>
+      <Styled.td>{compactnessDisplay}</Styled.td>
     </Styled.tr>
   );
 };

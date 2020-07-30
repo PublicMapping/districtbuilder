@@ -115,3 +115,13 @@ export function assignGeounitsToDistrict(
     return newDistrictsDefinition;
   }, districtsDefinition);
 }
+
+/*
+ * Helper function to get exhaustiveness checking.
+ *
+ * See: https://www.typescriptlang.org/docs/handbook/advanced-types.html#exhaustiveness-checking
+ */
+export function assertNever(x: never): never {
+  // eslint-disable-next-line
+  throw new Error(`Unexpected: ${x}`);
+}
