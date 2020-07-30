@@ -6,12 +6,10 @@ import { demographicsColors } from "../constants/colors";
 
 const Row = ({
   label,
-  population,
   percent,
   color
 }: {
   readonly label: string;
-  readonly population?: number;
   readonly percent?: number;
   readonly color: string;
 }) => (
@@ -21,7 +19,9 @@ const Row = ({
       border: "none"
     }}
   >
-    <Styled.td sx={{ textAlign: "left", padding: "0 3px" }}>{label}</Styled.td>
+    <Styled.td sx={{ textAlign: "left", padding: "0 3px", textTransform: "capitalize" }}>
+      {label}
+    </Styled.td>
     <Styled.td sx={{ minWidth: "100px" }}>
       <Box
         sx={{
@@ -43,47 +43,19 @@ const DemographicsTooltip = ({
 }: {
   readonly demographics: { readonly [id: string]: number };
 }) => {
-  console.log("demographics", demographics);
   const percentages = mapValues(
     demographics,
     (population: number) =>
       (demographics.population ? population / demographics.population : 0) * 100
   );
+  const races = ["white", "black", "asian", "hispanic", "other"] as const;
+  const rows = races.map((id: typeof races[number]) => (
+    <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
+  ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%", backgroundColor: "gray.8", m: 0, p: 2 }}>
       <Styled.table sx={{ margin: "0" }}>
-        <tbody>
-          <Row
-            label={"White"}
-            population={demographics.white}
-            percent={percentages.white}
-            color={demographicsColors.white}
-          />
-          <Row
-            label={"Black"}
-            population={demographics.black}
-            percent={percentages.black}
-            color={demographicsColors.black}
-          />
-          <Row
-            label={"Asian"}
-            population={demographics.asian}
-            percent={percentages.asian}
-            color={demographicsColors.asian}
-          />
-          <Row
-            label={"Hispanic"}
-            population={demographics.hispanic}
-            percent={percentages.hispanic}
-            color={demographicsColors.hispanic}
-          />
-          <Row
-            label={"Other"}
-            population={demographics.other}
-            percent={percentages.other}
-            color={demographicsColors.other}
-          />
-        </tbody>
+        <tbody>{rows}</tbody>
       </Styled.table>
     </Box>
   );
