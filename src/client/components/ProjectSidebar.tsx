@@ -6,6 +6,7 @@ import { Box, Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import {
   CompactnessScore,
   DistrictsDefinition,
+  DistrictId,
   DistrictProperties,
   GeoUnitHierarchy,
   GeoUnitIndices,
@@ -48,7 +49,7 @@ const ProjectSidebar = ({
   selectedGeounits,
   geoLevelIndex,
   geoUnitHierarchy,
-  districtsLocked
+  lockedDistricts
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -59,7 +60,7 @@ const ProjectSidebar = ({
   readonly selectedGeounits: GeoUnits;
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
-  readonly districtsLocked: ReadonlyArray<boolean>;
+  readonly lockedDistricts: Set<DistrictId>;
 } & LoadingProps) => {
   return (
     <Flex
@@ -107,7 +108,7 @@ const ProjectSidebar = ({
               selectedGeounits,
               geoLevelIndex,
               geoUnitHierarchy,
-              districtsLocked
+              lockedDistricts
             )}
         </tbody>
       </Styled.table>
@@ -345,7 +346,7 @@ const getSidebarRows = (
   selectedGeounits: GeoUnits,
   geoLevelIndex: number,
   geoUnitHierarchy: GeoUnitHierarchy,
-  districtsLocked: ReadonlyArray<boolean>
+  lockedDistricts: Set<DistrictId>
 ) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
@@ -397,7 +398,7 @@ const getSidebarRows = (
             : feature.properties.population - averagePopulation
         }
         key={districtId}
-        isDistrictLocked={districtsLocked[districtId]}
+        isDistrictLocked={lockedDistricts.has(districtId)}
         districtId={districtId}
       />
     );

@@ -15,7 +15,7 @@ import {
   toggleDistrictLocked
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition } from "../actions/projectData";
-import { GeoUnits } from "../../shared/entities";
+import { DistrictId, GeoUnits } from "../../shared/entities";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
@@ -23,16 +23,16 @@ export interface DistrictDrawingState {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
-  readonly districtsLocked: ReadonlyArray<boolean>;
+  readonly lockedDistricts: Set<DistrictId>;
 }
 
-export const initialState = {
+export const initialState: DistrictDrawingState = {
   selectedDistrictId: 1,
   selectedGeounits: new Map(),
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0,
   geoLevelVisibility: [],
-  districtsLocked: []
+  lockedDistricts: new Set()
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -94,12 +94,15 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         geoLevelVisibility: action.payload
       };
     case getType(toggleDistrictLocked):
-      const mutableDistrictsLocked = state.districtsLocked.slice();
-      // eslint-disable-next-line
-      mutableDistrictsLocked[action.payload] = !mutableDistrictsLocked[action.payload];
       return {
         ...state,
-        districtsLocked: mutableDistrictsLocked
+        lockedDistricts: new Set(
+          state.lockedDistricts.has(action.payload)
+            ? [...state.lockedDistricts.values()].filter(
+                districtId => districtId !== action.payload
+              )
+            : [...state.lockedDistricts.values(), action.payload]
+        )
       };
     default:
       return state as never;
