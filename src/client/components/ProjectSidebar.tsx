@@ -84,6 +84,7 @@ const ProjectSidebar = ({
             <Styled.th>Race</Styled.th>
             <Styled.th>Pol.</Styled.th>
             <Styled.th>Comp.</Styled.th>
+            <Styled.th></Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
@@ -181,6 +182,7 @@ const SidebarRow = ({
   readonly deviation: number;
 }) => {
   const [demographicsTooltipVisible, setDemographicsTooltipVisible] = useState(false);
+  const [isHovered, setHover] = useState(false);
 
   const showPopulationChange = selectedPopulationDifference !== 0;
   const textColor = showPopulationChange
@@ -196,12 +198,15 @@ const SidebarRow = ({
   ).toLocaleString()}`;
   const compactnessDisplay =
     district.id === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
+  const toggleHover = () => setHover(!isHovered);
   return (
     <Styled.tr
       sx={{ backgroundColor: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
       onClick={() => {
         store.dispatch(setSelectedDistrictId(district.id as number));
       }}
+      onMouseEnter={toggleHover}
+      onMouseLeave={toggleHover}
     >
       <Styled.td sx={{ textAlign: "left" }}>
         <span
@@ -230,6 +235,11 @@ const SidebarRow = ({
       </Styled.td>
       <Styled.td>{BLANK_VALUE}</Styled.td>
       <Styled.td>{compactnessDisplay}</Styled.td>
+      <Styled.td>
+        <span style={{ visibility: isHovered ? "visible" : "hidden" }}>
+          <Icon name="lock-unlocked" />
+        </span>
+      </Styled.td>
     </Styled.tr>
   );
 };
