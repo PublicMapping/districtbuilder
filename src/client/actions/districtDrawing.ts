@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { GeoUnits } from "../../shared/entities";
+import { DistrictId, GeoUnits } from "../../shared/entities";
 
 export enum SelectionTool {
   Default = "DEFAULT",
@@ -19,3 +19,5 @@ export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();
 export const setGeoLevelVisibility = createAction("Set geolevel visibility")<readonly boolean[]>();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();
+
+export const toggleDistrictLocked = createAction("Toggle district locked")<DistrictId>();

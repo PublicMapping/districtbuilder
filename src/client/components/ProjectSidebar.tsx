@@ -28,7 +28,8 @@ import Icon from "./Icon";
 import {
   clearSelectedGeounitIds,
   saveDistrictsDefinition,
-  setSelectedDistrictId
+  setSelectedDistrictId,
+  toggleDistrictLocked
 } from "../actions/districtDrawing";
 import store from "../store";
 
@@ -46,7 +47,8 @@ const ProjectSidebar = ({
   selectedDistrictId,
   selectedGeounits,
   geoLevelIndex,
-  geoUnitHierarchy
+  geoUnitHierarchy,
+  districtsLocked
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -57,6 +59,7 @@ const ProjectSidebar = ({
   readonly selectedGeounits: GeoUnits;
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
+  readonly districtsLocked: ReadonlyArray<boolean>;
 } & LoadingProps) => {
   return (
     <Flex
@@ -103,7 +106,8 @@ const ProjectSidebar = ({
               selectedDistrictId,
               selectedGeounits,
               geoLevelIndex,
-              geoUnitHierarchy
+              geoUnitHierarchy,
+              districtsLocked
             )}
         </tbody>
       </Styled.table>
@@ -173,13 +177,17 @@ const SidebarRow = ({
   selected,
   selectedPopulationDifference,
   demographics,
-  deviation
+  deviation,
+  districtId,
+  isDistrictLocked
 }: {
   readonly district: Feature<MultiPolygon, DistrictProperties>;
   readonly selected: boolean;
   readonly selectedPopulationDifference: number;
   readonly demographics: { readonly [id: string]: number };
   readonly deviation: number;
+  readonly districtId: number;
+  readonly isDistrictLocked?: boolean;
 }) => {
   const [demographicsTooltipVisible, setDemographicsTooltipVisible] = useState(false);
   const [isHovered, setHover] = useState(false);
@@ -197,7 +205,7 @@ const SidebarRow = ({
     intermediateDeviation
   ).toLocaleString()}`;
   const compactnessDisplay =
-    district.id === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
+    districtId === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
   const toggleHover = () => setHover(!isHovered);
   return (
     <Styled.tr
@@ -236,9 +244,18 @@ const SidebarRow = ({
       <Styled.td>{BLANK_VALUE}</Styled.td>
       <Styled.td>{compactnessDisplay}</Styled.td>
       <Styled.td>
-        <span style={{ visibility: isHovered ? "visible" : "hidden" }}>
-          <Icon name="lock-unlocked" />
-        </span>
+        {isDistrictLocked ? (
+          <span onClick={() => store.dispatch(toggleDistrictLocked(districtId))}>
+            <Icon name="lock-locked" />
+          </span>
+        ) : (
+          <span
+            style={{ visibility: isHovered ? "visible" : "hidden" }}
+            onClick={() => store.dispatch(toggleDistrictLocked(districtId))}
+          >
+            <Icon name="lock-unlocked" />
+          </span>
+        )}
       </Styled.td>
     </Styled.tr>
   );
@@ -327,7 +344,8 @@ const getSidebarRows = (
   selectedDistrictId: number,
   selectedGeounits: GeoUnits,
   geoLevelIndex: number,
-  geoUnitHierarchy: GeoUnitHierarchy
+  geoUnitHierarchy: GeoUnitHierarchy,
+  districtsLocked: ReadonlyArray<boolean>
 ) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
@@ -379,6 +397,8 @@ const getSidebarRows = (
             : feature.properties.population - averagePopulation
         }
         key={districtId}
+        isDistrictLocked={districtsLocked[districtId]}
+        districtId={districtId}
       />
     );
   });

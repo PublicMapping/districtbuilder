@@ -11,7 +11,8 @@ import {
   setSelectionTool,
   setSelectedDistrictId,
   setGeoLevelIndex,
-  setGeoLevelVisibility
+  setGeoLevelVisibility,
+  toggleDistrictLocked
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition } from "../actions/projectData";
 import { GeoUnits } from "../../shared/entities";
@@ -22,6 +23,7 @@ export interface DistrictDrawingState {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
+  readonly districtsLocked: ReadonlyArray<boolean>;
 }
 
 export const initialState = {
@@ -29,7 +31,8 @@ export const initialState = {
   selectedGeounits: new Map(),
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0,
-  geoLevelVisibility: []
+  geoLevelVisibility: [],
+  districtsLocked: []
 };
 
 const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
@@ -89,6 +92,14 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
       return {
         ...state,
         geoLevelVisibility: action.payload
+      };
+    case getType(toggleDistrictLocked):
+      const mutableDistrictsLocked = state.districtsLocked.slice();
+      // eslint-disable-next-line
+      mutableDistrictsLocked[action.payload] = !mutableDistrictsLocked[action.payload];
+      return {
+        ...state,
+        districtsLocked: mutableDistrictsLocked
       };
     default:
       return state as never;

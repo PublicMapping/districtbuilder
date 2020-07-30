@@ -80,6 +80,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           selectedGeounits={districtDrawing.selectedGeounits}
           geoLevelIndex={districtDrawing.geoLevelIndex}
           geoUnitHierarchy={geoUnitHierarchy}
+          districtsLocked={districtDrawing.districtsLocked}
         />
         <MapContainer>
           <MapHeader
