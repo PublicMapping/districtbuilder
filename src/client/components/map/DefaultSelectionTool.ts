@@ -10,20 +10,12 @@ import {
   featuresToSet
 } from "./index";
 import { IStaticMetadata } from "../../../shared/entities";
-import { getAllIndices, getDemographics } from "../../../shared/functions";
 
 /*
  * Allows users to individually select/deselect specific geounits by clicking them.
  */
 const DefaultSelectionTool: ISelectionTool = {
-  enable: function(
-    map: MapboxGL.Map,
-    geoLevelId: string,
-    geoLevelIndex: number,
-    staticMetadata: IStaticMetadata,
-    staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-    staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
-  ) {
+  enable: function(map: MapboxGL.Map, geoLevelId: string, staticMetadata: IStaticMetadata) {
     /* eslint-disable */
     this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
     this.unsetCursor = () => (map.getCanvas().style.cursor = "");
@@ -60,19 +52,6 @@ const DefaultSelectionTool: ISelectionTool = {
         store.dispatch(removeSelectedGeounitIds(selectedFeatures));
       };
       isFeatureSelected(map, feature) ? removeFeatures() : addFeatures();
-
-      // Indices of all base geounits belonging to the clicked feature
-      // TODO: Make demographic calculations work for all geolevels (#202)
-      const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
-      const selectedFeatureIds = new Set([...selectedFeatures].map(feature => feature[0]));
-      const selectedBaseIndices = baseIndices
-        ? getAllIndices(baseIndices, selectedFeatureIds)
-        : Array.from(selectedFeatureIds);
-      const demographics = getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
-
-      // As a proof of concept, log to the console the aggregated demographic data for the feature
-      // eslint-disable-next-line
-      console.log(demographics);
     };
     map.on("click", clickHandler);
     // Save the click handler function so it can be removed later
