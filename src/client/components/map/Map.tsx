@@ -168,7 +168,7 @@ const Map = ({
       map.setLayoutProperty(
         `${selectedGeolevel.id}-label`,
         "text-field",
-        label ? `{${label}}` : ""
+        label ? `{${label}-abbrev}` : ""
       );
     }
   }, [map, label, staticMetadata, selectedGeolevel]);

@@ -228,7 +228,9 @@ it when necessary (file sizes ~1GB+).
 
         // Aggregate all desired demographic data
         for (const demo of demographics) {
-          merged.properties[demo] = this.aggProperty(geoms, demo);
+          const value = this.aggProperty(geoms, demo);
+          merged.properties[demo] = value;
+          merged.properties[`${demo}-abbrev`] = abbreviateNumber(value);
         }
 
         // Set the geolevel keys for this level, as well as all larger levels
@@ -582,4 +584,23 @@ it when necessary (file sizes ~1GB+).
         )
       : childGeoms.map((childGeom: any) => childGeom.id);
   }
+}
+
+function abbreviateNumber(value: number) {
+  const suffixes = ["", "k", "m", "b", "t"];
+  const suffixNum = Math.floor(`${value}`.length / 3);
+
+  if (value >= 1000) {
+    let shortValue = "";
+    for (let precision = 2; precision >= 1; precision--) {
+      const abbrevNum = suffixNum !== 0 ? value / Math.pow(1000, suffixNum) : value;
+      shortValue = abbrevNum.toPrecision(precision);
+      const dotLessShortValue = shortValue.replace(/[^a-zA-Z 0-9]+/g, "");
+      if (dotLessShortValue.length <= 2) {
+        break;
+      }
+    }
+    return shortValue + suffixes[suffixNum];
+  }
+  return value;
 }
