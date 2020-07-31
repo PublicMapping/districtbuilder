@@ -8,6 +8,7 @@ import {
   DistrictsDefinition,
   DistrictProperties,
   GeoUnitHierarchy,
+  GeoUnitIndices,
   GeoUnits,
   IProject,
   IStaticMetadata
@@ -57,8 +58,6 @@ const ProjectSidebar = ({
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
 } & LoadingProps) => {
-  // TODO: Make demographic calculations work for all geolevels (#202)
-  const topLevelSelectedGeounitIds = new Set([...selectedGeounits].map(geounit => geounit[0]));
   return (
     <Flex
       sx={{
@@ -93,6 +92,7 @@ const ProjectSidebar = ({
             staticMetadata &&
             staticGeoLevels &&
             staticDemographics &&
+            geoUnitHierarchy &&
             getSidebarRows(
               project,
               geojson,
@@ -100,8 +100,9 @@ const ProjectSidebar = ({
               staticGeoLevels,
               staticDemographics,
               selectedDistrictId,
-              topLevelSelectedGeounitIds,
-              geoLevelIndex
+              selectedGeounits,
+              geoLevelIndex,
+              geoUnitHierarchy
             )}
         </tbody>
       </Styled.table>
@@ -238,10 +239,10 @@ const getTotalSelectedDemographics = (
   staticMetadata: IStaticMetadata,
   staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  selectedGeounitIds: ReadonlySet<number>,
+  selectedGeounits: GeoUnits,
   geoLevelIndex: number
 ) => {
-  // TODO: Make demographic calculations work for all geolevels (#202)
+  const selectedGeounitIds = new Set([...selectedGeounits].map(geounit => geounit[0]));
   const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
   const selectedBaseIndices = baseIndices
     ? getAllIndices(baseIndices, selectedGeounitIds)
@@ -254,45 +255,52 @@ const getTotalSelectedDemographics = (
 const getSavedDistrictSelectedDemographics = (
   project: IProject,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  selectedGeounitIds: ReadonlySet<number>,
-  geoLevelIndex: number
+  selectedGeounits: GeoUnits,
+  geoUnitHierarchy: GeoUnitHierarchy
 ) => {
-  // eslint-disable-next-line
-  const mutableDistrictGeounitAccum: number[][] = Array(project.numberOfDistricts + 1).fill([]);
+  /* eslint-disable */
+  // Note: not using Array.fill to populate these, because the empty array in memory gets shared
+  const mutableDistrictGeounitAccum: number[][] = [];
+  for (let i = 0; i <= project.numberOfDistricts; i = i + 1) {
+    mutableDistrictGeounitAccum[i] = [];
+  }
+  /* eslint-enable */
 
-  // Note: this function was originally intended to be recursive, and had logic to go through
-  // the district definition tree and collect all base geounits found in the tree.
-  // However, there currently isn't enough information on the client-side to be able to
-  // effectively accomplish this, so it is only working with the top-most geolevel at the moment.
-  // We will need to determine a way to make this work with all geolevels. In order to allow that
-  // to happen, there are a couple potential options:
-  //   1) Perform this logic on the server-side, where we have access to the topology
-  //      (not ideal, since we want very fast updates)
-  //   2) Send more data to the client-side in order to allow matching up base geounits to
-  //      the district definition. This may be prohibitively large, so it will require research.
+  // Collect all base geounits found in the selection
   const accumulateGeounits = (
-    geounitIndex: number,
-    subDefinition: DistrictsDefinition,
-    levelIndex: number
+    subIndices: GeoUnitIndices,
+    subDefinition: DistrictsDefinition | number,
+    subHierarchy: GeoUnitHierarchy | number
   ) => {
-    const item = subDefinition[geounitIndex];
-    // eslint-disable-next-line
-    if (typeof item === "number") {
-      // TODO: Make demographic calculations work for all geolevels (#202)
-      const baseIndices = staticGeoLevels.slice().reverse()[levelIndex];
-      const selectedBaseIndices = baseIndices
-        ? getAllIndices(baseIndices, selectedGeounitIds)
-        : Array.from(selectedGeounitIds);
+    if (typeof subHierarchy === "number" && typeof subDefinition === "number") {
+      // The base case: we made it to the bottom of the trees and need to assign this
+      // base geonunit to the district found in the district definition
       // eslint-disable-next-line
-      mutableDistrictGeounitAccum[item] = mutableDistrictGeounitAccum[item].concat(
-        selectedBaseIndices
-      );
+      mutableDistrictGeounitAccum[subDefinition].push(subHierarchy);
+      return;
+    } else if (subIndices.length === 0 && typeof subHierarchy !== "number") {
+      // We've exhausted the base indices. This means we ned to grab all the indices found
+      // at this level and accumulate them all
+      subHierarchy.forEach((_, ind) => accumulateGeounits([ind], subDefinition, subHierarchy));
+      return;
+    } else {
+      // Recurse by drilling into all three data structures:
+      // geounit indices, district definition, and geounit hierarchy
+      const currIndex = subIndices[0];
+      const currDefn =
+        typeof subDefinition === "number"
+          ? subDefinition
+          : (subDefinition[currIndex] as DistrictsDefinition);
+      const currHierarchy =
+        typeof subHierarchy === "number" ? subHierarchy : subHierarchy[currIndex];
+      accumulateGeounits(subIndices.slice(1), currDefn, currHierarchy);
+      return;
     }
   };
-  selectedGeounitIds.forEach(selectedGeounitId => {
-    accumulateGeounits(selectedGeounitId, project.districtsDefinition, geoLevelIndex);
+
+  selectedGeounits.forEach(selectedGeounit => {
+    accumulateGeounits(selectedGeounit, project.districtsDefinition, geoUnitHierarchy);
   });
 
   return mutableDistrictGeounitAccum.map(baseGeounitIdsForDistrict =>
@@ -307,15 +315,16 @@ const getSidebarRows = (
   staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   selectedDistrictId: number,
-  selectedGeounitIds: ReadonlySet<number>,
-  geoLevelIndex: number
+  selectedGeounits: GeoUnits,
+  geoLevelIndex: number,
+  geoUnitHierarchy: GeoUnitHierarchy
 ) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
     staticMetadata,
     staticGeoLevels,
     staticDemographics,
-    selectedGeounitIds,
+    selectedGeounits,
     geoLevelIndex
   );
 
@@ -323,10 +332,9 @@ const getSidebarRows = (
   const savedDistrictSelectedDemographics = getSavedDistrictSelectedDemographics(
     project,
     staticMetadata,
-    staticGeoLevels,
     staticDemographics,
-    selectedGeounitIds,
-    geoLevelIndex
+    selectedGeounits,
+    geoUnitHierarchy
   );
 
   // The target population is based on the average population of all districts,
