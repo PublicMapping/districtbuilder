@@ -60,7 +60,7 @@ const ProjectSidebar = ({
   readonly selectedGeounits: GeoUnits;
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
-  readonly lockedDistricts: Set<DistrictId>;
+  readonly lockedDistricts: ReadonlySet<DistrictId>;
 } & LoadingProps) => {
   return (
     <Flex
@@ -346,7 +346,7 @@ const getSidebarRows = (
   selectedGeounits: GeoUnits,
   geoLevelIndex: number,
   geoUnitHierarchy: GeoUnitHierarchy,
-  lockedDistricts: Set<DistrictId>
+  lockedDistricts: ReadonlySet<DistrictId>
 ) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(

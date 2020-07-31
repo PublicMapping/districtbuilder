@@ -2,14 +2,22 @@ import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import { addSelectedGeounitIds } from "../../actions/districtDrawing";
 import {
-  featuresToSet,
+  featuresToGeoUnits,
   GEOLEVELS_SOURCE_ID,
+  isFeatureLocked,
   isFeatureSelected,
   levelToSelectionLayerId,
   ISelectionTool
 } from "./index";
 
-import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
+import {
+  DistrictId,
+  DistrictsDefinition,
+  FeatureId,
+  GeoUnits,
+  IStaticMetadata
+} from "../../../shared/entities";
+
 /*
  * Allows user to click and drag to select all geounits within the rectangle
  * (bounding box) drawn.
@@ -22,7 +30,13 @@ import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
  * https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
  */
 const RectangleSelectionTool: ISelectionTool = {
-  enable: function(map: MapboxGL.Map, geoLevelId: string, staticMetadata: IStaticMetadata) {
+  enable: function(
+    map: MapboxGL.Map,
+    geoLevelId: string,
+    staticMetadata: IStaticMetadata,
+    districtsDefinition: DistrictsDefinition,
+    lockedDistricts: ReadonlySet<DistrictId>
+  ) {
     map.boxZoom.disable();
     map.dragPan.disable();
     map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line
@@ -60,9 +74,11 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
 
-      setOfInitiallySelectedFeatures = featuresToSet(
-        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
-        staticMetadata.geoLevelHierarchy
+      setOfInitiallySelectedFeatures = onlyUnlockedFeatures(
+        featuresToGeoUnits(
+          getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
+          staticMetadata.geoLevelHierarchy
+        )
       );
 
       // Capture the first xy coordinates
@@ -99,9 +115,14 @@ const RectangleSelectionTool: ISelectionTool = {
       /* eslint-enable */
 
       const features = getFeaturesInBoundingBox([start, current]);
+      const setOfFeatures = onlyUnlockedFeatures(
+        featuresToGeoUnits(features, staticMetadata.geoLevelHierarchy)
+      );
 
       // Set any newly selected features on the map within the bounding box to selected state
-      const newFeatures = features.filter(feature => !isFeatureSelected(map, feature));
+      const newFeatures = features.filter(
+        feature => setOfFeatures.has(feature.id as FeatureId) && !isFeatureSelected(map, feature)
+      );
       newFeatures.forEach(feature => {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
@@ -109,8 +130,9 @@ const RectangleSelectionTool: ISelectionTool = {
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
       if (prevFeatures) {
-        const setOfPrevFeatures = featuresToSet(prevFeatures, staticMetadata.geoLevelHierarchy);
-        const setOfFeatures = featuresToSet(features, staticMetadata.geoLevelHierarchy);
+        const setOfPrevFeatures = onlyUnlockedFeatures(
+          featuresToGeoUnits(prevFeatures, staticMetadata.geoLevelHierarchy)
+        );
         Array.from(setOfPrevFeatures.keys())
           .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfFeatures.has(id))
           .forEach(id => {
@@ -141,6 +163,15 @@ const RectangleSelectionTool: ISelectionTool = {
       });
     }
 
+    function onlyUnlockedFeatures(geoUnits: GeoUnits) {
+      return new Map(
+        [...geoUnits.entries()].filter(
+          ([_featureId, geoUnitIndices]) =>
+            !isFeatureLocked(districtsDefinition, lockedDistricts, geoUnitIndices)
+        )
+      );
+    }
+
     // eslint-disable-next-line
     function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       // Remove these events now that finish has been called.
@@ -157,10 +188,10 @@ const RectangleSelectionTool: ISelectionTool = {
       // eslint-disable-next-line
       if (bbox) {
         const selectedFeatures = getFeaturesInBoundingBox(bbox);
-        selectedFeatures.length &&
-          store.dispatch(
-            addSelectedGeounitIds(featuresToSet(selectedFeatures, staticMetadata.geoLevelHierarchy))
-          );
+        const geoUnits = onlyUnlockedFeatures(
+          featuresToGeoUnits(selectedFeatures, staticMetadata.geoLevelHierarchy)
+        );
+        geoUnits.size && store.dispatch(addSelectedGeounitIds(geoUnits));
       }
     }
   },

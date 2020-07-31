@@ -2,7 +2,15 @@ import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
-import { FeatureId, GeoLevelInfo, GeoUnits, IStaticMetadata } from "../../../shared/entities";
+import {
+  GeoUnitCollection,
+  DistrictId,
+  FeatureId,
+  GeoLevelInfo,
+  GeoUnitIndices,
+  GeoUnits,
+  IStaticMetadata
+} from "../../../shared/entities";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -58,6 +66,7 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
       }
     ]),
     glyphs: window.location.origin + "/fonts/{fontstack}/{range}.pbf",
+    sprite: window.location.origin + "/sprites/sprite",
     name: "District Builder",
     sources: {
       [GEOLEVELS_SOURCE_ID]: {
@@ -87,9 +96,9 @@ export function levelToSelectionLayerId(geoLevel: string) {
 }
 
 /*
- * Used for getting/setting feature state.
+ * Used for getting/setting feature state for geounits in geography.
  */
-export function featureStateExpression(feature: MapboxGL.MapboxGeoJSONFeature) {
+export function featureStateGeoLevel(feature: MapboxGL.MapboxGeoJSONFeature) {
   return {
     source: GEOLEVELS_SOURCE_ID,
     id: feature.id,
@@ -97,12 +106,40 @@ export function featureStateExpression(feature: MapboxGL.MapboxGeoJSONFeature) {
   };
 }
 
+/*
+ * Used for getting/setting feature state for districts.
+ */
+export function featureStateDistricts(districtId: DistrictId) {
+  return {
+    source: DISTRICTS_SOURCE_ID,
+    id: districtId
+  };
+}
+
 export function isFeatureSelected(
   map: MapboxGL.Map,
   feature: MapboxGL.MapboxGeoJSONFeature
 ): boolean {
-  const featureState = map.getFeatureState(featureStateExpression(feature));
+  const featureState = map.getFeatureState(featureStateGeoLevel(feature));
   return featureState.selected === true;
+}
+
+export function isFeatureLocked(
+  districtsDefinition: GeoUnitCollection,
+  lockedDistricts: ReadonlySet<DistrictId>,
+  geoUnitIndices: GeoUnitIndices
+): boolean {
+  return geoUnitIndices.length && typeof districtsDefinition === "object"
+    ? isFeatureLocked(
+        districtsDefinition[geoUnitIndices[0]],
+        lockedDistricts,
+        geoUnitIndices.slice(1)
+      )
+    : typeof districtsDefinition === "number"
+    ? lockedDistricts.has(districtsDefinition)
+    : // We shouldn't get here since that would mean there's a discrepancy between
+      // the district definition and the geounit indices
+      false;
 }
 
 export function getGeoLevelVisibility(
@@ -124,7 +161,7 @@ export interface ISelectionTool {
 }
 /* eslint-enable */
 
-export function featuresToSet(
+export function featuresToGeoUnits(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
 ): GeoUnits {

@@ -6,11 +6,18 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { setGeoLevelVisibility, SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
-import { DistrictProperties, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
+import {
+  DistrictId,
+  DistrictProperties,
+  GeoUnits,
+  IProject,
+  IStaticMetadata
+} from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
+  featureStateDistricts,
   getMapboxStyle,
   getGeoLevelVisibility
 } from "./index";
@@ -33,6 +40,7 @@ interface Props {
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
+  readonly lockedDistricts: ReadonlySet<DistrictId>;
   readonly label?: string;
 }
 
@@ -46,6 +54,7 @@ const Map = ({
   selectedDistrictId,
   selectionTool,
   geoLevelIndex,
+  lockedDistricts,
   label
 }: Props) => {
   const [map, setMap] = useState<MapboxGL.Map | null>(null);
@@ -101,6 +110,16 @@ const Map = ({
           paint: {
             "fill-color": { type: "identity", property: "color" },
             "fill-opacity": 0.7
+          }
+        });
+        map.addLayer({
+          id: "districts-locked",
+          type: "fill",
+          source: DISTRICTS_SOURCE_ID,
+          layout: {},
+          paint: {
+            "fill-pattern": "circle-1",
+            "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
           }
         });
 
@@ -174,6 +193,15 @@ const Map = ({
   }, [map, label, staticMetadata, selectedGeolevel]);
 
   useEffect(() => {
+    map &&
+      [...new Array(project.numberOfDistricts + 1).keys()].forEach(districtId =>
+        map.setFeatureState(featureStateDistricts(districtId), {
+          locked: lockedDistricts.has(districtId)
+        })
+      );
+  }, [map, project, lockedDistricts]);
+
+  useEffect(() => {
     // eslint-disable-next-line
     if (map) {
       // Restrict zoom levels as per geolevel hierarchy if features are selected.
@@ -198,9 +226,21 @@ const Map = ({
       RectangleSelectionTool.disable(map);
       // Enable appropriate tool
       if (selectionTool === SelectionTool.Default) {
-        DefaultSelectionTool.enable(map, selectedGeolevel.id, staticMetadata);
+        DefaultSelectionTool.enable(
+          map,
+          selectedGeolevel.id,
+          staticMetadata,
+          project.districtsDefinition,
+          lockedDistricts
+        );
       } else if (selectionTool === SelectionTool.Rectangle) {
-        RectangleSelectionTool.enable(map, selectedGeolevel.id, staticMetadata);
+        RectangleSelectionTool.enable(
+          map,
+          selectedGeolevel.id,
+          staticMetadata,
+          project.districtsDefinition,
+          lockedDistricts
+        );
       }
       /* eslint-enable */
     }
@@ -211,7 +251,9 @@ const Map = ({
     geoLevelIndex,
     staticMetadata,
     staticDemographics,
-    staticGeoLevels
+    staticGeoLevels,
+    project,
+    lockedDistricts
   ]);
 
   return <div ref={mapRef} style={styles} />;

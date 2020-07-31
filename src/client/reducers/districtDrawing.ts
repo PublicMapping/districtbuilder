@@ -23,7 +23,7 @@ export interface DistrictDrawingState {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
-  readonly lockedDistricts: Set<DistrictId>;
+  readonly lockedDistricts: ReadonlySet<DistrictId>;
 }
 
 export const initialState: DistrictDrawingState = {

@@ -106,6 +106,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               selectedDistrictId={districtDrawing.selectedDistrictId}
               selectionTool={districtDrawing.selectionTool}
               geoLevelIndex={districtDrawing.geoLevelIndex}
+              lockedDistricts={districtDrawing.lockedDistricts}
               label={label}
             />
           ) : null}
