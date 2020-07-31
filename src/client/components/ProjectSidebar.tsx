@@ -242,7 +242,7 @@ const getTotalSelectedDemographics = (
   selectedGeounits: GeoUnits,
   geoLevelIndex: number
 ) => {
-  const selectedGeounitIds = new Set([...selectedGeounits].map(geounit => geounit[0]));
+  const selectedGeounitIds = new Set([...selectedGeounits.keys()]);
   const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
   const selectedBaseIndices = baseIndices
     ? getAllIndices(baseIndices, selectedGeounitIds)
