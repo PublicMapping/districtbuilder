@@ -588,7 +588,7 @@ it when necessary (file sizes ~1GB+).
 
 function abbreviateNumber(value: number) {
   const suffixes = ["", "k", "m", "b", "t"];
-  let shortValue = value;
+  let shortValue = value.toPrecision(1);
   let suffixNum = 0;
 
   if (value >= 10) {
