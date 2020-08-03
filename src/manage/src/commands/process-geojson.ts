@@ -228,9 +228,7 @@ it when necessary (file sizes ~1GB+).
 
         // Aggregate all desired demographic data
         for (const demo of demographics) {
-          const value = this.aggProperty(geoms, demo);
-          merged.properties[demo] = value;
-          merged.properties[`${demo}-abbrev`] = abbreviateNumber(value);
+          merged.properties[demo] = this.aggProperty(geoms, demo);
         }
 
         // Set the geolevel keys for this level, as well as all larger levels
@@ -262,6 +260,12 @@ it when necessary (file sizes ~1GB+).
       geomCollection.geometries.forEach((geometry: GeometryObject, index) => {
         // tslint:disable-next-line:no-object-mutation
         geometry.id = index;
+
+        // Add abbreviated label
+        for (const demo of demographics) {
+          // @ts-ignore
+          geometry.properties[`${demo}-abbrev`] = abbreviateNumber(geometry.properties[demo]);
+        }
       });
     }
 
@@ -588,19 +592,19 @@ it when necessary (file sizes ~1GB+).
 
 function abbreviateNumber(value: number) {
   const suffixes = ["", "k", "m", "b", "t"];
-  const suffixNum = Math.floor(`${value}`.length / 3);
+  let shortValue = value.toPrecision(1);
+  let suffixNum = 0;
 
-  if (value >= 1000) {
-    let shortValue = "";
-    for (let precision = 2; precision >= 1; precision--) {
-      const abbrevNum = suffixNum !== 0 ? value / Math.pow(1000, suffixNum) : value;
-      shortValue = abbrevNum.toPrecision(precision);
-      const dotLessShortValue = shortValue.replace(/[^a-zA-Z 0-9]+/g, "");
-      if (dotLessShortValue.length <= 2) {
-        break;
-      }
+  if (value >= 10) {
+    suffixNum = Math.floor(Math.log10(value) / 3);
+    const abbrevNum = value / Math.pow(1000, suffixNum);
+
+    if (Math.log10(abbrevNum) >= 2) {
+      shortValue = abbrevNum.toPrecision(3);
+    } else {
+      shortValue = abbrevNum.toPrecision(2);
     }
-    return shortValue + suffixes[suffixNum];
   }
-  return value;
+
+  return shortValue + suffixes[suffixNum];
 }
