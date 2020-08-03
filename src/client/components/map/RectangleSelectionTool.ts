@@ -2,20 +2,19 @@ import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import { addSelectedGeounitIds } from "../../actions/districtDrawing";
 import {
-  featuresToGeoUnits,
+  featuresToUnlockedGeoUnits,
   GEOLEVELS_SOURCE_ID,
-  isFeatureLocked,
   isFeatureSelected,
   levelToSelectionLayerId,
   ISelectionTool
 } from "./index";
 
 import {
-  DistrictId,
   DistrictsDefinition,
   FeatureId,
   GeoUnits,
-  IStaticMetadata
+  IStaticMetadata,
+  LockedDistricts
 } from "../../../shared/entities";
 
 /*
@@ -35,7 +34,7 @@ const RectangleSelectionTool: ISelectionTool = {
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
-    lockedDistricts: ReadonlySet<DistrictId>
+    lockedDistricts: LockedDistricts
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
@@ -74,11 +73,11 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
 
-      setOfInitiallySelectedFeatures = onlyUnlockedFeatures(
-        featuresToGeoUnits(
-          getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
-          staticMetadata.geoLevelHierarchy
-        )
+      setOfInitiallySelectedFeatures = featuresToUnlockedGeoUnits(
+        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
+        staticMetadata.geoLevelHierarchy,
+        districtsDefinition,
+        lockedDistricts
       );
 
       // Capture the first xy coordinates
@@ -115,8 +114,11 @@ const RectangleSelectionTool: ISelectionTool = {
       /* eslint-enable */
 
       const features = getFeaturesInBoundingBox([start, current]);
-      const setOfFeatures = onlyUnlockedFeatures(
-        featuresToGeoUnits(features, staticMetadata.geoLevelHierarchy)
+      const setOfFeatures = featuresToUnlockedGeoUnits(
+        features,
+        staticMetadata.geoLevelHierarchy,
+        districtsDefinition,
+        lockedDistricts
       );
 
       // Set any newly selected features on the map within the bounding box to selected state
@@ -130,8 +132,11 @@ const RectangleSelectionTool: ISelectionTool = {
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
       if (prevFeatures) {
-        const setOfPrevFeatures = onlyUnlockedFeatures(
-          featuresToGeoUnits(prevFeatures, staticMetadata.geoLevelHierarchy)
+        const setOfPrevFeatures = featuresToUnlockedGeoUnits(
+          prevFeatures,
+          staticMetadata.geoLevelHierarchy,
+          districtsDefinition,
+          lockedDistricts
         );
         Array.from(setOfPrevFeatures.keys())
           .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfFeatures.has(id))
@@ -163,15 +168,6 @@ const RectangleSelectionTool: ISelectionTool = {
       });
     }
 
-    function onlyUnlockedFeatures(geoUnits: GeoUnits) {
-      return new Map(
-        [...geoUnits.entries()].filter(
-          ([, geoUnitIndices]) =>
-            !isFeatureLocked(districtsDefinition, lockedDistricts, geoUnitIndices)
-        )
-      );
-    }
-
     // eslint-disable-next-line
     function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       // Remove these events now that finish has been called.
@@ -188,8 +184,11 @@ const RectangleSelectionTool: ISelectionTool = {
       // eslint-disable-next-line
       if (bbox) {
         const selectedFeatures = getFeaturesInBoundingBox(bbox);
-        const geoUnits = onlyUnlockedFeatures(
-          featuresToGeoUnits(selectedFeatures, staticMetadata.geoLevelHierarchy)
+        const geoUnits = featuresToUnlockedGeoUnits(
+          selectedFeatures,
+          staticMetadata.geoLevelHierarchy,
+          districtsDefinition,
+          lockedDistricts
         );
         geoUnits.size && store.dispatch(addSelectedGeounitIds(geoUnits));
       }

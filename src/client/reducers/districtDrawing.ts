@@ -15,7 +15,7 @@ import {
   toggleDistrictLocked
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition } from "../actions/projectData";
-import { DistrictId, GeoUnits } from "../../shared/entities";
+import { GeoUnits, LockedDistricts } from "../../shared/entities";
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
@@ -23,7 +23,7 @@ export interface DistrictDrawingState {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
-  readonly lockedDistricts: ReadonlySet<DistrictId>;
+  readonly lockedDistricts: LockedDistricts;
 }
 
 export const initialState: DistrictDrawingState = {

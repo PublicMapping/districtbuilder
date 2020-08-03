@@ -4,19 +4,12 @@ import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../../actions/d
 import {
   DISTRICTS_LAYER_ID,
   isFeatureSelected,
-  isFeatureLocked,
   featureStateGeoLevel,
   levelToSelectionLayerId,
   ISelectionTool,
-  featuresToGeoUnits
+  featuresToUnlockedGeoUnits
 } from "./index";
-import {
-  DistrictId,
-  DistrictsDefinition,
-  FeatureId,
-  GeoUnitIndices,
-  IStaticMetadata
-} from "../../../shared/entities";
+import { DistrictsDefinition, IStaticMetadata, LockedDistricts } from "../../../shared/entities";
 
 /*
  * Allows users to individually select/deselect specific geounits by clicking them.
@@ -27,7 +20,7 @@ const DefaultSelectionTool: ISelectionTool = {
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
-    lockedDistricts: ReadonlySet<DistrictId>
+    lockedDistricts: LockedDistricts
   ) {
     /* eslint-disable */
     this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
@@ -55,7 +48,12 @@ const DefaultSelectionTool: ISelectionTool = {
       }
       const feature = features[0];
 
-      const selectedFeatures = featuresToGeoUnits([feature], staticMetadata.geoLevelHierarchy);
+      const selectedFeatures = featuresToUnlockedGeoUnits(
+        [feature],
+        staticMetadata.geoLevelHierarchy,
+        districtsDefinition,
+        lockedDistricts
+      );
       const addFeatures = () => {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: true });
         store.dispatch(addSelectedGeounitIds(selectedFeatures));
@@ -64,11 +62,7 @@ const DefaultSelectionTool: ISelectionTool = {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
         store.dispatch(removeSelectedGeounitIds(selectedFeatures));
       };
-      const isLocked = !isFeatureLocked(districtsDefinition, lockedDistricts, selectedFeatures.get(
-        feature.id as FeatureId
-      ) as GeoUnitIndices);
-
-      isLocked && (isFeatureSelected(map, feature) ? removeFeatures() : addFeatures());
+      isFeatureSelected(map, feature) ? removeFeatures() : addFeatures();
     };
     map.on("click", clickHandler);
     // Save the click handler function so it can be removed later

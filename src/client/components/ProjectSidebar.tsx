@@ -6,13 +6,13 @@ import { Box, Button, Flex, Heading, jsx, Styled } from "theme-ui";
 import {
   CompactnessScore,
   DistrictsDefinition,
-  DistrictId,
   DistrictProperties,
   GeoUnitHierarchy,
   GeoUnitIndices,
   GeoUnits,
   IProject,
-  IStaticMetadata
+  IStaticMetadata,
+  LockedDistricts
 } from "../../shared/entities";
 import { assertNever, getAllIndices, getDemographics } from "../../shared/functions";
 import {
@@ -60,7 +60,7 @@ const ProjectSidebar = ({
   readonly selectedGeounits: GeoUnits;
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
-  readonly lockedDistricts: ReadonlySet<DistrictId>;
+  readonly lockedDistricts: LockedDistricts;
 } & LoadingProps) => {
   return (
     <Flex
@@ -346,7 +346,7 @@ const getSidebarRows = (
   selectedGeounits: GeoUnits,
   geoLevelIndex: number,
   geoUnitHierarchy: GeoUnitHierarchy,
-  lockedDistricts: ReadonlySet<DistrictId>
+  lockedDistricts: LockedDistricts
 ) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(

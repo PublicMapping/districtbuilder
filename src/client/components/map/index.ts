@@ -5,11 +5,13 @@ import { s3ToHttps } from "../../s3";
 import {
   GeoUnitCollection,
   DistrictId,
+  DistrictsDefinition,
   FeatureId,
   GeoLevelInfo,
   GeoUnitIndices,
   GeoUnits,
-  IStaticMetadata
+  IStaticMetadata,
+  LockedDistricts
 } from "../../../shared/entities";
 
 // Vector tiles with geolevel data for this geography
@@ -124,13 +126,13 @@ export function isFeatureSelected(
   return featureState.selected === true;
 }
 
-export function isFeatureLocked(
+function isGeoUnitLocked(
   districtsDefinition: GeoUnitCollection,
-  lockedDistricts: ReadonlySet<DistrictId>,
+  lockedDistricts: LockedDistricts,
   geoUnitIndices: GeoUnitIndices
 ): boolean {
   return geoUnitIndices.length && typeof districtsDefinition === "object"
-    ? isFeatureLocked(
+    ? isGeoUnitLocked(
         districtsDefinition[geoUnitIndices[0]],
         lockedDistricts,
         geoUnitIndices.slice(1)
@@ -161,7 +163,7 @@ export interface ISelectionTool {
 }
 /* eslint-enable */
 
-export function featuresToGeoUnits(
+function featuresToGeoUnits(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
 ): GeoUnits {
@@ -184,5 +186,30 @@ export function featuresToGeoUnits(
         [] as readonly number[]
       )
     ])
+  );
+}
+
+function onlyUnlockedFeatures(
+  districtsDefinition: DistrictsDefinition,
+  lockedDistricts: LockedDistricts,
+  geoUnits: GeoUnits
+): GeoUnits {
+  return new Map(
+    [...geoUnits.entries()].filter(
+      ([, geoUnitIndices]) => !isGeoUnitLocked(districtsDefinition, lockedDistricts, geoUnitIndices)
+    )
+  );
+}
+
+export function featuresToUnlockedGeoUnits(
+  features: readonly MapboxGeoJSONFeature[],
+  geoLevelHierarchy: readonly GeoLevelInfo[],
+  districtsDefinition: DistrictsDefinition,
+  lockedDistricts: LockedDistricts
+): GeoUnits {
+  return onlyUnlockedFeatures(
+    districtsDefinition,
+    lockedDistricts,
+    featuresToGeoUnits(features, geoLevelHierarchy)
   );
 }

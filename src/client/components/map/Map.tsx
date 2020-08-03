@@ -7,11 +7,11 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { setGeoLevelVisibility, SelectionTool } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
-  DistrictId,
   DistrictProperties,
   GeoUnits,
   IProject,
-  IStaticMetadata
+  IStaticMetadata,
+  LockedDistricts
 } from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -40,7 +40,7 @@ interface Props {
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
-  readonly lockedDistricts: ReadonlySet<DistrictId>;
+  readonly lockedDistricts: LockedDistricts;
   readonly label?: string;
 }
 
