@@ -588,10 +588,10 @@ it when necessary (file sizes ~1GB+).
 
 function abbreviateNumber(value: number) {
   const suffixes = ["", "k", "m", "b", "t"];
-  let shortValue = 0;
+  let shortValue = value;
   let suffixNum = 0;
 
-  if (value !== 0) {
+  if (value >= 10) {
     suffixNum = Math.floor(Math.log10(value) / 3);
     const abbrevNum = value / Math.pow(1000, suffixNum);
     
