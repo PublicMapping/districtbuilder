@@ -1,6 +1,6 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
-import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../../actions/districtDrawing";
+import { addSelectedGeounits, removeSelectedGeounits } from "../../actions/districtDrawing";
 import {
   DISTRICTS_LAYER_ID,
   isFeatureSelected,
@@ -48,7 +48,7 @@ const DefaultSelectionTool: ISelectionTool = {
       }
       const feature = features[0];
 
-      const selectedFeatures = featuresToUnlockedGeoUnits(
+      const geoUnits = featuresToUnlockedGeoUnits(
         [feature],
         staticMetadata.geoLevelHierarchy,
         districtsDefinition,
@@ -56,11 +56,11 @@ const DefaultSelectionTool: ISelectionTool = {
       );
       const addFeatures = () => {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: true });
-        store.dispatch(addSelectedGeounitIds(selectedFeatures));
+        store.dispatch(addSelectedGeounits(geoUnits));
       };
       const removeFeatures = () => {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
-        store.dispatch(removeSelectedGeounitIds(selectedFeatures));
+        store.dispatch(removeSelectedGeounits(geoUnits));
       };
       isFeatureSelected(map, feature) ? removeFeatures() : addFeatures();
     };

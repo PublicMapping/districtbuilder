@@ -3,9 +3,9 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
-  addSelectedGeounitIds,
+  addSelectedGeounits,
   clearSelectedGeounitIds,
-  removeSelectedGeounitIds,
+  removeSelectedGeounits,
   SelectionTool,
   saveDistrictsDefinition,
   setSelectionTool,
@@ -45,12 +45,12 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         ...state,
         selectedDistrictId: action.payload
       };
-    case getType(addSelectedGeounitIds):
+    case getType(addSelectedGeounits):
       return {
         ...state,
         selectedGeounits: new Map([...state.selectedGeounits, ...action.payload])
       };
-    case getType(removeSelectedGeounitIds): {
+    case getType(removeSelectedGeounits): {
       const mutableSelected = new Map(state.selectedGeounits);
       action.payload.forEach((_value, key) => {
         mutableSelected.delete(key);
