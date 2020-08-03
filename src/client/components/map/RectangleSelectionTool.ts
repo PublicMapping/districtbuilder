@@ -166,7 +166,7 @@ const RectangleSelectionTool: ISelectionTool = {
     function onlyUnlockedFeatures(geoUnits: GeoUnits) {
       return new Map(
         [...geoUnits.entries()].filter(
-          ([_featureId, geoUnitIndices]) =>
+          ([, geoUnitIndices]) =>
             !isFeatureLocked(districtsDefinition, lockedDistricts, geoUnitIndices)
         )
       );
