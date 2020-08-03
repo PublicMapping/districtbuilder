@@ -22,7 +22,7 @@
     "event-stream": "4.0.1",
     "geojson-polygon-labels": "^1.5.0",
     "kebab-case": "1.0.0",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "pg": "7.17.1",
     "recursive-readdir": "2.2.2",
     "rxjs": "6.5.4",
