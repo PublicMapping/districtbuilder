@@ -138,10 +138,12 @@ function isGeoUnitLocked(
         geoUnitIndices.slice(1)
       )
     : typeof districtsDefinition === "number"
-    ? lockedDistricts.has(districtsDefinition)
-    : // We shouldn't get here since that would mean there's a discrepancy between
-      // the district definition and the geounit indices
-      false;
+    ? // Check if this specific district is locked
+      lockedDistricts.has(districtsDefinition)
+    : // Check if any district at this geolevel is locked
+      districtsDefinition.some(
+        districtId => typeof districtId === "number" && lockedDistricts.has(districtId)
+      );
 }
 
 export function getGeoLevelVisibility(
