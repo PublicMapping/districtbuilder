@@ -1,26 +1,22 @@
 /** @jsx jsx */
 import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
+import memoize from "memoizee";
 import { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx } from "theme-ui";
 
 import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
 import { getTotalSelectedDemographics } from "../../../shared/functions";
-import { SelectionTool } from "../../actions/districtDrawing";
 import { State } from "../../reducers";
 import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
-import {
-  levelToLabelLayerId,
-  levelToLineLayerId,
-  levelToSelectionLayerId,
-  GEOLEVELS_SOURCE_ID
-} from ".";
+import { levelToLineLayerId, levelToSelectionLayerId } from ".";
+
+const getDemographics = memoize(getTotalSelectedDemographics);
 
 const MapTooltip = ({
   geoLevelIndex,
-  selectionTool,
   highlightedGeounits,
   staticDemographicsResource,
   staticGeoLevelsResource,
@@ -28,7 +24,6 @@ const MapTooltip = ({
   map
 }: {
   readonly geoLevelIndex: number;
-  readonly selectionTool: SelectionTool;
   readonly highlightedGeounits: GeoUnits;
   readonly staticDemographicsResource: Resource<
     ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
@@ -54,7 +49,7 @@ const MapTooltip = ({
   useEffect(() => {
     const onMouseMoveThrottled = throttle((e: MapboxGL.MapMouseEvent) => {
       // eslint-disable-next-line
-      if (map && staticMetadata && invertedGeoLevelIndex) {
+      if (map && staticMetadata && invertedGeoLevelIndex !== undefined) {
         const geoLevel = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
         const features =
           map &&
@@ -69,15 +64,18 @@ const MapTooltip = ({
       }
     }, 5);
 
-    const onMouseOut = (e: MouseEvent) => {
-      console.log("mouse out", e);
+    const onMouseOut = throttle((e: MouseEvent) => {
       const isOnTooltip =
         e.relatedTarget instanceof Element &&
         tooltipRef.current &&
         (e.relatedTarget === tooltipRef.current || tooltipRef.current.contains(e.relatedTarget));
-      console.log("isOnTooltip", isOnTooltip, e.relatedTarget);
+
       !isOnTooltip && setFeature(undefined);
-    };
+      setPoint({
+        x: e.offsetX,
+        y: e.offsetY
+      });
+    }, 5);
 
     const onDrag = (e: MapboxGL.MapMouseEvent) => {
       setPoint({ x: e.originalEvent.offsetX, y: e.originalEvent.offsetY });
@@ -105,39 +103,57 @@ const MapTooltip = ({
 
   // eslint-disable-next-line
   if (
-    feature &&
-    feature.properties &&
     staticMetadata &&
     staticGeoLevels &&
     staticDemographics &&
-    invertedGeoLevelIndex
+    invertedGeoLevelIndex !== undefined
   ) {
     const featureGeoLevels = staticMetadata.geoLevelHierarchy.slice(invertedGeoLevelIndex);
     const geoLevel = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
-    const indexes: readonly number[] = featureGeoLevels.map((geoLevelInfo, idx) =>
-      feature.properties
-        ? (feature.properties[
-            idx === invertedGeoLevelIndex ? `${geoLevelInfo.id}Idx` : "idx"
-          ] as number)
-        : -1
-    );
-    const selectedGeounits: GeoUnits = new Map([[feature.id as number, indexes]]);
-    const demographics = getTotalSelectedDemographics(
-      staticMetadata,
-      staticGeoLevels,
-      staticDemographics,
-      selectedGeounits,
-      geoLevelIndex
-    );
+    const selectedGeounits: GeoUnits | undefined | null =
+      highlightedGeounits.size > 0
+        ? highlightedGeounits
+        : feature &&
+          feature.properties &&
+          new Map([
+            [
+              feature.id as number,
+              featureGeoLevels.map((geoLevelInfo, idx) =>
+                feature.properties
+                  ? (feature.properties[
+                      idx === invertedGeoLevelIndex ? `${geoLevelInfo.id}Idx` : "idx"
+                    ] as number)
+                  : -1
+              )
+            ]
+          ]);
+    const demographics =
+      selectedGeounits &&
+      getDemographics(
+        staticMetadata,
+        staticGeoLevels,
+        staticDemographics,
+        selectedGeounits,
+        geoLevelIndex
+      );
 
-    return (
+    const heading =
+      highlightedGeounits.size > 0 ? null : feature &&
+        feature.properties &&
+        feature.properties.name ? (
+        (feature.properties.name as string)
+      ) : feature ? (
+        <span sx={{ textTransform: "capitalize" }}>{`${geoLevel} #${feature.id}`}</span>
+      ) : null;
+
+    return demographics ? (
       <Box
         ref={tooltipRef}
         sx={{
           transform: `translate3d(${point.x}px, ${point.y}px, 0)`,
-          display: demographics ? "block" : "block",
           position: "absolute",
-          top: "30px",
+          top: "20px",
+          left: "20px",
           backgroundColor: "gray.8",
           color: "muted",
           width: "200px",
@@ -146,16 +162,18 @@ const MapTooltip = ({
           zIndex: 1
         }}
       >
-        <Heading as="h3" sx={{ color: "muted", textTransform: "capitalize" }}>
-          {feature.properties.name ? feature.properties.name : `${geoLevel} #${feature.id}`}
-        </Heading>
+        {heading && (
+          <Heading as="h3" sx={{ color: "muted" }}>
+            {heading}
+          </Heading>
+        )}
         <Box>Population {Number(demographics.population).toLocaleString()}</Box>
         <Divider sx={{ borderColor: "white" }} />
         <Box sx={{ width: "100%" }}>
-          {demographics && <DemographicsTooltip demographics={demographics} />}
+          <DemographicsTooltip demographics={demographics} />
         </Box>
       </Box>
-    );
+    ) : null;
   }
   return null;
 };
@@ -163,7 +181,6 @@ const MapTooltip = ({
 function mapStateToProps(state: State) {
   return {
     geoLevelIndex: state.districtDrawing.geoLevelIndex,
-    selectionTool: state.districtDrawing.selectionTool,
     highlightedGeounits: state.districtDrawing.highlightedGeounits,
     staticDemographicsResource: state.projectData.staticDemographics,
     staticGeoLevelsResource: state.projectData.staticGeoLevels,
