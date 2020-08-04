@@ -14,7 +14,7 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
-import { assertNever, getAllIndices, getDemographics } from "../../shared/functions";
+import { assertNever, getDemographics, getTotalSelectedDemographics } from "../../shared/functions";
 import {
   getDistrictColor,
   negativeChangeColor,
@@ -241,7 +241,7 @@ const SidebarRow = ({
       >
         <DemographicsChart demographics={demographics} />
         {demographicsTooltipVisible && demographics.population > 0 && (
-          <Box sx={{ position: "absolute" }}>
+          <Box sx={{ position: "absolute", p: 2, backgroundColor: "gray.8" }}>
             <DemographicsTooltip demographics={demographics} />
           </Box>
         )}
@@ -261,22 +261,6 @@ const SidebarRow = ({
       </Styled.td>
     </Styled.tr>
   );
-};
-
-// Aggregate all demographics that are included in the selection
-const getTotalSelectedDemographics = (
-  staticMetadata: IStaticMetadata,
-  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  selectedGeounits: GeoUnits,
-  geoLevelIndex: number
-) => {
-  const selectedGeounitIds = new Set([...selectedGeounits.keys()]);
-  const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
-  const selectedBaseIndices = baseIndices
-    ? getAllIndices(baseIndices, selectedGeounitIds)
-    : Array.from(selectedGeounitIds);
-  return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 };
 
 // Drill into the district definition and collect the base geounits for
