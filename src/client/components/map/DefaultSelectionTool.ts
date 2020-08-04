@@ -9,7 +9,12 @@ import {
   ISelectionTool,
   featuresToUnlockedGeoUnits
 } from "./index";
-import { DistrictsDefinition, IStaticMetadata, LockedDistricts } from "../../../shared/entities";
+import {
+  DistrictsDefinition,
+  FeatureId,
+  IStaticMetadata,
+  LockedDistricts
+} from "../../../shared/entities";
 
 /*
  * Allows users to individually select/deselect specific geounits by clicking them.
@@ -62,7 +67,8 @@ const DefaultSelectionTool: ISelectionTool = {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
         store.dispatch(removeSelectedGeounits(geoUnits));
       };
-      isFeatureSelected(map, feature) ? removeFeatures() : addFeatures();
+      geoUnits.has(feature.id as FeatureId) &&
+        (isFeatureSelected(map, feature) ? removeFeatures() : addFeatures());
     };
     map.on("click", clickHandler);
     // Save the click handler function so it can be removed later
