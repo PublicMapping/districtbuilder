@@ -218,8 +218,8 @@ const SidebarRow = ({
       onClick={() => {
         store.dispatch(setSelectedDistrictId(district.id as number));
       }}
-      onMouseEnter={toggleHover}
-      onMouseLeave={toggleHover}
+      onMouseOver={toggleHover}
+      onMouseOut={toggleHover}
     >
       <Styled.td sx={{ textAlign: "left" }}>
         <span
