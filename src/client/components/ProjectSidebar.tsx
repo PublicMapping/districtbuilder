@@ -11,7 +11,8 @@ import {
   GeoUnitIndices,
   GeoUnits,
   IProject,
-  IStaticMetadata
+  IStaticMetadata,
+  LockedDistricts
 } from "../../shared/entities";
 import { assertNever, getAllIndices, getDemographics } from "../../shared/functions";
 import {
@@ -28,7 +29,8 @@ import Icon from "./Icon";
 import {
   clearSelectedGeounitIds,
   saveDistrictsDefinition,
-  setSelectedDistrictId
+  setSelectedDistrictId,
+  toggleDistrictLocked
 } from "../actions/districtDrawing";
 import store from "../store";
 
@@ -46,7 +48,8 @@ const ProjectSidebar = ({
   selectedDistrictId,
   selectedGeounits,
   geoLevelIndex,
-  geoUnitHierarchy
+  geoUnitHierarchy,
+  lockedDistricts
 }: {
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -57,6 +60,7 @@ const ProjectSidebar = ({
   readonly selectedGeounits: GeoUnits;
   readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
+  readonly lockedDistricts: LockedDistricts;
 } & LoadingProps) => {
   return (
     <Flex
@@ -84,6 +88,7 @@ const ProjectSidebar = ({
             <Styled.th>Race</Styled.th>
             <Styled.th>Pol.</Styled.th>
             <Styled.th>Comp.</Styled.th>
+            <Styled.th></Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
@@ -102,7 +107,8 @@ const ProjectSidebar = ({
               selectedDistrictId,
               selectedGeounits,
               geoLevelIndex,
-              geoUnitHierarchy
+              geoUnitHierarchy,
+              lockedDistricts
             )}
         </tbody>
       </Styled.table>
@@ -172,15 +178,20 @@ const SidebarRow = ({
   selected,
   selectedPopulationDifference,
   demographics,
-  deviation
+  deviation,
+  districtId,
+  isDistrictLocked
 }: {
   readonly district: Feature<MultiPolygon, DistrictProperties>;
   readonly selected: boolean;
   readonly selectedPopulationDifference: number;
   readonly demographics: { readonly [id: string]: number };
   readonly deviation: number;
+  readonly districtId: number;
+  readonly isDistrictLocked?: boolean;
 }) => {
   const [demographicsTooltipVisible, setDemographicsTooltipVisible] = useState(false);
+  const [isHovered, setHover] = useState(false);
 
   const showPopulationChange = selectedPopulationDifference !== 0;
   const textColor = showPopulationChange
@@ -195,13 +206,20 @@ const SidebarRow = ({
     intermediateDeviation
   ).toLocaleString()}`;
   const compactnessDisplay =
-    district.id === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
+    districtId === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
+  const toggleHover = () => setHover(!isHovered);
+  const toggleLocked = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    store.dispatch(toggleDistrictLocked(districtId));
+  };
   return (
     <Styled.tr
       sx={{ backgroundColor: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
       onClick={() => {
         store.dispatch(setSelectedDistrictId(district.id as number));
       }}
+      onMouseOver={toggleHover}
+      onMouseOut={toggleHover}
     >
       <Styled.td sx={{ textAlign: "left" }}>
         <span
@@ -230,6 +248,17 @@ const SidebarRow = ({
       </Styled.td>
       <Styled.td>{BLANK_VALUE}</Styled.td>
       <Styled.td>{compactnessDisplay}</Styled.td>
+      <Styled.td>
+        {isDistrictLocked ? (
+          <span onClick={toggleLocked}>
+            <Icon name="lock-locked" />
+          </span>
+        ) : (
+          <span style={{ visibility: isHovered ? "visible" : "hidden" }} onClick={toggleLocked}>
+            <Icon name="lock-unlocked" />
+          </span>
+        )}
+      </Styled.td>
     </Styled.tr>
   );
 };
@@ -317,7 +346,8 @@ const getSidebarRows = (
   selectedDistrictId: number,
   selectedGeounits: GeoUnits,
   geoLevelIndex: number,
-  geoUnitHierarchy: GeoUnitHierarchy
+  geoUnitHierarchy: GeoUnitHierarchy,
+  lockedDistricts: LockedDistricts
 ) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
@@ -369,6 +399,8 @@ const getSidebarRows = (
             : feature.properties.population - averagePopulation
         }
         key={districtId}
+        isDistrictLocked={lockedDistricts.has(districtId)}
+        districtId={districtId}
       />
     );
   });

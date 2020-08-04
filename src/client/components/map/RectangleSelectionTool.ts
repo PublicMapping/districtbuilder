@@ -1,15 +1,22 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
-import { addSelectedGeounitIds } from "../../actions/districtDrawing";
+import { addSelectedGeounits } from "../../actions/districtDrawing";
 import {
-  featuresToSet,
+  featuresToUnlockedGeoUnits,
   GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   levelToSelectionLayerId,
   ISelectionTool
 } from "./index";
 
-import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
+import {
+  DistrictsDefinition,
+  FeatureId,
+  GeoUnits,
+  IStaticMetadata,
+  LockedDistricts
+} from "../../../shared/entities";
+
 /*
  * Allows user to click and drag to select all geounits within the rectangle
  * (bounding box) drawn.
@@ -22,7 +29,13 @@ import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
  * https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
  */
 const RectangleSelectionTool: ISelectionTool = {
-  enable: function(map: MapboxGL.Map, geoLevelId: string, staticMetadata: IStaticMetadata) {
+  enable: function(
+    map: MapboxGL.Map,
+    geoLevelId: string,
+    staticMetadata: IStaticMetadata,
+    districtsDefinition: DistrictsDefinition,
+    lockedDistricts: LockedDistricts
+  ) {
     map.boxZoom.disable();
     map.dragPan.disable();
     map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line
@@ -60,9 +73,11 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
 
-      setOfInitiallySelectedFeatures = featuresToSet(
+      setOfInitiallySelectedFeatures = featuresToUnlockedGeoUnits(
         getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
-        staticMetadata.geoLevelHierarchy
+        staticMetadata.geoLevelHierarchy,
+        districtsDefinition,
+        lockedDistricts
       );
 
       // Capture the first xy coordinates
@@ -99,9 +114,17 @@ const RectangleSelectionTool: ISelectionTool = {
       /* eslint-enable */
 
       const features = getFeaturesInBoundingBox([start, current]);
+      const geoUnits = featuresToUnlockedGeoUnits(
+        features,
+        staticMetadata.geoLevelHierarchy,
+        districtsDefinition,
+        lockedDistricts
+      );
 
       // Set any newly selected features on the map within the bounding box to selected state
-      const newFeatures = features.filter(feature => !isFeatureSelected(map, feature));
+      const newFeatures = features.filter(
+        feature => geoUnits.has(feature.id as FeatureId) && !isFeatureSelected(map, feature)
+      );
       newFeatures.forEach(feature => {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
@@ -109,10 +132,14 @@ const RectangleSelectionTool: ISelectionTool = {
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
       if (prevFeatures) {
-        const setOfPrevFeatures = featuresToSet(prevFeatures, staticMetadata.geoLevelHierarchy);
-        const setOfFeatures = featuresToSet(features, staticMetadata.geoLevelHierarchy);
-        Array.from(setOfPrevFeatures.keys())
-          .filter(id => !setOfInitiallySelectedFeatures.has(id) && !setOfFeatures.has(id))
+        const prevGeoUnits = featuresToUnlockedGeoUnits(
+          prevFeatures,
+          staticMetadata.geoLevelHierarchy,
+          districtsDefinition,
+          lockedDistricts
+        );
+        Array.from(prevGeoUnits.keys())
+          .filter(id => !setOfInitiallySelectedFeatures.has(id) && !geoUnits.has(id))
           .forEach(id => {
             map.setFeatureState(featureStateExpression(id), { selected: false });
           });
@@ -157,10 +184,13 @@ const RectangleSelectionTool: ISelectionTool = {
       // eslint-disable-next-line
       if (bbox) {
         const selectedFeatures = getFeaturesInBoundingBox(bbox);
-        selectedFeatures.length &&
-          store.dispatch(
-            addSelectedGeounitIds(featuresToSet(selectedFeatures, staticMetadata.geoLevelHierarchy))
-          );
+        const geoUnits = featuresToUnlockedGeoUnits(
+          selectedFeatures,
+          staticMetadata.geoLevelHierarchy,
+          districtsDefinition,
+          lockedDistricts
+        );
+        geoUnits.size && store.dispatch(addSelectedGeounits(geoUnits));
       }
     }
   },

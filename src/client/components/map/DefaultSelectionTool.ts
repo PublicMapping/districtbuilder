@@ -1,21 +1,32 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
-import { addSelectedGeounitIds, removeSelectedGeounitIds } from "../../actions/districtDrawing";
+import { addSelectedGeounits, removeSelectedGeounits } from "../../actions/districtDrawing";
 import {
   DISTRICTS_LAYER_ID,
   isFeatureSelected,
-  featureStateExpression,
+  featureStateGeoLevel,
   levelToSelectionLayerId,
   ISelectionTool,
-  featuresToSet
+  featuresToUnlockedGeoUnits
 } from "./index";
-import { IStaticMetadata } from "../../../shared/entities";
+import {
+  DistrictsDefinition,
+  FeatureId,
+  IStaticMetadata,
+  LockedDistricts
+} from "../../../shared/entities";
 
 /*
  * Allows users to individually select/deselect specific geounits by clicking them.
  */
 const DefaultSelectionTool: ISelectionTool = {
-  enable: function(map: MapboxGL.Map, geoLevelId: string, staticMetadata: IStaticMetadata) {
+  enable: function(
+    map: MapboxGL.Map,
+    geoLevelId: string,
+    staticMetadata: IStaticMetadata,
+    districtsDefinition: DistrictsDefinition,
+    lockedDistricts: LockedDistricts
+  ) {
     /* eslint-disable */
     this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
     this.unsetCursor = () => (map.getCanvas().style.cursor = "");
@@ -42,16 +53,22 @@ const DefaultSelectionTool: ISelectionTool = {
       }
       const feature = features[0];
 
-      const selectedFeatures = featuresToSet([feature], staticMetadata.geoLevelHierarchy);
+      const geoUnits = featuresToUnlockedGeoUnits(
+        [feature],
+        staticMetadata.geoLevelHierarchy,
+        districtsDefinition,
+        lockedDistricts
+      );
       const addFeatures = () => {
-        map.setFeatureState(featureStateExpression(feature), { selected: true });
-        store.dispatch(addSelectedGeounitIds(selectedFeatures));
+        map.setFeatureState(featureStateGeoLevel(feature), { selected: true });
+        store.dispatch(addSelectedGeounits(geoUnits));
       };
       const removeFeatures = () => {
-        map.setFeatureState(featureStateExpression(feature), { selected: false });
-        store.dispatch(removeSelectedGeounitIds(selectedFeatures));
+        map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
+        store.dispatch(removeSelectedGeounits(geoUnits));
       };
-      isFeatureSelected(map, feature) ? removeFeatures() : addFeatures();
+      geoUnits.has(feature.id as FeatureId) &&
+        (isFeatureSelected(map, feature) ? removeFeatures() : addFeatures());
     };
     map.on("click", clickHandler);
     // Save the click handler function so it can be removed later

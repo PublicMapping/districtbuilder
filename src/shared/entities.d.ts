@@ -126,3 +126,7 @@ export type FeatureId = number;
 export type GeoUnits = ReadonlyMap<FeatureId, GeoUnitIndices>;
 
 export type CompactnessScore = number | null | "non-contiguous";
+
+export type DistrictId = number;
+
+export type LockedDistricts = ReadonlySet<DistrictId>;
