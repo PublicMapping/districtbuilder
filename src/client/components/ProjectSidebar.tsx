@@ -208,6 +208,10 @@ const SidebarRow = ({
   const compactnessDisplay =
     districtId === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
   const toggleHover = () => setHover(!isHovered);
+  const toggleLocked = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    store.dispatch(toggleDistrictLocked(districtId));
+  };
   return (
     <Styled.tr
       sx={{ backgroundColor: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
@@ -246,14 +250,11 @@ const SidebarRow = ({
       <Styled.td>{compactnessDisplay}</Styled.td>
       <Styled.td>
         {isDistrictLocked ? (
-          <span onClick={() => store.dispatch(toggleDistrictLocked(districtId))}>
+          <span onClick={toggleLocked}>
             <Icon name="lock-locked" />
           </span>
         ) : (
-          <span
-            style={{ visibility: isHovered ? "visible" : "hidden" }}
-            onClick={() => store.dispatch(toggleDistrictLocked(districtId))}
-          >
+          <span style={{ visibility: isHovered ? "visible" : "hidden" }} onClick={toggleLocked}>
             <Icon name="lock-unlocked" />
           </span>
         )}
