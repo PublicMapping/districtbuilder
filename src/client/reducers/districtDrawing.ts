@@ -70,14 +70,26 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         ...state,
         selectionTool: action.payload
       };
-    case getType(setGeoLevelIndex):
+    case getType(setGeoLevelIndex): {
+      // Make sure a visible geolevel is selected by auto-selecting the next highest geolevel if the
+      // current geolevel is not visible
+      const newGeoLevelIndex = [
+        ...state.geoLevelVisibility.slice(0, action.payload + 1).keys()
+      ].reduce(
+        (finalIndex, currentIndex) =>
+          state.geoLevelVisibility[currentIndex] ? currentIndex : finalIndex,
+        action.payload
+      );
       return loop(
         {
           ...state,
-          geoLevelIndex: action.payload
+          geoLevelIndex: newGeoLevelIndex
         },
-        state.selectedGeounits.size > 0 ? Cmd.action(saveDistrictsDefinition()) : Cmd.none
+        state.selectedGeounits.size > 0 && state.geoLevelIndex !== newGeoLevelIndex
+          ? Cmd.action(saveDistrictsDefinition())
+          : Cmd.none
       );
+    }
     case getType(saveDistrictsDefinition):
       return loop(
         state,
@@ -89,10 +101,13 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         )
       );
     case getType(setGeoLevelVisibility):
-      return {
-        ...state,
-        geoLevelVisibility: action.payload
-      };
+      return loop(
+        {
+          ...state,
+          geoLevelVisibility: action.payload
+        },
+        Cmd.action(setGeoLevelIndex(state.geoLevelIndex))
+      );
     case getType(toggleDistrictLocked):
       return {
         ...state,
