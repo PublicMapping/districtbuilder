@@ -13,6 +13,9 @@ import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 
+const X_BUFFER = 300;
+const Y_BUFFER = 300;
+
 const getDemographics = memoize(getTotalSelectedDemographics);
 
 const MapTooltip = ({
@@ -103,6 +106,7 @@ const MapTooltip = ({
 
   // eslint-disable-next-line
   if (
+    map &&
     staticMetadata &&
     staticGeoLevels &&
     staticDemographics &&
@@ -146,14 +150,21 @@ const MapTooltip = ({
         <span sx={{ textTransform: "capitalize" }}>{`${geoLevel} #${feature.id}`}</span>
       ) : null;
 
+    const canvas = map.getCanvas();
+    const { width, height } = canvas;
+    const tooltipWidth = tooltipRef.current && tooltipRef.current.offsetWidth;
+    const tooltipHeight = tooltipRef.current && tooltipRef.current.offsetHeight;
+    const x = !tooltipWidth || width - point.x > X_BUFFER ? point.x : point.x - tooltipWidth - 40;
+    const y =
+      !tooltipHeight || height - point.y > Y_BUFFER ? point.y : point.y - tooltipHeight - 40;
+
     return demographics ? (
       <Box
         ref={tooltipRef}
         sx={{
-          transform: `translate3d(${point.x}px, ${point.y}px, 0)`,
+          transform: `translate3d(${x}px, ${y}px, 0)`,
           position: "absolute",
-          top: "20px",
-          left: "20px",
+          margin: "20px",
           backgroundColor: "gray.8",
           color: "muted",
           width: "200px",
