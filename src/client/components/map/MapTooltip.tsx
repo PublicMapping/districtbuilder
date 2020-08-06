@@ -60,8 +60,8 @@ const MapTooltip = ({
             layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
           });
         setPoint({
-          x: e.originalEvent.offsetX,
-          y: e.originalEvent.offsetY
+          x: e.point.x,
+          y: e.point.y
         });
         setFeature(features[0]);
       }
@@ -74,10 +74,11 @@ const MapTooltip = ({
         (e.relatedTarget === tooltipRef.current || tooltipRef.current.contains(e.relatedTarget));
 
       !isOnTooltip && setFeature(undefined);
-      setPoint({
-        x: e.offsetX,
-        y: e.offsetY
-      });
+      isOnTooltip &&
+        setPoint({
+          x: e.offsetX,
+          y: e.offsetY
+        });
     }, 5);
 
     const onDrag = (e: MapboxGL.MapMouseEvent) => {
