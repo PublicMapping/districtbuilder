@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx } from "theme-ui";
 
 import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
-import { getTotalSelectedDemographics } from "../../../shared/functions";
+import { geoLevelLabel, getTotalSelectedDemographics } from "../../../shared/functions";
 import { State } from "../../reducers";
 import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
@@ -141,14 +141,24 @@ const MapTooltip = ({
         geoLevelIndex
       );
 
-    const heading =
-      highlightedGeounits.size > 0 ? null : feature &&
-        feature.properties &&
-        feature.properties.name ? (
+    const featureLabel = () =>
+      feature && feature.properties && feature.properties.name ? (
         (feature.properties.name as string)
       ) : feature ? (
         <span sx={{ textTransform: "capitalize" }}>{`${geoLevel} #${feature.id}`}</span>
-      ) : null;
+      ) : (
+        ""
+      );
+    const heading =
+      feature && highlightedGeounits.size === 1 && [...highlightedGeounits.keys()][0] === feature.id
+        ? featureLabel()
+        : highlightedGeounits.size === 1
+        ? `1 ${geoLevel}`
+        : highlightedGeounits.size > 1
+        ? `${Number(highlightedGeounits.size).toLocaleString()} ${geoLevelLabel(
+            geoLevel
+          ).toLowerCase()}`
+        : featureLabel();
 
     const canvas = map.getCanvas();
     const { width, height } = canvas;
