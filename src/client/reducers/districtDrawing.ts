@@ -85,13 +85,10 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         selectionTool: action.payload
       };
     case getType(setGeoLevelIndex):
-      return loop(
-        {
-          ...state,
-          geoLevelIndex: action.payload
-        },
-        state.selectedGeounits.size > 0 ? Cmd.action(saveDistrictsDefinition()) : Cmd.none
-      );
+      return {
+        ...state,
+        geoLevelIndex: action.payload
+      };
     case getType(saveDistrictsDefinition):
       return loop(
         state,
