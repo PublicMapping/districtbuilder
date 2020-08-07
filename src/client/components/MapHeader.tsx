@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { Box, Label, jsx, Select } from "theme-ui";
-import { IStaticMetadata } from "../../shared/entities";
+import { GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { geoLevelLabel } from "../../shared/functions";
 
 import Icon from "./Icon";
@@ -13,7 +13,8 @@ const MapHeader = ({
   metadata,
   selectionTool,
   geoLevelIndex,
-  geoLevelVisibility
+  geoLevelVisibility,
+  selectedGeounits
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
@@ -21,17 +22,26 @@ const MapHeader = ({
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly geoLevelVisibility: readonly boolean[];
+  readonly selectedGeounits: GeoUnits;
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
   const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
+  const areGeoUnitsSelected = selectedGeounits.size > 0;
   const geoLevelOptions = metadata
     ? metadata.geoLevelHierarchy
         .slice()
         .reverse()
-        .map((val, index) => {
-          const isButtonDisabled = geoLevelVisibility[index] === false;
+        .map((val, index, geoLevelHierarchy) => {
+          const isButtonDisabled =
+            geoLevelVisibility[index] === false ||
+            (areGeoUnitsSelected &&
+              // block level selected, so disable all higher geolevels
+              ((index < geoLevelIndex && geoLevelIndex === geoLevelHierarchy.length - 1) ||
+                // non-block level selected, so disable block level
+                (index === geoLevelHierarchy.length - 1 &&
+                  geoLevelIndex !== geoLevelHierarchy.length - 1)));
           const otherProps = isButtonDisabled
             ? { title: `Zoom in to see ${geoLevelLabel(val.id).toLowerCase()}` }
             : {};

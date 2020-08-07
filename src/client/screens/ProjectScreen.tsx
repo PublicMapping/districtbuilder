@@ -84,6 +84,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
             selectionTool={districtDrawing.selectionTool}
             geoLevelIndex={districtDrawing.geoLevelIndex}
             geoLevelVisibility={districtDrawing.geoLevelVisibility}
+            selectedGeounits={districtDrawing.selectedGeounits}
           />
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
