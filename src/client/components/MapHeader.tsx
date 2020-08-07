@@ -34,14 +34,15 @@ const MapHeader = ({
         .slice()
         .reverse()
         .map((val, index, geoLevelHierarchy) => {
+          const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
+          const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
           const isButtonDisabled =
             geoLevelVisibility[index] === false ||
             (areGeoUnitsSelected &&
               // block level selected, so disable all higher geolevels
-              ((index < geoLevelIndex && geoLevelIndex === geoLevelHierarchy.length - 1) ||
+              ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
                 // non-block level selected, so disable block level
-                (index === geoLevelHierarchy.length - 1 &&
-                  geoLevelIndex !== geoLevelHierarchy.length - 1)));
+                (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel)));
           const otherProps = isButtonDisabled
             ? { title: `Zoom in to see ${geoLevelLabel(val.id).toLowerCase()}` }
             : {};
