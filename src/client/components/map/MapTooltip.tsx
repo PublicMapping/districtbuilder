@@ -103,7 +103,7 @@ const MapTooltip = ({
     }
 
     return clearHandlers;
-  }, [map, geoLevelIndex, staticMetadata]);
+  }, [map, staticMetadata, invertedGeoLevelIndex]);
 
   // eslint-disable-next-line
   if (
