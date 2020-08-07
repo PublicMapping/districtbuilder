@@ -79,39 +79,41 @@ const ProjectSidebar = ({
       {project && geoUnitHierarchy && (
         <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       )}
-      <Styled.table>
-        <thead>
-          <Styled.tr>
-            <Styled.th>Number</Styled.th>
-            <Styled.th>Population</Styled.th>
-            <Styled.th>Deviation</Styled.th>
-            <Styled.th>Race</Styled.th>
-            <Styled.th>Pol.</Styled.th>
-            <Styled.th>Comp.</Styled.th>
-            <Styled.th></Styled.th>
-          </Styled.tr>
-        </thead>
-        <tbody>
-          {project &&
-            geojson &&
-            staticMetadata &&
-            staticGeoLevels &&
-            staticDemographics &&
-            geoUnitHierarchy &&
-            getSidebarRows(
-              project,
-              geojson,
-              staticMetadata,
-              staticGeoLevels,
-              staticDemographics,
-              selectedDistrictId,
-              selectedGeounits,
-              geoLevelIndex,
-              geoUnitHierarchy,
-              lockedDistricts
-            )}
-        </tbody>
-      </Styled.table>
+      <Box sx={{ overflowY: "auto", flex: 1 }}>
+        <Styled.table>
+          <thead>
+            <Styled.tr>
+              <Styled.th>Number</Styled.th>
+              <Styled.th>Population</Styled.th>
+              <Styled.th>Deviation</Styled.th>
+              <Styled.th>Race</Styled.th>
+              <Styled.th>Pol.</Styled.th>
+              <Styled.th>Comp.</Styled.th>
+              <Styled.th></Styled.th>
+            </Styled.tr>
+          </thead>
+          <tbody>
+            {project &&
+              geojson &&
+              staticMetadata &&
+              staticGeoLevels &&
+              staticDemographics &&
+              geoUnitHierarchy &&
+              getSidebarRows(
+                project,
+                geojson,
+                staticMetadata,
+                staticGeoLevels,
+                staticDemographics,
+                selectedDistrictId,
+                selectedGeounits,
+                geoLevelIndex,
+                geoUnitHierarchy,
+                lockedDistricts
+              )}
+          </tbody>
+        </Styled.table>
+      </Box>
     </Flex>
   );
 };
