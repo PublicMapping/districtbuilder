@@ -6,6 +6,8 @@ import {
   addSelectedGeounits,
   clearSelectedGeounitIds,
   removeSelectedGeounits,
+  setHighlightedGeounits,
+  clearHighlightedGeounits,
   SelectionTool,
   saveDistrictsDefinition,
   setSelectionTool,
@@ -20,6 +22,7 @@ import { GeoUnits, LockedDistricts } from "../../shared/entities";
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
+  readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
@@ -29,6 +32,7 @@ export interface DistrictDrawingState {
 export const initialState: DistrictDrawingState = {
   selectedDistrictId: 1,
   selectedGeounits: new Map(),
+  highlightedGeounits: new Map(),
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0,
   geoLevelVisibility: [],
@@ -64,6 +68,16 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
       return {
         ...state,
         selectedGeounits: new Map()
+      };
+    case getType(setHighlightedGeounits):
+      return {
+        ...state,
+        highlightedGeounits: new Map([...action.payload])
+      };
+    case getType(clearHighlightedGeounits):
+      return {
+        ...state,
+        highlightedGeounits: new Map()
       };
     case getType(setSelectionTool):
       return {

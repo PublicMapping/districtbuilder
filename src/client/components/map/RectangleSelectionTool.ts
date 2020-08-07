@@ -1,6 +1,10 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
-import { addSelectedGeounits } from "../../actions/districtDrawing";
+import {
+  addSelectedGeounits,
+  clearHighlightedGeounits,
+  setHighlightedGeounits
+} from "../../actions/districtDrawing";
 import {
   featuresToUnlockedGeoUnits,
   GEOLEVELS_SOURCE_ID,
@@ -129,6 +133,11 @@ const RectangleSelectionTool: ISelectionTool = {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
 
+      const newGeoUnits = new Map(
+        [...geoUnits].filter(([id]) => !setOfInitiallySelectedFeatures.has(id))
+      );
+      store.dispatch(setHighlightedGeounits(newGeoUnits));
+
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
       if (prevFeatures) {
@@ -192,6 +201,7 @@ const RectangleSelectionTool: ISelectionTool = {
         );
         geoUnits.size && store.dispatch(addSelectedGeounits(geoUnits));
       }
+      store.dispatch(clearHighlightedGeounits());
     }
   },
   disable: function(map: MapboxGL.Map) {

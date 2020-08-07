@@ -1,5 +1,7 @@
+/** @jsx jsx */
 import { FeatureCollection, MultiPolygon } from "geojson";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Box, jsx } from "theme-ui";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -22,13 +24,9 @@ import {
   getGeoLevelVisibility
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
+import MapTooltip from "./MapTooltip";
 import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
-
-const styles = {
-  width: "100%",
-  height: "100%"
-};
 
 interface Props {
   readonly project: IProject;
@@ -256,7 +254,11 @@ const Map = ({
     lockedDistricts
   ]);
 
-  return <div ref={mapRef} style={styles} />;
+  return (
+    <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
+      <MapTooltip map={map || undefined} />
+    </Box>
+  );
 };
 
 export default Map;

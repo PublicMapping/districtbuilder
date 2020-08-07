@@ -53,7 +53,7 @@ const DemographicsTooltip = ({
     <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
   ));
   return (
-    <Box sx={{ width: "100%", minHeight: "100%", backgroundColor: "gray.8", m: 0, p: 2 }}>
+    <Box sx={{ width: "100%", minHeight: "100%", backgroundColor: "gray.8", m: 0 }}>
       <Styled.table sx={{ margin: "0" }}>
         <tbody>{rows}</tbody>
       </Styled.table>

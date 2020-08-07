@@ -83,12 +83,12 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
 }
 
 // Retuns a label layer id given the geolevel
-function levelToLabelLayerId(geoLevel: string) {
+export function levelToLabelLayerId(geoLevel: string) {
   return `${geoLevel}-label`;
 }
 
 // Retuns a line layer id given the geolevel
-function levelToLineLayerId(geoLevel: string) {
+export function levelToLineLayerId(geoLevel: string) {
   return `${geoLevel}-line`;
 }
 

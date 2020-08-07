@@ -12,6 +12,9 @@ export const addSelectedGeounits = createAction("Add selected geounit ids")<GeoU
 export const removeSelectedGeounits = createAction("Remove selected geounit ids")<GeoUnits>();
 export const clearSelectedGeounitIds = createAction("Clear selected geounit ids")();
 
+export const setHighlightedGeounits = createAction("Add highlighted geounit ids")<GeoUnits>();
+export const clearHighlightedGeounits = createAction("Clear highlighted geounit ids")();
+
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
 
 export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();

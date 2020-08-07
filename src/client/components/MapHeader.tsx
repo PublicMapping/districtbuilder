@@ -1,25 +1,11 @@
 /** @jsx jsx */
 import { Box, Label, jsx, Select } from "theme-ui";
 import { IStaticMetadata } from "../../shared/entities";
+import { geoLevelLabel } from "../../shared/functions";
 
 import Icon from "./Icon";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
-
-const geoLevelLabel = (id: string) => {
-  switch (id) {
-    case "block":
-      return "Blocks";
-    case "tract":
-      return "Tracts";
-    case "blockgroup":
-      return "Blockgroups";
-    case "county":
-      return "Counties";
-    default:
-      return id;
-  }
-};
 
 const MapHeader = ({
   label,

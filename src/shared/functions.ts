@@ -1,6 +1,7 @@
 import {
   DistrictsDefinition,
   MutableGeoUnitCollection,
+  GeoUnits,
   GeoUnitIndices,
   GeoUnitHierarchy,
   IStaticMetadata,
@@ -44,6 +45,22 @@ export function getDemographics(
     // eslint-disable-next-line
     {} as { [id: string]: number }
   );
+}
+
+// Aggregate all demographics that are included in the selection
+export function getTotalSelectedDemographics(
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  selectedGeounits: GeoUnits,
+  geoLevelIndex: number
+): { readonly [id: string]: number } {
+  const selectedGeounitIds = new Set([...selectedGeounits.keys()]);
+  const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
+  const selectedBaseIndices = baseIndices
+    ? getAllIndices(baseIndices, selectedGeounitIds)
+    : Array.from(selectedGeounitIds);
+  return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 }
 
 /*
@@ -125,3 +142,18 @@ export function assertNever(x: never): never {
   // eslint-disable-next-line
   throw new Error(`Unexpected: ${x}`);
 }
+
+export const geoLevelLabel = (id: string): string => {
+  switch (id) {
+    case "block":
+      return "Blocks";
+    case "tract":
+      return "Tracts";
+    case "blockgroup":
+      return "Blockgroups";
+    case "county":
+      return "Counties";
+    default:
+      return id;
+  }
+};
