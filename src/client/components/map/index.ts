@@ -23,7 +23,12 @@ export const DISTRICTS_LAYER_ID = "districts";
 // Used only to make labels show up on top of all other layers
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
-export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): MapboxGL.Style {
+export function getMapboxStyle(
+  path: string,
+  geoLevels: readonly GeoLevelInfo[],
+  minZoom: number,
+  maxZoom: number
+): MapboxGL.Style {
   const lineLayers = geoLevels.flatMap(level => [
     {
       id: levelToLineLayerId(level.id),
@@ -99,8 +104,8 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
       [GEOLEVELS_SOURCE_ID]: {
         type: "vector",
         tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
-        minzoom: 4,
-        maxzoom: 12
+        minzoom: minZoom,
+        maxzoom: maxZoom
       }
     },
     version: 8

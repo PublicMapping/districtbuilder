@@ -81,7 +81,12 @@ const Map = ({
     const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
       const map = new MapboxGL.Map({
         container: mapContainer,
-        style: getMapboxStyle(project.regionConfig.s3URI, staticMetadata.geoLevelHierarchy),
+        style: getMapboxStyle(
+          project.regionConfig.s3URI,
+          staticMetadata.geoLevelHierarchy,
+          minZoom,
+          maxZoom
+        ),
         bounds: [b0, b1, b2, b3],
         fitBoundsOptions: { padding: 20 },
         minZoom,
