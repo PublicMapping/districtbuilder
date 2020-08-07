@@ -14,36 +14,16 @@ const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "sel
 
 const GeoLevelButton = ({
   label,
+  constraints,
   ...otherProps
 }: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
   readonly label: string;
+  readonly constraints: React.ReactNode;
 }) => {
-  const [isHovered, setHover] = useState(false);
-  const toggleHover = () => setHover(!isHovered);
   return (
     <Box sx={{ display: "inline-block", position: "relative" }}>
-      <button {...otherProps} onMouseOver={toggleHover} onMouseOut={toggleHover}>
-        {label}
-      </button>
-      {isHovered && (
-        <Box
-          sx={{
-            position: "absolute",
-            backgroundColor: "white",
-            right: "0",
-            padding: "8px",
-            top: "0",
-            transform: "translateX(100%)",
-            zIndex: 1,
-            border: "1px solid",
-            minWidth: 250,
-            pointerEvents: "none"
-          }}
-        >
-          <Constraint invalid={true}>At least 8 characters</Constraint>
-          <Constraint invalid={false}>Different from your email or name</Constraint>
-        </Box>
-      )}
+      <button {...otherProps}>{label}</button>
+      {constraints}
     </Box>
   );
 };
@@ -74,22 +54,42 @@ const MapHeader = ({
         .slice()
         .reverse()
         .map((val, index, geoLevelHierarchy) => {
+          const isGeoLevelHidden = geoLevelVisibility[index] === false;
           const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
           const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
-          const isButtonDisabled =
-            geoLevelVisibility[index] === false ||
-            (areGeoUnitsSelected &&
-              // block level selected, so disable all higher geolevels
-              ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
-                // non-block level selected, so disable block level
-                (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel)));
-          const otherProps = isButtonDisabled
-            ? {
-                title: `Zoom ${index < geoLevelIndex ? "out" : "in"} to see ${geoLevelLabel(
-                  val.id
-                ).toLowerCase()}`
-              }
-            : {};
+          const areChangesPending =
+            areGeoUnitsSelected &&
+            // block level selected, so disable all higher geolevels
+            ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
+              // non-block level selected, so disable block level
+              (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
+          const isButtonDisabled = isGeoLevelHidden || areChangesPending;
+          const constraints = isButtonDisabled ? (
+            <Box
+              sx={{
+                "button[disabled]:hover + &": {
+                  display: "block"
+                },
+                display: "none",
+                position: "absolute",
+                backgroundColor: "white",
+                right: "0",
+                padding: "8px",
+                top: "0",
+                transform: "translateX(100%)",
+                zIndex: 1,
+                border: "1px solid",
+                minWidth: 250,
+                pointerEvents: "none"
+              }}
+            >
+              <Constraint invalid={isGeoLevelHidden}>
+                Zoom {index < geoLevelIndex ? "out" : "in"} to see&nbsp;
+                {geoLevelLabel(val.id).toLowerCase()}
+              </Constraint>
+              <Constraint invalid={areChangesPending}>Resolve changes</Constraint>
+            </Box>
+          ) : null;
           return (
             <GeoLevelButton
               key={index}
@@ -97,7 +97,7 @@ const MapHeader = ({
               onClick={() => store.dispatch(setGeoLevelIndex(index))}
               disabled={isButtonDisabled}
               label={geoLevelLabel(val.id)}
-              {...otherProps}
+              constraints={constraints}
             />
           );
         })
