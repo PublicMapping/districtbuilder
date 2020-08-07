@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import React, { useState } from "react";
 import { Box, Label, jsx, Select } from "theme-ui";
 import { GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { geoLevelLabel } from "../../shared/functions";
@@ -6,6 +7,46 @@ import { geoLevelLabel } from "../../shared/functions";
 import Icon from "./Icon";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
+
+import Constraint from "./Constraint";
+
+const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
+
+const GeoLevelButton = ({
+  label,
+  ...otherProps
+}: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+  readonly label: string;
+}) => {
+  const [isHovered, setHover] = useState(false);
+  const toggleHover = () => setHover(!isHovered);
+  return (
+    <Box sx={{ display: "inline-block", position: "relative" }}>
+      <button {...otherProps} onMouseOver={toggleHover} onMouseOut={toggleHover}>
+        {label}
+      </button>
+      {isHovered && (
+        <Box
+          sx={{
+            position: "absolute",
+            backgroundColor: "white",
+            right: "0",
+            padding: "8px",
+            top: "0",
+            transform: "translateX(100%)",
+            zIndex: 1,
+            border: "1px solid",
+            minWidth: 250,
+            pointerEvents: "none"
+          }}
+        >
+          <Constraint invalid={true}>At least 8 characters</Constraint>
+          <Constraint invalid={false}>Different from your email or name</Constraint>
+        </Box>
+      )}
+    </Box>
+  );
+};
 
 const MapHeader = ({
   label,
@@ -27,7 +68,6 @@ const MapHeader = ({
   const labelOptions = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
-  const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
   const areGeoUnitsSelected = selectedGeounits.size > 0;
   const geoLevelOptions = metadata
     ? metadata.geoLevelHierarchy
@@ -51,15 +91,14 @@ const MapHeader = ({
               }
             : {};
           return (
-            <button
+            <GeoLevelButton
               key={index}
               className={buttonClassName(geoLevelIndex === index)}
               onClick={() => store.dispatch(setGeoLevelIndex(index))}
               disabled={isButtonDisabled}
+              label={geoLevelLabel(val.id)}
               {...otherProps}
-            >
-              {geoLevelLabel(val.id)}
-            </button>
+            />
           );
         })
     : [];
