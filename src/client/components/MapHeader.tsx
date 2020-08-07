@@ -44,7 +44,11 @@ const MapHeader = ({
                 // non-block level selected, so disable block level
                 (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel)));
           const otherProps = isButtonDisabled
-            ? { title: `Zoom in to see ${geoLevelLabel(val.id).toLowerCase()}` }
+            ? {
+                title: `Zoom ${index < geoLevelIndex ? "out" : "in"} to see ${geoLevelLabel(
+                  val.id
+                ).toLowerCase()}`
+              }
             : {};
           return (
             <button
