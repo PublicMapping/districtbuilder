@@ -25,7 +25,7 @@ const DemographicsChart = ({
       `${(demographics.population ? population / demographics.population : 0) * 100}%`
   );
   return (
-    <Flex sx={{ flexDirection: "column", width: "100%", minHeight: "100%" }}>
+    <Flex sx={{ flexDirection: "column", width: "40px", minHeight: "20px", flexShrink: 0 }}>
       <Bar width={percentages.white} color={demographicsColors.white} />
       <Bar width={percentages.black} color={demographicsColors.black} />
       <Bar width={percentages.asian} color={demographicsColors.asian} />
