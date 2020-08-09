@@ -100,26 +100,32 @@ const Map = ({
           type: "geojson",
           data: geojson
         });
-        map.addLayer({
-          id: DISTRICTS_LAYER_ID,
-          type: "fill",
-          source: DISTRICTS_SOURCE_ID,
-          layout: {},
-          paint: {
-            "fill-color": { type: "identity", property: "color" },
-            "fill-opacity": 0.7
-          }
-        });
-        map.addLayer({
-          id: "districts-locked",
-          type: "fill",
-          source: DISTRICTS_SOURCE_ID,
-          layout: {},
-          paint: {
-            "fill-pattern": "circle-1",
-            "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
-          }
-        });
+        map.addLayer(
+          {
+            id: DISTRICTS_LAYER_ID,
+            type: "fill",
+            source: DISTRICTS_SOURCE_ID,
+            layout: {},
+            paint: {
+              "fill-color": { type: "identity", property: "color" },
+              "fill-opacity": 1
+            }
+          },
+          "district-placeholder"
+        );
+        map.addLayer(
+          {
+            id: "districts-locked",
+            type: "fill",
+            source: DISTRICTS_SOURCE_ID,
+            layout: {},
+            paint: {
+              "fill-pattern": "circle-1",
+              "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
+            }
+          },
+          "district-placeholder"
+        );
 
         map.resize();
       });
