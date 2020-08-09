@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import { useState } from "react";
-import { Box, Button, Flex, Heading, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
   CompactnessScore,
@@ -23,7 +23,6 @@ import {
 } from "../constants/colors";
 import DemographicsChart from "./DemographicsChart";
 import DemographicsTooltip from "./DemographicsTooltip";
-import Loading from "./Loading";
 import Icon from "./Icon";
 
 import {
@@ -137,7 +136,9 @@ const SidebarHeader = ({
         </Heading>
       </Flex>
       {isLoading ? (
-        <Loading />
+        <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
+          <Spinner variant="spinner" />
+        </Flex>
       ) : selectedGeounits.size ? (
         <Flex sx={{ variant: "header.right" }}>
           <Button
