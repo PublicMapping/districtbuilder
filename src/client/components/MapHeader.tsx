@@ -88,7 +88,7 @@ const GeoLevelButton = ({
       (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
   const isButtonDisabled = isGeoLevelHidden || areChangesPending;
   return (
-    <Box sx={{ display: "inline-block", position: "relative" }}>
+    <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
       <button
         key={index}
         className={buttonClassName(geoLevelIndex === index)}
