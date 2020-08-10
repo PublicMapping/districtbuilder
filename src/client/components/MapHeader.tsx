@@ -1,7 +1,7 @@
 /** @jsx jsx */
-import React, { useState } from "react";
+import React from "react";
 import { Box, Label, jsx, Select } from "theme-ui";
-import { GeoUnits, IStaticMetadata } from "../../shared/entities";
+import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { geoLevelLabel } from "../../shared/functions";
 
 import Icon from "./Icon";
@@ -13,16 +13,79 @@ const zoomText = (index: number, geoLevelIndex: number) =>
   `Zoom ${index < geoLevelIndex ? "out" : "in"}`;
 
 const GeoLevelButton = ({
-  label,
-  tooltip,
-  ...otherProps
-}: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
-  readonly label: string;
-  readonly tooltip: React.ReactNode;
+  index,
+  value,
+  geoLevelIndex,
+  geoLevelHierarchy,
+  geoLevelVisibility,
+  selectedGeounits
+}: {
+  readonly index: number;
+  readonly value: GeoLevelInfo;
+  readonly geoLevelIndex: number;
+  readonly geoLevelHierarchy: GeoLevelHierarchy;
+  readonly geoLevelVisibility: readonly boolean[];
+  readonly selectedGeounits: GeoUnits;
 }) => {
+  const label = geoLevelLabel(value.id);
+  const areGeoUnitsSelected = selectedGeounits.size > 0;
+  const isGeoLevelHidden = geoLevelVisibility[index] === false;
+  const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
+  const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
+  const areChangesPending =
+    areGeoUnitsSelected &&
+    // block level selected, so disable all higher geolevels
+    ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
+      // non-block level selected, so disable block level
+      (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
+  const isButtonDisabled = isGeoLevelHidden || areChangesPending;
+  const tooltip = isButtonDisabled ? (
+    <Box
+      sx={{
+        "button[disabled]:hover + &": {
+          display: "block"
+        },
+        display: "none",
+        position: "absolute",
+        backgroundColor: "white",
+        right: "0",
+        padding: "8px",
+        top: "0",
+        transform: "translateX(100%)",
+        zIndex: 1,
+        border: "1px solid",
+        minWidth: 200,
+        pointerEvents: "none"
+      }}
+    >
+      {isGeoLevelHidden || areChangesPending ? (
+        <span>
+          {isGeoLevelHidden && areChangesPending ? (
+            <span>
+              <strong>{zoomText(index, geoLevelIndex)}</strong> and <strong>resolve changes</strong>
+            </span>
+          ) : isGeoLevelHidden ? (
+            <span>
+              <strong>{zoomText(index, geoLevelIndex)}</strong>
+            </span>
+          ) : (
+            <strong>Resolve changes</strong>
+          )}
+          &nbsp;to edit {label.toLowerCase()}
+        </span>
+      ) : null}
+    </Box>
+  ) : null;
   return (
     <Box sx={{ display: "inline-block", position: "relative" }}>
-      <button {...otherProps}>{label}</button>
+      <button
+        key={index}
+        className={buttonClassName(geoLevelIndex === index)}
+        onClick={() => store.dispatch(setGeoLevelIndex(index))}
+        disabled={isButtonDisabled}
+      >
+        {label}
+      </button>
       {tooltip}
     </Box>
   );
@@ -48,71 +111,21 @@ const MapHeader = ({
   const labelOptions = metadata
     ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
     : [];
-  const areGeoUnitsSelected = selectedGeounits.size > 0;
   const geoLevelOptions = metadata
     ? metadata.geoLevelHierarchy
         .slice()
         .reverse()
-        .map((val, index, geoLevelHierarchy) => {
-          const isGeoLevelHidden = geoLevelVisibility[index] === false;
-          const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
-          const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
-          const areChangesPending =
-            areGeoUnitsSelected &&
-            // block level selected, so disable all higher geolevels
-            ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
-              // non-block level selected, so disable block level
-              (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
-          const isButtonDisabled = isGeoLevelHidden || areChangesPending;
-          const tooltip = isButtonDisabled ? (
-            <Box
-              sx={{
-                "button[disabled]:hover + &": {
-                  display: "block"
-                },
-                display: "none",
-                position: "absolute",
-                backgroundColor: "white",
-                right: "0",
-                padding: "8px",
-                top: "0",
-                transform: "translateX(100%)",
-                zIndex: 1,
-                border: "1px solid",
-                minWidth: 200,
-                pointerEvents: "none"
-              }}
-            >
-              {isGeoLevelHidden || areChangesPending ? (
-                <span>
-                  {isGeoLevelHidden && areChangesPending ? (
-                    <span>
-                      <strong>{zoomText(index, geoLevelIndex)}</strong> and{" "}
-                      <strong>resolve changes</strong>
-                    </span>
-                  ) : isGeoLevelHidden ? (
-                    <span>
-                      <strong>{zoomText(index, geoLevelIndex)}</strong>
-                    </span>
-                  ) : (
-                    <strong>Resolve changes</strong>
-                  )}
-                  &nbsp;to edit {geoLevelLabel(val.id).toLowerCase()}
-                </span>
-              ) : null}
-            </Box>
-          ) : null;
-          return (
-            <GeoLevelButton
-              key={index}
-              className={buttonClassName(geoLevelIndex === index)}
-              onClick={() => store.dispatch(setGeoLevelIndex(index))}
-              disabled={isButtonDisabled}
-              label={geoLevelLabel(val.id)}
-              tooltip={tooltip}
-            />
-          );
-        })
+        .map((val, index, geoLevelHierarchy) => (
+          <GeoLevelButton
+            key={index}
+            index={index}
+            value={val}
+            geoLevelIndex={geoLevelIndex}
+            geoLevelHierarchy={geoLevelHierarchy}
+            geoLevelVisibility={geoLevelVisibility}
+            selectedGeounits={selectedGeounits}
+          />
+        ))
     : [];
   return (
     <Box sx={{ variant: "header.app", backgroundColor: "white" }} className="map-actions">

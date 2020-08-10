@@ -43,11 +43,13 @@ export interface GeoLevelInfo {
   readonly minZoom: number;
 }
 
+export type GeoLevelHierarchy = readonly GeoLevelInfo[];
+
 export interface IStaticMetadata {
   readonly demographics: readonly IStaticFile[];
   readonly geoLevels: readonly IStaticFile[];
   readonly bbox: readonly [number, number, number, number];
-  readonly geoLevelHierarchy: readonly GeoLevelInfo[];
+  readonly geoLevelHierarchy: GeoLevelHierarchy;
 }
 
 export interface Login {
