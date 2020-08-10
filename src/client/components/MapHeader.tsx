@@ -8,22 +8,22 @@ import Icon from "./Icon";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 
-import Constraint from "./Constraint";
-
 const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
+const zoomText = (index: number, geoLevelIndex: number) =>
+  `Zoom ${index < geoLevelIndex ? "out" : "in"}`;
 
 const GeoLevelButton = ({
   label,
-  constraints,
+  tooltip,
   ...otherProps
 }: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
   readonly label: string;
-  readonly constraints: React.ReactNode;
+  readonly tooltip: React.ReactNode;
 }) => {
   return (
     <Box sx={{ display: "inline-block", position: "relative" }}>
       <button {...otherProps}>{label}</button>
-      {constraints}
+      {tooltip}
     </Box>
   );
 };
@@ -64,7 +64,7 @@ const MapHeader = ({
               // non-block level selected, so disable block level
               (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
           const isButtonDisabled = isGeoLevelHidden || areChangesPending;
-          const constraints = isButtonDisabled ? (
+          const tooltip = isButtonDisabled ? (
             <Box
               sx={{
                 "button[disabled]:hover + &": {
@@ -79,15 +79,27 @@ const MapHeader = ({
                 transform: "translateX(100%)",
                 zIndex: 1,
                 border: "1px solid",
-                minWidth: 250,
+                minWidth: 200,
                 pointerEvents: "none"
               }}
             >
-              <Constraint invalid={isGeoLevelHidden}>
-                Zoom {index < geoLevelIndex ? "out" : "in"} to see&nbsp;
-                {geoLevelLabel(val.id).toLowerCase()}
-              </Constraint>
-              <Constraint invalid={areChangesPending}>Resolve changes</Constraint>
+              {isGeoLevelHidden || areChangesPending ? (
+                <span>
+                  {isGeoLevelHidden && areChangesPending ? (
+                    <span>
+                      <strong>{zoomText(index, geoLevelIndex)}</strong> and{" "}
+                      <strong>resolve changes</strong>
+                    </span>
+                  ) : isGeoLevelHidden ? (
+                    <span>
+                      <strong>{zoomText(index, geoLevelIndex)}</strong>
+                    </span>
+                  ) : (
+                    <strong>Resolve changes</strong>
+                  )}
+                  &nbsp;to edit {geoLevelLabel(val.id).toLowerCase()}
+                </span>
+              ) : null}
             </Box>
           ) : null;
           return (
@@ -97,7 +109,7 @@ const MapHeader = ({
               onClick={() => store.dispatch(setGeoLevelIndex(index))}
               disabled={isButtonDisabled}
               label={geoLevelLabel(val.id)}
-              constraints={constraints}
+              tooltip={tooltip}
             />
           );
         })

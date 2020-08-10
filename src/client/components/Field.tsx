@@ -6,8 +6,6 @@ import { validate as validatePassword } from "../../shared/password-validator";
 import { ErrorMap } from "../../shared/types";
 import { WriteResource } from "../resource";
 
-import Constraint from "./Constraint";
-
 function getFieldErrors<D, T>(resource: WriteResource<D, T>): ErrorMap<D> {
   return "errors" in resource && typeof resource.errors.message !== "string"
     ? resource.errors.message
@@ -179,10 +177,18 @@ export function PasswordField<D, R>({
                 }
               }}
             >
-              <Constraint invalid={pwErrors.minLength}>At least 8 characters</Constraint>
-              <Constraint invalid={pwErrors.hasNonNumeric}>At least 1 letter</Constraint>
-              <Constraint invalid={pwErrors.common}>Not a commonly used password</Constraint>
-              <Constraint invalid={pwErrors.similar}>Different from your email or name</Constraint>
+              <PasswordConstraint invalid={pwErrors.minLength}>
+                At least 8 characters
+              </PasswordConstraint>
+              <PasswordConstraint invalid={pwErrors.hasNonNumeric}>
+                At least 1 letter
+              </PasswordConstraint>
+              <PasswordConstraint invalid={pwErrors.common}>
+                Not a commonly used password
+              </PasswordConstraint>
+              <PasswordConstraint invalid={pwErrors.similar}>
+                Different from your email or name
+              </PasswordConstraint>
             </Box>
           </React.Fragment>
         )}
