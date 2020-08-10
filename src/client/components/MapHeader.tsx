@@ -37,7 +37,7 @@ const GeoLevelTooltip = ({
         top: "0",
         transform: "translateX(100%)",
         zIndex: 1,
-        border: "1px solid",
+        boxShadow: "2px 1px 2px 2px #ccc",
         minWidth: 200,
         pointerEvents: "none"
       }}
