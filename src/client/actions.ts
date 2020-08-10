@@ -5,6 +5,7 @@ import * as districtDrawingActions from "./actions/districtDrawing";
 import * as projectDataActions from "./actions/projectData";
 import * as projectsActions from "./actions/projects";
 import * as regionConfigActions from "./actions/regionConfig";
+import * as rootActions from "./actions/root";
 import * as userActions from "./actions/user";
 
 export type AuthAction = ActionType<typeof authActions>;
@@ -12,6 +13,7 @@ export type DistrictDrawingAction = ActionType<typeof districtDrawingActions>;
 export type ProjectDataAction = ActionType<typeof projectDataActions>;
 export type ProjectsAction = ActionType<typeof projectsActions>;
 export type RegionConfigAction = ActionType<typeof regionConfigActions>;
+export type RootAction = ActionType<typeof rootActions>;
 export type UserAction = ActionType<typeof userActions>;
 
 export type Action =
@@ -20,4 +22,5 @@ export type Action =
   | ProjectDataAction
   | ProjectsAction
   | RegionConfigAction
+  | RootAction
   | UserAction;
