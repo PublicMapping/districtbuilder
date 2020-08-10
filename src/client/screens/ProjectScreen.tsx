@@ -24,18 +24,6 @@ interface StateProps {
   readonly districtDrawing: DistrictDrawingState;
 }
 
-const FullScreenApp = ({ children }: { readonly children: React.ReactNode }) => {
-  return <Flex sx={{ height: "100%", flexDirection: "column" }}>{children}</Flex>;
-};
-
-const Main = ({ children }: { readonly children: React.ReactNode }) => {
-  return <Flex sx={{ flex: 1, overflowY: "auto" }}>{children}</Flex>;
-};
-
-const MapContainer = ({ children }: { readonly children: React.ReactNode }) => {
-  return <Flex sx={{ flexDirection: "column", flex: 1 }}>{children}</Flex>;
-};
-
 const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const { projectId } = useParams();
   const project = "resource" in projectData.project ? projectData.project.resource : undefined;
@@ -66,9 +54,9 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   ) : "errorMessage" in user ? (
     <Redirect to={"/login"} />
   ) : (
-    <FullScreenApp>
+    <Flex sx={{ height: "100%", flexDirection: "column" }}>
       <ProjectHeader project={project} />
-      <Main>
+      <Flex sx={{ flex: 1, overflowY: "auto" }}>
         <ProjectSidebar
           project={project}
           geojson={geojson}
@@ -82,7 +70,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           geoUnitHierarchy={geoUnitHierarchy}
           lockedDistricts={districtDrawing.lockedDistricts}
         />
-        <MapContainer>
+        <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           <MapHeader
             label={label}
             setMapLabel={setMapLabel}
@@ -110,9 +98,9 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
               label={label}
             />
           ) : null}
-        </MapContainer>
-      </Main>
-    </FullScreenApp>
+        </Flex>
+      </Flex>
+    </Flex>
   );
 };
 
