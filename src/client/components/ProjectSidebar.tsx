@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import { useState } from "react";
-import { Box, Button, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
   CompactnessScore,
@@ -38,6 +38,10 @@ interface LoadingProps {
   readonly isLoading: boolean;
 }
 
+const style: ThemeUIStyleObject = {
+  number: { textAlign: "right" }
+};
+
 const ProjectSidebar = ({
   project,
   geojson,
@@ -66,52 +70,55 @@ const ProjectSidebar = ({
     <Flex
       sx={{
         background: "#fff",
-        height: "100%",
+        boxShadow:
+          "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
         display: "flex",
         flexDirection: "column",
-        zIndex: 20,
-        position: "relative",
         flexShrink: 0,
-        boxShadow: "0 0 1px #a9acae",
-        minWidth: "300px"
+        height: "100%",
+        minWidth: "300px",
+        position: "relative",
+        zIndex: 200
       }}
     >
       {project && geoUnitHierarchy && (
         <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       )}
-      <Styled.table>
-        <thead>
-          <Styled.tr>
-            <Styled.th>Number</Styled.th>
-            <Styled.th>Population</Styled.th>
-            <Styled.th>Deviation</Styled.th>
-            <Styled.th>Race</Styled.th>
-            <Styled.th>Pol.</Styled.th>
-            <Styled.th>Comp.</Styled.th>
-            <Styled.th></Styled.th>
-          </Styled.tr>
-        </thead>
-        <tbody>
-          {project &&
-            geojson &&
-            staticMetadata &&
-            staticGeoLevels &&
-            staticDemographics &&
-            geoUnitHierarchy &&
-            getSidebarRows(
-              project,
-              geojson,
-              staticMetadata,
-              staticGeoLevels,
-              staticDemographics,
-              selectedDistrictId,
-              selectedGeounits,
-              geoLevelIndex,
-              geoUnitHierarchy,
-              lockedDistricts
-            )}
-        </tbody>
-      </Styled.table>
+      <Box sx={{ overflowY: "auto", flex: 1 }}>
+        <Styled.table sx={{ m: 2 }}>
+          <thead>
+            <Styled.tr>
+              <Styled.th>Number</Styled.th>
+              <Styled.th sx={style.number}>Population</Styled.th>
+              <Styled.th sx={style.number}>Deviation</Styled.th>
+              <Styled.th>Race</Styled.th>
+              <Styled.th>Pol.</Styled.th>
+              <Styled.th sx={style.number}>Comp.</Styled.th>
+              <Styled.th></Styled.th>
+            </Styled.tr>
+          </thead>
+          <tbody>
+            {project &&
+              geojson &&
+              staticMetadata &&
+              staticGeoLevels &&
+              staticDemographics &&
+              geoUnitHierarchy &&
+              getSidebarRows(
+                project,
+                geojson,
+                staticMetadata,
+                staticGeoLevels,
+                staticDemographics,
+                selectedDistrictId,
+                selectedGeounits,
+                geoLevelIndex,
+                geoUnitHierarchy,
+                lockedDistricts
+              )}
+          </tbody>
+        </Styled.table>
+      </Box>
     </Flex>
   );
 };
@@ -221,7 +228,7 @@ const SidebarRow = ({
       onMouseOver={toggleHover}
       onMouseOut={toggleHover}
     >
-      <Styled.td sx={{ textAlign: "left" }}>
+      <Styled.td>
         <span
           sx={{
             backgroundColor: getDistrictColor(district.id),
@@ -232,8 +239,8 @@ const SidebarRow = ({
         </span>
         {district.id || "∅"}
       </Styled.td>
-      <Styled.td sx={{ color: textColor }}>{populationDisplay}</Styled.td>
-      <Styled.td sx={{ color: textColor }}>{deviationDisplay}</Styled.td>
+      <Styled.td sx={{ ...style.number, ...{ color: textColor } }}>{populationDisplay}</Styled.td>
+      <Styled.td sx={{ ...style.number, ...{ color: textColor } }}>{deviationDisplay}</Styled.td>
       <Styled.td
         sx={{ width: "100%", height: "100%" }}
         onMouseOver={() => setDemographicsTooltipVisible(true)}
@@ -247,7 +254,7 @@ const SidebarRow = ({
         )}
       </Styled.td>
       <Styled.td>{BLANK_VALUE}</Styled.td>
-      <Styled.td>{compactnessDisplay}</Styled.td>
+      <Styled.td sx={style.number}>{compactnessDisplay}</Styled.td>
       <Styled.td>
         {isDistrictLocked ? (
           <span onClick={toggleLocked}>

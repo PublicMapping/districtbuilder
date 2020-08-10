@@ -140,8 +140,7 @@ const theme: Theme & StyledSystemTheme = {
       fontSize: 1
     },
     table: {
-      borderCollapse: "collapse",
-      m: 2
+      borderCollapse: "collapse"
     },
     tr: {
       borderBottomColor: "gray.3",
@@ -149,9 +148,7 @@ const theme: Theme & StyledSystemTheme = {
       borderBottomStyle: "solid",
       "tbody > &:last-child": { borderBottom: "none" }
     },
-    td: {
-      textAlign: "right"
-    }
+    td: {}
   },
   header: {
     app: {
