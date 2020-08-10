@@ -12,6 +12,54 @@ const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "sel
 const zoomText = (index: number, geoLevelIndex: number) =>
   `Zoom ${index < geoLevelIndex ? "out" : "in"}`;
 
+const GeoLevelTooltip = ({
+  isGeoLevelHidden,
+  areChangesPending,
+  label,
+  zoomText
+}: {
+  readonly isGeoLevelHidden: boolean;
+  readonly areChangesPending: boolean;
+  readonly label: string;
+  readonly zoomText: string;
+}) => {
+  return (
+    <Box
+      sx={{
+        "button[disabled]:hover + &": {
+          display: "block"
+        },
+        display: "none",
+        position: "absolute",
+        backgroundColor: "white",
+        right: "0",
+        padding: "8px",
+        top: "0",
+        transform: "translateX(100%)",
+        zIndex: 1,
+        border: "1px solid",
+        minWidth: 200,
+        pointerEvents: "none"
+      }}
+    >
+      <span>
+        {isGeoLevelHidden && areChangesPending ? (
+          <span>
+            <strong>{zoomText}</strong> and <strong>resolve changes</strong>
+          </span>
+        ) : isGeoLevelHidden ? (
+          <span>
+            <strong>{zoomText}</strong>
+          </span>
+        ) : (
+          <strong>Resolve changes</strong>
+        )}
+        &nbsp;to edit {label.toLowerCase()}
+      </span>
+    </Box>
+  );
+};
+
 const GeoLevelButton = ({
   index,
   value,
@@ -39,43 +87,6 @@ const GeoLevelButton = ({
       // non-block level selected, so disable block level
       (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
   const isButtonDisabled = isGeoLevelHidden || areChangesPending;
-  const tooltip = isButtonDisabled ? (
-    <Box
-      sx={{
-        "button[disabled]:hover + &": {
-          display: "block"
-        },
-        display: "none",
-        position: "absolute",
-        backgroundColor: "white",
-        right: "0",
-        padding: "8px",
-        top: "0",
-        transform: "translateX(100%)",
-        zIndex: 1,
-        border: "1px solid",
-        minWidth: 200,
-        pointerEvents: "none"
-      }}
-    >
-      {isGeoLevelHidden || areChangesPending ? (
-        <span>
-          {isGeoLevelHidden && areChangesPending ? (
-            <span>
-              <strong>{zoomText(index, geoLevelIndex)}</strong> and <strong>resolve changes</strong>
-            </span>
-          ) : isGeoLevelHidden ? (
-            <span>
-              <strong>{zoomText(index, geoLevelIndex)}</strong>
-            </span>
-          ) : (
-            <strong>Resolve changes</strong>
-          )}
-          &nbsp;to edit {label.toLowerCase()}
-        </span>
-      ) : null}
-    </Box>
-  ) : null;
   return (
     <Box sx={{ display: "inline-block", position: "relative" }}>
       <button
@@ -86,7 +97,14 @@ const GeoLevelButton = ({
       >
         {label}
       </button>
-      {tooltip}
+      {isButtonDisabled && (
+        <GeoLevelTooltip
+          isGeoLevelHidden={isGeoLevelHidden}
+          areChangesPending={areChangesPending}
+          label={label}
+          zoomText={zoomText(index, geoLevelIndex)}
+        />
+      )}
     </Box>
   );
 };
