@@ -9,20 +9,17 @@ import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/di
 import store from "../store";
 
 const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
-const zoomText = (index: number, geoLevelIndex: number) =>
-  `Zoom ${index < geoLevelIndex ? "out" : "in"}`;
 
 const GeoLevelTooltip = ({
   isGeoLevelHidden,
   areChangesPending,
-  label,
-  zoomText
+  label
 }: {
   readonly isGeoLevelHidden: boolean;
   readonly areChangesPending: boolean;
   readonly label: string;
-  readonly zoomText: string;
 }) => {
+  const zoomText = "Zoom in";
   return (
     <Box
       sx={{
@@ -102,7 +99,6 @@ const GeoLevelButton = ({
           isGeoLevelHidden={isGeoLevelHidden}
           areChangesPending={areChangesPending}
           label={label}
-          zoomText={zoomText(index, geoLevelIndex)}
         />
       )}
     </Box>
