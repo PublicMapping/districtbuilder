@@ -2,6 +2,7 @@
 import Menu, { MenuItem, SubMenu } from "rc-menu";
 import "rc-menu/assets/index.css";
 import React, { useEffect } from "react";
+import Avatar from "react-avatar";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { Box, Button, Divider, Flex, Heading, jsx, Styled } from "theme-ui";
@@ -15,6 +16,7 @@ import { State } from "../reducers";
 import { ProjectsState } from "../reducers/projects";
 import { Resource } from "../resource";
 import store from "../store";
+import theme from "../theme";
 
 interface StateProps {
   readonly projects: ProjectsState;
@@ -24,12 +26,6 @@ interface StateProps {
 enum UserMenuKeys {
   Logout = "logout"
 }
-
-const getInitials = (name: string): string =>
-  name
-    .split(" ")
-    .map(substring => substring[0])
-    .join("");
 
 const logout = () => {
   clearJWT();
@@ -61,7 +57,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
         ) : "resource" in user ? (
           <Box
             sx={{
-              p: 2,
+              p: 1,
 
               "& > .rc-menu": {
                 m: 0,
@@ -79,11 +75,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
                 },
                 "& > .rc-menu-submenu-active": {
                   "& > .rc-menu-submenu-title": {
-                    background: "none",
-
-                    "> button": {
-                      backgroundColor: "gray.5"
-                    }
+                    background: "none"
                   },
                   "& .rc-menu-submenu-arrow": {
                     display: "none"
@@ -101,11 +93,19 @@ const HomeScreen = ({ projects, user }: StateProps) => {
             >
               <SubMenu
                 title={
-                  <Button
-                    sx={{ borderRadius: "50%", backgroundColor: "gray.3", cursor: "pointer" }}
-                  >
-                    {getInitials(user.resource.name)}
-                  </Button>
+                  <Avatar
+                    name={user.resource.name}
+                    round={true}
+                    size={"2rem"}
+                    maxInitials={3}
+                    color={"#a0aec0"}
+                    sx={{
+                      cursor: "pointer",
+                      ".sb-avatar__text": {
+                        "&:hover": { backgroundColor: "#718096 !important" }
+                      }
+                    }}
+                  />
                 }
               >
                 <MenuItem key={UserMenuKeys.Logout}>Logout</MenuItem>
