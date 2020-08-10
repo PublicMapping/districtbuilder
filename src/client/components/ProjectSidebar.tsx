@@ -157,7 +157,7 @@ const SidebarHeader = ({
               store.dispatch(saveDistrictsDefinition());
             }}
           >
-            Approve
+            Accept
           </Button>
         </Flex>
       ) : null}
