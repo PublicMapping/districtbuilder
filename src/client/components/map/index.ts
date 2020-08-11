@@ -74,7 +74,6 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
   ]);
 
   return {
-    // @ts-ignore
     layers: [
       {
         id: "district-placeholder",
@@ -89,7 +88,7 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
       ...selectionLayers,
       ...lineLayers,
       ...labelLayers
-    ],
+    ] as MapboxGL.Layer[],
     glyphs: window.location.origin + "/fonts/{fontstack}/{range}.pbf",
     sprite: window.location.origin + "/sprites/sprite",
     name: "District Builder",
