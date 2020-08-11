@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { FeatureCollection, MultiPolygon } from "geojson";
 
 import {
@@ -29,20 +29,18 @@ if (authToken) {
   setAxiosAuthHeaders(authToken);
 }
 
-function saveJWT(jwt: JWT): void {
+function saveJWT(response: AxiosResponse<JWT>): JWT {
+  const jwt = response.data;
   setJWT(jwt);
   setAxiosAuthHeaders(jwt);
+  return jwt;
 }
 
 export async function authenticateUser(email: string, password: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
       .post("/api/auth/email/login", { email, password })
-      .then(response => {
-        const jwt = response.data;
-        saveJWT(jwt);
-        resolve(jwt);
-      })
+      .then(response => resolve(saveJWT(response)))
       .catch(error => reject(error.response.data));
   });
 }
@@ -56,11 +54,11 @@ export async function fetchUser(): Promise<IUser> {
   });
 }
 
-export async function registerUser(name: string, email: string, password: string): Promise<IUser> {
+export async function registerUser(name: string, email: string, password: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
       .post("/api/auth/email/register", { name, email, password })
-      .then(() => resolve())
+      .then(response => resolve(saveJWT(response)))
       .catch(error => reject(error.response.data));
   });
 }
@@ -87,11 +85,7 @@ export async function activateAccount(token: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
       .post(`/api/auth/email/verify/${token}`)
-      .then(response => {
-        const jwt = response.data;
-        saveJWT(jwt);
-        resolve(jwt);
-      })
+      .then(response => resolve(saveJWT(response)))
       .catch(error => reject(error.message));
   });
 }

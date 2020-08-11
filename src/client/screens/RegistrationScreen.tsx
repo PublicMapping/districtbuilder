@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
@@ -39,10 +39,7 @@ const RegistrationScreen = () => {
   return (
     <CenteredContent>
       {"resource" in registrationResource ? (
-        <div>
-          Thanks for signing up for DistrictBuilder! Please click the link in your registration
-          email to continue.
-        </div>
+        <Redirect to="/" />
       ) : (
         <React.Fragment>
           <Heading as="h1" sx={{ textAlign: "center" }}>
