@@ -17,6 +17,7 @@ import {
 } from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
+  DISTRICTS_PLACEHOLDER_LAYER_ID,
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
   featureStateDistricts,
@@ -111,7 +112,7 @@ const Map = ({
               "fill-opacity": 1
             }
           },
-          "district-placeholder"
+          DISTRICTS_PLACEHOLDER_LAYER_ID
         );
         map.addLayer(
           {
@@ -124,7 +125,7 @@ const Map = ({
               "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
             }
           },
-          "district-placeholder"
+          DISTRICTS_PLACEHOLDER_LAYER_ID
         );
 
         map.resize();

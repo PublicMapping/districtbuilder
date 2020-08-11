@@ -20,6 +20,8 @@ export const GEOLEVELS_SOURCE_ID = "db";
 export const DISTRICTS_SOURCE_ID = "districts";
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
+// Used only to make labels show up on top of all other layers
+export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
 export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): MapboxGL.Style {
   const lineLayers = geoLevels.flatMap(level => [
@@ -76,7 +78,7 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
   return {
     layers: [
       {
-        id: "district-placeholder",
+        id: DISTRICTS_PLACEHOLDER_LAYER_ID,
         type: "background",
         paint: {
           "background-color": "transparent"
@@ -88,7 +90,7 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
       ...selectionLayers,
       ...lineLayers,
       ...labelLayers
-    ] as MapboxGL.Layer[],
+    ] as MapboxGL.Layer[], // eslint-disable-line
     glyphs: window.location.origin + "/fonts/{fontstack}/{range}.pbf",
     sprite: window.location.origin + "/sprites/sprite",
     name: "District Builder",
