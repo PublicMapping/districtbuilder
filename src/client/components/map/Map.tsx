@@ -17,6 +17,7 @@ import {
 } from "../../../shared/entities";
 import {
   GEOLEVELS_SOURCE_ID,
+  DISTRICTS_PLACEHOLDER_LAYER_ID,
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
   featureStateDistricts,
@@ -100,26 +101,32 @@ const Map = ({
           type: "geojson",
           data: geojson
         });
-        map.addLayer({
-          id: DISTRICTS_LAYER_ID,
-          type: "fill",
-          source: DISTRICTS_SOURCE_ID,
-          layout: {},
-          paint: {
-            "fill-color": { type: "identity", property: "color" },
-            "fill-opacity": 0.7
-          }
-        });
-        map.addLayer({
-          id: "districts-locked",
-          type: "fill",
-          source: DISTRICTS_SOURCE_ID,
-          layout: {},
-          paint: {
-            "fill-pattern": "circle-1",
-            "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
-          }
-        });
+        map.addLayer(
+          {
+            id: DISTRICTS_LAYER_ID,
+            type: "fill",
+            source: DISTRICTS_SOURCE_ID,
+            layout: {},
+            paint: {
+              "fill-color": { type: "identity", property: "color" },
+              "fill-opacity": 1
+            }
+          },
+          DISTRICTS_PLACEHOLDER_LAYER_ID
+        );
+        map.addLayer(
+          {
+            id: "districts-locked",
+            type: "fill",
+            source: DISTRICTS_SOURCE_ID,
+            layout: {},
+            paint: {
+              "fill-pattern": "circle-1",
+              "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
+            }
+          },
+          DISTRICTS_PLACEHOLDER_LAYER_ID
+        );
 
         map.resize();
       });

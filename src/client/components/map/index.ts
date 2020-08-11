@@ -20,53 +20,77 @@ export const GEOLEVELS_SOURCE_ID = "db";
 export const DISTRICTS_SOURCE_ID = "districts";
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
+// Used only to make labels show up on top of all other layers
+export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
 export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): MapboxGL.Style {
-  return {
-    layers: geoLevels.flatMap(level => [
-      {
-        id: levelToLineLayerId(level.id),
-        type: "line",
-        source: GEOLEVELS_SOURCE_ID,
-        "source-layer": level.id,
-        paint: {
-          "line-color": "#000",
-          "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
-          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1, 12, 2]
-        }
-      },
-      {
-        id: levelToSelectionLayerId(level.id),
-        type: "fill",
-        source: GEOLEVELS_SOURCE_ID,
-        "source-layer": level.id,
-        paint: {
-          "fill-color": "#000",
-          "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
-        }
-      },
-      {
-        id: levelToLabelLayerId(level.id),
-        type: "symbol",
-        source: GEOLEVELS_SOURCE_ID,
-        "source-layer": `${level.id}labels`,
-        layout: {
-          "text-size": 12,
-          "text-padding": 3,
-          "text-field": "",
-          "text-max-width": 10,
-          "text-font": ["GR"],
-          visibility: "none"
-        },
-        paint: {
-          "text-color": "#000",
-          "text-opacity": 0.9,
-          "text-halo-color": "#fff",
-          "text-halo-width": 1.25,
-          "text-halo-blur": 0
-        }
+  const lineLayers = geoLevels.flatMap(level => [
+    {
+      id: levelToLineLayerId(level.id),
+      type: "line",
+      source: GEOLEVELS_SOURCE_ID,
+      "source-layer": level.id,
+      paint: {
+        "line-color": "#000",
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1, 12, 2]
       }
-    ]),
+    }
+  ]);
+
+  const selectionLayers = geoLevels.flatMap(level => [
+    {
+      id: levelToSelectionLayerId(level.id),
+      type: "fill",
+      source: GEOLEVELS_SOURCE_ID,
+      "source-layer": level.id,
+      paint: {
+        "fill-color": "#000",
+        "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
+      }
+    }
+  ]);
+
+  const labelLayers = geoLevels.flatMap(level => [
+    {
+      id: levelToLabelLayerId(level.id),
+      type: "symbol",
+      source: GEOLEVELS_SOURCE_ID,
+      "source-layer": `${level.id}labels`,
+      layout: {
+        "text-size": 12,
+        "text-padding": 3,
+        "text-field": "",
+        "text-max-width": 10,
+        "text-font": ["GR"],
+        visibility: "none"
+      },
+      paint: {
+        "text-color": "#000",
+        "text-opacity": 0.9,
+        "text-halo-color": "#fff",
+        "text-halo-width": 1.25,
+        "text-halo-blur": 0
+      }
+    }
+  ]);
+
+  return {
+    layers: [
+      {
+        id: DISTRICTS_PLACEHOLDER_LAYER_ID,
+        type: "background",
+        paint: {
+          "background-color": "transparent"
+        },
+        layout: {
+          visibility: "none"
+        }
+      },
+      ...selectionLayers,
+      ...lineLayers,
+      ...labelLayers
+    ] as MapboxGL.Layer[], // eslint-disable-line
     glyphs: window.location.origin + "/fonts/{fontstack}/{range}.pbf",
     sprite: window.location.origin + "/sprites/sprite",
     name: "District Builder",
