@@ -126,6 +126,23 @@ const theme: Theme & StyledSystemTheme = {
       py: 2
     }
   },
+  spinner: {
+    small: {
+      color: "accent",
+      size: "24px",
+      strokeWidth: "3px"
+    },
+    medium: {
+      color: "accent",
+      size: "48px",
+      strokeWidth: "3px"
+    },
+    large: {
+      color: "accent",
+      strokeWidth: "3px",
+      size: "60px"
+    }
+  },
   styles: {
     img: {
       maxWidth: "100%",

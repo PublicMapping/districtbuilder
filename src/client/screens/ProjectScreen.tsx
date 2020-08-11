@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
-import { Flex, jsx } from "theme-ui";
+import { Flex, jsx, Spinner } from "theme-ui";
 import { IUser } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
 import { userFetch } from "../actions/user";
@@ -50,7 +50,11 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   }, [projectId]);
 
   return "isPending" in user ? (
-    <CenteredContent>Loading...</CenteredContent>
+    <CenteredContent>
+      <Flex sx={{ justifyContent: "center" }}>
+        <Spinner variant="spinner.large" />
+      </Flex>
+    </CenteredContent>
   ) : "errorMessage" in user ? (
     <Redirect to={"/login"} />
   ) : (

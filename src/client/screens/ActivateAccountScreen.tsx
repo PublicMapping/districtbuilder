@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box } from "theme-ui";
+import { Box, Flex, Spinner } from "theme-ui";
 
 import { activateAccount } from "../api";
 import CenteredContent from "../components/CenteredContent";
@@ -29,7 +29,9 @@ const ActivateAccountScreen = () => {
       ) : "errorMessage" in activationResource ? (
         <Box style={{ color: "red" }}>{activationResource.errorMessage}</Box>
       ) : "isPending" in activationResource && activationResource.isPending ? (
-        <Box>Loading...</Box>
+        <Flex sx={{ justifyContent: "center" }}>
+          <Spinner variant="spinner.large" />
+        </Flex>
       ) : null}
     </CenteredContent>
   );
