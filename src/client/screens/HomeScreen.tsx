@@ -75,7 +75,11 @@ const HomeScreen = ({ projects, user }: StateProps) => {
             </Box>
             {"errors" in resendEmail && (
               <Box sx={{ fontWeight: "body" }}>
-                Error resending email, please try again or contact support
+                Error resending email. If this error persists, please contact us at{" "}
+                <Styled.a sx={{ color: "muted" }} href="mailto:support@districtbuilder.org">
+                  support@districtbuilder.org
+                </Styled.a>
+                .
               </Box>
             )}
           </Box>
