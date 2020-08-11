@@ -127,15 +127,20 @@ const theme: Theme & StyledSystemTheme = {
     }
   },
   spinner: {
-    color: "accent",
-    size: "24px",
+    small: {
+      color: "accent",
+      size: "24px",
+      strokeWidth: "3px"
+    },
     medium: {
       color: "accent",
-      size: "36px"
+      size: "48px",
+      strokeWidth: "3px"
     },
     large: {
       color: "accent",
-      size: "48px"
+      strokeWidth: "3px",
+      size: "60px"
     }
   },
   styles: {

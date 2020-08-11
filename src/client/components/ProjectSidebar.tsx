@@ -137,7 +137,7 @@ const SidebarHeader = ({
       </Flex>
       {isLoading ? (
         <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
-          <Spinner variant="spinner" />
+          <Spinner variant="spinner.small" />
         </Flex>
       ) : selectedGeounits.size ? (
         <Flex sx={{ variant: "header.right" }}>
