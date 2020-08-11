@@ -6,7 +6,12 @@ import { Box, jsx } from "theme-ui";
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { setGeoLevelVisibility, SelectionTool } from "../../actions/districtDrawing";
+import {
+  addSelectedGeounits,
+  removeSelectedGeounits,
+  setGeoLevelVisibility,
+  SelectionTool
+} from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
   DistrictProperties,
@@ -21,10 +26,12 @@ import {
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
   featureStateDistricts,
+  featuresToUnlockedGeoUnits,
   getMapboxStyle,
   getGeoLevelVisibility,
   levelToLabelLayerId,
-  levelToLineLayerId
+  levelToLineLayerId,
+  levelToSelectionLayerId
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import MapTooltip from "./MapTooltip";
@@ -253,6 +260,83 @@ const Map = ({
       );
     }
   }, [map, staticMetadata, geoLevelIndex]);
+
+  // Keep track of when selected geolevel changes
+  const prevSelectedGeoLevelRef = useRef<typeof selectedGeolevel>();
+  useEffect(() => {
+    prevSelectedGeoLevelRef.current = selectedGeolevel;
+  });
+  const prevSelectedGeoLevel = prevSelectedGeoLevelRef.current;
+
+  useEffect(() => {
+    // Convert any larger geounits to the smaller sub-geounits as per the new geolevel
+    if (
+      map &&
+      prevSelectedGeoLevel &&
+      selectedGeolevel !== prevSelectedGeoLevel &&
+      selectedGeounits.size
+    ) {
+      [...selectedGeounits.entries()].forEach(geoUnit => {
+        const [featureId, geoUnitIndices] = geoUnit;
+        if (geoUnitIndices.length === staticMetadata.geoLevelHierarchy.length) {
+          // Don't do this for the smallest geounits since they have no sub-geounits
+          return;
+        }
+        const geoUnitIdx = geoUnitIndices[0];
+        const geoLevel =
+          staticMetadata.geoLevelHierarchy[
+            staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length
+          ];
+        // Deselect selected geounit
+        const selectedFeatures = map.queryRenderedFeatures(undefined, {
+          layers: [levelToSelectionLayerId(geoLevel.id)],
+          filter: ["==", ["get", "idx"], geoUnitIdx]
+        });
+        map.removeFeatureState({
+          id: featureId,
+          source: GEOLEVELS_SOURCE_ID,
+          sourceLayer: geoLevel.id
+        });
+        // NOTE: There should only be only one selected feature/geounit
+        const selectedGeounits = featuresToUnlockedGeoUnits(
+          selectedFeatures,
+          staticMetadata.geoLevelHierarchy,
+          project.districtsDefinition,
+          lockedDistricts
+        );
+        store.dispatch(removeSelectedGeounits(selectedGeounits));
+        // Select sub-geounits
+        const subFeatures = map.queryRenderedFeatures(undefined, {
+          filter: ["==", ["get", `${geoLevel.id}Idx`], geoUnitIdx]
+        });
+        subFeatures.forEach(({ id, sourceLayer }) => {
+          map.setFeatureState(
+            {
+              source: GEOLEVELS_SOURCE_ID,
+              id,
+              sourceLayer
+            },
+            { selected: true }
+          );
+        });
+        const subGeoUnits = featuresToUnlockedGeoUnits(
+          subFeatures,
+          staticMetadata.geoLevelHierarchy,
+          project.districtsDefinition,
+          lockedDistricts
+        );
+        store.dispatch(addSelectedGeounits(subGeoUnits));
+      });
+    }
+  }, [
+    map,
+    prevSelectedGeoLevel,
+    selectedGeolevel,
+    staticMetadata,
+    selectedGeounits,
+    project,
+    lockedDistricts
+  ]);
 
   useEffect(() => {
     /* eslint-disable */

@@ -125,6 +125,7 @@ export type GeoUnitIndices = readonly number[];
 
 export type FeatureId = number;
 
+// TODO: Store feature properties instead of the indices
 export type GeoUnits = ReadonlyMap<FeatureId, GeoUnitIndices>;
 
 export type CompactnessScore = number | null | "non-contiguous";
