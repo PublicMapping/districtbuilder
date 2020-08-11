@@ -74,6 +74,15 @@ export async function initiateForgotPassword(email: string): Promise<void> {
   });
 }
 
+export async function resendConfirmationEmail(email: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/auth/email/resend-verification/${email}`)
+      .then(() => resolve())
+      .catch(error => reject(error.response && error.response.data));
+  });
+}
+
 export async function activateAccount(token: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
