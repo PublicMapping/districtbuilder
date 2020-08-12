@@ -1,13 +1,8 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
-import {
-  addSelectedGeounits,
-  editSelectedGeounits,
-  removeSelectedGeounits
-} from "../../actions/districtDrawing";
+import { editSelectedGeounits, removeSelectedGeounits } from "../../actions/districtDrawing";
 import {
   DISTRICTS_LAYER_ID,
-  GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   featureStateGeoLevel,
   findSelectedSubFeatures,

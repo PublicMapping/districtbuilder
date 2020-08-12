@@ -1,7 +1,6 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import {
-  addSelectedGeounits,
   editSelectedGeounits,
   clearHighlightedGeounits,
   setHighlightedGeounits

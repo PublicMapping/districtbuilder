@@ -264,12 +264,13 @@ const Map = ({
   // Keep track of when selected geolevel changes
   const prevGeoLevelIndexRef = useRef<typeof geoLevelIndex | undefined>();
   useEffect(() => {
-    prevGeoLevelIndexRef.current = geoLevelIndex;
+    prevGeoLevelIndexRef.current = geoLevelIndex; // eslint-disable-line
   });
   const prevGeoLevelIndex = prevGeoLevelIndexRef.current;
 
   useEffect(() => {
     // Convert any larger geounits to the smaller sub-geounits as per the new geolevel
+    // eslint-disable-next-line
     if (
       map &&
       prevGeoLevelIndex !== undefined &&
@@ -277,10 +278,12 @@ const Map = ({
       selectedGeounits.size
     ) {
       [...selectedGeounits.entries()].forEach(([featureId, geoUnitIndices]) => {
+        // eslint-disable-next-line
         if (geoUnitIndices.length === staticMetadata.geoLevelHierarchy.length) {
           // Don't do this for the smallest geounits since they have no sub-geounits
           return;
         }
+        // eslint-disable-next-line
         if (geoUnitIndices.length - 1 === geoLevelIndex) {
           // Don't do anything for previously selected geounits at this level
           return;
@@ -288,7 +291,7 @@ const Map = ({
         // HACK! Fit map bounds to the bounding box to ensure that all relevant features are
         // returned when querying (`map.queryRenderedFeatures` only returns features within the
         // viewport). This will be replaced later.
-        map.fitBounds(staticMetadata.bbox as [number, number, number, number]);
+        map.fitBounds(staticMetadata.bbox as [number, number, number, number]); // eslint-disable-line
         map.once("moveend", () => {
           const geoUnitIdx = geoUnitIndices[0];
           const geoLevel =
