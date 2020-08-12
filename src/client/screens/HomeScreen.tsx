@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 import Avatar from "react-avatar";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { Box, Button, Divider, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Box, Divider, Flex, Heading, jsx, Styled } from "theme-ui";
 
 import { IUser } from "../../shared/entities";
 import { resetState } from "../actions/root";
@@ -16,7 +16,6 @@ import { State } from "../reducers";
 import { ProjectsState } from "../reducers/projects";
 import { Resource } from "../resource";
 import store from "../store";
-import theme from "../theme";
 
 interface StateProps {
   readonly projects: ProjectsState;
