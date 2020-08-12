@@ -7,7 +7,11 @@ const CenteredContent = ({ children }: { readonly children: React.ReactNode }) =
     <Flex
       sx={{
         flexDirection: "column",
-        height: "100vh"
+        py: 3,
+        "@media screen and (min-height: 600px)": {
+          mt: "0",
+          height: "100vh"
+        }
       }}
     >
       <Flex as="main" sx={{ width: "100%", height: "100%" }}>
