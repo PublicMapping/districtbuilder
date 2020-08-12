@@ -86,6 +86,14 @@ const Map = ({
         maxZoom
       });
 
+      map.addControl(
+        new MapboxGL.NavigationControl({
+          showCompass: false,
+          showZoom: true
+        }),
+        "top-right"
+      );
+
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
       map.doubleClickZoom.disable();
