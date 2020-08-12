@@ -262,22 +262,21 @@ const Map = ({
   }, [map, staticMetadata, geoLevelIndex]);
 
   // Keep track of when selected geolevel changes
-  const prevSelectedGeoLevelRef = useRef<typeof selectedGeolevel>();
+  const prevGeoLevelIndexRef = useRef<typeof geoLevelIndex | undefined>();
   useEffect(() => {
-    prevSelectedGeoLevelRef.current = selectedGeolevel;
+    prevGeoLevelIndexRef.current = geoLevelIndex;
   });
-  const prevSelectedGeoLevel = prevSelectedGeoLevelRef.current;
+  const prevGeoLevelIndex = prevGeoLevelIndexRef.current;
 
   useEffect(() => {
     // Convert any larger geounits to the smaller sub-geounits as per the new geolevel
     if (
       map &&
-      prevSelectedGeoLevel &&
-      selectedGeolevel !== prevSelectedGeoLevel &&
+      prevGeoLevelIndex !== undefined &&
+      geoLevelIndex > prevGeoLevelIndex &&
       selectedGeounits.size
     ) {
-      [...selectedGeounits.entries()].forEach(geoUnit => {
-        const [featureId, geoUnitIndices] = geoUnit;
+      [...selectedGeounits.entries()].forEach(([featureId, geoUnitIndices]) => {
         if (geoUnitIndices.length === staticMetadata.geoLevelHierarchy.length) {
           // Don't do this for the smallest geounits since they have no sub-geounits
           return;
@@ -334,7 +333,8 @@ const Map = ({
     }
   }, [
     map,
-    prevSelectedGeoLevel,
+    geoLevelIndex,
+    prevGeoLevelIndex,
     selectedGeolevel,
     staticMetadata,
     selectedGeounits,
