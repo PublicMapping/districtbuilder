@@ -282,6 +282,10 @@ const Map = ({
           // Don't do this for the smallest geounits since they have no sub-geounits
           return;
         }
+        // HACK! Fit map bounds to the bounding box to ensure that all relevant features are
+        // returned when querying (`map.queryRenderedFeatures` only returns features within the
+        // viewport). This will be replaced later.
+        map.fitBounds(staticMetadata.bbox as [number, number, number, number]);
         const geoUnitIdx = geoUnitIndices[0];
         const geoLevel =
           staticMetadata.geoLevelHierarchy[
