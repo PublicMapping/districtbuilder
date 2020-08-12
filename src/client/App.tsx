@@ -11,6 +11,7 @@ import LoginScreen from "./screens/LoginScreen";
 import ProjectScreen from "./screens/ProjectScreen";
 import RegistrationScreen from "./screens/RegistrationScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
+import ToastDemo from "./screens/ToastDemo";
 import theme from "./theme";
 
 import "./App.css";
@@ -35,6 +36,7 @@ const App = () => (
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
         <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
+        <Route path="/toast-demo" exact={true} component={ToastDemo} />
         <PrivateRoute path="/create-project" exact={true} component={CreateProjectScreen} />
       </Switch>
     </Router>
