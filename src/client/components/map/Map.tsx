@@ -289,50 +289,54 @@ const Map = ({
         // returned when querying (`map.queryRenderedFeatures` only returns features within the
         // viewport). This will be replaced later.
         map.fitBounds(staticMetadata.bbox as [number, number, number, number]);
-        const geoUnitIdx = geoUnitIndices[0];
-        const geoLevel =
-          staticMetadata.geoLevelHierarchy[
-            staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length
-          ];
-        // Deselect selected geounit
-        const selectedFeatures = map.queryRenderedFeatures(undefined, {
-          layers: [levelToSelectionLayerId(geoLevel.id)],
-          filter: ["==", ["get", "idx"], geoUnitIdx]
-        });
-        map.removeFeatureState({
-          id: featureId,
-          source: GEOLEVELS_SOURCE_ID,
-          sourceLayer: geoLevel.id
-        });
-        // NOTE: There should only be only one selected feature/geounit
-        const selectedGeounits = featuresToUnlockedGeoUnits(
-          selectedFeatures,
-          staticMetadata.geoLevelHierarchy,
-          project.districtsDefinition,
-          lockedDistricts
-        );
-        store.dispatch(removeSelectedGeounits(selectedGeounits));
-        // Select sub-geounits
-        const subFeatures = map.queryRenderedFeatures(undefined, {
-          filter: ["==", ["get", `${geoLevel.id}Idx`], geoUnitIdx]
-        });
-        subFeatures.forEach(({ id, sourceLayer }) => {
-          map.setFeatureState(
-            {
-              source: GEOLEVELS_SOURCE_ID,
-              id,
-              sourceLayer
-            },
-            { selected: true }
+        map.once("moveend", () => {
+          const geoUnitIdx = geoUnitIndices[0];
+          const geoLevel =
+            staticMetadata.geoLevelHierarchy[
+              staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length
+            ];
+          // Select sub-geounits.
+          // NOTE: This needs to happen _first_ so that the geounits don't get cleared out which
+          // causes the selected features to also be deleted (see `removeSelectedFeatures`).
+          const subFeatures = map.queryRenderedFeatures(undefined, {
+            filter: ["==", ["get", `${geoLevel.id}Idx`], geoUnitIdx]
+          });
+          subFeatures.forEach(({ id, sourceLayer }) => {
+            map.setFeatureState(
+              {
+                source: GEOLEVELS_SOURCE_ID,
+                id,
+                sourceLayer
+              },
+              { selected: true }
+            );
+          });
+          const subGeoUnits = featuresToUnlockedGeoUnits(
+            subFeatures,
+            staticMetadata.geoLevelHierarchy,
+            project.districtsDefinition,
+            lockedDistricts
           );
+          store.dispatch(addSelectedGeounits(subGeoUnits));
+          // Deselect selected geounit
+          const selectedFeatures = map.queryRenderedFeatures(undefined, {
+            layers: [levelToSelectionLayerId(geoLevel.id)],
+            filter: ["==", ["get", "idx"], geoUnitIdx]
+          });
+          map.removeFeatureState({
+            id: featureId,
+            source: GEOLEVELS_SOURCE_ID,
+            sourceLayer: geoLevel.id
+          });
+          // NOTE: There should only be only one selected feature/geounit
+          const selectedGeounits = featuresToUnlockedGeoUnits(
+            selectedFeatures,
+            staticMetadata.geoLevelHierarchy,
+            project.districtsDefinition,
+            lockedDistricts
+          );
+          store.dispatch(removeSelectedGeounits(selectedGeounits));
         });
-        const subGeoUnits = featuresToUnlockedGeoUnits(
-          subFeatures,
-          staticMetadata.geoLevelHierarchy,
-          project.districtsDefinition,
-          lockedDistricts
-        );
-        store.dispatch(addSelectedGeounits(subGeoUnits));
       });
     }
   }, [
