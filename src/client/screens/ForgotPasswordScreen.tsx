@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
+import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { initiateForgotPassword } from "../api";
 import CenteredContent from "../components/CenteredContent";
@@ -26,8 +27,10 @@ const ForgotPasswordScreen = () => {
 
   return (
     <CenteredContent>
-      <Heading as="h1">DistrictBuilder</Heading>
-      <Card sx={{ backgroundColor: "muted", my: 4, p: 4 }}>
+      <Heading as="h1" sx={{ textAlign: "center" }}>
+        <Logo sx={{ maxWidth: "15rem" }} />
+      </Heading>
+      <Card sx={{ variant: "card.floating" }}>
         <Flex
           as="form"
           sx={{ flexDirection: "column", textAlign: "left" }}
@@ -41,45 +44,54 @@ const ForgotPasswordScreen = () => {
               });
           }}
         >
-          <Heading as="h2" sx={{ textAlign: "left" }}>
+          <Heading as="h2" sx={{ mb: 5, textAlign: "left" }}>
             Reset your password
           </Heading>
           {"resource" in emailResource ? (
-            <React.Fragment>
+            <Box
+              sx={{
+                textAlign: "center",
+                backgroundColor: "success.0",
+                color: "success.7",
+                pt: 1,
+                pb: 3,
+                px: 3
+              }}
+            >
               <p>
                 Password reset email sent to <b>{data.email}</b>
               </p>
-              <p>
-                Used the wrong email address?{" "}
-                <Styled.a
-                  as={Link}
-                  to="/forgot-password"
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>): void => {
-                    e.preventDefault();
-                    setEmailResource({ data: { email: "" } });
-                  }}
-                  sx={{ color: "primary" }}
-                >
-                  Reset your password again
-                </Styled.a>
-              </p>
-            </React.Fragment>
+              <p sx={{ fontSize: 1, lineHeight: "1", mb: "0" }}>Used the wrong email address?</p>
+              <Styled.a
+                as={Link}
+                to="/forgot-password"
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>): void => {
+                  e.preventDefault();
+                  setEmailResource({ data: { email: "" } });
+                }}
+                sx={{ fontSize: 1, color: "success.6" }}
+              >
+                Reset your password again
+              </Styled.a>
+            </Box>
           ) : (
             <React.Fragment>
               <FormError resource={emailResource} />
-              <InputField
-                field="email"
-                label="Email"
-                resource={emailResource}
-                inputProps={{
-                  required: true,
-                  type: "email",
-                  onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                    setEmailResource({
-                      data: { ...data, email: e.currentTarget.value }
-                    })
-                }}
-              />
+              <Box sx={{ mb: 4 }}>
+                <InputField
+                  field="email"
+                  label="Email"
+                  resource={emailResource}
+                  inputProps={{
+                    required: true,
+                    type: "email",
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                      setEmailResource({
+                        data: { ...data, email: e.currentTarget.value }
+                      })
+                  }}
+                />
+              </Box>
               <Button type="submit" disabled={isFormInvalid(data)}>
                 Reset password
               </Button>
@@ -87,13 +99,13 @@ const ForgotPasswordScreen = () => {
           )}
         </Flex>
       </Card>
-      <Box>
+      <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Know your password?{" "}
         <Styled.a as={Link} to="/login" sx={{ color: "primary" }}>
           Log in
         </Styled.a>
       </Box>
-      <Box>
+      <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Need an account?{" "}
         <Styled.a as={Link} to="/register" sx={{ color: "primary" }}>
           Sign up for free

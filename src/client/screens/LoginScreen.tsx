@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { connect } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
 import { Alert, Box, Button, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
+import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { JWT, Login } from "../../shared/entities";
 import { showPasswordResetNotice } from "../actions/auth";
@@ -33,9 +34,9 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
   ) : (
     <CenteredContent>
       <Heading as="h1" sx={{ textAlign: "center" }}>
-        DistrictBuilder
+        <Logo sx={{ maxWidth: "15rem" }} />
       </Heading>
-      <Card sx={{ backgroundColor: "muted", my: 4, p: 4 }}>
+      <Card sx={{ variant: "card.floating" }}>
         <Flex
           as="form"
           sx={{ flexDirection: "column" }}
@@ -49,7 +50,7 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
               });
           }}
         >
-          <Heading as="h2" sx={{ textAlign: "left" }}>
+          <Heading as="h2" sx={{ fontSize: 4, mb: 5 }}>
             Log in
           </Heading>
           {passwordResetNoticeShown && (
@@ -63,39 +64,43 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
             </Alert>
           )}
           <FormError resource={loginResource} />
-          <InputField
-            field="email"
-            label="Email"
-            resource={loginResource}
-            inputProps={{
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                setLoginResource({
-                  data: { ...data, email: e.currentTarget.value }
-                })
-            }}
-          />
-          <InputField
-            field="password"
-            label="Password"
-            resource={loginResource}
-            inputProps={{
-              type: "password",
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                setLoginResource({
-                  data: { ...data, password: e.currentTarget.value }
-                })
-            }}
-          />
+          <Box sx={{ mb: 3 }}>
+            <InputField
+              field="email"
+              label="Email"
+              resource={loginResource}
+              inputProps={{
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                  setLoginResource({
+                    data: { ...data, email: e.currentTarget.value }
+                  })
+              }}
+            />
+          </Box>
+          <Box sx={{ mb: 4 }}>
+            <InputField
+              field="password"
+              label="Password"
+              resource={loginResource}
+              inputProps={{
+                type: "password",
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                  setLoginResource({
+                    data: { ...data, password: e.currentTarget.value }
+                  })
+              }}
+            />
+          </Box>
           <Button type="submit">Log in</Button>
         </Flex>
       </Card>
-      <Box>
+      <Box sx={{ fontSize: 1, mt: 3, textAlign: "center" }}>
         Need an account?{" "}
         <Styled.a as={Link} to="/register" sx={{ color: "primary" }}>
           Sign up for free
         </Styled.a>
       </Box>
-      <Box>
+      <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Forgot password?{" "}
         <Styled.a as={Link} to="/forgot-password" sx={{ color: "primary" }}>
           Password reset

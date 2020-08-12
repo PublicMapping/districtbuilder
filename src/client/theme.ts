@@ -10,11 +10,23 @@ const appButtonStyles = {
   alignItems: "center",
   flexShrink: 0,
   justifyContent: "center",
-  height: "48px",
   maxHeight: "100%",
-  py: 0,
+  fontFamily: "heading",
+  fontWeight: "medium",
+  borderRadius: "3px",
+  cursor: "pointer",
   "& > svg": {
     mr: 1
+  },
+  "&:hover": {
+    bg: "blue.5"
+  },
+  "&:active": {
+    bg: "blue.7"
+  },
+  "&:focus": {
+    outline: "none",
+    boxShadow: "focus"
   },
   "&[disabled]": { opacity: 0.6 }
 };
@@ -22,43 +34,76 @@ const appButtonStyles = {
 const theme: Theme & StyledSystemTheme = {
   fonts: {
     body:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+      'proxima-nova, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     heading:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+      'frank-new, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     monospace: "Menlo, monospace"
   },
   colors: {
-    heading: "#222",
-    text: "#666",
-    background: "#f6f6f6",
-    primary: "#093EA7",
-    secondary: "#455066",
+    heading: "#141414",
+    text: "#595959",
+    background: "#eef0f2",
+    primary: "#6d98ba",
+    secondary: "#6d6d6d",
     muted: "#fff",
-    accent: "#29303D",
-    warning: "#C00339",
+    accent: "#ffc08e",
+    warning: "#f06543",
+    success: [
+      "#f7fde8",
+      "#DCF8A5",
+      "#BEEC75",
+      "#9ED950",
+      "#5AA516",
+      "#438A0F",
+      "#306F09",
+      "#102c02"
+    ],
+    blue: [
+      "#f2f6f9",
+      "#e5edf3",
+      "#bdd0e0",
+      "#95b4cd",
+      "#6d98ba",
+      "#4c7ba0",
+      "#395c78",
+      "#2c485e",
+      "#131f28"
+    ],
     gray: [
-      "#f7fafc",
-      "#edf2f7",
-      "#e2e8f0",
-      "#cbd5e0",
-      "#a0aec0",
-      "#718096",
-      "#4a5568",
-      "#2d3748",
-      "#1a202c"
+      "#f8f9fa",
+      "#eef0f2",
+      "#d6d8da",
+      "#8a8a8a",
+      "#808080",
+      "#6d6d6d",
+      "#595959",
+      "#2c2c2c",
+      "#141414"
     ]
   },
-  sizes: {
-    form: "500px"
+  radii: {
+    small: "2px",
+    med: "4px"
   },
-  fontSizes: [13, 15, 18, 21, 31, 37, 54],
+  shadows: {
+    small: "0 0 4px rgba(0, 0, 0, .125)",
+    large: "0 0 24px rgba(0, 0, 0, .30)",
+    bright: "0 0 8px 2px rgba(109, 152, 186, 0.2)",
+    focus: "0 0 0 2px rgba(109, 152, 186, 0.3)"
+  },
+  sizes: {
+    form: "350px"
+  },
+  fontSizes: [9, 13, 15, 18, 21, 31, 37, 54],
   fontWeights: {
-    body: 400,
-    heading: 700,
-    bold: 700
+    light: 300,
+    medium: 500,
+    bold: 700,
+    body: 500,
+    heading: 300
   },
   lineHeights: {
-    body: 1.5,
+    body: 1.65,
     heading: 1.125
   },
   text: {
@@ -66,6 +111,19 @@ const theme: Theme & StyledSystemTheme = {
       mb: 2,
       fontWeight: "heading",
       color: "heading"
+    },
+    caps: {
+      textTransform: "uppercase",
+      letterSpacing: "1px"
+    }
+  },
+  card: {
+    floating: {
+      borderRadius: "small",
+      boxShadow: "bright",
+      backgroundColor: "muted",
+      my: 4,
+      p: 24
     }
   },
   space: [0, 4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
@@ -74,7 +132,13 @@ const theme: Theme & StyledSystemTheme = {
     secondary: {
       ...appButtonStyles,
       ...{
-        backgroundColor: "secondary"
+        backgroundColor: "secondary",
+        "&:hover": {
+          bg: "gray.6"
+        },
+        "&:active": {
+          bg: "gray.7"
+        }
       }
     },
     subtle: {
@@ -106,12 +170,37 @@ const theme: Theme & StyledSystemTheme = {
     }
   },
   forms: {
-    input: {
-      mb: 2
-    },
     label: {
       mb: 1,
-      textAlign: "left"
+      fontSize: 1,
+      fontWeight: "bold",
+      color: "gray.5",
+      textAlign: "left",
+      variant: "text.caps"
+    },
+    input: {
+      borderColor: "gray.2",
+      "&:focus": {
+        borderColor: "primary",
+        boxShadow: "focus",
+        outline: "none"
+      }
+    },
+    select: {
+      borderColor: "gray.2",
+      "&:focus": {
+        borderColor: "primary",
+        boxShadow: "focus",
+        outline: "none"
+      }
+    },
+    textarea: {
+      borderColor: "gray.2",
+      "&:focus": {
+        borderColor: "primary",
+        boxShadow: "focus",
+        outline: "none"
+      }
     }
   },
   links: {
@@ -144,6 +233,13 @@ const theme: Theme & StyledSystemTheme = {
     }
   },
   styles: {
+    a: {
+      "&:focus": {
+        borderRadius: "small",
+        boxShadow: "focus",
+        outline: "none"
+      }
+    },
     img: {
       maxWidth: "100%",
       height: "auto"
@@ -154,7 +250,7 @@ const theme: Theme & StyledSystemTheme = {
       fontFamily: "body",
       lineHeight: "body",
       fontWeight: "body",
-      fontSize: 1
+      fontSize: 2
     },
     table: {
       borderCollapse: "collapse"

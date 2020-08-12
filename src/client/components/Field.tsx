@@ -29,12 +29,12 @@ export default function Field<D, R>({
   return (
     <React.Fragment>
       <Label sx={{ display: "block" }}>{children && children(!!fieldErrors)}</Label>
-      <Box sx={{ color: "warning", textAlign: "left" }}>
+      <Box sx={{ fontSize: 1, color: "warning", textAlign: "left" }}>
         {fieldErrors &&
           fieldErrors.map((msg: string, index: number) => (
             <React.Fragment key={index}>
               {msg}
-              <Styled.p />
+              <Styled.div />
             </React.Fragment>
           ))}
       </Box>
@@ -117,7 +117,7 @@ const PasswordConstraint = ({
   const color = invalid ? "warning" : "inherit";
   return (
     <Flex sx={{ flexDirection: "row", flex: 1 }}>
-      <Box sx={{ width: "1rem", height: "1rem" }}>{!invalid && "✓"}</Box>
+      <Box sx={{ color: "success.4", width: "1rem", height: "1rem" }}>{!invalid && "✓"}</Box>
       <Box sx={{ flex: "auto", color }}>{children}</Box>
     </Flex>
   );
@@ -153,12 +153,28 @@ export function PasswordField<D, R>({
                 display: "none",
                 position: "absolute",
                 backgroundColor: "white",
+                fontSize: 1,
                 right: "0",
-                padding: "8px",
+                left: "0",
                 top: "0",
                 transform: "translateY(-100%)",
+                px: 3,
+                py: 2,
+                mb: 2,
                 zIndex: 1,
-                border: "1px solid"
+                border: "1px solid",
+                borderColor: "gray.2",
+                boxShadow: "small",
+                borderRadius: "small",
+                "@media screen and (min-width: 1040px)": {
+                  transform: "translateY(-50%)",
+                  left: "100%",
+                  right: "auto",
+                  top: "50%",
+                  mb: "0",
+                  ml: 2,
+                  width: "350px"
+                }
               }}
             >
               <PasswordConstraint invalid={pwErrors.minLength}>
