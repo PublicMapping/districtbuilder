@@ -23,7 +23,7 @@ import {
   staticMetadataFetchFailure,
   staticMetadataFetchSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounitIds } from "../actions/districtDrawing";
+import { clearSelectedGeounits } from "../actions/districtDrawing";
 
 import {
   DistrictProperties,
@@ -106,7 +106,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
           ...state,
           geojson: { resource: action.payload }
         },
-        Cmd.action(clearSelectedGeounitIds())
+        Cmd.action(clearSelectedGeounits())
       );
     case getType(projectFetchGeoJson):
       return loop(

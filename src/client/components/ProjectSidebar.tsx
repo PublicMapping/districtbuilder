@@ -26,7 +26,7 @@ import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
 
 import {
-  clearSelectedGeounitIds,
+  clearSelectedGeounits,
   saveDistrictsDefinition,
   setSelectedDistrictId,
   toggleDistrictLocked
@@ -145,7 +145,7 @@ const SidebarHeader = ({
             variant="circularSubtle"
             sx={{ mr: "2", cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(clearSelectedGeounitIds());
+              store.dispatch(clearSelectedGeounits());
             }}
           >
             Cancel

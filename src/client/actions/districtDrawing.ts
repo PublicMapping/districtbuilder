@@ -8,9 +8,13 @@ export enum SelectionTool {
 
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
 
-export const addSelectedGeounits = createAction("Add selected geounit ids")<GeoUnits>();
-export const removeSelectedGeounits = createAction("Remove selected geounit ids")<GeoUnits>();
-export const clearSelectedGeounitIds = createAction("Clear selected geounit ids")();
+export const addSelectedGeounits = createAction("Add selected geounits")<GeoUnits>();
+export const removeSelectedGeounits = createAction("Remove selected geounits")<GeoUnits>();
+export const clearSelectedGeounits = createAction("Clear selected geounits")();
+export const editSelectedGeounits = createAction("Edit selected geounits")<{
+  add: GeoUnits;
+  remove: GeoUnits;
+}>();
 
 export const setHighlightedGeounits = createAction("Add highlighted geounit ids")<GeoUnits>();
 export const clearHighlightedGeounits = createAction("Clear highlighted geounit ids")();

@@ -176,6 +176,20 @@ function isGeoUnitLocked(
       );
 }
 
+export function findSelectedSubFeatures(
+  map: MapboxGL.Map,
+  staticMetadata: IStaticMetadata,
+  feature: MapboxGL.MapboxGeoJSONFeature,
+  geoUnitIndices: GeoUnitIndices
+) {
+  return map
+    .queryRenderedFeatures(undefined, {
+      layers: [levelToSelectionLayerId(staticMetadata.geoLevelHierarchy[geoUnitIndices.length].id)],
+      filter: ["==", ["get", `${feature.sourceLayer}Idx`], geoUnitIndices[0]]
+    })
+    .filter(feature => isFeatureSelected(map, feature));
+}
+
 export function getGeoLevelVisibility(
   map: MapboxGL.Map,
   staticMetadata: IStaticMetadata

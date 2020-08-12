@@ -4,7 +4,8 @@ import { getType } from "typesafe-actions";
 import { Action } from "../actions";
 import {
   addSelectedGeounits,
-  clearSelectedGeounitIds,
+  clearSelectedGeounits,
+  editSelectedGeounits,
   removeSelectedGeounits,
   setHighlightedGeounits,
   clearHighlightedGeounits,
@@ -50,13 +51,28 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         selectedDistrictId: action.payload
       };
     case getType(addSelectedGeounits):
-      return {
-        ...state,
-        selectedGeounits: new Map([...state.selectedGeounits, ...action.payload])
-      };
-    case getType(removeSelectedGeounits): {
-      const mutableSelected = new Map(state.selectedGeounits);
-      action.payload.forEach((_value, key) => {
+      return loop(
+        state,
+        Cmd.action(
+          editSelectedGeounits({
+            add: action.payload,
+            remove: new Map()
+          })
+        )
+      );
+    case getType(removeSelectedGeounits):
+      return loop(
+        state,
+        Cmd.action(
+          editSelectedGeounits({
+            add: new Map(),
+            remove: action.payload
+          })
+        )
+      );
+    case getType(editSelectedGeounits): {
+      const mutableSelected = new Map([...state.selectedGeounits, ...action.payload.add]);
+      action.payload.remove.forEach((_value, key) => {
         mutableSelected.delete(key);
       });
       return {
@@ -64,7 +80,7 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         selectedGeounits: mutableSelected
       };
     }
-    case getType(clearSelectedGeounitIds):
+    case getType(clearSelectedGeounits):
       return {
         ...state,
         selectedGeounits: new Map()
