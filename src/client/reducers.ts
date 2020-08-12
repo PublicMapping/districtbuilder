@@ -1,4 +1,8 @@
 import { combineReducers } from "redux-loop";
+import { getType } from "typesafe-actions";
+
+import { Action } from "./actions";
+import { resetState } from "./actions/root";
 import authReducer, { AuthState, initialState as initialAuthState } from "./reducers/auth";
 import districtDrawingReducer, {
   initialState as initialDistrictDrawingState,
@@ -36,7 +40,7 @@ export const initialState: State = {
   districtDrawing: initialDistrictDrawingState
 };
 
-export default combineReducers({
+const allReducers = combineReducers({
   auth: authReducer,
   user: userReducer,
   regionConfig: regionConfigReducer,
@@ -44,3 +48,9 @@ export default combineReducers({
   projects: projectsReducer,
   districtDrawing: districtDrawingReducer
 });
+
+export default (state = initialState, action: Action) => {
+  const newState: State | undefined =
+    action && action.type === getType(resetState) ? undefined : state;
+  return allReducers(newState, action);
+};

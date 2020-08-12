@@ -76,7 +76,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
   };
 
   return "resource" in createProjectResource ? (
-    <Redirect to="/" />
+    <Redirect to={`/projects/${createProjectResource.resource.id}`} />
   ) : (
     <Flex
       sx={{
