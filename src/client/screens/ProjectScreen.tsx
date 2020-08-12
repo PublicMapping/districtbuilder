@@ -12,6 +12,7 @@ import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
+import Toast from "../components/Toast";
 import { State } from "../reducers";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { ProjectDataState } from "../reducers/projectData";
@@ -59,6 +60,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
     <Redirect to={"/login"} />
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
+      <Toast />
       <ProjectHeader project={project} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         <ProjectSidebar
