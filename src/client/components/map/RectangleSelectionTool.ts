@@ -206,7 +206,6 @@ const RectangleSelectionTool: ISelectionTool = {
           const geoUnitIndices = geoUnits.get(feature.id as FeatureId) as GeoUnitIndices;
           return findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices);
         });
-        console.log("subFeatures", subFeatures);
         subFeatures.forEach(feature => {
           map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
         });
@@ -216,10 +215,6 @@ const RectangleSelectionTool: ISelectionTool = {
           districtsDefinition,
           lockedDistricts
         );
-        console.log({
-          add: geoUnits,
-          remove: subGeoUnits
-        });
         store.dispatch(
           editSelectedGeounits({
             add: geoUnits,
