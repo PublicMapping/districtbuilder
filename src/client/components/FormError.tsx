@@ -15,6 +15,10 @@ export default function FormError({
       ? resource.errors.message
       : undefined;
   return errorMessage ? (
-    <Box sx={{ backgroundColor: "warning", color: "white" }}>{errorMessage}</Box>
+    <Box
+      sx={{ px: 2, py: 1, mb: 1, borderRadius: "2px", backgroundColor: "warning", color: "white" }}
+    >
+      {errorMessage}
+    </Box>
   ) : null;
 }

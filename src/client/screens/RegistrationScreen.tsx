@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
+import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { Register } from "../../shared/entities";
 import { registerUser } from "../api";
@@ -44,8 +45,10 @@ const RegistrationScreen = () => {
         </div>
       ) : (
         <React.Fragment>
-          <Heading as="h1">DistrictBuilder</Heading>
-          <Card sx={{ backgroundColor: "muted", my: 4, p: 4 }}>
+          <Heading as="h1" sx={{ textAlign: "center" }}>
+            <Logo sx={{ maxWidth: "15rem" }} />
+          </Heading>
+          <Card sx={{ variant: "card.floating" }}>
             <Flex
               as="form"
               sx={{ flexDirection: "column" }}
@@ -63,36 +66,44 @@ const RegistrationScreen = () => {
                   });
               }}
             >
-              <Heading as="h2" sx={{ textAlign: "left" }}>
+              <Heading as="h2" sx={{ mb: 5, textAlign: "left" }}>
                 Create an account
               </Heading>
               <FormError resource={registrationResource} />
-              <InputField
-                field="name"
-                label="Name"
-                resource={registrationResource}
-                inputProps={{ onChange: setForm("name") }}
-              />
-              <InputField
-                field="email"
-                label="Email"
-                resource={registrationResource}
-                inputProps={{ onChange: setForm("email") }}
-              />
-              <PasswordField
-                field="password"
-                userAttributes={[data.email, data.name]}
-                password={data.password}
-                label="Password"
-                resource={registrationResource}
-                inputProps={{ onChange: setForm("password") }}
-              />
-              <InputField
-                field="confirmPassword"
-                label="Confirm password"
-                resource={registrationResource}
-                inputProps={{ onChange: setForm("confirmPassword"), type: "password" }}
-              />
+              <Box sx={{ mb: 3 }}>
+                <InputField
+                  field="name"
+                  label="Name"
+                  resource={registrationResource}
+                  inputProps={{ onChange: setForm("name") }}
+                />
+              </Box>
+              <Box sx={{ mb: 3 }}>
+                <InputField
+                  field="email"
+                  label="Email"
+                  resource={registrationResource}
+                  inputProps={{ onChange: setForm("email") }}
+                />
+              </Box>
+              <Box sx={{ mb: 3 }}>
+                <PasswordField
+                  field="password"
+                  userAttributes={[data.email, data.name]}
+                  password={data.password}
+                  label="Password"
+                  resource={registrationResource}
+                  inputProps={{ onChange: setForm("password") }}
+                />
+              </Box>
+              <Box sx={{ mb: 4 }}>
+                <InputField
+                  field="confirmPassword"
+                  label="Confirm password"
+                  resource={registrationResource}
+                  inputProps={{ onChange: setForm("confirmPassword"), type: "password" }}
+                />
+              </Box>
               <Button
                 type="submit"
                 disabled={
@@ -104,7 +115,7 @@ const RegistrationScreen = () => {
               </Button>
             </Flex>
           </Card>
-          <Box>
+          <Box sx={{ fontSize: 1, textAlign: "center" }}>
             Already have an account?{" "}
             <Styled.a as={Link} to="/login" sx={{ color: "primary" }}>
               Log in

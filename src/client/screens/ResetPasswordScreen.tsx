@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link, Redirect } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
+import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { showPasswordResetNotice } from "../actions/auth";
 import { resetPassword } from "../api";
@@ -38,8 +39,10 @@ const ResetPasswordScreen = () => {
     <Redirect to="/login" />
   ) : (
     <CenteredContent>
-      <Heading as="h1">DistrictBuilder</Heading>
-      <Card sx={{ backgroundColor: "muted", my: 4, p: 4 }}>
+      <Heading as="h1" sx={{ textAlign: "center" }}>
+        <Logo sx={{ maxWidth: "15rem" }} />
+      </Heading>
+      <Card sx={{ variant: "card.floating" }}>
         <Flex
           as="form"
           sx={{ flexDirection: "column", textAlign: "left" }}
@@ -56,51 +59,55 @@ const ResetPasswordScreen = () => {
               });
           }}
         >
-          <Heading as="h2" sx={{ textAlign: "left" }}>
+          <Heading as="h2" sx={{ mb: 5, textAlign: "left" }}>
             Reset your password
           </Heading>
           <FormError resource={passwordResource} />
           {/* Note 'userAttributes' below is empty because we don't have access to user data yet as we're not logged in. A full validation will happen server-side*/}
-          <PasswordField
-            field="password"
-            label="Password"
-            password={passwordResource.data.password}
-            userAttributes={[]}
-            resource={passwordResource}
-            inputProps={{
-              required: true,
-              type: "password",
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                setPasswordResource({
-                  data: { ...data, password: e.currentTarget.value }
-                })
-            }}
-          />
-          <InputField
-            field="confirmPassword"
-            label="Confirm password"
-            resource={passwordResource}
-            inputProps={{
-              required: true,
-              type: "password",
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                setPasswordResource({
-                  data: { ...data, confirmPassword: e.currentTarget.value }
-                })
-            }}
-          />
+          <Box sx={{ mb: 3 }}>
+            <PasswordField
+              field="password"
+              label="Password"
+              password={passwordResource.data.password}
+              userAttributes={[]}
+              resource={passwordResource}
+              inputProps={{
+                required: true,
+                type: "password",
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPasswordResource({
+                    data: { ...data, password: e.currentTarget.value }
+                  })
+              }}
+            />
+          </Box>
+          <Box sx={{ mb: 4 }}>
+            <InputField
+              field="confirmPassword"
+              label="Confirm password"
+              resource={passwordResource}
+              inputProps={{
+                required: true,
+                type: "password",
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPasswordResource({
+                    data: { ...data, confirmPassword: e.currentTarget.value }
+                  })
+              }}
+            />
+          </Box>
           <Button type="submit" disabled={isFormInvalid(data)}>
             Reset password
           </Button>
         </Flex>
       </Card>
-      <Box>
+      <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Know your password?{" "}
         <Styled.a as={Link} to="/login" sx={{ color: "primary" }}>
           Log in
         </Styled.a>
       </Box>
-      <Box>
+      <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Need an account?{" "}
         <Styled.a as={Link} to="/register" sx={{ color: "primary" }}>
           Sign up for free
