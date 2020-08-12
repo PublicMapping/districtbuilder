@@ -181,13 +181,17 @@ export function findSelectedSubFeatures(
   staticMetadata: IStaticMetadata,
   feature: MapboxGL.MapboxGeoJSONFeature,
   geoUnitIndices: GeoUnitIndices
-) {
-  return map
-    .queryRenderedFeatures(undefined, {
-      layers: [levelToSelectionLayerId(staticMetadata.geoLevelHierarchy[geoUnitIndices.length].id)],
-      filter: ["==", ["get", `${feature.sourceLayer}Idx`], geoUnitIndices[0]]
-    })
-    .filter(feature => isFeatureSelected(map, feature));
+): readonly MapboxGeoJSONFeature[] {
+  const geoLevel: GeoLevelInfo | undefined =
+    staticMetadata.geoLevelHierarchy[geoUnitIndices.length];
+  return geoLevel
+    ? map
+        .queryRenderedFeatures(undefined, {
+          layers: [levelToSelectionLayerId(geoLevel.id)],
+          filter: ["==", ["get", `${feature.sourceLayer}Idx`], geoUnitIndices[0]]
+        })
+        .filter(feature => isFeatureSelected(map, feature))
+    : [];
 }
 
 export function getGeoLevelVisibility(
