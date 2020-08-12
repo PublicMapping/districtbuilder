@@ -281,6 +281,10 @@ const Map = ({
           // Don't do this for the smallest geounits since they have no sub-geounits
           return;
         }
+        if (geoUnitIndices.length - 1 === geoLevelIndex) {
+          // Don't do anything for previously selected geounits at this level
+          return;
+        }
         // HACK! Fit map bounds to the bounding box to ensure that all relevant features are
         // returned when querying (`map.queryRenderedFeatures` only returns features within the
         // viewport). This will be replaced later.
