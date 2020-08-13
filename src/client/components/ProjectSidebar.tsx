@@ -111,7 +111,6 @@ const ProjectSidebar = ({
                 staticDemographics,
                 selectedDistrictId,
                 selectedGeounits,
-                geoLevelIndex,
                 geoUnitHierarchy,
                 lockedDistricts
               )}
@@ -337,7 +336,6 @@ const getSidebarRows = (
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   selectedDistrictId: number,
   selectedGeounits: GeoUnits,
-  geoLevelIndex: number,
   geoUnitHierarchy: GeoUnitHierarchy,
   lockedDistricts: LockedDistricts
 ) => {
@@ -346,8 +344,7 @@ const getSidebarRows = (
     staticMetadata,
     staticGeoLevels,
     staticDemographics,
-    selectedGeounits,
-    geoLevelIndex
+    selectedGeounits
   );
 
   // The demographic composition of the selection for each saved district

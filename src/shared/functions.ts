@@ -47,20 +47,39 @@ export function getDemographics(
   );
 }
 
+interface Demographics {
+  readonly [id: string]: number;
+}
+
 // Aggregate all demographics that are included in the selection
 export function getTotalSelectedDemographics(
   staticMetadata: IStaticMetadata,
   staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  selectedGeounits: GeoUnits,
-  geoLevelIndex: number
-): { readonly [id: string]: number } {
-  const selectedGeounitIds = new Set([...selectedGeounits.keys()]);
-  const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
-  const selectedBaseIndices = baseIndices
-    ? getAllIndices(baseIndices, selectedGeounitIds)
-    : Array.from(selectedGeounitIds);
-  return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
+  selectedGeounits: GeoUnits
+): Demographics {
+  const selectedGeoUnitGeoLevelIndices = new Set(
+    [...selectedGeounits.values()].map(indices => indices.length - 1)
+  );
+  return selectedGeoUnitGeoLevelIndices.size
+    ? [...selectedGeoUnitGeoLevelIndices].reduce((totalDemographics, geoLevelIndex) => {
+        const selectedGeounitIds = new Set([...selectedGeounits.keys()]);
+        const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
+        const selectedBaseIndices = getAllIndices(baseIndices, selectedGeounitIds);
+        const demographics = getDemographics(
+          selectedBaseIndices,
+          staticMetadata,
+          staticDemographics
+        );
+        // Add demographic counts for this level to the total
+        return Object.entries(demographics).reduce((acc: Demographics, [id, count]) => {
+          return {
+            ...acc,
+            [id]: (acc[id] || 0) + count
+          };
+        }, totalDemographics);
+      }, {})
+    : getDemographics([], staticMetadata, staticDemographics);
 }
 
 /*

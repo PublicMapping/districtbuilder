@@ -134,13 +134,7 @@ const MapTooltip = ({
           ]);
     const demographics =
       selectedGeounits &&
-      getDemographics(
-        staticMetadata,
-        staticGeoLevels,
-        staticDemographics,
-        selectedGeounits,
-        geoLevelIndex
-      );
+      getDemographics(staticMetadata, staticGeoLevels, staticDemographics, selectedGeounits);
 
     const featureLabel = () =>
       feature && feature.properties && feature.properties.name ? (
