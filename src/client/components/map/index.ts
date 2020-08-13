@@ -183,7 +183,7 @@ export function findSelectedSubFeatures(
   geoUnitIndices: GeoUnitIndices
 ): readonly MapboxGeoJSONFeature[] {
   const geoLevel: GeoLevelInfo | undefined =
-    staticMetadata.geoLevelHierarchy[geoUnitIndices.length];
+    geoUnitIndices && staticMetadata.geoLevelHierarchy[geoUnitIndices.length];
   return geoLevel
     ? map
         .queryRenderedFeatures(undefined, {
