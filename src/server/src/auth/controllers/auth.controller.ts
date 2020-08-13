@@ -73,11 +73,11 @@ export class AuthController {
   }
 
   @Post("email/register")
-  async register(@Body() registerDto: RegisterDto): Promise<string> {
+  async register(@Body() registerDto: RegisterDto): Promise<JWT> {
     try {
       const newUser = await this.userService.create(registerDto);
       await this.authService.sendInitialVerificationEmail(newUser);
-      return RegisterResponse.SUCCESS;
+      return this.authService.generateJwt(newUser);
     } catch (error) {
       if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {
         throw new BadRequestException({
