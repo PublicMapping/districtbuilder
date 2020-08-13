@@ -30,6 +30,7 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
       type: "line",
       source: GEOLEVELS_SOURCE_ID,
       "source-layer": level.id,
+      layout: { visibility: "none" },
       paint: {
         "line-color": "#000",
         "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],

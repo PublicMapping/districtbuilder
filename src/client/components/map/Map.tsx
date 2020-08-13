@@ -22,7 +22,9 @@ import {
   DISTRICTS_LAYER_ID,
   featureStateDistricts,
   getMapboxStyle,
-  getGeoLevelVisibility
+  getGeoLevelVisibility,
+  levelToLabelLayerId,
+  levelToLineLayerId
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import MapTooltip from "./MapTooltip";
@@ -194,11 +196,11 @@ const Map = ({
     // eslint-disable-next-line
     if (map) {
       staticMetadata.geoLevelHierarchy.forEach(geoLevel =>
-        map.setLayoutProperty(`${geoLevel.id}-label`, "visibility", "none")
+        map.setLayoutProperty(levelToLabelLayerId(geoLevel.id), "visibility", "none")
       );
-      map.setLayoutProperty(`${selectedGeolevel.id}-label`, "visibility", "visible");
+      map.setLayoutProperty(levelToLabelLayerId(selectedGeolevel.id), "visibility", "visible");
       map.setLayoutProperty(
-        `${selectedGeolevel.id}-label`,
+        levelToLabelLayerId(selectedGeolevel.id),
         "text-field",
         label ? `{${label}-abbrev}` : ""
       );
@@ -230,6 +232,22 @@ const Map = ({
       };
     }
   }, [map, selectedGeolevel, staticMetadata, selectedGeounits, minZoom]);
+
+  // Update layer visibility when geolevel is selected
+  useEffect(() => {
+    // eslint-disable-next-line
+    if (map && staticMetadata) {
+      const invertedGeoLevelIndex = staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1;
+
+      staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) =>
+        map.setLayoutProperty(
+          levelToLineLayerId(geoLevel.id),
+          "visibility",
+          idx >= invertedGeoLevelIndex ? "visible" : "none"
+        )
+      );
+    }
+  }, [map, staticMetadata, geoLevelIndex]);
 
   useEffect(() => {
     /* eslint-disable */
