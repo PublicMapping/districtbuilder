@@ -72,7 +72,6 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           staticDemographics={staticDemographics}
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounits={districtDrawing.selectedGeounits}
-          geoLevelIndex={districtDrawing.geoLevelIndex}
           geoUnitHierarchy={geoUnitHierarchy}
           lockedDistricts={districtDrawing.lockedDistricts}
         />

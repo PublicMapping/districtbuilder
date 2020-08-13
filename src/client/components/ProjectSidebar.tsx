@@ -50,7 +50,6 @@ const ProjectSidebar = ({
   staticDemographics,
   selectedDistrictId,
   selectedGeounits,
-  geoLevelIndex,
   geoUnitHierarchy,
   lockedDistricts
 }: {
@@ -61,7 +60,6 @@ const ProjectSidebar = ({
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
-  readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
 } & LoadingProps) => {
