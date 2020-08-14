@@ -27,19 +27,22 @@ export function getAllIndices(arrayBuf: ArrayBuffer, vals: ReadonlySet<number>):
 }
 
 export function getDemographics(
-  baseIndices: readonly number[],
+  baseIndices: number[] | Set<number>, // eslint-disable-line
   staticMetadata: IStaticMetadata,
   staticDemographics: readonly ArrayBuffer[]
 ): { readonly [id: string]: number } {
   // Aggregate demographic data for the IDs
   return staticMetadata.demographics.reduce(
     (data, demographic, ind) => {
-      const val = baseIndices.reduce(
-        (sum, v) => (isNaN(staticDemographics[ind][v]) ? sum : sum + staticDemographics[ind][v]),
-        0
-      );
+      let count: number = 0; // eslint-disable-line
+      baseIndices.forEach((v: number) => {
+        // eslint-disable-next-line
+        if (!isNaN(staticDemographics[ind][v])) {
+          count += staticDemographics[ind][v];
+        }
+      });
       // eslint-disable-next-line
-      data[demographic.id] = val;
+      data[demographic.id] = count;
       return data;
     },
     // eslint-disable-next-line
@@ -56,15 +59,19 @@ interface DemographicCounts {
 /*
  * Return all base indices for this subset of the geounit hierarchy.
  */
-function accumulateBaseIndices(geoUnitHierarchy: GeoUnitHierarchy): readonly number[] {
-  return geoUnitHierarchy.reduce((baseIndices: readonly number[], currentIndices) => {
-    return [
-      ...baseIndices,
+// eslint-disable-next-line
+function accumulateBaseIndices(geoUnitHierarchy: GeoUnitHierarchy): number[] {
+  // eslint-disable-next-line
+  const baseIndices: number[] = [];
+  geoUnitHierarchy.forEach(currentIndices =>
+    // eslint-disable-next-line
+    baseIndices.push(
       ...(typeof currentIndices === "number"
         ? [currentIndices]
         : accumulateBaseIndices(currentIndices))
-    ];
-  }, []);
+    )
+  );
+  return baseIndices;
 }
 
 /*
@@ -73,7 +80,8 @@ function accumulateBaseIndices(geoUnitHierarchy: GeoUnitHierarchy): readonly num
 function baseIndicesForGeoUnit(
   geoUnitHierarchy: GeoUnitHierarchy,
   geoUnitIndices: GeoUnitIndices
-): readonly number[] {
+  // eslint-disable-next-line
+): number[] {
   const [geoUnitIndex, ...remainingGeoUnitIndices] = geoUnitIndices;
   const indicesForGeoLevel: number | NestedArray<number> = geoUnitHierarchy[geoUnitIndex];
   // eslint-disable-next-line
@@ -98,17 +106,16 @@ export function getTotalSelectedDemographics(
   selectedGeounits: GeoUnits
 ): DemographicCounts {
   // Build up set of blocks ids corresponding to selected geounits
-  const selectedBaseIndices = [...selectedGeounits.values()].reduce(
-    (allBaseIndices, geoUnitIndices) => {
-      return new Set([
-        ...allBaseIndices,
-        ...baseIndicesForGeoUnit(geoUnitHierarchy, geoUnitIndices)
-      ]);
-    },
-    new Set() as ReadonlySet<number>
+  // eslint-disable-next-line
+  const selectedBaseIndices: Set<number> = new Set();
+  selectedGeounits.forEach(geoUnitIndices =>
+    baseIndicesForGeoUnit(geoUnitHierarchy, geoUnitIndices).forEach(index =>
+      // eslint-disable-next-line
+      selectedBaseIndices.add(index)
+    )
   );
   // Aggregate all counts for selected blocks
-  return getDemographics(Array.from(selectedBaseIndices), staticMetadata, staticDemographics);
+  return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 }
 
 /*
