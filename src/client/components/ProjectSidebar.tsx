@@ -2,8 +2,6 @@
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import React, { useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
-import Tippy from "@tippyjs/react";
-import "tippy.js/dist/tippy.css";
 
 import {
   CompactnessScore,
@@ -26,7 +24,7 @@ import {
 import DemographicsChart from "./DemographicsChart";
 import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
-import { tippySettings } from "../theme";
+import Tooltip from "./Tooltip";
 
 import {
   clearSelectedGeounits,
@@ -229,8 +227,7 @@ const BLANK_VALUE = "–";
 
 function getCompactnessDisplay(compactness: CompactnessScore) {
   return compactness === null ? (
-    <Tippy
-      {...tippySettings}
+    <Tooltip
       placement="top-start"
       content={
         <em>
@@ -239,10 +236,9 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
       }
     >
       <span>{BLANK_VALUE}</span>
-    </Tippy>
+    </Tooltip>
   ) : typeof compactness === "number" ? (
-    <Tippy
-      {...tippySettings}
+    <Tooltip
       placement="top-start"
       content={
         <span>
@@ -252,10 +248,9 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
       }
     >
       <span>{`${Math.floor(compactness * 100)}%`}</span>
-    </Tippy>
+    </Tooltip>
   ) : compactness === "non-contiguous" ? (
-    <Tippy
-      {...tippySettings}
+    <Tooltip
       placement="top-start"
       content={
         <em>
@@ -267,7 +262,7 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
       <span>
         <Icon name="alert-triangle" color="#f06543" size={0.95} />
       </span>
-    </Tippy>
+    </Tooltip>
   ) : (
     assertNever(compactness)
   );
@@ -346,8 +341,7 @@ const SidebarRow = ({
         {deviationDisplay}
       </Styled.td>
       <Styled.td sx={style.td}>
-        <Tippy
-          {...tippySettings}
+        <Tooltip
           placement="top-start"
           content={
             demographics.population > 0 ? (
@@ -362,7 +356,7 @@ const SidebarRow = ({
           <span>
             <DemographicsChart demographics={demographics} />
           </span>
-        </Tippy>
+        </Tooltip>
       </Styled.td>
       <Styled.td sx={{ ...style.td, ...style.number, ...style.blankValue }}>
         {BLANK_VALUE}

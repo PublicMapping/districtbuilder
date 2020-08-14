@@ -1,13 +1,10 @@
 /** @jsx jsx */
-import React from "react";
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import Tippy from "@tippyjs/react";
-import "tippy.js/dist/tippy.css";
 import { geoLevelLabel } from "../../shared/functions";
 
-import { tippySettings } from "../theme";
 import Icon from "./Icon";
+import Tooltip from "./Tooltip";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 
@@ -112,8 +109,7 @@ const GeoLevelButton = ({
   const isButtonDisabled = isGeoLevelHidden || areChangesPending;
   return (
     <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
-      <Tippy
-        {...tippySettings}
+      <Tooltip
         key={index}
         content={
           isButtonDisabled ? (
@@ -138,7 +134,7 @@ const GeoLevelButton = ({
             {label}
           </Button>
         </span>
-      </Tippy>
+      </Tooltip>
     </Box>
   );
 };
@@ -171,7 +167,6 @@ const MapHeader = ({
     ? metadata.geoLevelHierarchy
         .slice()
         .reverse()
-
         .map((val, index, geoLevelHierarchy) => (
           <GeoLevelButton
             key={index}
@@ -188,7 +183,7 @@ const MapHeader = ({
     <Flex sx={style.header}>
       <Flex>
         <Flex sx={{ mr: 3 }}>
-          <Tippy {...tippySettings} content="Point-and-click selection">
+          <Tooltip content="Point-and-click selection">
             <Button
               sx={{ ...style.selectionButton, ...style.rightCapButton }}
               className={buttonClassName(selectionTool === SelectionTool.Default)}
@@ -196,9 +191,8 @@ const MapHeader = ({
             >
               <Icon name="hand-pointer" />
             </Button>
-          </Tippy>
-
-          <Tippy {...tippySettings} content="Rectangle selection">
+          </Tooltip>
+          <Tooltip content="Rectangle selection">
             <Button
               sx={{ ...style.selectionButton, ...style.leftCapButton }}
               className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
@@ -206,7 +200,7 @@ const MapHeader = ({
             >
               <Icon name="draw-square" />
             </Button>
-          </Tippy>
+          </Tooltip>
         </Flex>
         <Flex>{geoLevelOptions}</Flex>
       </Flex>

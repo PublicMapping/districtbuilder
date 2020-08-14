@@ -1,16 +1,8 @@
 import { Theme as StyledSystemTheme } from "@styled-system/css";
-import { TippyProps } from "@tippyjs/react";
 import { Theme } from "theme-ui";
 
 export const heights = {
   header: "48px"
-};
-
-export const tippySettings: TippyProps = {
-  delay: [500, 0],
-  duration: 0,
-  animation: "none",
-  maxWidth: 280
 };
 
 const appButtonStyles = {
