@@ -7,8 +7,7 @@ import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import {
-  addSelectedGeounits,
-  removeSelectedGeounits,
+  editSelectedGeounits,
   setGeoLevelVisibility,
   SelectionTool
 } from "../../actions/districtDrawing";
@@ -299,8 +298,6 @@ const Map = ({
               staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length
             ];
           // Select sub-geounits.
-          // NOTE: This needs to happen _first_ so that the geounits don't get cleared out which
-          // causes the selected features to also be deleted (see `removeSelectedFeatures`).
           const subFeatures = map.queryRenderedFeatures(undefined, {
             filter: ["==", ["get", `${geoLevel.id}Idx`], geoUnitIdx]
           });
@@ -320,7 +317,6 @@ const Map = ({
             project.districtsDefinition,
             lockedDistricts
           );
-          store.dispatch(addSelectedGeounits(subGeoUnits));
           // Deselect selected geounit
           const selectedFeatures = map.queryRenderedFeatures(undefined, {
             layers: [levelToSelectionLayerId(geoLevel.id)],
@@ -338,7 +334,13 @@ const Map = ({
             project.districtsDefinition,
             lockedDistricts
           );
-          store.dispatch(removeSelectedGeounits(selectedGeounits));
+          // Update state
+          store.dispatch(
+            editSelectedGeounits({
+              add: subGeoUnits,
+              remove: selectedGeounits
+            })
+          );
         });
       });
     }
