@@ -446,35 +446,58 @@ it when necessary (file sizes ~1GB+).
     minZooms: readonly string[],
     maxZooms: readonly string[]
   ): GeoLevelInfo[] {
-    const mbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
+    const joinedMbtiles = join(dir, "all-geounits.mbtiles");
+    const inputs = geoLevels.map(geoLevel => join(dir, `${geoLevel}.geojson`));
+    // Convert all layers to vector tiles in one go, to ensure simplification with
+    // detection of shared borders applies to all layers at once
+    //
+    // This will cause tiles to include data beyond its min/max zoom, so we
+    // strip those out in a later step
+    this.log(`Converting geojson to vectortiles for ${geoLevels.join(", ")}`);
+    tippecanoe(
+      inputs,
+      {
+        detectSharedBorders: true,
+        force: true,
+        // The only properties we want are geounit hierarchy indices
+        include: [...geoLevels.slice(1).map(gl => `${gl}Idx`), "idx"],
+        noTileCompression: true,
+        noTinyPolygonReduction: true,
+        output: joinedMbtiles,
+        simplification: 8,
+        simplifyOnlyLowZooms: true
+      },
+      { echo: true }
+    );
+    const separateMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
     const labelsGeojson = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.geojson`));
     const labelsMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.mbtiles`));
     geoLevels.forEach((geoLevel, idx) => {
       const minimumZoom = minZooms[idx];
       const maximumZoom = maxZooms[idx];
-      const output = mbtiles[idx];
-      const labelPath = labelsGeojson[idx];
-      const labelOutput = labelsMbtiles[idx];
-      const path = join(dir, `${geoLevel}.geojson`);
-      this.log(`Converting geojson to vectortiles for ${geoLevel}`);
-      tippecanoe(
-        path,
+      const input = join(dir, `${geoLevel}.geojson`);
+      const output = separateMbtiles[idx];
+      // Use tile-join to pull out individual layers and impose min/max zooms
+      tileJoin(
+        [joinedMbtiles],
         {
-          detectSharedBorders: true,
           force: true,
-          // The only properties we want are geounit hierarchy indices
-          include: [...geoLevels.slice(1).map(gl => `${gl}Idx`), "idx"],
+          layer: geoLevel,
           maximumZoom,
           minimumZoom,
           noTileCompression: true,
-          noTinyPolygonReduction: true,
-          output,
-          simplification: 15,
-          simplifyOnlyLowZooms: true
+          noTileSizeLimit: true,
+          output
         },
         { echo: true }
       );
-      const geojson = geojsonPolygonLabels(path, { style: "largest" }, { echo: true }).stdout;
+      const labelPath = labelsGeojson[idx];
+      const labelOutput = labelsMbtiles[idx];
+      const geojson = geojsonPolygonLabels(
+        input,
+        { style: "largest" },
+        { echo: true, silent: true }
+      ).stdout;
       writeFileSync(labelPath, geojson);
       tippecanoe(
         labelPath,
@@ -492,7 +515,7 @@ it when necessary (file sizes ~1GB+).
 
     const outputDir = join(dir, "tiles");
     tileJoin(
-      [...mbtiles, ...labelsMbtiles],
+      [...separateMbtiles, ...labelsMbtiles],
       { force: true, noTileCompression: true, noTileSizeLimit: true, outputToDirectory: outputDir },
       { echo: true }
     );

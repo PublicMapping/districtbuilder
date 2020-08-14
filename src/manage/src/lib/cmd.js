@@ -4,12 +4,12 @@ const shell = require("shelljs");
 const kebabCase = require("kebab-case");
 const colors = require("colors");
 
-function shellExec(cmd, args, echo) {
+function shellExec(cmd, args, echo, silent) {
   const fullCommand = `${cmd} ${args.join(" ")}`;
   if (echo) {
     console.log(fullCommand.green);
   }
-  return shell.exec(fullCommand, { silent: true });
+  return shell.exec(fullCommand, { silent });
 }
 
 function execCmd(cmd, layerFiles = [], params, options = {}) {
@@ -36,19 +36,20 @@ function execCmd(cmd, layerFiles = [], params, options = {}) {
     }
     return short ? `${param}${quotify(value)}` : `${param}=${quotify(value)}`;
   }
-  let paramStrs = Object.keys(params)
+  const paramStrs = Object.keys(params)
     .map(k => makeParam(k, params[k]))
     .filter(Boolean);
   layerFiles = !Array.isArray(layerFiles) ? [layerFiles] : layerFiles;
 
   const args = [...paramStrs, ...layerFiles.map(quotify)];
-  return shellExec(cmd, args, options.echo);
+  return shellExec(cmd, args, options.echo, options.silent);
 }
 
 module.exports = {
-  geojsonPolygonLabels: (geojsonPath, params, options = {}) =>
+  geojsonPolygonLabels: (geojsonPath, params, options = { silent: true }) =>
     execCmd("node_modules/.bin/geojson-polygon-labels", geojsonPath, params, options),
-  tippecanoe: (layerFiles, params, options = {}) =>
+  tippecanoe: (layerFiles, params, options = { silent: false }) =>
     execCmd("tippecanoe", layerFiles, params, options),
-  tileJoin: (layerFiles, params, options = {}) => execCmd("tile-join", layerFiles, params, options)
+  tileJoin: (layerFiles, params, options = { silent: false }) =>
+    execCmd("tile-join", layerFiles, params, options)
 };
