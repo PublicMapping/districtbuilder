@@ -1,8 +1,16 @@
 import { Theme as StyledSystemTheme } from "@styled-system/css";
+import { TippyProps } from "@tippyjs/react";
 import { Theme } from "theme-ui";
 
 export const heights = {
   header: "48px"
+};
+
+export const tippySettings: TippyProps = {
+  delay: [500, 0],
+  duration: 0,
+  animation: "none",
+  maxWidth: 280
 };
 
 const appButtonStyles = {
@@ -253,6 +261,27 @@ const theme: Theme & StyledSystemTheme = {
       "&[disabled]": {
         opacity: 0.6,
         cursor: "not-allowed"
+      }
+    },
+    quiet: {
+      ...appButtonStyles,
+      ...{
+        backgroundColor: "#fff",
+        color: "text",
+        "&:hover": {
+          bg: "blue.1"
+        },
+        "&:active": {
+          bg: "blue.2"
+        },
+        "&:focus": {
+          outline: "none",
+          boxShadow: "focus"
+        },
+        "&.selected": {
+          backgroundColor: "blue.1",
+          color: "heading"
+        }
       }
     },
     circular: {

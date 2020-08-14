@@ -2,11 +2,15 @@
 import React from "react";
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css";
 import { geoLevelLabel } from "../../shared/functions";
 
+import { tippySettings } from "../theme";
 import Icon from "./Icon";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
+
 const style: ThemeUIStyleObject = {
   header: {
     variant: "header.app",
@@ -65,39 +69,17 @@ const GeoLevelTooltip = ({
 }) => {
   const zoomText = "Zoom in";
   return (
-    <Box
-      sx={{
-        "button[disabled]:hover + &": {
-          display: "block"
-        },
-        display: "none",
-        position: "absolute",
-        backgroundColor: "white",
-        right: "0",
-        padding: "8px",
-        top: "0",
-        transform: "translateX(100%)",
-        zIndex: 1,
-        boxShadow: "2px 1px 2px 2px #ccc",
-        minWidth: 200,
-        pointerEvents: "none"
-      }}
-    >
-      <span>
-        {isGeoLevelHidden && areChangesPending ? (
-          <span>
-            <strong>{zoomText}</strong> and <strong>resolve changes</strong>
-          </span>
-        ) : isGeoLevelHidden ? (
-          <span>
-            <strong>{zoomText}</strong>
-          </span>
-        ) : (
-          <strong>Resolve changes</strong>
-        )}
-        &nbsp;to edit {label.toLowerCase()}
-      </span>
-    </Box>
+    <span>
+      <strong>Disabled: </strong>
+      {isGeoLevelHidden && areChangesPending ? (
+        <span>{zoomText} and resolve changes</span>
+      ) : isGeoLevelHidden ? (
+        <span>{zoomText}</span>
+      ) : (
+        <strong>Resolve changes</strong>
+      )}
+      &nbsp;to edit {label.toLowerCase()}
+    </span>
   );
 };
 
@@ -130,22 +112,33 @@ const GeoLevelButton = ({
   const isButtonDisabled = isGeoLevelHidden || areChangesPending;
   return (
     <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
-      <Button
+      <Tippy
+        {...tippySettings}
         key={index}
-        sx={{ ...style.selectionButton, ...{ mr: "1px" } }}
-        className={buttonClassName(geoLevelIndex === index)}
-        onClick={() => store.dispatch(setGeoLevelIndex(index))}
-        disabled={isButtonDisabled}
+        content={
+          isButtonDisabled ? (
+            <GeoLevelTooltip
+              isGeoLevelHidden={isGeoLevelHidden}
+              areChangesPending={areChangesPending}
+              label={label}
+            />
+          ) : (
+            `Select ${label.toLowerCase()}`
+          )
+        }
       >
-        {label}
-      </Button>
-      {isButtonDisabled && (
-        <GeoLevelTooltip
-          isGeoLevelHidden={isGeoLevelHidden}
-          areChangesPending={areChangesPending}
-          label={label}
-        />
-      )}
+        <span>
+          <Button
+            key={index}
+            sx={{ ...style.selectionButton, ...{ mr: "1px" } }}
+            className={buttonClassName(geoLevelIndex === index)}
+            onClick={() => store.dispatch(setGeoLevelIndex(index))}
+            disabled={isButtonDisabled}
+          >
+            {label}
+          </Button>
+        </span>
+      </Tippy>
     </Box>
   );
 };
@@ -178,6 +171,7 @@ const MapHeader = ({
     ? metadata.geoLevelHierarchy
         .slice()
         .reverse()
+
         .map((val, index, geoLevelHierarchy) => (
           <GeoLevelButton
             key={index}
@@ -194,20 +188,25 @@ const MapHeader = ({
     <Flex sx={style.header}>
       <Flex>
         <Flex sx={{ mr: 3 }}>
-          <Button
-            sx={{ ...style.selectionButton, ...style.rightCapButton }}
-            className={buttonClassName(selectionTool === SelectionTool.Default)}
-            onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
-          >
-            <Icon name="hand-pointer" />
-          </Button>
-          <Button
-            sx={{ ...style.selectionButton, ...style.leftCapButton }}
-            className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
-            onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
-          >
-            <Icon name="draw-square" />
-          </Button>
+          <Tippy {...tippySettings} content="Point-and-click selection">
+            <Button
+              sx={{ ...style.selectionButton, ...style.rightCapButton }}
+              className={buttonClassName(selectionTool === SelectionTool.Default)}
+              onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
+            >
+              <Icon name="hand-pointer" />
+            </Button>
+          </Tippy>
+
+          <Tippy {...tippySettings} content="Rectangle selection">
+            <Button
+              sx={{ ...style.selectionButton, ...style.leftCapButton }}
+              className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
+              onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
+            >
+              <Icon name="draw-square" />
+            </Button>
+          </Tippy>
         </Flex>
         <Flex>{geoLevelOptions}</Flex>
       </Flex>

@@ -2,6 +2,8 @@
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import React, { useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css";
 
 import {
   CompactnessScore,
@@ -24,6 +26,7 @@ import {
 import DemographicsChart from "./DemographicsChart";
 import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
+import { tippySettings } from "../theme";
 
 import {
   clearSelectedGeounits,
@@ -226,14 +229,45 @@ const BLANK_VALUE = "–";
 
 function getCompactnessDisplay(compactness: CompactnessScore) {
   return compactness === null ? (
-    // @ts-ignore
-    <span sx={style.blankValue}>{BLANK_VALUE}</span>
+    <Tippy
+      {...tippySettings}
+      placement="top-start"
+      content={
+        <em>
+          <strong>Empty district.</strong> Add people to this district to view compute compactness.
+        </em>
+      }
+    >
+      <span>{BLANK_VALUE}</span>
+    </Tippy>
   ) : typeof compactness === "number" ? (
-    <span title="Polsby-Popper score">{Math.floor(compactness * 100)}%</span>
+    <Tippy
+      {...tippySettings}
+      placement="top-start"
+      content={
+        <span>
+          <strong>{Math.floor(compactness * 100)}% compactness.</strong> Calculated using the
+          Polsby-Popper measurement
+        </span>
+      }
+    >
+      <span>{`${Math.floor(compactness * 100)}%`}</span>
+    </Tippy>
   ) : compactness === "non-contiguous" ? (
-    <span title="Non-contiguous" sx={{ display: "inline-block" }}>
-      <Icon name="alert-triangle" color="#f06543" size={0.95} />
-    </span>
+    <Tippy
+      {...tippySettings}
+      placement="top-start"
+      content={
+        <em>
+          This district is <strong>non-contiguous</strong>. To calculate compactness, make sure all
+          parts of the district are connected.
+        </em>
+      }
+    >
+      <span>
+        <Icon name="alert-triangle" color="#f06543" size={0.95} />
+      </span>
+    </Tippy>
   ) : (
     assertNever(compactness)
   );
@@ -256,7 +290,6 @@ const SidebarRow = ({
   readonly districtId: number;
   readonly isDistrictLocked?: boolean;
 }) => {
-  const [demographicsTooltipVisible, setDemographicsTooltipVisible] = useState(false);
   const [isHovered, setHover] = useState(false);
 
   const showPopulationChange = selectedPopulationDifference !== 0;
@@ -312,17 +345,24 @@ const SidebarRow = ({
       <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
         {deviationDisplay}
       </Styled.td>
-      <Styled.td
-        sx={style.td}
-        onMouseOver={() => setDemographicsTooltipVisible(true)}
-        onMouseOut={() => setDemographicsTooltipVisible(false)}
-      >
-        <DemographicsChart demographics={demographics} />
-        {demographicsTooltipVisible && demographics.population > 0 && (
-          <Box sx={style.tooltip}>
-            <DemographicsTooltip demographics={demographics} />
-          </Box>
-        )}
+      <Styled.td sx={style.td}>
+        <Tippy
+          {...tippySettings}
+          placement="top-start"
+          content={
+            demographics.population > 0 ? (
+              <DemographicsTooltip demographics={demographics} />
+            ) : (
+              <em>
+                <strong>Empty district.</strong> Add people to this district to view the race chart
+              </em>
+            )
+          }
+        >
+          <span>
+            <DemographicsChart demographics={demographics} />
+          </span>
+        </Tippy>
       </Styled.td>
       <Styled.td sx={{ ...style.td, ...style.number, ...style.blankValue }}>
         {BLANK_VALUE}
