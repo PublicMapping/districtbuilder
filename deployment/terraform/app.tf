@@ -92,7 +92,13 @@ resource "aws_ecs_task_definition" "app" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.fargate_app_cpu
-  memory                   = var.fargate_app_memory
+  // PA and DE used an additional 620MiB of memory on my workstation. However,
+  // we can't multiply states by 310MiB because Fargate requires you to provide
+  // memory in specific increments. This math will add an additional 1024MiB for
+  // every 3 states  (e.g. 3 states = 1024 MiB, 4 states = 2048 MiB, 5 states =
+  // 2048 MiB). This math will also cap memory by vCPUs to not exceed Fargate
+  // limits.
+  memory = min(var.fargate_app_memory + ceil(var.districtbuilder_state_count / 3) * 1024, var.fargate_app_cpu * 8192)
 
   task_role_arn      = aws_iam_role.ecs_task_role.arn
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
