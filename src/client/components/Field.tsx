@@ -43,7 +43,7 @@ export default function Field<D, R>({
 }
 
 interface InputFieldProps<D, R> extends FieldProps<D, R> {
-  readonly label: string;
+  readonly label: string | React.ReactElement;
   readonly inputProps: RefAttributes<HTMLInputElement> & InputProps;
 }
 
@@ -71,7 +71,7 @@ export function InputField<D, R>({
 
 interface SelectFieldProps<D, R> extends FieldProps<D, R> {
   readonly children: React.ReactNode;
-  readonly label: string;
+  readonly label: string | React.ReactElement;
   readonly selectProps: RefAttributes<HTMLSelectElement> & SelectProps;
 }
 
@@ -101,7 +101,7 @@ export function SelectField<D, R>({
 }
 
 interface PasswordFieldProps<D, R> extends FieldProps<D, R> {
-  readonly label: string;
+  readonly label: string | React.ReactElement;
   readonly password: string;
   readonly userAttributes: readonly string[];
   readonly inputProps: RefAttributes<HTMLInputElement> & InputProps;
