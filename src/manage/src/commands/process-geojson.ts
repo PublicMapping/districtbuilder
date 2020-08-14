@@ -70,7 +70,7 @@ it when necessary (file sizes ~1GB+).
     simplification: flags.string({
       char: "s",
       description: "Topojson simplification amount (minWeight)",
-      default: "0.001"
+      default: "0.000000001"
     }),
 
     outputDir: flags.string({
