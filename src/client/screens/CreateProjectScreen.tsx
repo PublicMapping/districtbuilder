@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Label, Radio, ThemeUIStyleObject } from "theme-ui";
+import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
 import { IProject, IRegionConfig } from "../../shared/entities";
@@ -140,7 +141,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
     >
       <Flex sx={style.header}>
         <Box as="h1" sx={{ lineHeight: "0", mr: 3 }}>
-          <Logo sx={{ width: "2rem" }} />
+          <Link to="/">
+            <Logo sx={{ width: "2rem" }} />
+          </Link>
         </Box>
         <Heading as="h2" sx={{ variant: "text.h4", color: "blue.0", my: 0 }}>
           New Project
