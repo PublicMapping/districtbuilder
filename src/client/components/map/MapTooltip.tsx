@@ -6,8 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx } from "theme-ui";
 
-import { GeoUnits, IStaticMetadata } from "../../../shared/entities";
+import { GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
 import { geoLevelLabel, getTotalSelectedDemographics } from "../../../shared/functions";
+import { featuresToGeoUnits } from "./index";
 import { State } from "../../reducers";
 import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
@@ -22,8 +23,8 @@ const MapTooltip = ({
   geoLevelIndex,
   highlightedGeounits,
   staticDemographicsResource,
-  staticGeoLevelsResource,
   staticMetadataResource,
+  geoUnitHierarchyResource,
   map
 }: {
   readonly geoLevelIndex: number;
@@ -31,8 +32,8 @@ const MapTooltip = ({
   readonly staticDemographicsResource: Resource<
     ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
   >;
-  readonly staticGeoLevelsResource: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
   readonly staticMetadataResource: Resource<IStaticMetadata>;
+  readonly geoUnitHierarchyResource: Resource<GeoUnitHierarchy>;
   readonly map?: MapboxGL.Map;
 }) => {
   const [point, setPoint] = useState({ x: 0, y: 0 });
@@ -43,8 +44,8 @@ const MapTooltip = ({
     "resource" in staticMetadataResource ? staticMetadataResource.resource : undefined;
   const staticDemographics =
     "resource" in staticDemographicsResource ? staticDemographicsResource.resource : undefined;
-  const staticGeoLevels =
-    "resource" in staticGeoLevelsResource ? staticGeoLevelsResource.resource : undefined;
+  const geoUnitHierarchy =
+    "resource" in geoUnitHierarchyResource ? geoUnitHierarchyResource.resource : undefined;
   const invertedGeoLevelIndex = staticMetadata
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
@@ -109,32 +110,16 @@ const MapTooltip = ({
   if (
     map &&
     staticMetadata &&
-    staticGeoLevels &&
+    geoUnitHierarchy &&
     staticDemographics &&
     invertedGeoLevelIndex !== undefined
   ) {
-    const featureGeoLevels = staticMetadata.geoLevelHierarchy.slice(invertedGeoLevelIndex);
     const geoLevel = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
-    const selectedGeounits: GeoUnits | undefined | null =
-      highlightedGeounits.size > 0
-        ? highlightedGeounits
-        : feature &&
-          feature.properties &&
-          new Map([
-            [
-              feature.id as number,
-              featureGeoLevels.map((geoLevelInfo, idx) =>
-                feature.properties
-                  ? (feature.properties[
-                      idx === invertedGeoLevelIndex ? `${geoLevelInfo.id}Idx` : "idx"
-                    ] as number)
-                  : -1
-              )
-            ]
-          ]);
+    const selectedGeounits =
+      feature && featuresToGeoUnits([feature], staticMetadata.geoLevelHierarchy);
     const demographics =
       selectedGeounits &&
-      getDemographics(staticMetadata, staticGeoLevels, staticDemographics, selectedGeounits);
+      getDemographics(staticMetadata, geoUnitHierarchy, staticDemographics, selectedGeounits);
 
     const featureLabel = () =>
       feature && feature.properties && feature.properties.name ? (
@@ -199,8 +184,8 @@ function mapStateToProps(state: State) {
     geoLevelIndex: state.districtDrawing.geoLevelIndex,
     highlightedGeounits: state.districtDrawing.highlightedGeounits,
     staticDemographicsResource: state.projectData.staticDemographics,
-    staticGeoLevelsResource: state.projectData.staticGeoLevels,
-    staticMetadataResource: state.projectData.staticMetadata
+    staticMetadataResource: state.projectData.staticMetadata,
+    geoUnitHierarchyResource: state.projectData.geoUnitHierarchy
   };
 }
 

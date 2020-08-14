@@ -213,7 +213,13 @@ export interface ISelectionTool {
 }
 /* eslint-enable */
 
-function featuresToGeoUnits(
+/*
+ * Return GeoUnits for given features.
+ *
+ * Note that this doesn't take whether a feature is locked or not into account. If the features
+ * could possibly be locked then `featuresToUnlockedGeoUnits` should be used.
+ */
+export function featuresToGeoUnits(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
 ): GeoUnits {

@@ -105,7 +105,6 @@ const ProjectSidebar = ({
                 project,
                 geojson,
                 staticMetadata,
-                staticGeoLevels,
                 staticDemographics,
                 selectedDistrictId,
                 selectedGeounits,
@@ -330,7 +329,6 @@ const getSidebarRows = (
   project: IProject,
   geojson: FeatureCollection<MultiPolygon, DistrictProperties>,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   selectedDistrictId: number,
   selectedGeounits: GeoUnits,
@@ -340,7 +338,7 @@ const getSidebarRows = (
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
     staticMetadata,
-    staticGeoLevels,
+    geoUnitHierarchy,
     staticDemographics,
     selectedGeounits
   );
