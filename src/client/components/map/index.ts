@@ -23,6 +23,39 @@ export const DISTRICTS_LAYER_ID = "districts";
 // Used only to make labels show up on top of all other layers
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
+export function getGeolevelLinePaintStyle(geoLevel: string) {
+  var largeGeolevel = {
+    "line-color": "#000",
+    "line-opacity": 1,
+    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 14, 5]
+  };
+
+  var mediumGeolevel = {
+    "line-color": "#000",
+    "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.6],
+    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.3, 14, 3]
+  };
+
+  var smallGeolevel = {
+    "line-color": "#000",
+    "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.3],
+    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 14, 2]
+  };
+
+  switch (geoLevel) {
+    case "county":
+      return largeGeolevel;
+    case "tract":
+      return mediumGeolevel;
+    case "blockgroup":
+      return mediumGeolevel;
+    case "block":
+      return smallGeolevel;
+    default:
+      return smallGeolevel;
+  }
+}
+
 export function getMapboxStyle(
   path: string,
   geoLevels: readonly GeoLevelInfo[],
@@ -36,11 +69,7 @@ export function getMapboxStyle(
       source: GEOLEVELS_SOURCE_ID,
       "source-layer": level.id,
       layout: { visibility: "none" },
-      paint: {
-        "line-color": "#000",
-        "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.1, 6, 0.1, 12, 0.2],
-        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1, 12, 2]
-      }
+      paint: getGeolevelLinePaintStyle(level.id)
     }
   ]);
 
