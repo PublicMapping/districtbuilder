@@ -204,7 +204,12 @@ const RectangleSelectionTool: ISelectionTool = {
         );
         const subFeatures = selectedFeatures.flatMap(feature => {
           const geoUnitIndices = geoUnits.get(feature.id as FeatureId) as GeoUnitIndices;
-          return findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices);
+          return geoUnits.has(feature.id as FeatureId) &&
+            // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
+            // also can't be selected at the same time as features from one geolevel up)
+            geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2
+            ? findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices)
+            : [];
         });
         subFeatures.forEach(feature => {
           map.setFeatureState(featureStateGeoLevel(feature), { selected: false });

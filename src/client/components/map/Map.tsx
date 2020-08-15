@@ -41,7 +41,6 @@ interface Props {
   readonly project: IProject;
   readonly geojson: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
@@ -55,7 +54,6 @@ const Map = ({
   project,
   geojson,
   staticMetadata,
-  staticGeoLevels,
   staticDemographics,
   selectedGeounits,
   selectedDistrictId,
@@ -385,10 +383,8 @@ const Map = ({
     map,
     selectionTool,
     selectedGeolevel,
-    geoLevelIndex,
     staticMetadata,
     staticDemographics,
-    staticGeoLevels,
     project,
     lockedDistricts
   ]);
