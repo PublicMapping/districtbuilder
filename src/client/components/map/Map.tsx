@@ -185,12 +185,6 @@ const Map = ({
     // eslint-disable-next-line
   }, [map, selectedGeounits, staticMetadata]);
 
-  // Update districts source when geojson is fetched
-  useEffect(() => {
-    const districtsSource = map && map.getSource("districts");
-    districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson]);
-
   // Update labels when selection is changed
   useEffect(() => {
     // eslint-disable-next-line
