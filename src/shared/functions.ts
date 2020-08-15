@@ -26,11 +26,17 @@ export function getAllIndices(arrayBuf: ArrayBuffer, vals: ReadonlySet<number>):
   return indices;
 }
 
+interface DemographicCounts {
+  // key is demographic group (eg. population, white, black, etc)
+  // value is the number of people in that group
+  [id: string]: number; // eslint-disable-line
+}
+
 export function getDemographics(
   baseIndices: number[] | Set<number>, // eslint-disable-line
   staticMetadata: IStaticMetadata,
   staticDemographics: readonly ArrayBuffer[]
-): { readonly [id: string]: number } {
+): DemographicCounts {
   // Aggregate demographic data for the IDs
   return staticMetadata.demographics.reduce(
     (data, demographic, ind) => {
@@ -46,14 +52,8 @@ export function getDemographics(
       return data;
     },
     // eslint-disable-next-line
-    {} as { [id: string]: number }
+    {} as DemographicCounts
   );
-}
-
-interface DemographicCounts {
-  // key is demographic group (eg. population, white, black, etc)
-  // value is the number of people in that group
-  readonly [id: string]: number;
 }
 
 /*
