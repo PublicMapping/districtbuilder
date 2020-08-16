@@ -1,11 +1,24 @@
 /** @jsx jsx */
-import Menu, { MenuItem, SubMenu } from "rc-menu";
-import "rc-menu/assets/index.css";
+import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import Avatar from "react-avatar";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { Alert, Box, Button, Divider, Flex, Heading, jsx, Styled } from "theme-ui";
+import Icon from "../components/Icon";
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  Flex,
+  Heading,
+  Text,
+  jsx,
+  Styled,
+  ThemeUIStyleObject
+} from "theme-ui";
+import { ReactComponent as Logo } from "../media/logos/logo.svg";
+import { ReactComponent as NoMapsIllustration } from "../media/no-maps-illustration.svg";
 
 import { resetState } from "../actions/root";
 import { projectsFetch } from "../actions/projects";
@@ -30,6 +43,109 @@ enum UserMenuKeys {
 const logout = () => {
   clearJWT();
   store.dispatch(resetState());
+};
+
+const style: ThemeUIStyleObject = {
+  header: {
+    alignItems: "center",
+    justifyContent: "space-between",
+    py: 3,
+    px: 3,
+    bg: "gray.0",
+    borderBottom: "1px solid",
+    borderColor: "gray.1",
+    boxShadow: "small"
+  },
+  logoLink: {
+    borderRadius: "small",
+    "&:focus": {
+      outline: "none",
+      boxShadow: "focus"
+    }
+  },
+  avatar: {
+    fontFamily: "heading",
+    cursor: "pointer",
+    ".sb-avatar__text": {
+      "&:hover": {
+        backgroundColor: "#395c78 !important"
+      },
+      "&:active": {
+        backgroundColor: "#2c485e !important"
+      }
+    }
+  },
+  menuButton: {
+    display: "flex",
+    alignItems: "baseline",
+    bg: "transparent",
+    p: 1,
+    borderRadius: "small",
+    "&:focus": {
+      outline: "none",
+      boxShadow: "focus"
+    }
+  },
+  menu: {
+    width: "150px",
+    position: "absolute",
+    mt: 2,
+    right: 2,
+    bg: "muted",
+    py: 1,
+    px: 1,
+    border: "1px solid",
+    borderColor: "gray.2",
+    boxShadow: "small",
+    borderRadius: "small"
+  },
+  menuList: {
+    p: "0",
+    m: "0",
+    listStyleType: "none"
+  },
+  menuListItem: {
+    borderRadius: "small",
+    py: 1,
+    px: 2,
+    "&:hover:not([disabled])": {
+      bg: "gray.0",
+      cursor: "pointer"
+    },
+    "&[disabled]": {
+      color: "gray.3",
+      cursor: "not-allowed"
+    },
+    "&:focus": {
+      bg: "gray.0",
+      outline: "none",
+      boxShadow: "focus"
+    },
+    "&:active": {
+      bg: "gray.1"
+    }
+  },
+  projectRow: {
+    textDecoration: "none",
+    display: "flex",
+    alignItems: "baseline",
+    borderRadius: "med",
+    px: 1,
+    "&:hover:not([disabled])": {
+      bg: "rgba(256,256,256,0.2)",
+      h2: {
+        color: "primary",
+        textDecoration: "underline"
+      },
+      p: {
+        color: "blue.6"
+      }
+    },
+    "&:focus": {
+      outline: "none",
+      boxShadow: "focus"
+    }
+  }
 };
 
 const HomeScreen = ({ projects, user }: StateProps) => {
@@ -85,9 +201,11 @@ const HomeScreen = ({ projects, user }: StateProps) => {
           </Box>
         </Alert>
       )}
-      <Flex as="header" sx={{ justifyContent: "flex-end" }}>
-        <Heading as="h2" sx={{ mb: "0px", mr: "auto", p: 2 }}>
-          DistrictBuilder
+      <Flex as="header" sx={style.header}>
+        <Heading as="h1" sx={{ mb: "0px", mr: "auto", p: 2 }}>
+          <Link to="/" sx={style.logoLink}>
+            <Logo sx={{ width: "15rem" }} />
+          </Link>
         </Heading>
         {!isLoggedIn ? (
           <React.Fragment>
@@ -99,94 +217,109 @@ const HomeScreen = ({ projects, user }: StateProps) => {
             </Link>
           </React.Fragment>
         ) : "resource" in user ? (
-          <Box
-            sx={{
-              p: 1,
-
-              "& > .rc-menu": {
-                m: 0,
-                borderBottom: "none",
-
-                "& > .rc-menu-submenu": {
-                  borderBottom: "none",
-                  "& > .rc-menu-submenu-title": {
-                    p: 0
-                  }
-                },
-                "& > .rc-menu-submenu-active, & > .rc-menu-submenu-selected": {
-                  background: "none",
-                  border: "none"
-                },
-                "& > .rc-menu-submenu-active": {
-                  "& > .rc-menu-submenu-title": {
-                    background: "none"
-                  },
-                  "& .rc-menu-submenu-arrow": {
-                    display: "none"
-                  }
-                }
-              }
-            }}
-          >
-            <Menu
-              triggerSubMenuAction="click"
-              mode="horizontal"
-              onSelect={({ key }: { readonly key: string | number }) =>
-                key === UserMenuKeys.Logout && logout()
-              }
-            >
-              <SubMenu
-                title={
-                  <Avatar
-                    name={user.resource.name}
-                    round={true}
-                    size={"2rem"}
-                    maxInitials={3}
-                    color={"#a0aec0"}
-                    sx={{
-                      cursor: "pointer",
-                      ".sb-avatar__text": {
-                        "&:hover": { backgroundColor: "#718096 !important" }
-                      }
-                    }}
-                  />
-                }
-              >
-                <MenuItem key={UserMenuKeys.Logout}>Logout</MenuItem>
-              </SubMenu>
+          <Wrapper onSelection={handleSelection}>
+            <MenuButton sx={style.menuButton}>
+              <Avatar
+                name={user.resource.name}
+                round={true}
+                size={"2.5rem"}
+                color={"#2c485e"}
+                maxInitials={3}
+                sx={style.avatar}
+              />
+              <div sx={{ ml: 2 }}>
+                <Icon name="chevron-down" />
+              </div>
+            </MenuButton>
+            <Menu sx={style.menu}>
+              <ul sx={style.menuList}>
+                <li key={UserMenuKeys.Logout}>
+                  <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
+                    Logout
+                  </MenuItem>
+                </li>
+              </ul>
             </Menu>
-          </Box>
+          </Wrapper>
         ) : null}
       </Flex>
-      <Divider />
-      <Flex as="main" sx={{ flexDirection: "column" }}>
-        <Heading sx={{ textAlign: "left", p: 2 }}>
-          Maps
-          <Styled.a
-            as={Link}
-            to="/create-project"
-            sx={{ variant: "links.button", float: "right", fontSize: 2 }}
-          >
-            New map
-          </Styled.a>
-        </Heading>
+      <Flex
+        as="main"
+        sx={{ width: "100%", maxWidth: "large", my: 6, mx: "auto", flexDirection: "column", px: 4 }}
+      >
+        {"resource" in projects ? (
+          <Flex sx={{ justifyContent: "space-between", mb: 3 }}>
+            <Heading as="h1" sx={{ variant: "text.h3" }}>
+              Maps
+            </Heading>
+            <Styled.a
+              as={Link}
+              to="/create-project"
+              sx={{ variant: "links.button", fontSize: 3, px: 4, py: 2 }}
+            >
+              <Icon name="plus-circle" />
+              New map
+            </Styled.a>
+          </Flex>
+        ) : null}
         {"resource" in projects ? (
           projects.resource.length ? (
             projects.resource.map(project => (
               <React.Fragment key={project.id}>
-                <Link to={`/projects/${project.id}`}>{project.name}</Link> (
-                {project.regionConfig.name} - {project.numberOfDistricts})
+                <Link to={`/projects/${project.id}`} sx={style.projectRow}>
+                  <Heading
+                    as="h2"
+                    sx={{ fontFamily: "heading", variant: "text.h5", fontWeight: "light", mr: 3 }}
+                  >
+                    {project.name}
+                  </Heading>
+                  <p sx={{ fontSize: 2, color: "gray.7" }}>
+                    ({project.regionConfig.name} - {project.numberOfDistricts})
+                  </p>
+                </Link>
                 <Divider />
               </React.Fragment>
             ))
           ) : (
-            <Box>No maps created yet</Box>
+            <Flex
+              sx={{
+                flexDirection: "column",
+                alignItems: "center",
+                maxWidth: "500px",
+                mt: 7,
+                mx: "auto"
+              }}
+            >
+              <Box sx={{ mb: 5, mx: "auto" }}>
+                <NoMapsIllustration />
+              </Box>
+              <Heading sx={{ variant: "text.h4", textAlign: "center" }}>
+                Welcome to DistrictBuilder!
+              </Heading>
+
+              <Text sx={{ fontSize: 3, color: "text", textAlign: "center", mb: 5 }}>
+                Start building your first map. DistrictBuilder gives you access to the same
+                block-level data used in legal redistricting plans.
+              </Text>
+              <Styled.a
+                as={Link}
+                to="/create-project"
+                sx={{ variant: "links.button", fontSize: 3, px: 4, py: 2 }}
+              >
+                <Icon name="plus-circle" />
+                Create a map
+              </Styled.a>
+            </Flex>
           )
         ) : null}
       </Flex>
     </Flex>
   );
 };
+
+function handleSelection(key: string | number) {
+  key === UserMenuKeys.Logout && logout();
+}
 
 function mapStateToProps(state: State): StateProps {
   return {
