@@ -96,7 +96,8 @@ const theme: Theme & StyledSystemTheme = {
   },
   sizes: {
     form: "350px",
-    medium: "750px"
+    medium: "750px",
+    large: "1040px"
   },
   fontSizes: [11, 13, 15, 18, 21, 31, 37, 54],
   fontWeights: {
@@ -255,12 +256,10 @@ const theme: Theme & StyledSystemTheme = {
   },
   links: {
     button: {
+      ...appButtonStyles,
       backgroundColor: "primary",
       color: "white",
-      fontSize: 2,
-      borderRadius: "4px",
       textDecoration: "none",
-      fontWeight: "body",
       px: 3,
       py: 2
     }
@@ -283,6 +282,9 @@ const theme: Theme & StyledSystemTheme = {
     }
   },
   styles: {
+    hr: {
+      color: "gray.2"
+    },
     a: {
       "&:focus": {
         borderRadius: "small",
