@@ -26,6 +26,23 @@ export function getAllIndices(arrayBuf: ArrayBuffer, vals: ReadonlySet<number>):
   return indices;
 }
 
+// Recursively finds all base indices matching a set of values at a specified level
+export function getAllBaseIndices(
+  descGeoLevels: readonly ArrayBuffer[],
+  levelIndex: number,
+  vals: readonly number[]
+): readonly number[] {
+  // eslint-disable-next-line
+  if (vals.length === 0 || levelIndex === descGeoLevels.length) {
+    return vals;
+  }
+  return getAllBaseIndices(
+    descGeoLevels,
+    levelIndex + 1,
+    getAllIndices(descGeoLevels[levelIndex], new Set(vals))
+  );
+}
+
 interface DemographicCounts {
   // key is demographic group (eg. population, white, black, etc)
   // value is the number of people in that group

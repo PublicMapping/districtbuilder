@@ -344,18 +344,23 @@ it when necessary (file sizes ~1GB+).
     topology: Topology<Objects<{}>>,
     geoLevels: readonly string[]
   ): IStaticFile[] {
-    const baseFeatures: Feature[] = (topology.objects[geoLevels[0]] as any).geometries;
-
-    return geoLevels.slice(1).map(geoLevel => {
+    return geoLevels.slice(1).map((geoLevel, idx) => {
       this.log(`Writing ${geoLevel} index file`);
+      const childFeatures: Feature[] = (topology.objects[geoLevels[idx]] as any).geometries;
       const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
       const geoLevelIdToIndex = new Map(features.map((f, i) => [f?.properties?.[geoLevel], i]));
       const fileName = `${geoLevel}.buf`;
 
-      // For geolevel static data, we want an arraybuffer of base geounits where
+      // For geolevel static data, we want an arraybuffer of child geounits where
       // each data element represents the geolevel index of that geounit.
+      // For example, for county-tract-block:
+      //  - county.buf is a list of tracts where each value is the county index the tract belongs to
+      //  - tract.buf is a list of blocks where each value is the tract index the block belongs to
+      // With this information, we're able to answer questions such as:
+      //  - Given a county id, which tracts belong to it?
+      //  - Given a tract id, which blocks belong to it?
       const data = this.mkTypedArray(
-        baseFeatures.map(f => {
+        childFeatures.map(f => {
           return geoLevelIdToIndex.get(f?.properties?.[geoLevel]) || 0;
         })
       );
