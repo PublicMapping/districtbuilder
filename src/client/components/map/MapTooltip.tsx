@@ -160,7 +160,8 @@ const MapTooltip = ({
           width: "200px",
           height: "auto",
           p: 2,
-          zIndex: 1
+          zIndex: 1,
+          pointerEvents: "none"
         }}
       >
         {heading && (
