@@ -56,6 +56,27 @@ BASE_URL=https://staging.districtbuilder.azavea.com docker-compose up client
 
 This will proxy local all requests directed at `/api` to `https://staging.districtbuilder.azavea.com`.
 
+### Development Data
+
+To have data to work with, you'll need to do a two step process:
+
+1. Process the GeoJSON for your state/region (this outputs all the static files DistrictBuilder needs to work in a local directory) 
+1. Publish the resulting files (upload to S3 for use by the app)
+
+To process PA data, first copy the GeoJSON file into the `src/manage/data` directory, create an output directory (eg. `src/manage/data/output-pa`), and then run this command:
+
+```
+$ ./scripts/manage process-geojson data/PA.geojson -b -o data/output-pa -n 12,4,4 -x 12,12,12
+```
+
+Then:
+
+```
+$ ./scripts/manage publish-region data/output-pa US PA Pennsylvania
+```
+
+Once your data is published, you should be able to run the app and create a new project through the UI using that region and begin building districts.
+
 ### Project Organization
 
 In order to allow for code-sharing across the frontend and backend in conjunction with an unejected Create React App (CRA), it was decided that the simplest and least error-prone way forward was to structure the code as such:
