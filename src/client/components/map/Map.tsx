@@ -314,6 +314,7 @@ const Map = ({
             ];
           // Select sub-geounits.
           const subFeatures = map.queryRenderedFeatures(undefined, {
+            layers: [levelToSelectionLayerId(childGeoLevel.id)],
             filter: ["==", ["get", `${geoLevel.id}Idx`], geoUnitIdx]
           });
           const subGeoUnits = featuresToUnlockedGeoUnits(
