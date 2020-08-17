@@ -19,6 +19,7 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../../shared/entities";
+import { getAllIndices } from "../../../shared/functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_PLACEHOLDER_LAYER_ID,
@@ -42,6 +43,7 @@ interface Props {
   readonly geojson: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly staticMetadata: IStaticMetadata;
   readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
+  readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
@@ -55,6 +57,7 @@ const Map = ({
   geojson,
   staticMetadata,
   staticDemographics,
+  staticGeoLevels,
   selectedGeounits,
   selectedDistrictId,
   selectionTool,
@@ -279,12 +282,32 @@ const Map = ({
           // Don't do anything for previously selected geounits at this level
           return;
         }
+
+        // Select features of the child geolevel
+        const geoUnitIdx = geoUnitIndices[0];
+        const childGeoLevelIdx =
+          staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
+        const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
+        const childGeoUnitIds = getAllIndices(
+          staticGeoLevels[childGeoLevelIdx],
+          new Set([geoUnitIdx])
+        );
+        childGeoUnitIds.forEach(id => {
+          map.setFeatureState(
+            {
+              source: GEOLEVELS_SOURCE_ID,
+              id,
+              sourceLayer: childGeoLevel.id
+            },
+            { selected: true }
+          );
+        });
+
         // HACK! Fit map bounds to the bounding box to ensure that all relevant features are
         // returned when querying (`map.queryRenderedFeatures` only returns features within the
         // viewport). This will be replaced later.
         map.fitBounds(staticMetadata.bbox as [number, number, number, number]); // eslint-disable-line
         map.once("moveend", () => {
-          const geoUnitIdx = geoUnitIndices[0];
           const geoLevel =
             staticMetadata.geoLevelHierarchy[
               staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length
@@ -292,16 +315,6 @@ const Map = ({
           // Select sub-geounits.
           const subFeatures = map.queryRenderedFeatures(undefined, {
             filter: ["==", ["get", `${geoLevel.id}Idx`], geoUnitIdx]
-          });
-          subFeatures.forEach(({ id, sourceLayer }) => {
-            map.setFeatureState(
-              {
-                source: GEOLEVELS_SOURCE_ID,
-                id,
-                sourceLayer
-              },
-              { selected: true }
-            );
           });
           const subGeoUnits = featuresToUnlockedGeoUnits(
             subFeatures,
@@ -341,6 +354,7 @@ const Map = ({
     geoLevelIndex,
     prevGeoLevelIndex,
     selectedGeolevel,
+    staticGeoLevels,
     staticMetadata,
     selectedGeounits,
     project,

@@ -10,9 +10,23 @@ import {
 
 type ArrayBuffer = Uint8Array | Uint16Array | Uint32Array;
 
-// Recursively finds all base indices matching a set of values at a specified level.
+// Helper for finding all indices in an array buffer matching a value.
 // Note: mutation is used, because the union type of array buffers proved
 // too difficult to line up types for reduce or map/filter.
+export function getAllIndices(arrayBuf: ArrayBuffer, vals: ReadonlySet<number>): readonly number[] {
+  // eslint-disable-next-line
+  let indices: number[] = [];
+  arrayBuf.forEach((el: number, ind: number) => {
+    // eslint-disable-next-line
+    if (vals.has(el)) {
+      // eslint-disable-next-line
+      indices.push(ind);
+    }
+  });
+  return indices;
+}
+
+// Recursively finds all base indices matching a set of values at a specified level
 export function getAllBaseIndices(
   descGeoLevels: readonly ArrayBuffer[],
   levelIndex: number,
@@ -22,18 +36,11 @@ export function getAllBaseIndices(
   if (vals.length === 0 || levelIndex === descGeoLevels.length) {
     return vals;
   }
-
-  // eslint-disable-next-line
-  let indices: number[] = [];
-  const valsSet = new Set(vals);
-  descGeoLevels[levelIndex].forEach((el: number, ind: number) => {
-    // eslint-disable-next-line
-    if (valsSet.has(el)) {
-      // eslint-disable-next-line
-      indices.push(ind);
-    }
-  });
-  return getAllBaseIndices(descGeoLevels, levelIndex + 1, indices);
+  return getAllBaseIndices(
+    descGeoLevels,
+    levelIndex + 1,
+    getAllIndices(descGeoLevels[levelIndex], new Set(vals))
+  );
 }
 
 interface DemographicCounts {

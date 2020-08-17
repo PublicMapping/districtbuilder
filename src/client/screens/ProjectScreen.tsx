@@ -31,8 +31,6 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const geojson = "resource" in projectData.geojson ? projectData.geojson.resource : undefined;
   const staticMetadata =
     "resource" in projectData.staticMetadata ? projectData.staticMetadata.resource : undefined;
-  const staticGeoLevels =
-    "resource" in projectData.staticGeoLevels ? projectData.staticGeoLevels.resource : undefined;
   const staticDemographics =
     "resource" in projectData.staticDemographics
       ? projectData.staticDemographics.resource
@@ -68,7 +66,6 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           geojson={geojson}
           isLoading={isLoading}
           staticMetadata={staticMetadata}
-          staticGeoLevels={staticGeoLevels}
           staticDemographics={staticDemographics}
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounits={districtDrawing.selectedGeounits}
@@ -88,12 +85,14 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
           "resource" in projectData.staticDemographics &&
+          "resource" in projectData.staticGeoLevels &&
           "resource" in projectData.geojson ? (
             <Map
               project={projectData.project.resource}
               geojson={projectData.geojson.resource}
               staticMetadata={projectData.staticMetadata.resource}
               staticDemographics={projectData.staticDemographics.resource}
+              staticGeoLevels={projectData.staticGeoLevels.resource}
               selectedGeounits={districtDrawing.selectedGeounits}
               selectedDistrictId={districtDrawing.selectedDistrictId}
               selectionTool={districtDrawing.selectionTool}

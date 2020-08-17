@@ -46,7 +46,6 @@ const ProjectSidebar = ({
   geojson,
   isLoading,
   staticMetadata,
-  staticGeoLevels,
   staticDemographics,
   selectedDistrictId,
   selectedGeounits,
@@ -56,7 +55,6 @@ const ProjectSidebar = ({
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly staticMetadata?: IStaticMetadata;
-  readonly staticGeoLevels?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
@@ -98,7 +96,6 @@ const ProjectSidebar = ({
             {project &&
               geojson &&
               staticMetadata &&
-              staticGeoLevels &&
               staticDemographics &&
               geoUnitHierarchy &&
               getSidebarRows(
