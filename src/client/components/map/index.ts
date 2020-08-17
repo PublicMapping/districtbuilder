@@ -18,8 +18,12 @@ import {
 export const GEOLEVELS_SOURCE_ID = "db";
 // GeoJSON district data for district as currently drawn
 export const DISTRICTS_SOURCE_ID = "districts";
+// GeoJSON district label data for district as currently drawn
+export const DISTRICTS_LABELS_SOURCE_ID = "districts-labels";
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
+// Id for district label layer
+export const DISTRICTS_LABELS_LAYER_ID = "districts-labels";
 // Used only to make labels show up on top of all other layers
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
@@ -62,8 +66,9 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
         "text-size": 12,
         "text-padding": 3,
         "text-field": "",
+        "text-justify": "center",
         "text-max-width": 10,
-        "text-font": ["GR"],
+        "text-font": ["ag-r"],
         visibility: "none"
       },
       paint: {

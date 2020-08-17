@@ -2,6 +2,8 @@
 import { FeatureCollection, MultiPolygon } from "geojson";
 import { useEffect, useRef, useState } from "react";
 import { Box, jsx } from "theme-ui";
+import flatten from "geojson-flatten";
+import polylabel from "polylabel";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -19,7 +21,9 @@ import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_PLACEHOLDER_LAYER_ID,
   DISTRICTS_SOURCE_ID,
+  DISTRICTS_LABELS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
+  DISTRICTS_LABELS_LAYER_ID,
   featureStateDistricts,
   getMapboxStyle,
   getGeoLevelVisibility,
@@ -138,6 +142,33 @@ const Map = ({
           DISTRICTS_PLACEHOLDER_LAYER_ID
         );
 
+        map.addSource(DISTRICTS_LABELS_SOURCE_ID, {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: []
+          }
+        });
+        map.addLayer({
+          id: DISTRICTS_LABELS_LAYER_ID,
+          type: "symbol",
+          source: DISTRICTS_LABELS_SOURCE_ID,
+          layout: {
+            "text-size": 12,
+            "text-padding": 3,
+            "text-field": ["concat", project.regionConfig.regionCode, "-", ["get", "id"]],
+            "text-max-width": 10,
+            "text-font": ["ag-bo"]
+          },
+          paint: {
+            "text-color": "#000",
+            "text-opacity": 0.9,
+            "text-halo-color": "#fff",
+            "text-halo-width": 1.25,
+            "text-halo-blur": 0
+          }
+        });
+
         map.resize();
       });
 
@@ -156,6 +187,44 @@ const Map = ({
   useEffect(() => {
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
+
+    console.time("labels");
+
+    const labels = geojson.features
+      .filter(feature => {
+        return feature.geometry.coordinates.length > 0 && feature.id !== 0;
+      })
+      .map(feature => {
+        return flatten(feature).reduce((prev: any, current: any) => {
+          // If a district contains multiple polygons, label the polygon with the fewest vertices
+          return prev.geometry.coordinates[0].length > current.geometry.coordinates[0].length
+            ? prev
+            : current;
+        });
+      })
+      .map(feature => {
+        return {
+          type: "Feature",
+          properties: { id: feature.id },
+          geometry: {
+            type: "Point",
+            coordinates: polylabel(feature.geometry.coordinates, 0.5)
+          }
+        };
+      });
+
+    const districtsLabelsSource = map && map.getSource(DISTRICTS_LABELS_SOURCE_ID);
+
+    districtsLabelsSource &&
+      districtsLabelsSource.type === "geojson" &&
+      //@ts-ignore
+      districtsLabelsSource.setData({
+        type: "FeatureCollection",
+        //@ts-ignore
+        features: labels
+      });
+
+    console.timeEnd("labels");
   }, [map, geojson]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
