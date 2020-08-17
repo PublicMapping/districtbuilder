@@ -1,8 +1,25 @@
 /** @jsx jsx */
 import mapValues from "lodash/mapValues";
-import { Box, jsx, Styled } from "theme-ui";
+import { Box, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import { demographicsColors } from "../constants/colors";
+
+const style: ThemeUIStyleObject = {
+  label: {
+    textAlign: "left",
+    py: 0,
+    pr: 2,
+    textTransform: "capitalize",
+    fontSize: 1
+  },
+  number: {
+    flex: "auto",
+    textAlign: "right",
+    fontVariant: "tabular-nums",
+    py: 0,
+    fontSize: 1
+  }
+};
 
 const Row = ({
   label,
@@ -19,19 +36,18 @@ const Row = ({
       border: "none"
     }}
   >
-    <Styled.td sx={{ textAlign: "left", padding: "0 3px", textTransform: "capitalize" }}>
-      {label}
-    </Styled.td>
-    <Styled.td sx={{ minWidth: "100px" }}>
+    <Styled.td sx={style.label}>{label}</Styled.td>
+    <Styled.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
         sx={{
           width: `${percent}%`,
-          height: "1rem",
-          backgroundColor: color
+          height: "10px",
+          backgroundColor: color,
+          borderRadius: "1px"
         }}
       />
     </Styled.td>
-    <Styled.td sx={{ flex: "auto", textAlign: "right" }}>
+    <Styled.td sx={style.number}>
       {percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0"}
       {"%"}
     </Styled.td>
@@ -53,7 +69,7 @@ const DemographicsTooltip = ({
     <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
   ));
   return (
-    <Box sx={{ width: "100%", minHeight: "100%", backgroundColor: "gray.8", m: 0 }}>
+    <Box>
       <Styled.table sx={{ margin: "0" }}>
         <tbody>{rows}</tbody>
       </Styled.table>

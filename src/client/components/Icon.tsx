@@ -5,12 +5,14 @@ import icons from "../icons";
 interface IconProps {
   readonly name: keyof typeof icons;
   readonly color?: string;
+  readonly size?: number;
 }
 
-const Icon = ({ name, color }: IconProps) => {
+const Icon = ({ name, color, size }: IconProps) => {
   const { path, viewBox } = icons[name];
+  const iconSize = size ? size : 1;
   return (
-    <svg sx={{ height: "1em", width: "1em" }} viewBox={viewBox}>
+    <svg sx={{ height: `${iconSize}em`, width: `${iconSize}em` }} viewBox={viewBox}>
       <path d={path} fill={color ? color : "currentColor"} />
     </svg>
   );
