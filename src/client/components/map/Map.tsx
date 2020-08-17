@@ -183,48 +183,58 @@ const Map = ({
     // eslint-disable-next-line
   }, []);
 
-  // Update districts source when geojson is fetched
-  useEffect(() => {
-    const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
-    districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-
+  // @ts-ignore
+  const generateLabelsGeojson = geojson => {
     console.time("labels");
-
     const labels = geojson.features
+      // @ts-ignore
       .filter(feature => {
+        // @ts-ignore
         return feature.geometry.coordinates.length > 0 && feature.id !== 0;
       })
+      // @ts-ignore
       .map(feature => {
-        return flatten(feature).reduce((prev: any, current: any) => {
+        // @ts-ignore
+        return flatten(feature).reduce((prev, current) => {
           // If a district contains multiple polygons, label the polygon with the fewest vertices
           return prev.geometry.coordinates[0].length > current.geometry.coordinates[0].length
             ? prev
             : current;
         });
       })
+      // @ts-ignore
       .map(feature => {
         return {
           type: "Feature",
+          // @ts-ignore
           properties: { id: feature.id },
           geometry: {
             type: "Point",
+            // @ts-ignore
             coordinates: polylabel(feature.geometry.coordinates, 0.5)
           }
         };
       });
 
-    const districtsLabelsSource = map && map.getSource(DISTRICTS_LABELS_SOURCE_ID);
+    console.timeEnd("labels");
 
+    return {
+      type: "FeatureCollection",
+      //@ts-ignore
+      features: labels
+    };
+  };
+
+  // Update districts source when geojson is fetched
+  useEffect(() => {
+    const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
+    districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
+
+    const districtsLabelsSource = map && map.getSource(DISTRICTS_LABELS_SOURCE_ID);
     districtsLabelsSource &&
       districtsLabelsSource.type === "geojson" &&
       //@ts-ignore
-      districtsLabelsSource.setData({
-        type: "FeatureCollection",
-        //@ts-ignore
-        features: labels
-      });
-
-    console.timeEnd("labels");
+      districtsLabelsSource.setData(generateLabelsGeojson(geojson));
   }, [map, geojson]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
