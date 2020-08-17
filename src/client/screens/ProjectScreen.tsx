@@ -72,7 +72,6 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
           staticDemographics={staticDemographics}
           selectedDistrictId={districtDrawing.selectedDistrictId}
           selectedGeounits={districtDrawing.selectedGeounits}
-          geoLevelIndex={districtDrawing.geoLevelIndex}
           geoUnitHierarchy={geoUnitHierarchy}
           lockedDistricts={districtDrawing.lockedDistricts}
         />
@@ -84,17 +83,16 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
             selectionTool={districtDrawing.selectionTool}
             geoLevelIndex={districtDrawing.geoLevelIndex}
             geoLevelVisibility={districtDrawing.geoLevelVisibility}
+            selectedGeounits={districtDrawing.selectedGeounits}
           />
           {"resource" in projectData.project &&
           "resource" in projectData.staticMetadata &&
-          "resource" in projectData.staticGeoLevels &&
           "resource" in projectData.staticDemographics &&
           "resource" in projectData.geojson ? (
             <Map
               project={projectData.project.resource}
               geojson={projectData.geojson.resource}
               staticMetadata={projectData.staticMetadata.resource}
-              staticGeoLevels={projectData.staticGeoLevels.resource}
               staticDemographics={projectData.staticDemographics.resource}
               selectedGeounits={districtDrawing.selectedGeounits}
               selectedDistrictId={districtDrawing.selectedDistrictId}

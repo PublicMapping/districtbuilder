@@ -26,40 +26,95 @@ export function getAllIndices(arrayBuf: ArrayBuffer, vals: ReadonlySet<number>):
   return indices;
 }
 
+interface DemographicCounts {
+  // key is demographic group (eg. population, white, black, etc)
+  // value is the number of people in that group
+  [id: string]: number; // eslint-disable-line
+}
+
 export function getDemographics(
-  baseIndices: readonly number[],
+  baseIndices: number[] | Set<number>, // eslint-disable-line
   staticMetadata: IStaticMetadata,
   staticDemographics: readonly ArrayBuffer[]
-): { readonly [id: string]: number } {
+): DemographicCounts {
   // Aggregate demographic data for the IDs
   return staticMetadata.demographics.reduce(
     (data, demographic, ind) => {
-      const val = baseIndices.reduce(
-        (sum, v) => (isNaN(staticDemographics[ind][v]) ? sum : sum + staticDemographics[ind][v]),
-        0
-      );
+      let count: number = 0; // eslint-disable-line
+      baseIndices.forEach((v: number) => {
+        // eslint-disable-next-line
+        if (!isNaN(staticDemographics[ind][v])) {
+          count += staticDemographics[ind][v];
+        }
+      });
       // eslint-disable-next-line
-      data[demographic.id] = val;
+      data[demographic.id] = count;
       return data;
     },
     // eslint-disable-next-line
-    {} as { [id: string]: number }
+    {} as DemographicCounts
   );
+}
+
+/*
+ * Return all base indices for this subset of the geounit hierarchy.
+ */
+// eslint-disable-next-line
+function accumulateBaseIndices(geoUnitHierarchy: GeoUnitHierarchy): number[] {
+  // eslint-disable-next-line
+  const baseIndices: number[] = [];
+  geoUnitHierarchy.forEach(currentIndices =>
+    // eslint-disable-next-line
+    baseIndices.push(
+      ...(typeof currentIndices === "number"
+        ? [currentIndices]
+        : accumulateBaseIndices(currentIndices))
+    )
+  );
+  return baseIndices;
+}
+
+/*
+ * Return all corresponding base indices (i.e. smallest geounit, eg. blocks) for a given geounit.
+ */
+function baseIndicesForGeoUnit(
+  geoUnitHierarchy: GeoUnitHierarchy,
+  geoUnitIndices: GeoUnitIndices
+  // eslint-disable-next-line
+): number[] {
+  const [geoUnitIndex, ...remainingGeoUnitIndices] = geoUnitIndices;
+  const indicesForGeoLevel: number | NestedArray<number> = geoUnitHierarchy[geoUnitIndex];
+  // eslint-disable-next-line
+  if (remainingGeoUnitIndices.length) {
+    // Need to recurse to find the geounit in question in the hierarchy
+    return baseIndicesForGeoUnit(indicesForGeoLevel as GeoUnitHierarchy, remainingGeoUnitIndices);
+  }
+  // We've reached the geounit we're after. Now we need to return all the base geounit ids below it
+  // eslint-disable-next-line
+  if (typeof indicesForGeoLevel === "number") {
+    // Must be working with base geounit. Wrap it in an array and return.
+    return [indicesForGeoLevel];
+  }
+  return accumulateBaseIndices(indicesForGeoLevel);
 }
 
 // Aggregate all demographics that are included in the selection
 export function getTotalSelectedDemographics(
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  geoUnitHierarchy: GeoUnitHierarchy,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  selectedGeounits: GeoUnits,
-  geoLevelIndex: number
-): { readonly [id: string]: number } {
-  const selectedGeounitIds = new Set([...selectedGeounits.keys()]);
-  const baseIndices = staticGeoLevels.slice().reverse()[geoLevelIndex];
-  const selectedBaseIndices = baseIndices
-    ? getAllIndices(baseIndices, selectedGeounitIds)
-    : Array.from(selectedGeounitIds);
+  selectedGeounits: GeoUnits
+): DemographicCounts {
+  // Build up set of blocks ids corresponding to selected geounits
+  // eslint-disable-next-line
+  const selectedBaseIndices: Set<number> = new Set();
+  selectedGeounits.forEach(geoUnitIndices =>
+    baseIndicesForGeoUnit(geoUnitHierarchy, geoUnitIndices).forEach(index =>
+      // eslint-disable-next-line
+      selectedBaseIndices.add(index)
+    )
+  );
+  // Aggregate all counts for selected blocks
   return getDemographics(selectedBaseIndices, staticMetadata, staticDemographics);
 }
 

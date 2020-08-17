@@ -1,10 +1,11 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
-import { addSelectedGeounits, removeSelectedGeounits } from "../../actions/districtDrawing";
+import { editSelectedGeounits, removeSelectedGeounits } from "../../actions/districtDrawing";
 import {
   DISTRICTS_LAYER_ID,
   isFeatureSelected,
   featureStateGeoLevel,
+  findSelectedSubFeatures,
   levelToSelectionLayerId,
   ISelectionTool,
   featuresToUnlockedGeoUnits
@@ -12,6 +13,7 @@ import {
 import {
   DistrictsDefinition,
   FeatureId,
+  GeoUnitIndices,
   IStaticMetadata,
   LockedDistricts
 } from "../../../shared/entities";
@@ -61,12 +63,29 @@ const DefaultSelectionTool: ISelectionTool = {
       );
       const addFeatures = () => {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: true });
-        store.dispatch(addSelectedGeounits(geoUnits));
+        const geoUnitIndices = geoUnits.get(feature.id as FeatureId) as GeoUnitIndices;
+        const subFeatures = findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices);
+        subFeatures.forEach(feature => {
+          map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
+        });
+        const subGeoUnits = featuresToUnlockedGeoUnits(
+          subFeatures,
+          staticMetadata.geoLevelHierarchy,
+          districtsDefinition,
+          lockedDistricts
+        );
+        store.dispatch(
+          editSelectedGeounits({
+            add: geoUnits,
+            remove: subGeoUnits
+          })
+        );
       };
       const removeFeatures = () => {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
         store.dispatch(removeSelectedGeounits(geoUnits));
       };
+
       geoUnits.has(feature.id as FeatureId) &&
         (isFeatureSelected(map, feature) ? removeFeatures() : addFeatures());
     };

@@ -70,7 +70,8 @@
   background-color: #efefef;
 }
 
-.map-actions .button-group button:first-child {
+.map-actions .button-group > button:first-child,
+.map-actions .button-group .button-wrapper:first-child > button {
   border-radius: 4px 0 0 4px;
 }
 
@@ -78,7 +79,8 @@
   margin-left: 10px;
 }
 
-.map-actions .button-group button:last-child {
+.map-actions .button-group > button:last-child,
+.map-actions .button-group .button-wrapper:last-child > button {
   border-radius: 0 4px 4px 0;
   border-right-width: 1px;
 }

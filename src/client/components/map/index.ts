@@ -23,7 +23,12 @@ export const DISTRICTS_LAYER_ID = "districts";
 // Used only to make labels show up on top of all other layers
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
-export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[]): MapboxGL.Style {
+export function getMapboxStyle(
+  path: string,
+  geoLevels: readonly GeoLevelInfo[],
+  minZoom: number,
+  maxZoom: number
+): MapboxGL.Style {
   const lineLayers = geoLevels.flatMap(level => [
     {
       id: levelToLineLayerId(level.id),
@@ -99,8 +104,8 @@ export function getMapboxStyle(path: string, geoLevels: readonly GeoLevelInfo[])
       [GEOLEVELS_SOURCE_ID]: {
         type: "vector",
         tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
-        minzoom: 4,
-        maxzoom: 12
+        minzoom: minZoom,
+        maxzoom: maxZoom
       }
     },
     version: 8
@@ -171,6 +176,24 @@ function isGeoUnitLocked(
       );
 }
 
+export function findSelectedSubFeatures(
+  map: MapboxGL.Map,
+  staticMetadata: IStaticMetadata,
+  feature: MapboxGL.MapboxGeoJSONFeature,
+  geoUnitIndices: GeoUnitIndices
+): readonly MapboxGeoJSONFeature[] {
+  const geoLevel: GeoLevelInfo | undefined =
+    geoUnitIndices && staticMetadata.geoLevelHierarchy[geoUnitIndices.length];
+  return geoLevel
+    ? map
+        .queryRenderedFeatures(undefined, {
+          layers: [levelToSelectionLayerId(geoLevel.id)],
+          filter: ["==", ["get", `${feature.sourceLayer}Idx`], geoUnitIndices[0]]
+        })
+        .filter(feature => isFeatureSelected(map, feature))
+    : [];
+}
+
 export function getGeoLevelVisibility(
   map: MapboxGL.Map,
   staticMetadata: IStaticMetadata
@@ -190,7 +213,13 @@ export interface ISelectionTool {
 }
 /* eslint-enable */
 
-function featuresToGeoUnits(
+/*
+ * Return GeoUnits for given features.
+ *
+ * Note that this doesn't take whether a feature is locked or not into account. If the features
+ * could possibly be locked then `featuresToUnlockedGeoUnits` should be used.
+ */
+export function featuresToGeoUnits(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
 ): GeoUnits {

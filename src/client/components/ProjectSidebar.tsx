@@ -26,7 +26,7 @@ import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
 
 import {
-  clearSelectedGeounitIds,
+  clearSelectedGeounits,
   saveDistrictsDefinition,
   setSelectedDistrictId,
   toggleDistrictLocked
@@ -50,7 +50,6 @@ const ProjectSidebar = ({
   staticDemographics,
   selectedDistrictId,
   selectedGeounits,
-  geoLevelIndex,
   geoUnitHierarchy,
   lockedDistricts
 }: {
@@ -61,7 +60,6 @@ const ProjectSidebar = ({
   readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
-  readonly geoLevelIndex: number;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
 } & LoadingProps) => {
@@ -107,11 +105,9 @@ const ProjectSidebar = ({
                 project,
                 geojson,
                 staticMetadata,
-                staticGeoLevels,
                 staticDemographics,
                 selectedDistrictId,
                 selectedGeounits,
-                geoLevelIndex,
                 geoUnitHierarchy,
                 lockedDistricts
               )}
@@ -145,7 +141,7 @@ const SidebarHeader = ({
             variant="circularSubtle"
             sx={{ mr: "2", cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(clearSelectedGeounitIds());
+              store.dispatch(clearSelectedGeounits());
             }}
           >
             Cancel
@@ -157,7 +153,7 @@ const SidebarHeader = ({
               store.dispatch(saveDistrictsDefinition());
             }}
           >
-            Approve
+            Accept
           </Button>
         </Flex>
       ) : null}
@@ -333,21 +329,18 @@ const getSidebarRows = (
   project: IProject,
   geojson: FeatureCollection<MultiPolygon, DistrictProperties>,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   selectedDistrictId: number,
   selectedGeounits: GeoUnits,
-  geoLevelIndex: number,
   geoUnitHierarchy: GeoUnitHierarchy,
   lockedDistricts: LockedDistricts
 ) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
     staticMetadata,
-    staticGeoLevels,
+    geoUnitHierarchy,
     staticDemographics,
-    selectedGeounits,
-    geoLevelIndex
+    selectedGeounits
   );
 
   // The demographic composition of the selection for each saved district

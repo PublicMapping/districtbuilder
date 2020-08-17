@@ -1,12 +1,14 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import {
-  addSelectedGeounits,
+  editSelectedGeounits,
   clearHighlightedGeounits,
   setHighlightedGeounits
 } from "../../actions/districtDrawing";
 import {
   featuresToUnlockedGeoUnits,
+  featureStateGeoLevel,
+  findSelectedSubFeatures,
   GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   levelToSelectionLayerId,
@@ -17,6 +19,7 @@ import {
   DistrictsDefinition,
   FeatureId,
   GeoUnits,
+  GeoUnitIndices,
   IStaticMetadata,
   LockedDistricts
 } from "../../../shared/entities";
@@ -199,7 +202,30 @@ const RectangleSelectionTool: ISelectionTool = {
           districtsDefinition,
           lockedDistricts
         );
-        geoUnits.size && store.dispatch(addSelectedGeounits(geoUnits));
+        const subFeatures = selectedFeatures.flatMap(feature => {
+          const geoUnitIndices = geoUnits.get(feature.id as FeatureId) as GeoUnitIndices;
+          return geoUnits.has(feature.id as FeatureId) &&
+            // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
+            // also can't be selected at the same time as features from one geolevel up)
+            geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2
+            ? findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices)
+            : [];
+        });
+        subFeatures.forEach(feature => {
+          map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
+        });
+        const subGeoUnits = featuresToUnlockedGeoUnits(
+          subFeatures,
+          staticMetadata.geoLevelHierarchy,
+          districtsDefinition,
+          lockedDistricts
+        );
+        store.dispatch(
+          editSelectedGeounits({
+            add: geoUnits,
+            remove: subGeoUnits
+          })
+        );
       }
       store.dispatch(clearHighlightedGeounits());
     }
