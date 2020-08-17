@@ -18,7 +18,7 @@ import {
   GeoUnitDefinition,
   IStaticMetadata
 } from "../../../../shared/entities";
-import { getAllIndices, getDemographics } from "../../../../shared/functions";
+import { getAllBaseIndices, getDemographics } from "../../../../shared/functions";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
 
 interface GeoUnitHierarchy {
@@ -170,10 +170,11 @@ export class GeoUnitTopology {
         const levelIds = levelGeometries
           .map(geom => geom.id)
           .filter(id => id !== undefined && typeof id === "number") as number[];
-        const levelIndices =
-          levelIndex === this.geoLevels.length
-            ? levelIds
-            : getAllIndices(this.geoLevels.slice().reverse()[levelIndex], new Set(levelIds));
+        const levelIndices = getAllBaseIndices(
+          this.geoLevels.slice().reverse(),
+          levelIndex,
+          levelIds
+        );
         return indices.concat(levelIndices);
       }, []);
       mutableGeom.id = idx;
