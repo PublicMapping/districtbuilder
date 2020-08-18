@@ -227,6 +227,10 @@ variable "image_tag" {
   type = string
 }
 
+variable "fargate_platform_version" {
+  default = "1.4.0"
+}
+
 variable "fargate_app_desired_count" {
   default = 1
   type    = number
