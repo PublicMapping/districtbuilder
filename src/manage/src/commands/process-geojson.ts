@@ -467,7 +467,6 @@ it when necessary (file sizes ~1GB+).
         simplification: 8,
         simplifyOnlyLowZooms: true
       },
-      { echo: true }
     );
     const separateMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
     const labelsGeojson = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.geojson`));
@@ -478,47 +477,36 @@ it when necessary (file sizes ~1GB+).
       const input = join(dir, `${geoLevel}.geojson`);
       const output = separateMbtiles[idx];
       // Use tile-join to pull out individual layers and impose min/max zooms
-      tileJoin(
-        [joinedMbtiles],
-        {
-          force: true,
-          layer: geoLevel,
-          maximumZoom,
-          minimumZoom,
-          noTileCompression: true,
-          noTileSizeLimit: true,
-          output
-        },
-        { echo: true }
-      );
+      tileJoin([joinedMbtiles], {
+        force: true,
+        layer: geoLevel,
+        maximumZoom,
+        minimumZoom,
+        noTileCompression: true,
+        noTileSizeLimit: true,
+        output
+      });
       const labelPath = labelsGeojson[idx];
       const labelOutput = labelsMbtiles[idx];
-      const geojson = geojsonPolygonLabels(
-        input,
-        { style: "largest" },
-        { echo: true, silent: true }
-      ).stdout;
-      writeFileSync(labelPath, geojson);
-      tippecanoe(
-        labelPath,
-        {
-          force: true,
-          maximumZoom,
-          minimumZoom,
-          noTileCompression: true,
-          dropRate: 1,
-          output: labelOutput
-        },
-        { echo: true }
-      );
+      geojsonPolygonLabels(input, { style: "largest" }, { outputPath: labelPath });
+      tippecanoe(labelPath, {
+        force: true,
+        maximumZoom,
+        minimumZoom,
+        noTileCompression: true,
+        noTileSizeLimit: true,
+        dropRate: 1,
+        output: labelOutput
+      });
     });
 
     const outputDir = join(dir, "tiles");
-    tileJoin(
-      [...separateMbtiles, ...labelsMbtiles],
-      { force: true, noTileCompression: true, noTileSizeLimit: true, outputToDirectory: outputDir },
-      { echo: true }
-    );
+    tileJoin([...separateMbtiles, ...labelsMbtiles], {
+      force: true,
+      noTileCompression: true,
+      noTileSizeLimit: true,
+      outputToDirectory: outputDir
+    });
 
     // Read the metadata json file created by tippecanoe, in order to extract geolevel zoom levels.
     // It is done in this manner, rather than pulling the zoom levels defined in the arguments to

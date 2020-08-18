@@ -1,15 +1,14 @@
 /* Adapted from 'node-tippecanoe' */
 
-const shell = require("shelljs");
+const { execSync } = require("child_process");
 const kebabCase = require("kebab-case");
 const colors = require("colors");
 
-function shellExec(cmd, args, echo, silent) {
-  const fullCommand = `${cmd} ${args.join(" ")}`;
-  if (echo) {
-    console.log(fullCommand.green);
-  }
-  return shell.exec(fullCommand, { silent });
+function shellExec(cmd, args, outputPath) {
+  const commandAndArgs = `${cmd} ${args.join(" ")}`;
+  const fullCommand = outputPath ? `${commandAndArgs} >${outputPath}` : commandAndArgs;
+  console.log(fullCommand.green);
+  console.log(execSync(fullCommand, { maxBuffer: 1024 * 1024 * 1024 /* 1Gb */ }));
 }
 
 function execCmd(cmd, layerFiles = [], params, options = {}) {
@@ -42,14 +41,13 @@ function execCmd(cmd, layerFiles = [], params, options = {}) {
   layerFiles = !Array.isArray(layerFiles) ? [layerFiles] : layerFiles;
 
   const args = [...paramStrs, ...layerFiles.map(quotify)];
-  return shellExec(cmd, args, options.echo, options.silent);
+  shellExec(cmd, args, options.outputPath);
 }
 
 module.exports = {
-  geojsonPolygonLabels: (geojsonPath, params, options = { silent: true }) =>
+  geojsonPolygonLabels: (geojsonPath, params, options = {}) =>
     execCmd("node_modules/.bin/geojson-polygon-labels", geojsonPath, params, options),
-  tippecanoe: (layerFiles, params, options = { silent: false }) =>
+  tippecanoe: (layerFiles, params, options = {}) =>
     execCmd("tippecanoe", layerFiles, params, options),
-  tileJoin: (layerFiles, params, options = { silent: false }) =>
-    execCmd("tile-join", layerFiles, params, options)
+  tileJoin: (layerFiles, params, options = {}) => execCmd("tile-join", layerFiles, params, options)
 };
