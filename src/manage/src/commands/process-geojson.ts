@@ -2,9 +2,10 @@ import { Command, flags } from "@oclif/command";
 import { IArg } from "@oclif/parser/lib/args";
 import cli from "cli-ux";
 import { mapSync } from "event-stream";
-import { createReadStream, existsSync, readFileSync, writeFileSync } from "fs";
+import { createReadStream, createWriteStream, existsSync, readFileSync, writeFileSync } from "fs";
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { parse } from "JSONStream";
+import JsonStreamStringify from "json-stream-stringify";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
 import { join } from "path";
@@ -146,7 +147,7 @@ it when necessary (file sizes ~1GB+).
       return;
     }
 
-    this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+    await this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevels);
 
@@ -297,9 +298,13 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Write TopoJSON file to disk
-  writeTopoJson(dir: string, topology: Topology<Objects<{}>>): void {
+  writeTopoJson(dir: string, topology: Topology<Objects<{}>>): Promise<void> {
     this.log("Writing topojson file");
-    writeFileSync(join(dir, "topo.json"), JSON.stringify(topology));
+    const path = join(dir, "topo.json");
+    const output = createWriteStream(path, { encoding: "utf8" });
+    return new Promise(resolve =>
+      new JsonStreamStringify(topology).pipe(output).on("finish", () => resolve())
+    );
   }
 
   // Makes an appropriately-sized typed array containing the data

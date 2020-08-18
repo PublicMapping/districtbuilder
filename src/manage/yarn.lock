@@ -298,6 +298,13 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.4.tgz#38fd73ddfd9b55abb1e1b2ed578cb55bd7b7d339"
   integrity sha512-8+KAKzEvSUdeo+kmqnKrqgeE+LcA0tjYWFY7RPProVYwnqDjukzO+3b6dLD56rYX5TdWejnEOLJYOIeh4CXKuA==
 
+"@types/json-stream-stringify@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@types/json-stream-stringify/-/json-stream-stringify-2.0.1.tgz#2e3b6cf4661b249fff935f6df332c7c2173e0cc5"
+  integrity sha512-RppeIKjJWx/BLzFt/ErDg9tvG/MGqX6Gur/N4He3pQd3ug0cO1IzryqsUeb6uW6shyZJNO7eGbwzsfqSnyLvOg==
+  dependencies:
+    "@types/node" "*"
+
 "@types/jsonstream@0.8.30":
   version "0.8.30"
   resolved "https://registry.yarnpkg.com/@types/jsonstream/-/jsonstream-0.8.30.tgz#1c6b386df42c6d93bf7f0cd339eab6fb56bdc124"
@@ -1956,6 +1963,11 @@ json-stable-stringify-without-jsonify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha1-nbe1lJatPzz+8wp1FC0tkwrXJlE=
+
+json-stream-stringify@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/json-stream-stringify/-/json-stream-stringify-2.0.2.tgz#5f6bab3c51a5ec65f0780be017eae7186a88378c"
+  integrity sha512-Cq8Rle2H/XMlqmKwuo7sDLcERrzknBSxP9zCMhJdOjY6eupgwcIMSTBEl8vmddrw2EQeCI17V46dH79sGj2h5g==
 
 json-stringify-safe@^5.0.1:
   version "5.0.1"
