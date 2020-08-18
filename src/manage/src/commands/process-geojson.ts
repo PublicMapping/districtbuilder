@@ -71,7 +71,7 @@ it when necessary (file sizes ~1GB+).
     simplification: flags.string({
       char: "s",
       description: "Topojson simplification amount (minWeight)",
-      default: "0.000000001"
+      default: "0.000000025"
     }),
 
     outputDir: flags.string({
@@ -486,7 +486,7 @@ it when necessary (file sizes ~1GB+).
       noTinyPolygonReduction: true,
       dropRate: 1,
       output: joinedMbtiles,
-      simplification: 10,
+      simplification: 4,
       simplifyOnlyLowZooms: true
     });
     const separateMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
