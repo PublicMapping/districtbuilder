@@ -1,15 +1,14 @@
 /* Adapted from 'node-tippecanoe' */
 
-const shell = require("shelljs");
+const { execSync } = require("child_process");
 const kebabCase = require("kebab-case");
 const colors = require("colors");
 
-function shellExec(cmd, args, echo) {
-  const fullCommand = `${cmd} ${args.join(" ")}`;
-  if (echo) {
-    console.log(fullCommand.green);
-  }
-  return shell.exec(fullCommand, { silent: true });
+function shellExec(cmd, args, outputPath) {
+  const commandAndArgs = `${cmd} ${args.join(" ")}`;
+  const fullCommand = outputPath ? `${commandAndArgs} >${outputPath}` : commandAndArgs;
+  console.log(fullCommand.green);
+  console.log(execSync(fullCommand, { maxBuffer: 1024 * 1024 * 1024 /* 1Gb */ }));
 }
 
 function execCmd(cmd, layerFiles = [], params, options = {}) {
@@ -36,13 +35,13 @@ function execCmd(cmd, layerFiles = [], params, options = {}) {
     }
     return short ? `${param}${quotify(value)}` : `${param}=${quotify(value)}`;
   }
-  let paramStrs = Object.keys(params)
+  const paramStrs = Object.keys(params)
     .map(k => makeParam(k, params[k]))
     .filter(Boolean);
   layerFiles = !Array.isArray(layerFiles) ? [layerFiles] : layerFiles;
 
   const args = [...paramStrs, ...layerFiles.map(quotify)];
-  return shellExec(cmd, args, options.echo);
+  shellExec(cmd, args, options.outputPath);
 }
 
 module.exports = {
