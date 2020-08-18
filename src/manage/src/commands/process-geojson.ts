@@ -454,20 +454,36 @@ it when necessary (file sizes ~1GB+).
     // This will cause tiles to include data beyond its min/max zoom, so we
     // strip those out in a later step
     this.log(`Converting geojson to vectortiles for ${geoLevels.join(", ")}`);
-    tippecanoe(
-      inputs,
-      {
-        detectSharedBorders: true,
-        force: true,
-        // The only properties we want are geounit hierarchy indices
-        include: [...geoLevels.slice(1).map(gl => `${gl}Idx`), "idx"],
-        noTileCompression: true,
-        noTinyPolygonReduction: true,
-        output: joinedMbtiles,
-        simplification: 8,
-        simplifyOnlyLowZooms: true
-      },
+    // If we know the min/max zooms we can use them here and reduce memory/file
+    // size, for automatic options like 'g' they'll only be used later
+    const featureFilter = Object.fromEntries(
+      geoLevels
+        .map((geoLevel, idx) => {
+          const minZoom = Number(minZooms[idx]);
+          const maxZoom = Number(maxZooms[idx]);
+          return isNaN(minZoom) && isNaN(maxZoom)
+            ? undefined
+            : isNaN(minZoom)
+            ? [geoLevel, ["<=", "$zoom", maxZoom]]
+            : isNaN(maxZoom)
+            ? [geoLevel, [">=", "$zoom", minZoom]]
+            : [geoLevel, ["all", [">=", "$zoom", minZoom], ["<=", "$zoom", maxZoom]]];
+        })
+        .filter(entries => entries !== undefined) as any
     );
+    tippecanoe(inputs, {
+      detectSharedBorders: true,
+      featureFilter: JSON.stringify(featureFilter),
+      force: true,
+      // The only properties we want are geounit hierarchy indices
+      include: [...geoLevels.slice(1).map(gl => `${gl}Idx`), "idx"],
+      noTileCompression: true,
+      noTinyPolygonReduction: true,
+      dropRate: 1,
+      output: joinedMbtiles,
+      simplification: 10,
+      simplifyOnlyLowZooms: true
+    });
     const separateMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}.mbtiles`));
     const labelsGeojson = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.geojson`));
     const labelsMbtiles = geoLevels.map(geoLevel => join(dir, `${geoLevel}-labels.mbtiles`));
