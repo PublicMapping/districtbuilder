@@ -2,6 +2,10 @@
 
 Brief description of what this PR does, and why it is needed.
 
+### Checklist
+
+- [ ] Description of PR is in an appropriate section of `CHANGELOG.md` and grouped with similar changes, if possible
+
 ### Demo
 
 Optional. Screenshots, examples, etc.
