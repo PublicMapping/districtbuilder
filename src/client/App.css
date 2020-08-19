@@ -84,3 +84,7 @@
   border-radius: 0 4px 4px 0;
   border-right-width: 1px;
 }
+
+.mapboxgl-canvas {
+  outline: none !important;
+}
