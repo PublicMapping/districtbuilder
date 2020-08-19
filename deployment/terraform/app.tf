@@ -134,7 +134,8 @@ resource "aws_ecs_service" "app" {
   deployment_minimum_healthy_percent = var.fargate_app_deployment_min_percent
   deployment_maximum_percent         = var.fargate_app_deployment_max_percent
 
-  launch_type = "FARGATE"
+  launch_type      = "FARGATE"
+  platform_version = var.fargate_platform_version
 
   network_configuration {
     security_groups = [aws_security_group.app.id]
