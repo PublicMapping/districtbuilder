@@ -18,7 +18,7 @@ const appButtonStyles = {
   "& > svg": {
     mr: 1
   },
-  "&:hover": {
+  "&:hover:not([disabled])": {
     bg: "blue.5"
   },
   "&:active": {
@@ -28,7 +28,10 @@ const appButtonStyles = {
     outline: "none",
     boxShadow: "focus"
   },
-  "&[disabled]": { opacity: 0.6 }
+  "&[disabled]": {
+    opacity: 0.6,
+    cursor: "not-allowed"
+  }
 };
 
 const theme: Theme & StyledSystemTheme = {
@@ -92,9 +95,10 @@ const theme: Theme & StyledSystemTheme = {
     focus: "0 0 0 2px rgba(109, 152, 186, 0.3)"
   },
   sizes: {
-    form: "350px"
+    form: "350px",
+    medium: "750px"
   },
-  fontSizes: [9, 13, 15, 18, 21, 31, 37, 54],
+  fontSizes: [11, 13, 15, 18, 21, 31, 37, 54],
   fontWeights: {
     light: 300,
     medium: 500,
@@ -110,14 +114,60 @@ const theme: Theme & StyledSystemTheme = {
     heading: {
       mb: 2,
       fontWeight: "heading",
+      lineHeight: "heading",
       color: "heading"
     },
     caps: {
       textTransform: "uppercase",
       letterSpacing: "1px"
+    },
+    h1: {
+      variant: "text.heading",
+      fontSize: 7,
+      letterSpacing: 0
+    },
+    h2: {
+      variant: "text.heading",
+      fontSize: 6,
+      letterSpacing: 0
+    },
+    h3: {
+      variant: "text.heading",
+      fontSize: 5,
+      letterSpacing: 0
+    },
+    h4: {
+      variant: "text.heading",
+      fontSize: 4,
+      fontWeight: "body",
+      letterSpacing: 0
+    },
+    h5: {
+      variant: "text.heading",
+      fontSize: 3,
+      fontWeight: "body",
+      letterSpacing: 0
+    },
+    h6: {
+      variant: "text.caps",
+      fontSize: 2,
+      fontWeight: "bold"
     }
   },
   card: {
+    flat: {
+      borderRadius: "small",
+      backgroundColor: "muted",
+      my: 4,
+      p: 24
+    },
+    disabled: {
+      borderRadius: "small",
+      backgroundColor: "muted",
+      my: 4,
+      p: 24,
+      opacity: "0.4"
+    },
     floating: {
       borderRadius: "small",
       boxShadow: "bright",
@@ -133,7 +183,7 @@ const theme: Theme & StyledSystemTheme = {
       ...appButtonStyles,
       ...{
         backgroundColor: "secondary",
-        "&:hover": {
+        "&:hover:not([disabled])": {
           bg: "gray.6"
         },
         "&:active": {

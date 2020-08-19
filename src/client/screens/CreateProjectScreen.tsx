@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
-import { Box, Button, Card, Flex, Heading, jsx, Label, Radio } from "theme-ui";
+import { Box, Button, Card, Flex, Heading, jsx, Label, Radio, ThemeUIStyleObject } from "theme-ui";
+import { Link } from "react-router-dom";
+import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
 import { IProject, IRegionConfig } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -75,6 +77,57 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
     });
   };
 
+  const style: ThemeUIStyleObject = {
+    header: {
+      py: 3,
+      px: 5,
+      alignItems: "center",
+      bg: "blue.8",
+      borderBottom: "1px solid",
+      borderColor: "blue.7",
+      boxShadow: "bright"
+    },
+    formContainer: {
+      width: "100%",
+      maxWidth: "medium",
+      my: 7,
+      mx: "auto",
+      flexDirection: "column",
+      "@media screen and (max-width: 770px)": {
+        width: "95%",
+        my: 2
+      }
+    },
+    cardLabel: {
+      textTransform: "none",
+      variant: "text.h4",
+      display: "block",
+      mb: 4
+    },
+    radioHeading: {
+      textTransform: "none",
+      variant: "text.body",
+      fontSize: 2,
+      lineHeight: "heading",
+      letterSpacing: "0",
+      mb: "0",
+      color: "heading",
+      fontWeight: "body"
+    },
+    radioSubHeading: {
+      fontSize: 1,
+      letterSpacing: "0",
+      textTransform: "none"
+    },
+    customInputContainer: {
+      mt: 2,
+      width: "100%",
+      pt: 4,
+      borderTop: "1px solid",
+      borderColor: "gray.2"
+    }
+  };
+
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
   ) : (
@@ -84,18 +137,18 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
         minHeight: "100vh"
       }}
     >
-      <Heading as="h4" sx={{ textAlign: "left", backgroundColor: "accent", color: "white", p: 3 }}>
-        New Project
-      </Heading>
+      <Flex sx={style.header}>
+        <Box as="h1" sx={{ lineHeight: "0", mr: 3 }}>
+          <Link to="/">
+            <Logo sx={{ width: "2rem" }} />
+          </Link>
+        </Box>
+        <Heading as="h2" sx={{ variant: "text.h4", color: "blue.0", my: 0 }}>
+          New Project
+        </Heading>
+      </Flex>
       <Flex as="main" sx={{ width: "100%" }}>
-        <Flex
-          sx={{
-            width: "100%",
-            maxWidth: "form",
-            mx: "auto",
-            flexDirection: "column"
-          }}
-        >
+        <Flex sx={style.formContainer}>
           <Flex
             as="form"
             sx={{ flexDirection: "column" }}
@@ -118,10 +171,14 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
               }
             }}
           >
-            <Card sx={{ backgroundColor: "muted", my: 2, p: 4 }}>
+            <Card sx={{ variant: "card.flat" }}>
               <InputField
                 field="name"
-                label="Name"
+                label={
+                  <Box as="span" sx={style.cardLabel}>
+                    Name
+                  </Box>
+                }
                 resource={createProjectResource}
                 inputProps={{
                   onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -131,10 +188,14 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                 }}
               />
             </Card>
-            <Card sx={{ backgroundColor: "muted", my: 2, p: 4 }}>
+            <Card sx={{ variant: "card.flat" }}>
               <SelectField
                 field="regionConfig"
-                label="State"
+                label={
+                  <Box as="span" sx={style.cardLabel}>
+                    State
+                  </Box>
+                }
                 resource={createProjectResource}
                 selectProps={{
                   onChange:
@@ -161,57 +222,86 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
               </SelectField>
             </Card>
             {data.regionConfig ? (
-              <Card sx={{ backgroundColor: "muted", my: 2, p: 4 }}>
-                <Label>Districts</Label>
+              <Card sx={{ variant: "card.flat", display: "flex", flexWrap: "wrap" }}>
+                <Label sx={style.cardLabel}>Districts</Label>
                 {data.regionConfig &&
                   data.regionConfig.chambers
                     .map(chamber => (
-                      <Label key={chamber.id} sx={{ display: "inline-flex", width: "50%" }}>
+                      <Label
+                        key={chamber.id}
+                        sx={{
+                          display: "inline-flex",
+                          "@media screen and (min-width: 750px)": {
+                            flex: "0 0 48%",
+                            "&:nth-of-type(even)": {
+                              mr: "2%"
+                            }
+                          }
+                        }}
+                      >
                         <Radio
                           name="project-district"
                           value={chamber.id}
                           onChange={onDistrictChanged}
                         />
-                        <Flex as="span" sx={{ flexDirection: "column" }}>
-                          <span sx={{ display: "block", color: "heading" }}>{chamber.name}</span>
-                          {chamber.numberOfDistricts} districts
+                        <Flex
+                          as="span"
+                          sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                        >
+                          <div sx={style.radioHeading}>{chamber.name}</div>
+                          <div sx={style.radioSubHeading}>
+                            {chamber.numberOfDistricts} districts
+                          </div>
                         </Flex>
                       </Label>
                     ))
                     .concat(
-                      <Label key="" sx={{ display: "inline-flex", width: "50%" }}>
-                        <Radio name="project-district" value="" onChange={onDistrictChanged} />
-                        <Flex as="span" sx={{ flexDirection: "column" }}>
-                          <span sx={{ display: "block", color: "heading" }}>Custom</span>
-                          Define other types of districts
-                        </Flex>
-                      </Label>
-                    )}
-                {data.isCustom ? (
-                  <InputField
-                    field="numberOfDistricts"
-                    label="Number of districts"
-                    resource={createProjectResource}
-                    inputProps={{
-                      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = parseInt(e.currentTarget.value, 10);
-                        const numberOfDistricts = isNaN(value) ? null : value;
-                        setCreateProjectResource({
-                          data: {
-                            ...data,
-                            numberOfDistricts,
-                            isCustom: true
+                      <div
+                        sx={{
+                          flex: "0 0 50%",
+                          "@media screen and (max-width: 770px)": {
+                            flex: "0 0 100%"
                           }
-                        });
-                      }
-                    }}
-                  />
+                        }}
+                        key="custom"
+                      >
+                        <Label>
+                          <Radio name="project-district" value="" onChange={onDistrictChanged} />
+                          <Flex as="span" sx={{ flexDirection: "column" }}>
+                            <div sx={style.radioHeading}>Custom</div>
+                            <div sx={style.radioSubHeading}>Define other types of districts</div>
+                          </Flex>
+                        </Label>
+                      </div>
+                    )}
+
+                {data.isCustom ? (
+                  <Box sx={style.customInputContainer}>
+                    <InputField
+                      field="numberOfDistricts"
+                      label="Number of districts"
+                      resource={createProjectResource}
+                      inputProps={{
+                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                          const value = parseInt(e.currentTarget.value, 10);
+                          const numberOfDistricts = isNaN(value) ? null : value;
+                          setCreateProjectResource({
+                            data: {
+                              ...data,
+                              numberOfDistricts,
+                              isCustom: true
+                            }
+                          });
+                        }
+                      }}
+                    />
+                  </Box>
                 ) : null}
               </Card>
             ) : (
               undefined
             )}
-            <Box sx={{ textAlign: "left" }}>
+            <Box sx={{ mt: 3, textAlign: "left" }}>
               <Button
                 type="submit"
                 disabled={
