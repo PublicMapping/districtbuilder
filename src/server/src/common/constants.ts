@@ -1,4 +1,4 @@
-export const ENVIRONMENT = process.env.NODE_ENV;
+export const ENVIRONMENT = process.env.NODE_ENV || "Development";
 export const DEBUG = ENVIRONMENT === "Development";
 export const BCRYPT_SALT_ROUNDS = 10;
 export const EMAIL_VERIFICATION_TOKEN_LENGTH = 20;
