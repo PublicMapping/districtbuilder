@@ -167,7 +167,9 @@ const MapHeader = ({
   readonly selectedGeounits: GeoUnits;
 }) => {
   const labelOptions = metadata
-    ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
+    ? metadata.demographics.map(val => (
+        <option key={val.id}>{val.id.substring(0, 1).toUpperCase() + val.id.substring(1)}</option>
+      ))
     : [];
   const geoLevelOptions = metadata
     ? metadata.geoLevelHierarchy
@@ -221,7 +223,7 @@ const MapHeader = ({
               const label = e.currentTarget.value;
               setMapLabel(label);
             }}
-            sx={{ width: "150px", textTransform: "capitalize" }}
+            sx={{ width: "150px" }}
           >
             <option>Select...</option>
             {labelOptions}
