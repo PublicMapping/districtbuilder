@@ -8,6 +8,17 @@ import Icon from "./Icon";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
 const style: ThemeUIStyleObject = {
+  header: {
+    variant: "header.app",
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "space-between",
+    px: 2,
+    py: 1,
+    borderBottom: "1px solid",
+    borderColor: "gray.2",
+    boxShadow: "small"
+  },
   selectionButton: {
     variant: "buttons.outlined",
     fontSize: 1,
@@ -39,8 +50,8 @@ const style: ThemeUIStyleObject = {
       mr: "0"
     }
   }
-}
-const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
+};
+const buttonClassName = (isSelected: boolean) => `${isSelected ? "selected" : ""}`;
 
 const GeoLevelTooltip = ({
   isGeoLevelHidden,
@@ -118,14 +129,15 @@ const GeoLevelButton = ({
   const isButtonDisabled = isGeoLevelHidden || areChangesPending;
   return (
     <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
-      <button
+      <Button
         key={index}
+        sx={{ ...style.selectionButton, ...{ mr: "1px" } }}
         className={buttonClassName(geoLevelIndex === index)}
         onClick={() => store.dispatch(setGeoLevelIndex(index))}
         disabled={isButtonDisabled}
       >
         {label}
-      </button>
+      </Button>
       {isButtonDisabled && (
         <GeoLevelTooltip
           isGeoLevelHidden={isGeoLevelHidden}
@@ -174,19 +186,7 @@ const MapHeader = ({
         ))
     : [];
   return (
-    <Flex
-      sx={{
-        variant: "header.app",
-        backgroundColor: "white",
-        alignItems: "center",
-        justifyContent: "space-between",
-        px: 2,
-        py: 1,
-        borderBottom: "1px solid",
-        borderColor: "gray.2",
-        boxShadow: "small"
-      }}
-    >
+    <Flex sx={style.header}>
       <Flex>
         <Flex sx={{ mr: 3 }}>
           <Button
