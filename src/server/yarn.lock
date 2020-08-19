@@ -5835,10 +5835,10 @@ neo-async@^2.5.0, neo-async@^2.6.0, neo-async@^2.6.1:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
-nestjs-rollbar@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/nestjs-rollbar/-/nestjs-rollbar-1.4.0.tgz#dc45e68f1656d3e332c96360701e4c8c38a627bb"
-  integrity sha512-BQV6QxJOZbkw/Uh2HskG5ONQAuCG5BQ2TO3/rU4zw2046UfQVfULfbYD2xL0GJ4vqmrXD4oeiBySYCiZh1GSUA==
+nestjs-rollbar@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/nestjs-rollbar/-/nestjs-rollbar-1.3.0.tgz#4f992ea4f3083e802d205126f356438203fb9d5f"
+  integrity sha512-XnJ0P33ITM4Eh/aSOzt9YoNhhLbICdB+TgRIS7J1pkPlriaq6fDfvuNAE9waHbNmZSAEgkMo2ARzNyxtxLKQQg==
   dependencies:
     rollbar "^2.9.0"
 
