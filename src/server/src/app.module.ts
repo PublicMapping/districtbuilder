@@ -5,15 +5,15 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { HandlebarsAdapter, MailerModule } from "@nestjs-modules/mailer";
 import { SES } from "aws-sdk";
-import { LoggerModule } from "nestjs-rollbar";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import * as StreamTransport from "nodemailer/lib/stream-transport";
 
-import { DEBUG, ENVIRONMENT } from "./common/constants";
+import { DEBUG } from "./common/constants";
 import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
+import { RollbarModule } from "./rollbar/rollbar.module";
 import { UsersModule } from "./users/users.module";
 
 import { join } from "path";
@@ -58,18 +58,7 @@ if (DEBUG) {
       }
     }),
     TerminusModule,
-    LoggerModule.forRoot({
-      enabled: !DEBUG,
-      accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
-      captureUncaught: true,
-      captureUnhandledRejections: true,
-      payload: {
-        environment: ENVIRONMENT.toLowerCase(),
-        server: {
-          root: __dirname
-        }
-      }
-    }),
+    RollbarModule,
     AuthModule,
     HealthCheckModule,
     UsersModule,
