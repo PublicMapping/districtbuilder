@@ -171,7 +171,7 @@ const MapHeader = ({
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
-        <option key={val.id}>{capitalizeFirstLetter(val.id)}</option>
+        <option key={val.id}>{val.id.substring(0, 1).toUpperCase() + val.id.substring(1)}</option>
       ))
     : [];
   const geoLevelOptions = metadata
@@ -226,7 +226,7 @@ const MapHeader = ({
               const label = e.currentTarget.value;
               setMapLabel(label);
             }}
-            sx={{ width: "150px", textTransform: "capitalize" }}
+            sx={{ width: "150px" }}
           >
             <option>Select...</option>
             {labelOptions}
