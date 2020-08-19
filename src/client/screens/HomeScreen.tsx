@@ -159,7 +159,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
   return (
     <Flex sx={{ flexDirection: "column" }}>
       {"resource" in user && !user.resource.isEmailVerified && (
-        <Alert>
+        <Alert sx={{ borderRadius: "0" }}>
           <Box>
             Please confirm your email in the next 14 days.{" "}
             <Box sx={{ display: "inline-block", p: 1 }}>
@@ -247,7 +247,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
         as="main"
         sx={{ width: "100%", maxWidth: "large", my: 6, mx: "auto", flexDirection: "column", px: 4 }}
       >
-        {"resource" in projects ? (
+        {"resource" in projects && projects.resource.length > 0 && (
           <Flex sx={{ justifyContent: "space-between", mb: 3 }}>
             <Heading as="h1" sx={{ variant: "text.h3" }}>
               Maps
@@ -261,7 +261,8 @@ const HomeScreen = ({ projects, user }: StateProps) => {
               New map
             </Styled.a>
           </Flex>
-        ) : null}
+        )}
+
         {"resource" in projects ? (
           projects.resource.length ? (
             projects.resource.map(project => (
@@ -274,7 +275,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
                     {project.name}
                   </Heading>
                   <p sx={{ fontSize: 2, color: "gray.7" }}>
-                    ({project.regionConfig.name} - {project.numberOfDistricts})
+                    ({project.regionConfig.name}, {project.numberOfDistricts} districts)
                   </p>
                 </Link>
                 <Divider />
