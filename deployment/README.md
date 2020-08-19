@@ -3,7 +3,7 @@
 - [AWS Credentials](#aws-credentials)
 - [Publish Container Images](#publish-container-images)
 - [Terraform](#terraform)
-- [RDS Migrations](#rds-migrations)
+- [Migrations](#migrations)
 
 ## AWS Credentials
 
@@ -81,24 +81,29 @@ $ ./scripts/infra apply
 
 This will attempt to apply the plan assembled in the previous step using Amazon's APIs.
 
-## RDS Migrations
+## Migrations
 
-Migrations on RDS should be run through ECS using the [StagingApp](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions/StagingApp) task definition.
+### Common
 
-To run migrations on the staging environment, run a new task using the following parameters:
+- Select the most recent task definition for [StagingApp](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions/StagingApp/status/ACTIVE) or [ProductionApp](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions/ProductionApp/status/ACTIVE)
+- Select **Actions** -> **Run Task**
+- Below the warning, click the blue link: "Switch to launch type"
+- Select the following
+  - **Launch type**: `Fargate`
+  - **Cluster**: (See table below)
+  - **Cluster VPC**: (See table below)
+  - **Subnets**: Select any named `PrivateSubnet`
+  - **Select existing security group**: (See table below)
+  - **Auto-assign public IP**: `DISABLED`
+- Expand **Advanced Options**
+  - Expand `app` under **Container Overrides**
+  - **Command override**: `run,migration:run`
+- Click **Run Task**
+- Monitor the log output ([staging](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/logStagingApp) or [production](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/logProductionApp)) for the newly created task
 
-| Setting               | Value                               |
-|-----------------------|-------------------------------------|
-| Launch type           | `FARGATE`                           |
-| Task definition       | `StagingApp:<most recent revision>` |
-| Platform version      | `LATEST`                            |
-| Cluster               | `ecsStagingCluster`                 |
-| Number of tasks       | `1`                                 |
-| Cluster VPC           | select `vpcDistrictBuilderStaging`  |
-| Subnets               | select both `PrivateSubnet` entries |
-| Security groups       | select `sgStagingAppEcsService`     |
-| Auto-assign public IP | `DISABLED`                          |
+### Variables
 
-Under Advanced Options: Container Overrides, set the `app` command override to `run,migration:run`
-
-Once the task leaves `PENDING` state and enters `RUNNING` state, you can view the migration progress in the task logs.
+| Environment | Cluster                | Cluster VPC             | Security Group         |
+|-------------|------------------------|-------------------------|------------------------|
+| Staging     | `ecsStagingCluster`    | `vpc-04d3fda63dfc36e58` | `sg-00b08b20f31addcc1` |
+| Production  | `ecsProductionCluster` | `vpc-039833dc732e496a1` | `sg-05a0cca2a9f5b57a3` |
