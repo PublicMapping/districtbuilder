@@ -102,7 +102,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
       textTransform: "none",
       variant: "text.h4",
       display: "block",
-      mb: 2
+      mb: 4
     },
     radioHeading: {
       textTransform: "none",
@@ -120,11 +120,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
       textTransform: "none"
     },
     customInputContainer: {
-      display: "block",
-      ml: "2rem",
-      mt: 1,
-      width: "auto",
-      pt: 2,
+      mt: 2,
+      width: "100%",
+      pt: 4,
       borderTop: "1px solid",
       borderColor: "gray.2"
     }
@@ -234,7 +232,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                         sx={{
                           display: "inline-flex",
                           "@media screen and (min-width: 750px)": {
-                            width: "48%",
+                            flex: "0 0 48%",
                             "&:nth-of-type(even)": {
                               mr: "2%"
                             }
@@ -246,7 +244,10 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                           value={chamber.id}
                           onChange={onDistrictChanged}
                         />
-                        <Flex as="span" sx={{ flexDirection: "column" }}>
+                        <Flex
+                          as="span"
+                          sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                        >
                           <div sx={style.radioHeading}>{chamber.name}</div>
                           <div sx={style.radioSubHeading}>
                             {chamber.numberOfDistricts} districts
@@ -257,9 +258,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                     .concat(
                       <div
                         sx={{
-                          width: "50%",
+                          flex: "0 0 50%",
                           "@media screen and (max-width: 770px)": {
-                            width: "100%"
+                            flex: "0 0 100%"
                           }
                         }}
                         key="custom"
@@ -271,30 +272,31 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                             <div sx={style.radioSubHeading}>Define other types of districts</div>
                           </Flex>
                         </Label>
-                        {data.isCustom ? (
-                          <Box sx={style.customInputContainer}>
-                            <InputField
-                              field="numberOfDistricts"
-                              label="Number of districts"
-                              resource={createProjectResource}
-                              inputProps={{
-                                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                  const value = parseInt(e.currentTarget.value, 10);
-                                  const numberOfDistricts = isNaN(value) ? null : value;
-                                  setCreateProjectResource({
-                                    data: {
-                                      ...data,
-                                      numberOfDistricts,
-                                      isCustom: true
-                                    }
-                                  });
-                                }
-                              }}
-                            />
-                          </Box>
-                        ) : null}
                       </div>
                     )}
+
+                {data.isCustom ? (
+                  <Box sx={style.customInputContainer}>
+                    <InputField
+                      field="numberOfDistricts"
+                      label="Number of districts"
+                      resource={createProjectResource}
+                      inputProps={{
+                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                          const value = parseInt(e.currentTarget.value, 10);
+                          const numberOfDistricts = isNaN(value) ? null : value;
+                          setCreateProjectResource({
+                            data: {
+                              ...data,
+                              numberOfDistricts,
+                              isCustom: true
+                            }
+                          });
+                        }
+                      }}
+                    />
+                  </Box>
+                ) : null}
               </Card>
             ) : (
               undefined
