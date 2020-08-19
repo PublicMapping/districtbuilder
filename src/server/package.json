@@ -48,12 +48,12 @@
     "class-validator": "0.12.2",
     "crypto": "1.0.1",
     "lodash": "4.17.19",
+    "nestjs-rollbar": "^1.4.0",
     "nodemailer": "6.4.6",
     "passport": "0.4.1",
     "passport-jwt": "4.0.0",
     "pg": "7.17.1",
     "reflect-metadata": "0.1.13",
-    "rollbar": "2.19.2",
     "rxjs": "6.5.4",
     "topojson-client": "3.1.0",
     "typeorm": "0.2.22"
