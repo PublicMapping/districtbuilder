@@ -24,19 +24,19 @@ export const DISTRICTS_LAYER_ID = "districts";
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
-  var largeGeolevel = {
+  const largeGeolevel = {
     "line-color": "#000",
     "line-opacity": 1,
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 14, 5]
   };
 
-  var mediumGeolevel = {
+  const mediumGeolevel = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.6],
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.3, 14, 3]
   };
 
-  var smallGeolevel = {
+  const smallGeolevel = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.3],
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 14, 2]
