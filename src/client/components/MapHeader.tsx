@@ -52,7 +52,7 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
+const buttonClassName = (isSelected: boolean) => `${isSelected ? "selected" : ""}`;
 
 const GeoLevelTooltip = ({
   isGeoLevelHidden,
@@ -191,19 +191,7 @@ const MapHeader = ({
         ))
     : [];
   return (
-    <Flex
-      sx={{
-        variant: "header.app",
-        backgroundColor: "white",
-        alignItems: "center",
-        justifyContent: "space-between",
-        px: 2,
-        py: 1,
-        borderBottom: "1px solid",
-        borderColor: "gray.2",
-        boxShadow: "small"
-      }}
-    >
+    <Flex sx={style.header}>
       <Flex>
         <Flex sx={{ mr: 3 }}>
           <Button
