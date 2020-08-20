@@ -1,5 +1,5 @@
 module "vpc" {
-  source = "github.com/azavea/terraform-aws-vpc?ref=6.0.0"
+  source = "github.com/azavea/terraform-aws-vpc?ref=6.0.1"
 
   name                       = "vpc${var.project}${var.environment}"
   region                     = var.aws_region

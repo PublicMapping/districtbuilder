@@ -13,7 +13,7 @@ services:
     working_dir: /usr/local/src
 
   terraform:
-    image: quay.io/azavea/terraform:0.12.13
+    image: quay.io/azavea/terraform:0.12.29
     volumes:
       - ./:/usr/local/src
       - $HOME/.aws:/root/.aws:ro
