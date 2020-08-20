@@ -139,6 +139,8 @@ const GeoLevelButton = ({
   );
 };
 
+const capitalizeFirstLetter = (s: string) => s.substring(0, 1).toUpperCase() + s.substring(1);
+
 const MapHeader = ({
   label,
   setMapLabel,
@@ -158,7 +160,9 @@ const MapHeader = ({
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
-        <option key={val.id}>{val.id.substring(0, 1).toUpperCase() + val.id.substring(1)}</option>
+        <option key={val.id} value={val.id}>
+          {capitalizeFirstLetter(val.id)}
+        </option>
       ))
     : [];
   const geoLevelOptions = metadata
