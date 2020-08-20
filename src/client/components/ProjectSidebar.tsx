@@ -143,15 +143,35 @@ const ProjectSidebar = ({
         <Styled.table sx={{ mx: 2, mb: 2 }}>
           <thead>
             <Styled.tr>
-              <Styled.th sx={style.th}>Number</Styled.th>
-              <Styled.th sx={{ ...style.th, ...style.number }}>Population</Styled.th>
-              <Styled.th sx={{ ...style.th, ...style.number }}>Deviation</Styled.th>
-              <Styled.th sx={style.th}>Race</Styled.th>
-              <Styled.th title="Political party" sx={style.th}>
-                Pol.
+              <Styled.th sx={style.th}>
+                <Tooltip content="Unique number for this district">
+                  <span>Number</span>
+                </Tooltip>
               </Styled.th>
-              <Styled.th title="Compactness score" sx={{ ...style.th, ...style.number }}>
-                Comp.
+              <Styled.th sx={{ ...style.th, ...style.number }}>
+                <Tooltip content="Number of people in this district">
+                  <span>Population</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={{ ...style.th, ...style.number }}>
+                <Tooltip content="Population needed to match the ideal number for this district">
+                  <span>Deviation</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={style.th}>
+                <Tooltip content="Demographics by race">
+                  <span>Race</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={style.th}>
+                <Tooltip content="Political party">
+                  <span>Pol.</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={{ ...style.th, ...style.number }}>
+                <Tooltip content="Compactness score">
+                  <span>Comp.</span>
+                </Tooltip>
               </Styled.th>
               <Styled.th sx={style.th}></Styled.th>
             </Styled.tr>
@@ -364,22 +384,27 @@ const SidebarRow = ({
       <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
       <Styled.td>
         {isDistrictLocked ? (
-          <span
-            onClick={toggleLocked}
-            title="Locked"
-            sx={{ display: "inline-block", lineHeight: "0" }}
+          <Tooltip
+            content={
+              <span>
+                <strong>Locked.</strong> Areas from this district cannot be selected
+              </span>
+            }
           >
-            <Icon name="lock-locked" color="#131f28" size={0.75} />
-          </span>
+            <span onClick={toggleLocked} sx={{ display: "inline-block", lineHeight: "0" }}>
+              <Icon name="lock-locked" color="#131f28" size={0.75} />
+            </span>
+          </Tooltip>
         ) : (
-          <span
-            style={{ visibility: isHovered ? "visible" : "hidden" }}
-            onClick={toggleLocked}
-            title="Lock this district"
-            sx={{ display: "inline-block", lineHeight: "0" }}
-          >
-            <Icon name="lock-unlocked" size={0.75} />
-          </span>
+          <Tooltip content="Lock this district">
+            <span
+              style={{ visibility: isHovered ? "visible" : "hidden" }}
+              onClick={toggleLocked}
+              sx={{ display: "inline-block", lineHeight: "0" }}
+            >
+              <Icon name="lock-unlocked" size={0.75} />
+            </span>
+          </Tooltip>
         )}
       </Styled.td>
     </Styled.tr>
