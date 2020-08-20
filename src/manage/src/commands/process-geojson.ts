@@ -48,7 +48,7 @@ it when necessary (file sizes ~1GB+).
       char: "l",
       description: `Comma-separated geolevel hierarchy: smallest to largest
       To use a different name for the layer ID from the GeoJSON property, separate values by ':'
-      e.g. -l block,blockgroupuuid:blockgroup,countyid:county
+      e.g. -l geoid:block,blockgroupuuid:blockgroup,county
       `,
       default: "block,blockgroup,county"
     }),
@@ -142,9 +142,11 @@ it when necessary (file sizes ~1GB+).
       }
     }
 
+    this.renameProps(baseGeoJson, geoLevels);
+
     const topoJsonHierarchy = this.mkTopoJsonHierarchy(
       baseGeoJson,
-      geoLevels,
+      geoLevelIds,
       demographics,
       simplification
     );
@@ -192,16 +194,31 @@ it when necessary (file sizes ~1GB+).
     );
   }
 
+  renameProps(
+    baseGeoJson: FeatureCollection<Polygon, any>,
+    geoLevels: readonly [string, string][]
+  ): void {
+    for (const [prop, id] of geoLevels) {
+      if (prop !== id) {
+        this.log(`Renaming ${prop} to ${id} for ${baseGeoJson.features.length} features`);
+        for (const feature of baseGeoJson.features) {
+          feature.properties[id] = feature.properties[prop];
+          delete feature.properties[prop];
+        }
+      }
+    }
+  }
+
   // Generates a TopoJSON topology with aggregated hierarchical data
   mkTopoJsonHierarchy(
     baseGeoJson: FeatureCollection<Polygon, any>,
-    geoLevels: ReadonlyArray<[string, string]>,
+    geoLevelIds: readonly string[],
     demographics: readonly string[],
     simplification: number
   ): Topology<Objects<{}>> {
-    const [baseGeoLevelProp, baseGeoLevelId] = geoLevels[0];
-    this.log(`Converting to topojson with base geolevel: ${baseGeoLevelId}`);
-    const baseTopoJson = topology({ [baseGeoLevelId]: baseGeoJson });
+    const baseGeoLevel = geoLevelIds[0];
+    this.log(`Converting to topojson with base geolevel: ${baseGeoLevel}`);
+    const baseTopoJson = topology({ [baseGeoLevel]: baseGeoJson });
 
     this.log("Presimplifying using planar triangle area");
     const preSimplifiedBaseTopoJson = presimplify(
@@ -209,21 +226,21 @@ it when necessary (file sizes ~1GB+).
       planarTriangleArea
     );
 
-    this.log(`Simplifying ${baseGeoLevelId} geounits with minWeight: ${simplification}`);
+    this.log(`Simplifying ${baseGeoLevel} geounits with minWeight: ${simplification}`);
     const topo = simplify(preSimplifiedBaseTopoJson, simplification);
 
-    for (const [prevIndex, geoLevel] of geoLevels.slice(1).entries()) {
+    for (const [prevIndex, geoLevel] of geoLevelIds.slice(1).entries()) {
       const currIndex = prevIndex + 1;
-      const [currGeoLevelProp, currGeoLevelId] = geoLevels[currIndex];
-      const [prevGeoLevelProp, prevGeoLevelId] = geoLevels[prevIndex];
+      const currGeoLevel = geoLevelIds[currIndex];
+      const prevGeoLevel = geoLevelIds[prevIndex];
 
       // Note: the types defined by Topojson are lacking, and are often subtly
       // inconsistent among functions. Unfortunately, a batch of `any` types were
       // needed to be deployed here, even though it was very close without them.
-      const prevGeoms: any = (topo.objects[prevGeoLevelId] as any).geometries;
+      const prevGeoms: any = (topo.objects[prevGeoLevel] as any).geometries;
 
       this.log(`Grouping geoLevel "${geoLevel}"`);
-      const grouped = groupBy(prevGeoms, f => f.properties[currGeoLevelProp]);
+      const grouped = groupBy(prevGeoms, f => f.properties[currGeoLevel]);
 
       this.log(`Merging ${Object.keys(grouped).length} features`);
       const mergedGeoms: any = mapValues(grouped, (geoms: readonly [Feature]) => {
@@ -245,8 +262,8 @@ it when necessary (file sizes ~1GB+).
         // and also what county this tract belongs to. This is used for subsequent
         // hierarchy calculations, and is also needed by other parts of the
         // application, such as for constructing districs.
-        for (const [levelProp] of geoLevels.slice(currIndex)) {
-          merged.properties[levelProp] = firstGeom?.properties?.[levelProp];
+        for (const level of geoLevelIds.slice(currIndex)) {
+          merged.properties[level] = firstGeom?.properties?.[level];
         }
         /* tslint:enable */
 
@@ -254,7 +271,7 @@ it when necessary (file sizes ~1GB+).
       });
 
       // tslint:disable-next-line:no-object-mutation
-      topo.objects[currGeoLevelId] = {
+      topo.objects[currGeoLevel] = {
         type: "GeometryCollection",
         geometries: Object.values(mergedGeoms)
       };
@@ -264,8 +281,8 @@ it when necessary (file sizes ~1GB+).
     // are converted into vector tiles.
     // We are using the id here, rather than a property, because an id is needed
     // in order to use the `setFeatureState` capability on the front-end.
-    for (const [levelProp, levelId] of geoLevels) {
-      const geomCollection = topo.objects[levelId] as GeometryCollection;
+    for (const geoLevel of geoLevelIds) {
+      const geomCollection = topo.objects[geoLevel] as GeometryCollection;
       geomCollection.geometries.forEach((geometry: GeometryObject, index) => {
         // tslint:disable-next-line:no-object-mutation
         geometry.id = index;
@@ -274,16 +291,6 @@ it when necessary (file sizes ~1GB+).
         for (const demo of demographics) {
           // @ts-ignore
           geometry.properties[`${demo}-abbrev`] = abbreviateNumber(geometry.properties[demo]);
-        }
-
-        // Rename geolevel props to match IDs
-        for (const [prop, id] of geoLevels) {
-          if (geometry && geometry.properties && prop in geometry.properties) {
-            // @ts-ignore
-            geometry.properties[id] = geometry.properties[prop];
-            // @ts-ignore
-            delete geometry.properties[prop];
-          }
         }
       });
     }
