@@ -68,7 +68,7 @@ it when necessary (file sizes ~1GB+).
     demographics: flags.string({
       char: "d",
       description: "Comma-separated census demographics to select and aggregate",
-      default: "population,white,black,asian,hispanic,other"
+      default: "population,white,black,asian,hispanic,other,votedem,voterep,voteoth"
     }),
 
     simplification: flags.string({
