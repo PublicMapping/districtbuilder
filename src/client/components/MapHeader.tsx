@@ -139,8 +139,6 @@ const GeoLevelButton = ({
   );
 };
 
-const capitalizeFirstLetter = (s: string) => s.substring(0, 1).toUpperCase() + s.substring(1);
-
 const MapHeader = ({
   label,
   setMapLabel,
