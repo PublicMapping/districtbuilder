@@ -24,6 +24,7 @@ import {
 import DemographicsChart from "./DemographicsChart";
 import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
+import Tooltip from "./Tooltip";
 
 import {
   clearSelectedGeounits,
@@ -142,15 +143,35 @@ const ProjectSidebar = ({
         <Styled.table sx={{ mx: 2, mb: 2 }}>
           <thead>
             <Styled.tr>
-              <Styled.th sx={style.th}>Number</Styled.th>
-              <Styled.th sx={{ ...style.th, ...style.number }}>Population</Styled.th>
-              <Styled.th sx={{ ...style.th, ...style.number }}>Deviation</Styled.th>
-              <Styled.th sx={style.th}>Race</Styled.th>
-              <Styled.th title="Political party" sx={style.th}>
-                Pol.
+              <Styled.th sx={style.th}>
+                <Tooltip content="Unique number for this district">
+                  <span>Number</span>
+                </Tooltip>
               </Styled.th>
-              <Styled.th title="Compactness score" sx={{ ...style.th, ...style.number }}>
-                Comp.
+              <Styled.th sx={{ ...style.th, ...style.number }}>
+                <Tooltip content="Number of people in this district">
+                  <span>Population</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={{ ...style.th, ...style.number }}>
+                <Tooltip content="Population needed to match the ideal number for this district">
+                  <span>Deviation</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={style.th}>
+                <Tooltip content="Demographics by race">
+                  <span>Race</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={style.th}>
+                <Tooltip content="Political party">
+                  <span>Pol.</span>
+                </Tooltip>
+              </Styled.th>
+              <Styled.th sx={{ ...style.th, ...style.number }}>
+                <Tooltip content="Compactness score">
+                  <span>Comp.</span>
+                </Tooltip>
               </Styled.th>
               <Styled.th sx={style.th}></Styled.th>
             </Styled.tr>
@@ -226,14 +247,42 @@ const BLANK_VALUE = "–";
 
 function getCompactnessDisplay(compactness: CompactnessScore) {
   return compactness === null ? (
-    // @ts-ignore
-    <span sx={style.blankValue}>{BLANK_VALUE}</span>
+    <Tooltip
+      placement="top-start"
+      content={
+        <em>
+          <strong>Empty district.</strong> Add people to this district to view compute compactness.
+        </em>
+      }
+    >
+      <span>{BLANK_VALUE}</span>
+    </Tooltip>
   ) : typeof compactness === "number" ? (
-    <span title="Polsby-Popper score">{Math.floor(compactness * 100)}%</span>
+    <Tooltip
+      placement="top-start"
+      content={
+        <span>
+          <strong>{Math.floor(compactness * 100)}% compactness.</strong> Calculated using the
+          Polsby-Popper measurement
+        </span>
+      }
+    >
+      <span>{`${Math.floor(compactness * 100)}%`}</span>
+    </Tooltip>
   ) : compactness === "non-contiguous" ? (
-    <span title="Non-contiguous" sx={{ display: "inline-block" }}>
-      <Icon name="alert-triangle" color="#f06543" size={0.95} />
-    </span>
+    <Tooltip
+      placement="top-start"
+      content={
+        <em>
+          This district is <strong>non-contiguous</strong>. To calculate compactness, make sure all
+          parts of the district are connected.
+        </em>
+      }
+    >
+      <span>
+        <Icon name="alert-triangle" color="#f06543" size={0.95} />
+      </span>
+    </Tooltip>
   ) : (
     assertNever(compactness)
   );
@@ -256,7 +305,6 @@ const SidebarRow = ({
   readonly districtId: number;
   readonly isDistrictLocked?: boolean;
 }) => {
-  const [demographicsTooltipVisible, setDemographicsTooltipVisible] = useState(false);
   const [isHovered, setHover] = useState(false);
 
   const showPopulationChange = selectedPopulationDifference !== 0;
@@ -312,17 +360,23 @@ const SidebarRow = ({
       <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
         {deviationDisplay}
       </Styled.td>
-      <Styled.td
-        sx={style.td}
-        onMouseOver={() => setDemographicsTooltipVisible(true)}
-        onMouseOut={() => setDemographicsTooltipVisible(false)}
-      >
-        <DemographicsChart demographics={demographics} />
-        {demographicsTooltipVisible && demographics.population > 0 && (
-          <Box sx={style.tooltip}>
-            <DemographicsTooltip demographics={demographics} />
-          </Box>
-        )}
+      <Styled.td sx={style.td}>
+        <Tooltip
+          placement="top-start"
+          content={
+            demographics.population > 0 ? (
+              <DemographicsTooltip demographics={demographics} />
+            ) : (
+              <em>
+                <strong>Empty district.</strong> Add people to this district to view the race chart
+              </em>
+            )
+          }
+        >
+          <span>
+            <DemographicsChart demographics={demographics} />
+          </span>
+        </Tooltip>
       </Styled.td>
       <Styled.td sx={{ ...style.td, ...style.number, ...style.blankValue }}>
         {BLANK_VALUE}
@@ -330,22 +384,27 @@ const SidebarRow = ({
       <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
       <Styled.td>
         {isDistrictLocked ? (
-          <span
-            onClick={toggleLocked}
-            title="Locked"
-            sx={{ display: "inline-block", lineHeight: "0" }}
+          <Tooltip
+            content={
+              <span>
+                <strong>Locked.</strong> Areas from this district cannot be selected
+              </span>
+            }
           >
-            <Icon name="lock-locked" color="#131f28" size={0.75} />
-          </span>
+            <span onClick={toggleLocked} sx={{ display: "inline-block", lineHeight: "0" }}>
+              <Icon name="lock-locked" color="#131f28" size={0.75} />
+            </span>
+          </Tooltip>
         ) : (
-          <span
-            style={{ visibility: isHovered ? "visible" : "hidden" }}
-            onClick={toggleLocked}
-            title="Lock this district"
-            sx={{ display: "inline-block", lineHeight: "0" }}
-          >
-            <Icon name="lock-unlocked" size={0.75} />
-          </span>
+          <Tooltip content="Lock this district">
+            <span
+              style={{ visibility: isHovered ? "visible" : "hidden" }}
+              onClick={toggleLocked}
+              sx={{ display: "inline-block", lineHeight: "0" }}
+            >
+              <Icon name="lock-unlocked" size={0.75} />
+            </span>
+          </Tooltip>
         )}
       </Styled.td>
     </Styled.tr>

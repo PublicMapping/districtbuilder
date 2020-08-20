@@ -255,6 +255,27 @@ const theme: Theme & StyledSystemTheme = {
         cursor: "not-allowed"
       }
     },
+    quiet: {
+      ...appButtonStyles,
+      ...{
+        backgroundColor: "#fff",
+        color: "text",
+        "&:hover": {
+          bg: "blue.1"
+        },
+        "&:active": {
+          bg: "blue.2"
+        },
+        "&:focus": {
+          outline: "none",
+          boxShadow: "focus"
+        },
+        "&.selected": {
+          backgroundColor: "blue.1",
+          color: "heading"
+        }
+      }
+    },
     circular: {
       ...appButtonStyles,
       ...{
