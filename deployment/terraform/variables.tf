@@ -254,7 +254,7 @@ variable "fargate_app_cpu" {
   type = number
 }
 
-variable "fargate_app_memory" {
+variable "fargate_app_base_memory" {
   type = number
 }
 
