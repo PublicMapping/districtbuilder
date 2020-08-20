@@ -5,6 +5,7 @@ import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
 import { IUser } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
+import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
 import CenteredContent from "../components/CenteredContent";
@@ -42,6 +43,14 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
     ("isPending" in projectData.geojson && projectData.geojson.isPending);
 
   const [label, setMapLabel] = useState<string | undefined>(undefined);
+
+  // Reset component redux state on unmount
+  useEffect(
+    () => () => {
+      store.dispatch(resetProjectState());
+    },
+    []
+  );
 
   useEffect(() => {
     store.dispatch(userFetch());
