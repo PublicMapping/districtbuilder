@@ -37,7 +37,7 @@ const appButtonStyles = {
 const theme: Theme & StyledSystemTheme = {
   fonts: {
     body:
-      'proxima nova, proxima-nova, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+      "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
     heading:
       'frank-new, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     monospace: "Menlo, monospace"
@@ -119,8 +119,7 @@ const theme: Theme & StyledSystemTheme = {
       color: "heading"
     },
     caps: {
-      textTransform: "uppercase",
-      letterSpacing: "1px"
+      textTransform: "uppercase"
     },
     h1: {
       variant: "text.heading",
@@ -192,6 +191,19 @@ const theme: Theme & StyledSystemTheme = {
         }
       }
     },
+    ghost: {
+      ...appButtonStyles,
+      ...{
+        backgroundColor: "rgba(256,256,256,0.2)",
+        "&:hover": {
+          bg: "rgba(256,256,256,0.3)"
+        },
+        "&:active": {
+          color: "blue.8",
+          bg: "rgba(256,256,256,0.7)"
+        }
+      }
+    },
     subtle: {
       ...appButtonStyles,
       ...{
@@ -202,7 +214,45 @@ const theme: Theme & StyledSystemTheme = {
     minimal: {
       ...appButtonStyles,
       ...{
-        background: "none"
+        background: "none",
+        "&:hover:not([disabled])": {
+          bg: "rgba(256,256,256,0.2)"
+        },
+        "&:active": {
+          bg: "rgba(256,256,256,0.3)"
+        }
+      }
+    },
+    outlined: {
+      display: "inline-flex",
+      alignItems: "center",
+      flexShrink: 0,
+      justifyContent: "center",
+      maxHeight: "100%",
+      fontFamily: "heading",
+      fontWeight: "medium",
+      borderRadius: "3px",
+      border: "1px solid",
+      borderColor: "gray.2",
+      bg: "muted",
+      color: "gray.7",
+      cursor: "pointer",
+      "& > svg": {
+        mr: 1
+      },
+      "&:hover:not([disabled])": {
+        bg: "gray.1"
+      },
+      "&:active": {
+        bg: "gray.2"
+      },
+      "&:focus": {
+        outline: "none",
+        boxShadow: "focus"
+      },
+      "&[disabled]": {
+        opacity: 0.6,
+        cursor: "not-allowed"
       }
     },
     circular: {
@@ -216,7 +266,13 @@ const theme: Theme & StyledSystemTheme = {
       ...{
         borderRadius: "100px",
         backgroundColor: "gray.1",
-        color: "heading"
+        color: "heading",
+        "&:hover:not([disabled])": {
+          bg: "gray.2"
+        },
+        "&:active": {
+          bg: "gray.3"
+        }
       }
     }
   },
@@ -308,23 +364,31 @@ const theme: Theme & StyledSystemTheme = {
       borderCollapse: "collapse"
     },
     tr: {
-      borderBottomColor: "gray.3",
-      borderBottomWidth: "1px",
-      borderBottomStyle: "solid",
+      borderBottom: "1px solid",
+      borderColor: "gray.2",
       "tbody > &:last-child": { borderBottom: "none" }
     },
-    td: {}
+    td: {
+      py: 1
+    }
   },
   header: {
     app: {
       height: heights.header,
       flexShrink: 0,
+      antiAlias: "",
       p: 2
+    },
+    title: {
+      fontFamily: "heading",
+      fontWeight: "light",
+      fontSize: 2
     },
     left: {
       justifyContent: "flex-start",
       alignItems: "center",
-      flex: 1
+      flex: 1,
+      pl: 1
     },
     center: {
       justifyContent: "center",

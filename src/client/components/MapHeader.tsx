@@ -1,14 +1,57 @@
 /** @jsx jsx */
 import React from "react";
-import { Box, Label, jsx, Select } from "theme-ui";
+import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { geoLevelLabel } from "../../shared/functions";
 
 import Icon from "./Icon";
 import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
 import store from "../store";
-
-const buttonClassName = (isSelected: boolean) => `map-action ${isSelected ? "selected" : ""}`;
+const style: ThemeUIStyleObject = {
+  header: {
+    variant: "header.app",
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "space-between",
+    px: 2,
+    py: 1,
+    borderBottom: "1px solid",
+    borderColor: "gray.2",
+    boxShadow: "small"
+  },
+  selectionButton: {
+    variant: "buttons.outlined",
+    fontSize: 1,
+    py: 1,
+    "&.selected": {
+      bg: "blue.0",
+      borderColor: "blue.2",
+      borderBottom: "2px solid",
+      borderBottomColor: "blue.5",
+      color: "blue.8"
+    }
+  },
+  rightCapButton: {
+    variant: "buttons.outlined",
+    py: 1,
+    borderTopRightRadius: "0",
+    borderBottomRightRadius: "0",
+    mr: "1px",
+    "& > svg": {
+      mr: "0"
+    }
+  },
+  leftCapButton: {
+    variant: "buttons.outlined",
+    py: 1,
+    borderTopLeftRadius: "0",
+    borderBottomLeftRadius: "0",
+    "& > svg": {
+      mr: "0"
+    }
+  }
+};
+const buttonClassName = (isSelected: boolean) => `${isSelected ? "selected" : ""}`;
 
 const GeoLevelTooltip = ({
   isGeoLevelHidden,
@@ -86,14 +129,15 @@ const GeoLevelButton = ({
   const isButtonDisabled = isGeoLevelHidden || areChangesPending;
   return (
     <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
-      <button
+      <Button
         key={index}
+        sx={{ ...style.selectionButton, ...{ mr: "1px" } }}
         className={buttonClassName(geoLevelIndex === index)}
         onClick={() => store.dispatch(setGeoLevelIndex(index))}
         disabled={isButtonDisabled}
       >
         {label}
-      </button>
+      </Button>
       {isButtonDisabled && (
         <GeoLevelTooltip
           isGeoLevelHidden={isGeoLevelHidden}
@@ -104,6 +148,8 @@ const GeoLevelButton = ({
     </Box>
   );
 };
+
+const capitalizeFirstLetter = (s: string) => s.substring(0, 1).toUpperCase() + s.substring(1);
 
 const MapHeader = ({
   label,
@@ -123,7 +169,9 @@ const MapHeader = ({
   readonly selectedGeounits: GeoUnits;
 }) => {
   const labelOptions = metadata
-    ? metadata.demographics.map(val => <option key={val.id}>{val.id}</option>)
+    ? metadata.demographics.map(val => (
+        <option key={val.id}>{capitalizeFirstLetter(val.id)}</option>
+      ))
     : [];
   const geoLevelOptions = metadata
     ? metadata.geoLevelHierarchy
@@ -142,42 +190,49 @@ const MapHeader = ({
         ))
     : [];
   return (
-    <Box sx={{ variant: "header.app", backgroundColor: "white" }} className="map-actions">
-      <Box className="actions-left">
-        <Box className="button-group">
-          <button
+    <Flex sx={style.header}>
+      <Flex>
+        <Flex sx={{ mr: 3 }}>
+          <Button
+            sx={{ ...style.selectionButton, ...style.rightCapButton }}
             className={buttonClassName(selectionTool === SelectionTool.Default)}
             onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
           >
             <Icon name="hand-pointer" />
-          </button>
-          <button
+          </Button>
+          <Button
+            sx={{ ...style.selectionButton, ...style.leftCapButton }}
             className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
             onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
           >
             <Icon name="draw-square" />
-          </button>
-        </Box>
-        <Box className="button-group">{geoLevelOptions}</Box>
-      </Box>
-      <Box className="actions-right">
-        <Box className="dropdown">
-          <Label>
-            Label:
-            <Select
-              value={label}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                const label = e.currentTarget.value;
-                setMapLabel(label);
-              }}
-            >
-              <option></option>
-              {labelOptions}
-            </Select>
+          </Button>
+        </Flex>
+        <Flex>{geoLevelOptions}</Flex>
+      </Flex>
+      <Box sx={{ lineHeight: "1" }}>
+        <Flex sx={{ alignItems: "baseline" }}>
+          <Label
+            htmlFor="population-dropdown"
+            sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
+          >
+            Labels:
           </Label>
-        </Box>
+          <Select
+            id="population-dropdown"
+            value={label}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+              const label = e.currentTarget.value;
+              setMapLabel(label);
+            }}
+            sx={{ width: "150px" }}
+          >
+            <option>Select...</option>
+            {labelOptions}
+          </Select>
+        </Flex>
       </Box>
-    </Box>
+    </Flex>
   );
 };
 

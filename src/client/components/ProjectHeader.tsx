@@ -1,6 +1,7 @@
 /** @jsx jsx */
-import { Box, Button, Flex, Image, jsx, Text } from "theme-ui";
+import { Box, Button, Flex, jsx, Text } from "theme-ui";
 import { Link } from "react-router-dom";
+import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
 import { IProject } from "../../shared/entities";
 import Icon from "../components/Icon";
@@ -20,10 +21,17 @@ const HeaderDivider = () => {
 };
 
 const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
-  <Flex sx={{ variant: "header.app", backgroundColor: "accent" }}>
+  <Flex
+    sx={{
+      variant: "header.app",
+      backgroundColor: "blue.8",
+      borderBottom: "1px solid",
+      borderColor: "blue.6"
+    }}
+  >
     <Flex sx={{ variant: "header.left" }}>
-      <Link to="/">
-        <Image src="/logo-mark-bw.svg" height="28px" width="28px" />
+      <Link to="/" sx={{ lineHeight: "0" }}>
+        <Logo sx={{ width: "1.75rem" }} />
       </Link>
       <HeaderDivider />
       <Flex
@@ -32,17 +40,19 @@ const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
           alignItems: "center"
         }}
       >
-        <Text>{project ? project.name : "&mdash;"}</Text>
+        <Text as="h1" sx={{ variant: "header.title", m: 0 }}>
+          {project ? project.name : "..."}
+        </Text>
       </Flex>
     </Flex>
     <Flex sx={{ variant: "header.right" }}>
-      <Button sx={{ variant: "buttons.minimal" }}>
+      <Button sx={{ variant: "buttons.minimal", fontWeight: "light" }}>
         <Icon name="search" /> Find
       </Button>
-      <Button sx={{ variant: "buttons.minimal" }}>Settings</Button>
-      <Button sx={{ variant: "buttons.minimal" }}>Find</Button>
+      <Button sx={{ variant: "buttons.minimal", fontWeight: "light" }}>Settings</Button>
+      <Button sx={{ variant: "buttons.minimal", fontWeight: "light" }}>Find</Button>
       <HeaderDivider sx={{ opacity: 0 }} />
-      <Button sx={{ variant: "buttons.secondary" }}>Evaluate</Button>
+      <Button sx={{ variant: "buttons.ghost", fontWeight: "light" }}>Evaluate</Button>
     </Flex>
   </Flex>
 );

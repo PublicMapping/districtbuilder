@@ -429,9 +429,9 @@ export const getDistrictColor = (id?: string | number) => {
   return districtColors[index % districtColors.length];
 };
 
-export const positiveChangeColor = "#2dbeae";
-export const negativeChangeColor = "#f5677a";
-export const selectedDistrictColor = "#efefef";
+export const positiveChangeColor = "#388a64";
+export const negativeChangeColor = "#c54d5d";
+export const selectedDistrictColor = "#f2f6f9";
 
 export const demographicsColors = {
   white: "#F5B472",

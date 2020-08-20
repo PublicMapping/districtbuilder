@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { Feature, FeatureCollection, MultiPolygon } from "geojson";
-import { useState } from "react";
+import React, { useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
@@ -38,7 +38,78 @@ interface LoadingProps {
 }
 
 const style: ThemeUIStyleObject = {
-  number: { textAlign: "right" }
+  header: {
+    variant: "header.app",
+    borderBottom: "1px solid",
+    borderColor: "gray.2"
+  },
+  sidebar: {
+    bg: "muted",
+    boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
+    display: "flex",
+    flexDirection: "column",
+    flexShrink: 0,
+    height: "100%",
+    minWidth: "400px",
+    position: "relative",
+    color: "gray.8",
+    zIndex: 200
+  },
+  tooltip: {
+    position: "absolute",
+    bg: "gray.8",
+    p: 2,
+    borderRadius: "small",
+    boxShadow: "small",
+    m: 0
+  },
+  th: {
+    fontWeight: "bold",
+    bg: "muted",
+    color: "gray.7",
+    fontSize: 1,
+    textAlign: "left",
+    pt: 2,
+    px: 2,
+    position: "sticky",
+    top: "0",
+    zIndex: 2,
+    "&::after": {
+      height: "1px",
+      content: "''",
+      display: "block",
+      width: "100%",
+      bg: "gray.2",
+      bottom: "-1px",
+      position: "absolute",
+      left: 0,
+      right: 0
+    }
+  },
+  number: {
+    textAlign: "right"
+  },
+  td: {
+    fontWeight: "body",
+    color: "gray.8",
+    fontSize: 1,
+    px: 2,
+    textAlign: "left",
+    verticalAlign: "bottom"
+  },
+  districtColor: {
+    width: "10px",
+    height: "10px",
+    borderRadius: "100%",
+    mr: 2
+  },
+  unassignedColor: {
+    border: "1px solid",
+    borderColor: "gray.3"
+  },
+  blankValue: {
+    color: "gray.2"
+  }
 };
 
 const ProjectSidebar = ({
@@ -62,34 +133,26 @@ const ProjectSidebar = ({
   readonly lockedDistricts: LockedDistricts;
 } & LoadingProps) => {
   return (
-    <Flex
-      sx={{
-        background: "#fff",
-        boxShadow:
-          "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
-        display: "flex",
-        flexDirection: "column",
-        flexShrink: 0,
-        height: "100%",
-        minWidth: "300px",
-        position: "relative",
-        zIndex: 200
-      }}
-    >
+    <Flex sx={style.sidebar}>
       {project && geoUnitHierarchy && (
         <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       )}
+
       <Box sx={{ overflowY: "auto", flex: 1 }}>
-        <Styled.table sx={{ m: 2 }}>
+        <Styled.table sx={{ mx: 2, mb: 2 }}>
           <thead>
             <Styled.tr>
-              <Styled.th>Number</Styled.th>
-              <Styled.th sx={style.number}>Population</Styled.th>
-              <Styled.th sx={style.number}>Deviation</Styled.th>
-              <Styled.th>Race</Styled.th>
-              <Styled.th>Pol.</Styled.th>
-              <Styled.th sx={style.number}>Comp.</Styled.th>
-              <Styled.th></Styled.th>
+              <Styled.th sx={style.th}>Number</Styled.th>
+              <Styled.th sx={{ ...style.th, ...style.number }}>Population</Styled.th>
+              <Styled.th sx={{ ...style.th, ...style.number }}>Deviation</Styled.th>
+              <Styled.th sx={style.th}>Race</Styled.th>
+              <Styled.th title="Political party" sx={style.th}>
+                Pol.
+              </Styled.th>
+              <Styled.th title="Compactness score" sx={{ ...style.th, ...style.number }}>
+                Comp.
+              </Styled.th>
+              <Styled.th sx={style.th}></Styled.th>
             </Styled.tr>
           </thead>
           <tbody>
@@ -122,9 +185,9 @@ const SidebarHeader = ({
   readonly selectedGeounits: GeoUnits;
 } & LoadingProps) => {
   return (
-    <Flex sx={{ variant: "header.app" }}>
+    <Flex sx={style.header}>
       <Flex sx={{ variant: "header.left" }}>
-        <Heading as="h3" sx={{ m: "0" }}>
+        <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
           Districts
         </Heading>
       </Flex>
@@ -150,7 +213,8 @@ const SidebarHeader = ({
               store.dispatch(saveDistrictsDefinition());
             }}
           >
-            Accept
+            <Icon name="check" />
+            Approve
           </Button>
         </Flex>
       ) : null}
@@ -162,12 +226,13 @@ const BLANK_VALUE = "–";
 
 function getCompactnessDisplay(compactness: CompactnessScore) {
   return compactness === null ? (
-    BLANK_VALUE
+    // @ts-ignore
+    <span sx={style.blankValue}>{BLANK_VALUE}</span>
   ) : typeof compactness === "number" ? (
     <span title="Polsby-Popper score">{Math.floor(compactness * 100)}%</span>
   ) : compactness === "non-contiguous" ? (
-    <span title="Non-contiguous">
-      <Icon name="times-circle" />
+    <span title="Non-contiguous" sx={{ display: "inline-block" }}>
+      <Icon name="alert-triangle" color="#f06543" size={0.95} />
     </span>
   ) : (
     assertNever(compactness)
@@ -207,7 +272,11 @@ const SidebarRow = ({
     intermediateDeviation
   ).toLocaleString()}`;
   const compactnessDisplay =
-    districtId === 0 ? BLANK_VALUE : getCompactnessDisplay(district.properties.compactness);
+    districtId === 0 ? (
+      <span sx={style.blankValue}>{BLANK_VALUE}</span>
+    ) : (
+      getCompactnessDisplay(district.properties.compactness)
+    );
   const toggleHover = () => setHover(!isHovered);
   const toggleLocked = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -215,48 +284,67 @@ const SidebarRow = ({
   };
   return (
     <Styled.tr
-      sx={{ backgroundColor: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
+      sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
       onClick={() => {
         store.dispatch(setSelectedDistrictId(district.id as number));
       }}
       onMouseOver={toggleHover}
       onMouseOut={toggleHover}
     >
-      <Styled.td>
-        <span
-          sx={{
-            backgroundColor: getDistrictColor(district.id),
-            marginRight: "7px"
-          }}
-        >
-          &nbsp;&nbsp;&nbsp;
-        </span>
-        {district.id || "∅"}
+      <Styled.td sx={style.td}>
+        <Flex sx={{ alignItems: "center" }}>
+          {district.id ? (
+            <Fragment>
+              <div sx={{ ...style.districtColor, ...{ bg: getDistrictColor(district.id) } }}></div>
+              <span>{district.id}</span>
+            </Fragment>
+          ) : (
+            <Fragment>
+              <div sx={{ ...style.districtColor, ...style.unassignedColor }}></div>
+              <span>∅</span>
+            </Fragment>
+          )}
+        </Flex>
       </Styled.td>
-      <Styled.td sx={{ ...style.number, ...{ color: textColor } }}>{populationDisplay}</Styled.td>
-      <Styled.td sx={{ ...style.number, ...{ color: textColor } }}>{deviationDisplay}</Styled.td>
+      <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+        {populationDisplay}
+      </Styled.td>
+      <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+        {deviationDisplay}
+      </Styled.td>
       <Styled.td
-        sx={{ width: "100%", height: "100%" }}
+        sx={style.td}
         onMouseOver={() => setDemographicsTooltipVisible(true)}
         onMouseOut={() => setDemographicsTooltipVisible(false)}
       >
         <DemographicsChart demographics={demographics} />
         {demographicsTooltipVisible && demographics.population > 0 && (
-          <Box sx={{ position: "absolute", p: 2, backgroundColor: "gray.8" }}>
+          <Box sx={style.tooltip}>
             <DemographicsTooltip demographics={demographics} />
           </Box>
         )}
       </Styled.td>
-      <Styled.td>{BLANK_VALUE}</Styled.td>
-      <Styled.td sx={style.number}>{compactnessDisplay}</Styled.td>
+      <Styled.td sx={{ ...style.td, ...style.number, ...style.blankValue }}>
+        {BLANK_VALUE}
+      </Styled.td>
+      <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
       <Styled.td>
         {isDistrictLocked ? (
-          <span onClick={toggleLocked}>
-            <Icon name="lock-locked" />
+          <span
+            onClick={toggleLocked}
+            title="Locked"
+            sx={{ display: "inline-block", lineHeight: "0" }}
+          >
+            <Icon name="lock-locked" color="#131f28" size={0.75} />
           </span>
         ) : (
-          <span style={{ visibility: isHovered ? "visible" : "hidden" }} onClick={toggleLocked}>
-            <Icon name="lock-unlocked" />
+          <span
+            style={{ visibility: isHovered ? "visible" : "hidden" }}
+            onClick={toggleLocked}
+            title="Lock this district"
+            sx={{ display: "inline-block", lineHeight: "0" }}
+          >
+            <Icon name="lock-unlocked" size={0.75} />
           </span>
         )}
       </Styled.td>

@@ -4,7 +4,7 @@ import MapboxGL from "mapbox-gl";
 import memoize from "memoizee";
 import { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
-import { Box, Divider, Heading, jsx } from "theme-ui";
+import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
 import { GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
 import { geoLevelLabel, getTotalSelectedDemographics } from "../../../shared/functions";
@@ -18,6 +18,23 @@ const X_BUFFER = 300;
 const Y_BUFFER = 300;
 
 const getDemographics = memoize(getTotalSelectedDemographics);
+
+const style: ThemeUIStyleObject = {
+  tooltip: {
+    position: "absolute",
+    margin: "20px",
+    backgroundColor: "gray.8",
+    color: "muted",
+    height: "auto",
+    borderRadius: "small",
+    boxShadow: "small",
+    maxWidth: "160px",
+    overflow: "hidden",
+    pointerEvents: "none",
+    p: 2,
+    zIndex: 1
+  }
+};
 
 const MapTooltip = ({
   geoLevelIndex,
@@ -151,26 +168,18 @@ const MapTooltip = ({
     return demographics ? (
       <Box
         ref={tooltipRef}
-        sx={{
-          transform: `translate3d(${x}px, ${y}px, 0)`,
-          position: "absolute",
-          margin: "20px",
-          backgroundColor: "gray.8",
-          color: "muted",
-          width: "200px",
-          height: "auto",
-          p: 2,
-          zIndex: 1,
-          pointerEvents: "none"
-        }}
+        sx={{ ...style.tooltip, ...{ transform: `translate3d(${x}px, ${y}px, 0)` } }}
       >
         {heading && (
-          <Heading as="h3" sx={{ color: "muted" }}>
-            {heading}
-          </Heading>
+          <Heading sx={{ fontSize: 2, fontFamily: "heading", color: "muted" }}>{heading}</Heading>
         )}
-        <Box>Population {Number(demographics.population).toLocaleString()}</Box>
-        <Divider sx={{ borderColor: "white" }} />
+        <Grid gap={2} columns={[2, "1fr 2fr"]}>
+          <Box>Pop.</Box>
+          <Box sx={{ fontVariant: "tabular-nums", ml: "7px" }}>
+            {Number(demographics.population).toLocaleString()}
+          </Box>
+        </Grid>
+        <Divider sx={{ my: 1, borderColor: "gray.6" }} />
         <Box sx={{ width: "100%" }}>
           <DemographicsTooltip demographics={demographics} />
         </Box>
