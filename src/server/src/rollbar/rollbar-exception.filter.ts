@@ -1,18 +1,20 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from "@nestjs/common";
+import { ArgumentsHost, Catch, HttpException } from "@nestjs/common";
+import { BaseExceptionFilter } from "@nestjs/core";
 import { Request, Response } from "express";
 import { RollbarService } from "./rollbar.service";
 
-@Catch(HttpException)
-export class RollbarExceptionFilter implements ExceptionFilter {
-  constructor(private rollbar: RollbarService) {}
+@Catch()
+export class RollbarExceptionFilter extends BaseExceptionFilter {
+  constructor(private rollbar: RollbarService) {
+    super();
+  }
 
   catch(exception: HttpException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<Request>();
-    const response = ctx.getResponse<Response>();
-    const status = exception.getStatus();
 
     this.rollbar.error(exception, request);
-    response.status(status).json(exception.getResponse());
+
+    super.catch(exception, host);
   }
 }
