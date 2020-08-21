@@ -1,6 +1,6 @@
 import { ArgumentsHost, Catch, HttpException } from "@nestjs/common";
 import { BaseExceptionFilter } from "@nestjs/core";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { RollbarService } from "./rollbar.service";
 
 @Catch()
