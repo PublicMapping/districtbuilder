@@ -1,0 +1,66 @@
+#!groovy
+
+node {
+  properties([
+    parameters([
+      [
+        $class: 'ValidatingStringParameterDefinition',
+        defaultValue: '',
+        description: 'First 7 characters of the SHA for the commit you wish to deploy.',
+        failedValidationMessage: 'Invalid SHA.',
+        name: 'GIT_COMMIT',
+        regex: /^[a-z0-9]{7}$/
+      ]
+    ])
+  ])
+
+  // Notify Slack that we're starting a production deploy.
+  def startedMessage =
+    ":jenkins: deploying revision <https://github.com/publicmapping/districtbuilder/tree/${params.GIT_COMMIT}|${params.GIT_COMMIT}> to *production*"
+  startedMessage += "\n<${env.BUILD_URL}|View Build>"
+
+  slackSend channel: '#district-builder', color: 'warning', message: startedMessage
+
+  try {
+    env.COMPOSE_PROJECT_NAME = "district-builder-${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+
+    // Checkout the proper revision into the workspace.
+    stage('checkout') {
+      checkout([
+        $class: 'GitSCM',
+        branches: [[name: params.GIT_COMMIT]],
+        extensions: [[$class: 'PruneStaleBranch']],
+        userRemoteConfigs: [[
+            credentialsId: 'AzaveaCIGitHubCredentials',
+            url: 'git@github.com:publicmapping/districtbuilder.git'
+        ]]
+      ])
+    }
+
+    env.AWS_PROFILE = 'district-builder'
+    env.AWS_DEFAULT_REGION = 'us-east-1'
+
+    env.DB_SETTINGS_BUCKET = 'districtbuilder-production-config-us-east-1'
+
+    // Plan and apply the current state of the production infrastructure
+    // as outlined by whatever SHA is passed through as a build parameter.
+    stage('infra') {
+      wrap([$class: 'AnsiColorBuildWrapper']) {
+        sh 'docker-compose -f docker-compose.ci.yml run --rm terraform ./scripts/infra plan'
+        sh 'docker-compose -f docker-compose.ci.yml run --rm terraform ./scripts/infra apply'
+      }
+    }
+  } catch (err) {
+    // Some exception was raised in the `try` block above. Assemble
+    // an appropirate error message for Slack.
+    def failedMessage =
+      ":jenkins-angry: failed to deploy revision <https://github.com/publicmapping/districtbuilder/tree/${params.GIT_COMMIT}|${params.GIT_COMMIT}> to *production*"
+    failedMessage += "\n<${env.BUILD_URL}|View Build>"
+
+    slackSend channel: '#district-builder', color: 'danger', message: failedMessage
+
+    // Re-raise the exception so that the failure is propagated to
+    // Jenkins.
+    throw err
+  }
+}
