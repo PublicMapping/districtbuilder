@@ -9,10 +9,10 @@ class RegionConfigIdDto implements Pick<IRegionConfig, "id"> {
 
 // eslint-disable-next-line max-classes-per-file
 export class CreateProjectDto implements CreateProjectData {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Please enter a number of districts" })
   readonly name: string;
-  @IsInt({ message: "number of districts must be an integer" })
-  @IsPositive({ message: "number of districts must be a positive number" })
+  @IsInt({ message: "Number of districts must be an integer" })
+  @IsPositive({ message: "Number of districts must be a positive number" })
   readonly numberOfDistricts: number;
   readonly regionConfig: RegionConfigIdDto;
 }
