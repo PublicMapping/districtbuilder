@@ -8,3 +8,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Explicitly set Fargate platform version for ECS services [#318](https://github.com/PublicMapping/districtbuilder/pull/318)
 - Update Terraform AWS provider to 3.x [#329](https://github.com/PublicMapping/districtbuilder/pull/329)
+- Extend Jenkins pipeline to support production releases [#325](https://github.com/PublicMapping/districtbuilder/pull/325)
