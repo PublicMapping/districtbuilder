@@ -46,7 +46,10 @@ it when necessary (file sizes ~1GB+).
 
     levels: flags.string({
       char: "l",
-      description: "Comma-separated geolevel hierarchy: smallest to largest",
+      description: `Comma-separated geolevel hierarchy: smallest to largest
+      To use a different name for the layer ID from the GeoJSON property, separate values by ':'
+      e.g. -l geoid:block,blockgroupuuid:blockgroup,county
+      `,
       default: "block,blockgroup,county"
     }),
 
@@ -65,7 +68,7 @@ it when necessary (file sizes ~1GB+).
     demographics: flags.string({
       char: "d",
       description: "Comma-separated census demographics to select and aggregate",
-      default: "population,white,black,asian,hispanic,other"
+      default: "population,white,black,asian,hispanic,other,votedem,voterep,voteoth"
     }),
 
     simplification: flags.string({
@@ -96,7 +99,12 @@ it when necessary (file sizes ~1GB+).
       return;
     }
 
-    const geoLevels = flags.levels.split(",");
+    const geoLevels: readonly [string, string][] = flags.levels
+      .split(",")
+      .map(level =>
+        level.includes(":") ? (level.split(":", 2) as [string, string]) : [level, level]
+      );
+    const geoLevelIds = geoLevels.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
     const demographics = flags.demographics.split(",");
@@ -127,16 +135,18 @@ it when necessary (file sizes ~1GB+).
         return;
       }
     }
-    for (const level of geoLevels) {
-      if (!(level in firstFeature.properties)) {
-        this.log(`Geolevel: "${level}" not present in features, exiting`);
+    for (const [levelProp, levelId] of geoLevels) {
+      if (!(levelProp in firstFeature.properties)) {
+        this.log(`Geolevel: "${levelProp}" not present in features, exiting`);
         return;
       }
     }
 
+    this.renameProps(baseGeoJson, geoLevels);
+
     const topoJsonHierarchy = this.mkTopoJsonHierarchy(
       baseGeoJson,
-      geoLevels,
+      geoLevelIds,
       demographics,
       simplification
     );
@@ -149,13 +159,13 @@ it when necessary (file sizes ~1GB+).
 
     await this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
-    this.addGeoLevelIndices(topoJsonHierarchy, geoLevels);
+    this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
 
-    this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevels);
+    this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevelIds);
 
     const geoLevelHierarchyInfo = this.writeVectorTiles(
       flags.outputDir,
-      geoLevels,
+      geoLevelIds,
       minZooms,
       maxZooms
     );
@@ -163,17 +173,17 @@ it when necessary (file sizes ~1GB+).
     const demographicMetaData = this.writeDemographicData(
       flags.outputDir,
       topoJsonHierarchy,
-      geoLevels[0],
+      geoLevelIds[0],
       demographics
     );
 
     const geoLevelMetaData = this.writeGeoLevelIndices(
       flags.outputDir,
       topoJsonHierarchy,
-      geoLevels
+      geoLevelIds
     );
 
-    this.writeGeounitHierarchy(flags.outputDir, topoJsonHierarchy, geoLevels);
+    this.writeGeounitHierarchy(flags.outputDir, topoJsonHierarchy, geoLevelIds);
 
     this.writeStaticMetadata(
       flags.outputDir,
@@ -184,14 +194,29 @@ it when necessary (file sizes ~1GB+).
     );
   }
 
+  renameProps(
+    baseGeoJson: FeatureCollection<Polygon, any>,
+    geoLevels: readonly [string, string][]
+  ): void {
+    for (const [prop, id] of geoLevels) {
+      if (prop !== id) {
+        this.log(`Renaming ${prop} to ${id} for ${baseGeoJson.features.length} features`);
+        for (const feature of baseGeoJson.features) {
+          feature.properties[id] = feature.properties[prop];
+          delete feature.properties[prop];
+        }
+      }
+    }
+  }
+
   // Generates a TopoJSON topology with aggregated hierarchical data
   mkTopoJsonHierarchy(
     baseGeoJson: FeatureCollection<Polygon, any>,
-    geoLevels: readonly string[],
+    geoLevelIds: readonly string[],
     demographics: readonly string[],
     simplification: number
   ): Topology<Objects<{}>> {
-    const baseGeoLevel = geoLevels[0];
+    const baseGeoLevel = geoLevelIds[0];
     this.log(`Converting to topojson with base geolevel: ${baseGeoLevel}`);
     const baseTopoJson = topology({ [baseGeoLevel]: baseGeoJson });
 
@@ -204,10 +229,10 @@ it when necessary (file sizes ~1GB+).
     this.log(`Simplifying ${baseGeoLevel} geounits with minWeight: ${simplification}`);
     const topo = simplify(preSimplifiedBaseTopoJson, simplification);
 
-    for (const [prevIndex, geoLevel] of geoLevels.slice(1).entries()) {
+    for (const [prevIndex, geoLevel] of geoLevelIds.slice(1).entries()) {
       const currIndex = prevIndex + 1;
-      const currGeoLevel = geoLevels[currIndex];
-      const prevGeoLevel = geoLevels[prevIndex];
+      const currGeoLevel = geoLevelIds[currIndex];
+      const prevGeoLevel = geoLevelIds[prevIndex];
 
       // Note: the types defined by Topojson are lacking, and are often subtly
       // inconsistent among functions. Unfortunately, a batch of `any` types were
@@ -237,7 +262,7 @@ it when necessary (file sizes ~1GB+).
         // and also what county this tract belongs to. This is used for subsequent
         // hierarchy calculations, and is also needed by other parts of the
         // application, such as for constructing districs.
-        for (const level of geoLevels.slice(currIndex)) {
+        for (const level of geoLevelIds.slice(currIndex)) {
           merged.properties[level] = firstGeom?.properties?.[level];
         }
         /* tslint:enable */
@@ -256,7 +281,7 @@ it when necessary (file sizes ~1GB+).
     // are converted into vector tiles.
     // We are using the id here, rather than a property, because an id is needed
     // in order to use the `setFeatureState` capability on the front-end.
-    for (const geoLevel of geoLevels) {
+    for (const geoLevel of geoLevelIds) {
       const geomCollection = topo.objects[geoLevel] as GeometryCollection;
       geomCollection.geometries.forEach((geometry: GeometryObject, index) => {
         // tslint:disable-next-line:no-object-mutation
