@@ -7,6 +7,7 @@ import { RollbarExceptionFilter } from "./rollbar-exception.filter";
   providers: [
     RollbarService,
     {
+      // Load Rollbar filter as a global filter to catch all unhandled exceptions
       provide: APP_FILTER,
       useClass: RollbarExceptionFilter
     }

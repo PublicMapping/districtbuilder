@@ -6,6 +6,7 @@ import { RollbarService } from "./rollbar.service";
 @Catch()
 export class RollbarExceptionFilter extends BaseExceptionFilter {
   constructor(private rollbar: RollbarService) {
+    // BaseExceptionFilter will load applicationRef itself if no argument is given
     super();
   }
 
@@ -15,6 +16,7 @@ export class RollbarExceptionFilter extends BaseExceptionFilter {
 
     this.rollbar.error(exception, request);
 
+    // Delegate error messaging and response to default global exception filter
     super.catch(exception, host);
   }
 }
