@@ -108,7 +108,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", {
     image = "${module.ecr.repository_url}:${var.image_tag}"
 
-    memory = local.fargate_app_memory
+    max_old_space_size = local.fargate_app_memory * 0.75
 
     postgres_host     = aws_route53_record.database.name
     postgres_port     = module.database.port
