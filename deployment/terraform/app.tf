@@ -113,6 +113,8 @@ resource "aws_ecs_task_definition" "app" {
 
     app_port = var.app_port
 
+    rollbar_access_token = var.rollbar_access_token
+
     project     = var.project
     environment = var.environment
     aws_region  = var.aws_region

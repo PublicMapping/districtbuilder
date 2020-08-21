@@ -42,9 +42,17 @@ node {
         // set it as the value of the `GIT_COMMIT` environment variable.
         env.GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
 
+        // Environment used in Rollbar deploy notifications.
+        // https://docs.rollbar.com/reference#post-deploy
+        env.DB_DEPLOYMENT_ENVIRONMENT = 'staging'
+
         wrap([$class: 'AnsiColorBuildWrapper']) {
           sh 'docker-compose -f docker-compose.ci.yml run --rm terraform ./scripts/infra plan'
-          sh 'docker-compose -f docker-compose.ci.yml run --rm terraform ./scripts/infra apply'
+          withCredentials([[$class: 'StringBinding',
+                  credentialsId: 'DB_ROLLBAR_ACCESS_TOKEN',
+                  variable: 'DB_ROLLBAR_ACCESS_TOKEN']]) {
+            sh 'docker-compose -f docker-compose.ci.yml run --rm terraform ./scripts/infra apply'
+          }
         }
       }
     }
