@@ -4,11 +4,12 @@ import { Register } from "../../../../shared/entities";
 import { PasswordValidator } from "../validators/password.validator";
 
 export class RegisterDto implements Register {
-  @IsEmail()
+  @IsNotEmpty({ message: "Please enter an email address" })
+  @IsEmail({}, { message: "Invalid email address" })
   readonly email: string;
-  @IsNotEmpty()
-  @Validate(PasswordValidator, { message: "Password is invalid" })
+  @IsNotEmpty({ message: "Please enter a password" })
+  @Validate(PasswordValidator, { message: "Invalid password" })
   readonly password: string;
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Please enter a name" })
   readonly name: string;
 }
