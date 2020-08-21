@@ -11,6 +11,7 @@ export class RollbarService extends Rollbar {
       accessToken: process.env.ROLLBAR_ACCESS_TOKEN || "",
       captureUncaught: true,
       captureUnhandledRejections: true,
+      nodeSourceMaps: true,
       payload: {
         environment: ENVIRONMENT.toLowerCase(),
         server: {
