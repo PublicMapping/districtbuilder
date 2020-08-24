@@ -24,6 +24,7 @@ import {
   staticMetadataFetchSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { resetProjectState } from "../actions/root";
 
 import {
   DistrictProperties,
@@ -59,6 +60,8 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
   action: Action
 ): ProjectDataState | Loop<ProjectDataState, Action> => {
   switch (action.type) {
+    case getType(resetProjectState):
+      return initialState;
     case getType(projectDataFetch):
       return loop(state, Cmd.action(projectFetch(action.payload)));
     case getType(projectFetch):

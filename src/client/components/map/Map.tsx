@@ -85,84 +85,88 @@ const Map = ({
   });
 
   useEffect(() => {
-    const initializeMap = (setMap: (map: MapboxGL.Map) => void, mapContainer: HTMLDivElement) => {
-      const map = new MapboxGL.Map({
-        container: mapContainer,
-        style: getMapboxStyle(
-          project.regionConfig.s3URI,
-          staticMetadata.geoLevelHierarchy,
-          minZoom,
-          maxZoom
-        ),
-        bounds: [b0, b1, b2, b3],
-        fitBoundsOptions: { padding: 20 },
+    // eslint-disable-next-line
+    if (mapRef.current === null) {
+      return;
+    }
+
+    const map = new MapboxGL.Map({
+      container: mapRef.current,
+      style: getMapboxStyle(
+        project.regionConfig.s3URI,
+        staticMetadata.geoLevelHierarchy,
         minZoom,
         maxZoom
-      });
+      ),
+      bounds: [b0, b1, b2, b3],
+      fitBoundsOptions: { padding: 20 },
+      minZoom,
+      maxZoom
+    });
 
-      map.addControl(
-        new MapboxGL.NavigationControl({
-          showCompass: false,
-          showZoom: true
-        }),
-        "top-right"
+    map.addControl(
+      new MapboxGL.NavigationControl({
+        showCompass: false,
+        showZoom: true
+      }),
+      "top-right"
+    );
+
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
+    map.doubleClickZoom.disable();
+
+    const setLevelVisibility = () =>
+      store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
+    const onMapLoad = () => {
+      setMap(map);
+
+      map.addSource(DISTRICTS_SOURCE_ID, {
+        type: "geojson",
+        data: geojson
+      });
+      map.addLayer(
+        {
+          id: DISTRICTS_LAYER_ID,
+          type: "fill",
+          source: DISTRICTS_SOURCE_ID,
+          layout: {},
+          paint: {
+            "fill-color": { type: "identity", property: "color" },
+            "fill-opacity": 1
+          }
+        },
+        DISTRICTS_PLACEHOLDER_LAYER_ID
+      );
+      map.addLayer(
+        {
+          id: "districts-locked",
+          type: "fill",
+          source: DISTRICTS_SOURCE_ID,
+          layout: {},
+          paint: {
+            "fill-pattern": "circle-1",
+            "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
+          }
+        },
+        DISTRICTS_PLACEHOLDER_LAYER_ID
       );
 
-      map.dragRotate.disable();
-      map.touchZoomRotate.disableRotation();
-      map.doubleClickZoom.disable();
-
-      const setLevelVisibility = () =>
-        store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
-      setLevelVisibility();
-
-      map.on("load", () => {
-        setMap(map);
-
-        map.addSource(DISTRICTS_SOURCE_ID, {
-          type: "geojson",
-          data: geojson
-        });
-        map.addLayer(
-          {
-            id: DISTRICTS_LAYER_ID,
-            type: "fill",
-            source: DISTRICTS_SOURCE_ID,
-            layout: {},
-            paint: {
-              "fill-color": { type: "identity", property: "color" },
-              "fill-opacity": 1
-            }
-          },
-          DISTRICTS_PLACEHOLDER_LAYER_ID
-        );
-        map.addLayer(
-          {
-            id: "districts-locked",
-            type: "fill",
-            source: DISTRICTS_SOURCE_ID,
-            layout: {},
-            paint: {
-              "fill-pattern": "circle-1",
-              "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
-            }
-          },
-          DISTRICTS_PLACEHOLDER_LAYER_ID
-        );
-
-        map.resize();
-      });
-
-      map.on("zoomend", setLevelVisibility);
+      map.resize();
     };
 
+    setLevelVisibility();
+    map.on("load", onMapLoad);
+    map.on("zoomend", setLevelVisibility);
+
+    return () => {
+      map.off("load", onMapLoad);
+      map.off("zoomend", setLevelVisibility);
+    };
+
+    // Everything in this effect should only happen on component load
     // eslint-disable-next-line
-    if (!map && mapRef.current != null) {
-      initializeMap(setMap, mapRef.current);
-    }
-    // eslint complains that this useEffect should depend on map, but we're using this to call setMap so that wouldn't make sense
-    // eslint-disable-next-line
-  }, []);
+  }, [mapRef]);
 
   // Update districts source when geojson is fetched
   useEffect(() => {
@@ -233,6 +237,7 @@ const Map = ({
         map.setMinZoom(selectedGeounits.size > 0 ? selectedGeolevel.minZoom : minZoom);
       };
       map.on("zoomstart", restrictZoom);
+
       return () => {
         map.off("zoomstart", restrictZoom);
       };

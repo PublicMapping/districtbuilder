@@ -3,21 +3,22 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
+  SelectionTool,
   addSelectedGeounits,
+  clearHighlightedGeounits,
   clearSelectedGeounits,
   editSelectedGeounits,
   removeSelectedGeounits,
-  setHighlightedGeounits,
-  clearHighlightedGeounits,
-  SelectionTool,
   saveDistrictsDefinition,
-  setSelectionTool,
-  setSelectedDistrictId,
   setGeoLevelIndex,
   setGeoLevelVisibility,
+  setHighlightedGeounits,
+  setSelectedDistrictId,
+  setSelectionTool,
   toggleDistrictLocked
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition } from "../actions/projectData";
+import { resetProjectState } from "../actions/root";
 import { GeoUnits, LockedDistricts } from "../../shared/entities";
 
 export interface DistrictDrawingState {
@@ -45,6 +46,8 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
   action: Action
 ): DistrictDrawingState | Loop<DistrictDrawingState, Action> => {
   switch (action.type) {
+    case getType(resetProjectState):
+      return initialState;
     case getType(setSelectedDistrictId):
       return {
         ...state,
