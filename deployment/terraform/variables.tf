@@ -278,6 +278,10 @@ variable "client_url" {
   type = string
 }
 
+variable "rollbar_access_token" {
+  type = string
+}
+
 variable "app_port" {
   default = 3005
   type    = number

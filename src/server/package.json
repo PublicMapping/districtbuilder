@@ -53,6 +53,7 @@
     "passport-jwt": "4.0.0",
     "pg": "7.17.1",
     "reflect-metadata": "0.1.13",
+    "rollbar": "2.19.2",
     "rxjs": "6.5.4",
     "topojson-client": "3.1.0",
     "typeorm": "0.2.22"

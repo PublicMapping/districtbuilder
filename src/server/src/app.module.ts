@@ -13,6 +13,7 @@ import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
+import { RollbarModule } from "./rollbar/rollbar.module";
 import { UsersModule } from "./users/users.module";
 
 import { join } from "path";
@@ -57,6 +58,7 @@ if (DEBUG) {
       }
     }),
     TerminusModule,
+    RollbarModule,
     AuthModule,
     HealthCheckModule,
     UsersModule,

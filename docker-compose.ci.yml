@@ -22,5 +22,7 @@ services:
       - GIT_COMMIT=${GIT_COMMIT:-latest}
       - DB_DEBUG=1
       - DB_SETTINGS_BUCKET=${DB_SETTINGS_BUCKET:-districtbuilder-staging-config-us-east-1}
+      - DB_ROLLBAR_ACCESS_TOKEN
+      - DB_DEPLOYMENT_ENVIRONMENT=${DB_DEPLOYMENT_ENVIRONMENT:-staging}
     working_dir: /usr/local/src
     entrypoint: bash
