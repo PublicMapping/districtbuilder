@@ -75,23 +75,7 @@ const RectangleSelectionTool: ISelectionTool = {
       );
     }
 
-    function mouseDown(e: MouseEvent) {
-      // Call functions for the following events
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-
-      setOfInitiallySelectedFeatures = featuresToUnlockedGeoUnits(
-        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
-        staticMetadata.geoLevelHierarchy,
-        districtsDefinition,
-        lockedDistricts
-      );
-
-      // Capture the first xy coordinates
-      start = mousePos(e);
-    }
-
-    function onMouseMove(e: MouseEvent) {
+    function updateSelection(e: MouseEvent) {
       // Find selected features before updating `current` to tell if any features were deselected
       const prevFeatures = current && getFeaturesInBoundingBox([start, current]);
 
@@ -156,6 +140,27 @@ const RectangleSelectionTool: ISelectionTool = {
             map.setFeatureState(featureStateExpression(id), { selected: false });
           });
       }
+    }
+
+    function mouseDown(e: MouseEvent) {
+      // Call functions for the following events
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+
+      setOfInitiallySelectedFeatures = featuresToUnlockedGeoUnits(
+        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
+        staticMetadata.geoLevelHierarchy,
+        districtsDefinition,
+        lockedDistricts
+      );
+
+      // Capture the first xy coordinates
+      start = mousePos(e);
+      updateSelection(e);
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      updateSelection(e);
     }
 
     function onMouseUp(e: MouseEvent) {
