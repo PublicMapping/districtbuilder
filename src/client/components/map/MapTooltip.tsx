@@ -89,19 +89,7 @@ const MapTooltip = ({
       }
     }, 5);
 
-    const onMouseOut = throttle((e: MouseEvent) => {
-      const isOnTooltip =
-        e.relatedTarget instanceof Element &&
-        tooltipRef.current &&
-        (e.relatedTarget === tooltipRef.current || tooltipRef.current.contains(e.relatedTarget));
-
-      !isOnTooltip && setFeature(undefined);
-      isOnTooltip &&
-        setPoint({
-          x: e.offsetX,
-          y: e.offsetY
-        });
-    }, 5);
+    const onMouseOut = throttle(() => setFeature(undefined), 5);
 
     const onDrag = (e: MapboxGL.MapMouseEvent) => {
       setPoint({ x: e.originalEvent.offsetX, y: e.originalEvent.offsetY });
@@ -175,7 +163,8 @@ const MapTooltip = ({
     return demographics ? (
       <Box
         ref={tooltipRef}
-        sx={{ ...style.tooltip, ...{ transform: `translate3d(${x}px, ${y}px, 0)` } }}
+        style={{ transform: `translate3d(${x}px, ${y}px, 0)` }}
+        sx={{ ...style.tooltip }}
       >
         {heading && (
           <Heading sx={{ fontSize: 2, fontFamily: "heading", color: "muted" }}>{heading}</Heading>

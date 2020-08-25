@@ -39,8 +39,10 @@ const Row = ({
     <Styled.td sx={style.label}>{label}</Styled.td>
     <Styled.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
+        style={{
+          width: `${percent}%`
+        }}
         sx={{
-          width: `${percent}%`,
           height: "10px",
           backgroundColor: color,
           borderRadius: "1px"
