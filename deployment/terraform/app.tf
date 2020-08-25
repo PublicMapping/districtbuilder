@@ -87,18 +87,34 @@ resource "aws_ecs_cluster" "app" {
   }
 }
 
+locals {
+  fargate_app_memory = min(
+    // It is estimated that some larger states could use up to a gig.
+    // This math will add an additional 1024MiB for every state.
+    var.fargate_app_base_memory + var.districtbuilder_state_count * 1024,
+    // This math will also cap memory by vCPUs to not exceed Fargate
+    // limits.
+    (var.fargate_app_cpu / 1024) * 8192,
+    // This ensures no configuration exceeds the upper bound of memory
+    // a Fargate container can have.
+    30720
+  )
+}
+
 resource "aws_ecs_task_definition" "app" {
   family                   = "${var.environment}App"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.fargate_app_cpu
-  memory                   = var.fargate_app_memory
+  memory                   = local.fargate_app_memory
 
   task_role_arn      = aws_iam_role.ecs_task_role.arn
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", {
     image = "${module.ecr.repository_url}:${var.image_tag}"
+
+    max_old_space_size = local.fargate_app_memory * 0.75
 
     postgres_host     = aws_route53_record.database.name
     postgres_port     = module.database.port

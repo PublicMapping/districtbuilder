@@ -246,11 +246,15 @@ variable "fargate_app_deployment_max_percent" {
   type    = number
 }
 
+variable "districtbuilder_state_count" {
+  type = number
+}
+
 variable "fargate_app_cpu" {
   type = number
 }
 
-variable "fargate_app_memory" {
+variable "fargate_app_base_memory" {
   type = number
 }
 
