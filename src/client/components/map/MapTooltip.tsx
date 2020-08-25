@@ -8,7 +8,7 @@ import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
 import { GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
 import { geoLevelLabel, getTotalSelectedDemographics } from "../../../shared/functions";
-import { featuresToGeoUnits } from "./index";
+import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
 import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
@@ -67,21 +67,25 @@ const MapTooltip = ({
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
 
+  const throttledSetFeature = throttle((point, geoLevel) => {
+    const features =
+      map &&
+      map.queryRenderedFeatures(point, {
+        layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
+      });
+    features && setFeature(features[0]);
+  }, SET_FEATURE_DELAY);
+
   useEffect(() => {
     const onMouseMoveThrottled = throttle((e: MapboxGL.MapMouseEvent) => {
       // eslint-disable-next-line
       if (map && staticMetadata && invertedGeoLevelIndex !== undefined) {
         const geoLevel = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
-        const features =
-          map &&
-          map.queryRenderedFeatures(e.point, {
-            layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
-          });
         setPoint({
           x: e.point.x,
           y: e.point.y
         });
-        setFeature(features[0]);
+        throttledSetFeature(e.point, geoLevel);
       }
     }, 5);
 
@@ -121,7 +125,7 @@ const MapTooltip = ({
     }
 
     return clearHandlers;
-  }, [map, staticMetadata, invertedGeoLevelIndex]);
+  }, [map, staticMetadata, invertedGeoLevelIndex, throttledSetFeature]);
 
   // eslint-disable-next-line
   if (
