@@ -87,12 +87,18 @@ resource "aws_ecs_cluster" "app" {
   }
 }
 
-// PA uses an additional ~600MiB on my workstation. It is estimated that some
-// larger states could use up to a gig. This math will add an additional
-// 1024MiB for every state. This math will also cap memory by vCPUs to not
-// exceed Fargate limits.
 locals {
-  fargate_app_memory = min(var.fargate_app_base_memory + var.districtbuilder_state_count * 1024, (var.fargate_app_cpu / 1024) * 8192)
+  fargate_app_memory = min(
+    // It is estimated that some larger states could use up to a gig.
+    // This math will add an additional 1024MiB for every state.
+    var.fargate_app_base_memory + var.districtbuilder_state_count * 1024,
+    // This math will also cap memory by vCPUs to not exceed Fargate
+    // limits.
+    (var.fargate_app_cpu / 1024) * 8192,
+    // This ensures no configuration exceeds the upper bound of memory
+    // a Fargate container can have.
+    30720
+  )
 }
 
 resource "aws_ecs_task_definition" "app" {
