@@ -68,7 +68,7 @@ it when necessary (file sizes ~1GB+).
     demographics: flags.string({
       char: "d",
       description: "Comma-separated census demographics to select and aggregate",
-      default: "population,white,black,asian,hispanic,other,votedem,voterep,voteoth"
+      default: "population,white,black,asian,hispanic,other"
     }),
 
     simplification: flags.string({
@@ -167,7 +167,8 @@ it when necessary (file sizes ~1GB+).
       flags.outputDir,
       geoLevelIds,
       minZooms,
-      maxZooms
+      maxZooms,
+      demographics
     );
 
     const demographicMetaData = this.writeDemographicData(
@@ -262,8 +263,18 @@ it when necessary (file sizes ~1GB+).
         // and also what county this tract belongs to. This is used for subsequent
         // hierarchy calculations, and is also needed by other parts of the
         // application, such as for constructing districs.
+        //
+        // Also copy the name field for this level as well as all larger levels
         for (const level of geoLevelIds.slice(currIndex)) {
           merged.properties[level] = firstGeom?.properties?.[level];
+
+          const nameProp = `${level}_name`;
+          if (firstGeom?.properties && nameProp in firstGeom.properties) {
+            merged.properties[nameProp] = firstGeom.properties[nameProp];
+            if (level === currGeoLevel) {
+              merged.properties.name = firstGeom.properties[nameProp];
+            }
+          }
         }
         /* tslint:enable */
 
@@ -479,7 +490,8 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     geoLevels: readonly string[],
     minZooms: readonly string[],
-    maxZooms: readonly string[]
+    maxZooms: readonly string[],
+    demographics: readonly string[]
   ): GeoLevelInfo[] {
     const joinedMbtiles = join(dir, "all-geounits.mbtiles");
     const inputs = geoLevels.map(geoLevel => join(dir, `${geoLevel}.geojson`));
@@ -510,8 +522,8 @@ it when necessary (file sizes ~1GB+).
       detectSharedBorders: true,
       featureFilter: JSON.stringify(featureFilter),
       force: true,
-      // The only properties we want are geounit hierarchy indices
-      include: [...geoLevels.slice(1).map(gl => `${gl}Idx`), "idx"],
+      // The only properties we want are geounit hierarchy indices and optionally the name
+      include: [...geoLevels.slice(1).map(gl => `${gl}Idx`), "idx", "name"],
       noTileCompression: true,
       noTinyPolygonReduction: true,
       dropRate: 1,
@@ -541,6 +553,7 @@ it when necessary (file sizes ~1GB+).
       const labelOutput = labelsMbtiles[idx];
       geojsonPolygonLabels(input, { style: "largest" }, { outputPath: labelPath });
       tippecanoe(labelPath, {
+        include: [...demographics.map(id => `${id}-abbrev`)],
         force: true,
         maximumZoom,
         minimumZoom,
