@@ -140,7 +140,8 @@ const MapTooltip = ({
 
     const featureLabel = () =>
       feature && feature.properties && feature.properties.name ? (
-        (feature.properties.name as string)
+        <span sx={{ textTransform: "capitalize" }}>{`${feature.properties
+          .name as string} ${geoLevel}`}</span>
       ) : feature ? (
         <span sx={{ textTransform: "capitalize" }}>{`${geoLevel} #${feature.id}`}</span>
       ) : (
