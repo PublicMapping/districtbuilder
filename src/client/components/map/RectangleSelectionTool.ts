@@ -118,19 +118,20 @@ const RectangleSelectionTool: ISelectionTool = {
         districtsDefinition,
         lockedDistricts
       );
+      const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
 
       // Set any newly selected features on the map within the bounding box to selected state
       const newFeatures = features.filter(
-        feature => geoUnits.has(feature.id as FeatureId) && !isFeatureSelected(map, feature)
+        feature => geoUnitsForLevel.has(feature.id as FeatureId) && !isFeatureSelected(map, feature)
       );
       newFeatures.forEach(feature => {
         map.setFeatureState(featureStateExpression(feature.id), { selected: true });
       });
 
       const newGeoUnits = new Map(
-        [...geoUnits].filter(([id]) => !setOfInitiallySelectedFeatures.has(id))
+        [...geoUnitsForLevel].filter(([id]) => !setOfInitiallySelectedFeatures[geoLevelId].has(id))
       );
-      throttledSetHighlightedGeounits(newGeoUnits);
+      throttledSetHighlightedGeounits({ [geoLevelId]: newGeoUnits });
 
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
@@ -141,11 +142,15 @@ const RectangleSelectionTool: ISelectionTool = {
           districtsDefinition,
           lockedDistricts
         );
-        Array.from(prevGeoUnits.keys())
-          .filter(id => !setOfInitiallySelectedFeatures.has(id) && !geoUnits.has(id))
-          .forEach(id => {
-            map.setFeatureState(featureStateExpression(id), { selected: false });
-          });
+        Object.entries(prevGeoUnits).forEach(([geoLevelId, geoUnitsForLevel]) => {
+          Array.from(prevGeoUnits[geoLevelId].keys())
+            .filter(
+              id => !setOfInitiallySelectedFeatures[geoLevelId].has(id) && !geoUnitsForLevel.has(id)
+            )
+            .forEach(id => {
+              map.setFeatureState(featureStateExpression(id), { selected: false });
+            });
+        });
       }
     }
 
@@ -214,9 +219,10 @@ const RectangleSelectionTool: ISelectionTool = {
           districtsDefinition,
           lockedDistricts
         );
+        const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
         const subFeatures = selectedFeatures.flatMap(feature => {
-          const geoUnitIndices = geoUnits.get(feature.id as FeatureId) as GeoUnitIndices;
-          return geoUnits.has(feature.id as FeatureId) &&
+          const geoUnitIndices = geoUnitsForLevel.get(feature.id as FeatureId) as GeoUnitIndices;
+          return geoUnitsForLevel.has(feature.id as FeatureId) &&
             // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
             // also can't be selected at the same time as features from one geolevel up)
             geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2

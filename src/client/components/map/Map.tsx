@@ -13,12 +13,14 @@ import {
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
+  UintArrays,
   DistrictProperties,
   GeoUnits,
   IProject,
   IStaticMetadata,
   LockedDistricts
 } from "../../../shared/entities";
+import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
 import { getAllIndices } from "../../../shared/functions";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -26,12 +28,11 @@ import {
   DISTRICTS_SOURCE_ID,
   DISTRICTS_LAYER_ID,
   featureStateDistricts,
-  featuresToUnlockedGeoUnits,
   getMapboxStyle,
   getGeoLevelVisibility,
   levelToLabelLayerId,
   levelToLineLayerId,
-  levelToSelectionLayerId
+  onlyUnlockedGeoUnits
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import MapTooltip from "./MapTooltip";
@@ -42,8 +43,8 @@ interface Props {
   readonly project: IProject;
   readonly geojson: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
-  readonly staticGeoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
+  readonly staticDemographics: UintArrays;
+  readonly staticGeoLevels: UintArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
   readonly selectionTool: SelectionTool;
@@ -52,7 +53,7 @@ interface Props {
   readonly label?: string;
 }
 
-const Map = ({
+const DistrictsMap = ({
   project,
   geojson,
   staticMetadata,
@@ -71,8 +72,7 @@ const Map = ({
   // Conversion from readonly -> mutable to match Mapbox interface
   const [b0, b1, b2, b3] = staticMetadata.bbox;
 
-  const selectedGeolevel =
-    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1 - geoLevelIndex];
+  const selectedGeolevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex);
 
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
   const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
@@ -192,7 +192,7 @@ const Map = ({
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
     map &&
-      selectedGeounits.size === 0 &&
+      !areAnyGeoUnitsSelected(selectedGeounits) &&
       (selectedDistrictId === 0
         ? removeSelectedFeatures(map, staticMetadata)
         : // When adding or changing the district to which a geounit is
@@ -238,7 +238,9 @@ const Map = ({
       // selection could make the user's selection disappear since not all
       // layers are shown at each zoom level.
       const restrictZoom = () => {
-        map.setMinZoom(selectedGeounits.size > 0 ? selectedGeolevel.minZoom : minZoom);
+        map.setMinZoom(
+          selectedGeounits[selectedGeolevel.id]?.size > 0 ? selectedGeolevel.minZoom : minZoom
+        );
       };
       map.on("zoomstart", restrictZoom);
 
@@ -273,14 +275,23 @@ const Map = ({
 
   useEffect(() => {
     // Convert any larger geounits to the smaller sub-geounits as per the new geolevel
+    const prevSelectedGeoLevel =
+      prevGeoLevelIndex !== undefined
+        ? getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, prevGeoLevelIndex)
+        : null;
+    const selectedGeounitsForPrevLevel =
+      prevSelectedGeoLevel && selectedGeounits[prevSelectedGeoLevel.id];
     // eslint-disable-next-line
     if (
       map &&
       prevGeoLevelIndex !== undefined &&
       geoLevelIndex > prevGeoLevelIndex &&
-      selectedGeounits.size
+      prevSelectedGeoLevel &&
+      selectedGeounitsForPrevLevel &&
+      selectedGeounitsForPrevLevel.size > 0
     ) {
-      [...selectedGeounits.entries()].forEach(([featureId, geoUnitIndices]) => {
+      [...selectedGeounitsForPrevLevel.entries()].forEach(selectedGeoUnit => {
+        const [featureId, geoUnitIndices] = selectedGeoUnit;
         // eslint-disable-next-line
         if (geoUnitIndices.length === staticMetadata.geoLevelHierarchy.length) {
           // Don't do this for the smallest geounits since they have no sub-geounits
@@ -291,6 +302,13 @@ const Map = ({
           // Don't do anything for previously selected geounits at this level
           return;
         }
+
+        // Deselect the currently selected feature
+        map.removeFeatureState({
+          id: featureId,
+          source: GEOLEVELS_SOURCE_ID,
+          sourceLayer: prevSelectedGeoLevel.id
+        });
 
         // Select features of the child geolevel
         const geoUnitIdx = geoUnitIndices[0];
@@ -311,52 +329,28 @@ const Map = ({
             { selected: true }
           );
         });
-
-        // HACK! Fit map bounds to the bounding box to ensure that all relevant features are
-        // returned when querying (`map.queryRenderedFeatures` only returns features within the
-        // viewport). This will be replaced later.
-        map.fitBounds(staticMetadata.bbox as [number, number, number, number]); // eslint-disable-line
-        map.once("moveend", () => {
-          const geoLevel =
-            staticMetadata.geoLevelHierarchy[
-              staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length
-            ];
-          // Select sub-geounits.
-          const subFeatures = map.queryRenderedFeatures(undefined, {
-            layers: [levelToSelectionLayerId(childGeoLevel.id)],
-            filter: ["==", ["get", `${geoLevel.id}Idx`], geoUnitIdx]
-          });
-          const subGeoUnits = featuresToUnlockedGeoUnits(
-            subFeatures,
-            staticMetadata.geoLevelHierarchy,
-            project.districtsDefinition,
-            lockedDistricts
-          );
-          // Deselect selected geounit
-          const selectedFeatures = map.queryRenderedFeatures(undefined, {
-            layers: [levelToSelectionLayerId(geoLevel.id)],
-            filter: ["==", ["get", "idx"], geoUnitIdx]
-          });
-          map.removeFeatureState({
-            id: featureId,
-            source: GEOLEVELS_SOURCE_ID,
-            sourceLayer: geoLevel.id
-          });
-          // NOTE: There should only be only one selected feature/geounit
-          const selectedGeounits = featuresToUnlockedGeoUnits(
-            selectedFeatures,
-            staticMetadata.geoLevelHierarchy,
-            project.districtsDefinition,
-            lockedDistricts
-          );
-          // Update state
-          store.dispatch(
-            editSelectedGeounits({
-              add: subGeoUnits,
-              remove: selectedGeounits
-            })
-          );
-        });
+        // NOTE: We can't use Mapbox's query functions to get the geounit data from the feature
+        // since they require that the feature be within the viewport which we can't rely on.
+        // Instead we recreate the geounit from static metadata.
+        const childGeoUnits = {
+          [childGeoLevel.id]: new Map(
+            childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
+          )
+        };
+        const unlockedChildGeoUnits = onlyUnlockedGeoUnits(
+          project.districtsDefinition,
+          lockedDistricts,
+          childGeoUnits
+        );
+        // Update state
+        store.dispatch(
+          editSelectedGeounits({
+            add: unlockedChildGeoUnits,
+            remove: {
+              [prevSelectedGeoLevel.id]: new Map([selectedGeoUnit])
+            }
+          })
+        );
       });
     }
   }, [
@@ -414,4 +408,4 @@ const Map = ({
   );
 };
 
-export default Map;
+export default DistrictsMap;

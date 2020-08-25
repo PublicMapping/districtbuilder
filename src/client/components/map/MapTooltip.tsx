@@ -6,9 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
-import { GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
-import { geoLevelLabel } from "../../../shared/functions";
-import { getTotalSelectedDemographics } from "../../functions";
+import { UintArrays, GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
+import {
+  areAnyGeoUnitsSelected,
+  geoLevelLabel,
+  getTotalSelectedDemographics
+} from "../../functions";
 import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
 import { Resource } from "../../resource";
@@ -47,9 +50,7 @@ const MapTooltip = ({
 }: {
   readonly geoLevelIndex: number;
   readonly highlightedGeounits: GeoUnits;
-  readonly staticDemographicsResource: Resource<
-    ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
-  >;
+  readonly staticDemographicsResource: Resource<UintArrays>;
   readonly staticMetadataResource: Resource<IStaticMetadata>;
   readonly geoUnitHierarchyResource: Resource<GeoUnitHierarchy>;
   readonly map?: MapboxGL.Map;
@@ -124,11 +125,10 @@ const MapTooltip = ({
     staticDemographics &&
     invertedGeoLevelIndex !== undefined
   ) {
-    const geoLevel = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
-    const selectedGeounits =
-      highlightedGeounits.size > 0
-        ? highlightedGeounits
-        : feature && featuresToGeoUnits([feature], staticMetadata.geoLevelHierarchy);
+    const geoLevelId = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
+    const selectedGeounits = areAnyGeoUnitsSelected(highlightedGeounits)
+      ? highlightedGeounits
+      : feature && featuresToGeoUnits([feature], staticMetadata.geoLevelHierarchy);
     const demographics =
       selectedGeounits &&
       getDemographics(staticMetadata, geoUnitHierarchy, staticDemographics, selectedGeounits);
@@ -136,20 +136,24 @@ const MapTooltip = ({
     const featureLabel = () =>
       feature && feature.properties && feature.properties.name ? (
         <span sx={{ textTransform: "capitalize" }}>{`${feature.properties
-          .name as string} ${geoLevel}`}</span>
+          .name as string} ${geoLevelId}`}</span>
       ) : feature ? (
-        <span sx={{ textTransform: "capitalize" }}>{`${geoLevel} #${feature.id}`}</span>
+        <span sx={{ textTransform: "capitalize" }}>{`${geoLevelId} #${feature.id}`}</span>
       ) : (
         ""
       );
+    const highlightedGeounitsForLevel = highlightedGeounits[geoLevelId];
     const heading =
-      feature && highlightedGeounits.size === 1 && [...highlightedGeounits.keys()][0] === feature.id
+      feature &&
+      highlightedGeounitsForLevel &&
+      highlightedGeounitsForLevel?.size === 1 &&
+      [...highlightedGeounitsForLevel.keys()][0] === feature.id
         ? featureLabel()
-        : highlightedGeounits.size === 1
-        ? `1 ${geoLevel}`
-        : highlightedGeounits.size > 1
-        ? `${Number(highlightedGeounits.size).toLocaleString()} ${geoLevelLabel(
-            geoLevel
+        : highlightedGeounitsForLevel?.size === 1
+        ? `1 ${geoLevelId}`
+        : highlightedGeounitsForLevel?.size > 1
+        ? `${Number(highlightedGeounitsForLevel.size).toLocaleString()} ${geoLevelLabel(
+            geoLevelId
           ).toLowerCase()}`
         : featureLabel();
 

@@ -4,6 +4,7 @@ import React, { useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
+  UintArrays,
   CompactnessScore,
   DistrictsDefinition,
   DistrictProperties,
@@ -14,8 +15,13 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
-import { assertNever } from "../../shared/functions";
-import { getDemographics, getTotalSelectedDemographics } from "../functions";
+import {
+  allGeoUnitIndices,
+  areAnyGeoUnitsSelected,
+  assertNever,
+  getDemographics,
+  getTotalSelectedDemographics
+} from "../functions";
 import {
   getDistrictColor,
   negativeChangeColor,
@@ -128,7 +134,7 @@ const ProjectSidebar = ({
   readonly project?: IProject;
   readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
   readonly staticMetadata?: IStaticMetadata;
-  readonly staticDemographics?: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>;
+  readonly staticDemographics?: UintArrays;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
@@ -217,7 +223,7 @@ const SidebarHeader = ({
         <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
           <Spinner variant="spinner.small" />
         </Flex>
-      ) : selectedGeounits.size ? (
+      ) : areAnyGeoUnitsSelected(selectedGeounits) ? (
         <Flex sx={{ variant: "header.right" }}>
           <Button
             variant="circularSubtle"
@@ -461,8 +467,8 @@ const getSavedDistrictSelectedDemographics = (
     }
   };
 
-  selectedGeounits.forEach(selectedGeounit => {
-    accumulateGeounits(selectedGeounit, project.districtsDefinition, geoUnitHierarchy);
+  allGeoUnitIndices(selectedGeounits).forEach(geoUnitIndices => {
+    accumulateGeounits(geoUnitIndices, project.districtsDefinition, geoUnitHierarchy);
   });
 
   return mutableDistrictGeounitAccum.map(baseGeounitIdsForDistrict =>

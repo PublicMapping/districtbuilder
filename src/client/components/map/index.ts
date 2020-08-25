@@ -255,38 +255,50 @@ export function featuresToGeoUnits(
   features: readonly MapboxGeoJSONFeature[],
   geoLevelHierarchy: readonly GeoLevelInfo[]
 ): GeoUnits {
-  const geoLevelHierarchyKeys = ["idx", ...geoLevelHierarchy.map(geoLevel => `${geoLevel.id}Idx`)];
-  // Map is used here instead of Set because Sets don't work well for handling
-  // objects (multiple copies of an object with the same values can exist in
-  // the same set). Here the feature id is used as the key which we also want
-  // to keep track of for map management. Note that if keys are duplicated the
-  // value set last will be used (thus achieving the uniqueness of sets).
-  return new Map(
-    features.map((feature: MapboxGeoJSONFeature) => [
-      feature.id as FeatureId,
-      geoLevelHierarchyKeys.reduce(
-        (geounitData, key) => {
-          const geounitId = feature.properties && feature.properties[key];
-          return geounitId !== undefined && geounitId !== null
-            ? [geounitId, ...geounitData]
-            : geounitData;
-        },
-        [] as readonly number[]
-      )
-    ])
-  );
+  const geoLevelIds = geoLevelHierarchy.map(geoLevel => geoLevel.id);
+  const geoLevelHierarchyKeys = ["idx", ...geoLevelIds.map(geoLevelId => `${geoLevelId}Idx`)];
+  return geoLevelIds.reduce((geounitData: GeoUnits, geoLevelId) => {
+    // Map is used here instead of Set because Sets don't work well for handling
+    // objects (multiple copies of an object with the same values can exist in
+    // the same set). Here the feature id is used as the key which we also want
+    // to keep track of for map management. Note that if keys are duplicated the
+    // value set last will be used (thus achieving the uniqueness of sets).
+    // eslint-disable-next-line
+    geounitData[geoLevelId] = new Map(
+      features
+        .filter(feature => feature.sourceLayer === geoLevelId)
+        .map((feature: MapboxGeoJSONFeature) => [
+          feature.id as FeatureId,
+          geoLevelHierarchyKeys.reduce((geounitData, key) => {
+            const geounitId = feature.properties && feature.properties[key];
+            return geounitId !== undefined && geounitId !== null
+              ? [geounitId, ...geounitData]
+              : geounitData;
+          }, [] as readonly number[])
+        ])
+    );
+    return geounitData;
+  }, {});
 }
 
-function onlyUnlockedFeatures(
+export function onlyUnlockedGeoUnits(
   districtsDefinition: DistrictsDefinition,
   lockedDistricts: LockedDistricts,
   geoUnits: GeoUnits
 ): GeoUnits {
-  return new Map(
-    [...geoUnits.entries()].filter(
-      ([, geoUnitIndices]) => !isGeoUnitLocked(districtsDefinition, lockedDistricts, geoUnitIndices)
-    )
-  );
+  return Object.entries(geoUnits).reduce((geoUnits: GeoUnits, [geoLevelId, geoUnitsForLevel]) => {
+    const geoUnitsForLevelCopy = new Map(geoUnitsForLevel);
+    geoUnitsForLevelCopy.forEach((geoUnitIndices, featureId) => {
+      // eslint-disable-next-line
+      if (isGeoUnitLocked(districtsDefinition, lockedDistricts, geoUnitIndices)) {
+        // eslint-disable-next-line
+        geoUnitsForLevelCopy.delete(featureId);
+      }
+    });
+    // eslint-disable-next-line
+    geoUnits[geoLevelId] = geoUnitsForLevelCopy;
+    return geoUnits;
+  }, {});
 }
 
 export function featuresToUnlockedGeoUnits(
@@ -295,7 +307,7 @@ export function featuresToUnlockedGeoUnits(
   districtsDefinition: DistrictsDefinition,
   lockedDistricts: LockedDistricts
 ): GeoUnits {
-  return onlyUnlockedFeatures(
+  return onlyUnlockedGeoUnits(
     districtsDefinition,
     lockedDistricts,
     featuresToGeoUnits(features, geoLevelHierarchy)

@@ -2,6 +2,7 @@ import axios from "axios";
 import { parse, resolve } from "url";
 
 import {
+  UintArrays,
   GeoUnitHierarchy,
   HttpsURI,
   IStaticFile,
@@ -41,7 +42,7 @@ export async function fetchGeoUnitHierarchy(path: S3URI): Promise<GeoUnitHierarc
 export async function fetchStaticFiles(
   path: S3URI,
   files: readonly IStaticFile[]
-): Promise<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>> {
+): Promise<UintArrays> {
   const requests = files.map(fileMeta =>
     s3Axios.get(staticDataUri(path, fileMeta.fileName), {
       responseType: "arraybuffer"

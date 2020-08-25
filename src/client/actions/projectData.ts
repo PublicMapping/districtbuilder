@@ -1,6 +1,7 @@
 import { createAction } from "typesafe-actions";
 import { FeatureCollection, MultiPolygon } from "geojson";
 import {
+  UintArrays,
   DistrictProperties,
   GeoUnitHierarchy,
   GeoUnits,
@@ -26,7 +27,7 @@ export const staticMetadataFetchSuccess = createAction("Static metadata fetch su
 export const staticMetadataFetchFailure = createAction("Static metadata fetch failure")<string>();
 
 export const staticGeoLevelsFetchSuccess = createAction("Static geoLevels fetch success")<
-  ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
+  UintArrays
 >();
 export const staticGeoLevelsFetchFailure = createAction("Static geoLevels fetch failure")<string>();
 

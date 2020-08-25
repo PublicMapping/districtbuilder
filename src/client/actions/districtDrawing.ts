@@ -12,8 +12,8 @@ export const addSelectedGeounits = createAction("Add selected geounits")<GeoUnit
 export const removeSelectedGeounits = createAction("Remove selected geounits")<GeoUnits>();
 export const clearSelectedGeounits = createAction("Clear selected geounits")();
 export const editSelectedGeounits = createAction("Edit selected geounits")<{
-  readonly add: GeoUnits;
-  readonly remove: GeoUnits;
+  readonly add?: GeoUnits;
+  readonly remove?: GeoUnits;
 }>();
 
 export const setHighlightedGeounits = createAction("Add highlighted geounit ids")<GeoUnits>();

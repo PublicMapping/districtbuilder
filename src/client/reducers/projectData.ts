@@ -27,12 +27,13 @@ import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 
 import {
+  UintArrays,
   DistrictProperties,
   GeoUnitHierarchy,
   IProject,
   IStaticMetadata
 } from "../../shared/entities";
-import { assignGeounitsToDistrict } from "../../shared/functions";
+import { allGeoUnitIndices, assignGeounitsToDistrict } from "../functions";
 import { fetchProject, fetchProjectGeoJson, patchDistrictsDefinition } from "../api";
 import { Resource } from "../resource";
 import { fetchStaticFiles, fetchStaticMetadata, fetchGeoUnitHierarchy } from "../s3";
@@ -40,8 +41,8 @@ import { fetchStaticFiles, fetchStaticMetadata, fetchGeoUnitHierarchy } from "..
 export interface ProjectDataState {
   readonly project: Resource<IProject>;
   readonly staticMetadata: Resource<IStaticMetadata>;
-  readonly staticGeoLevels: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
-  readonly staticDemographics: Resource<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>>;
+  readonly staticGeoLevels: Resource<UintArrays>;
+  readonly staticDemographics: Resource<UintArrays>;
   readonly geojson: Resource<FeatureCollection<MultiPolygon, DistrictProperties>>;
   readonly geoUnitHierarchy: Resource<GeoUnitHierarchy>;
 }
@@ -227,7 +228,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
                 assignGeounitsToDistrict(
                   state.project.resource.districtsDefinition,
                   state.geoUnitHierarchy.resource,
-                  Array.from(action.payload.selectedGeounits.values()),
+                  allGeoUnitIndices(action.payload.selectedGeounits),
                   action.payload.selectedDistrictId
                 )
               ] as Parameters<typeof patchDistrictsDefinition>
