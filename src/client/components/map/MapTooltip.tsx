@@ -68,16 +68,16 @@ const MapTooltip = ({
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
 
-  const throttledSetFeature = throttle((point, geoLevel) => {
-    const features =
-      map &&
-      map.queryRenderedFeatures(point, {
-        layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
-      });
-    features && setFeature(features[0]);
-  }, SET_FEATURE_DELAY);
-
   useEffect(() => {
+    const throttledSetFeature = throttle((point, geoLevel) => {
+      const features =
+        map &&
+        map.queryRenderedFeatures(point, {
+          layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
+        });
+      features && setFeature(features[0]);
+    }, SET_FEATURE_DELAY);
+
     const onMouseMoveThrottled = throttle((e: MapboxGL.MapMouseEvent) => {
       // eslint-disable-next-line
       if (map && staticMetadata && invertedGeoLevelIndex !== undefined) {
@@ -114,7 +114,7 @@ const MapTooltip = ({
     }
 
     return clearHandlers;
-  }, [map, staticMetadata, invertedGeoLevelIndex, throttledSetFeature]);
+  }, [map, staticMetadata, invertedGeoLevelIndex]);
 
   // eslint-disable-next-line
   if (
