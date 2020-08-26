@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
@@ -57,6 +57,33 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
     projectId && store.dispatch(projectDataFetch(projectId));
   }, [projectId]);
 
+  const sidebar = useMemo(
+    () => (
+      <ProjectSidebar
+        project={project}
+        geojson={geojson}
+        isLoading={isLoading}
+        staticMetadata={staticMetadata}
+        staticDemographics={staticDemographics}
+        selectedDistrictId={districtDrawing.selectedDistrictId}
+        selectedGeounits={districtDrawing.selectedGeounits}
+        geoUnitHierarchy={geoUnitHierarchy}
+        lockedDistricts={districtDrawing.lockedDistricts}
+      />
+    ),
+    [
+      project,
+      geojson,
+      isLoading,
+      staticMetadata,
+      staticDemographics,
+      districtDrawing.selectedDistrictId,
+      districtDrawing.selectedGeounits,
+      geoUnitHierarchy,
+      districtDrawing.lockedDistricts
+    ]
+  );
+
   return "isPending" in user ? (
     <CenteredContent>
       <Flex sx={{ justifyContent: "center" }}>
@@ -70,17 +97,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
       <Toast />
       <ProjectHeader project={project} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
-        <ProjectSidebar
-          project={project}
-          geojson={geojson}
-          isLoading={isLoading}
-          staticMetadata={staticMetadata}
-          staticDemographics={staticDemographics}
-          selectedDistrictId={districtDrawing.selectedDistrictId}
-          selectedGeounits={districtDrawing.selectedGeounits}
-          geoUnitHierarchy={geoUnitHierarchy}
-          lockedDistricts={districtDrawing.lockedDistricts}
-        />
+        {sidebar}
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           <MapHeader
             label={label}
