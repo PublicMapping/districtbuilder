@@ -14,7 +14,8 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
-import { assertNever, getDemographics, getTotalSelectedDemographics } from "../../shared/functions";
+import { assertNever } from "../../shared/functions";
+import { getDemographics, getTotalSelectedDemographics } from "../functions";
 import {
   getDistrictColor,
   negativeChangeColor,

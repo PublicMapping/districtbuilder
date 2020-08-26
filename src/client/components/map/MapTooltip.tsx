@@ -7,7 +7,8 @@ import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
 import { GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
-import { geoLevelLabel, getTotalSelectedDemographics } from "../../../shared/functions";
+import { geoLevelLabel } from "../../../shared/functions";
+import { getTotalSelectedDemographics } from "../../functions";
 import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
 import { Resource } from "../../resource";
