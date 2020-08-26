@@ -225,7 +225,8 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
               <Card sx={{ variant: "card.flat", display: "flex", flexWrap: "wrap" }}>
                 <Label sx={style.cardLabel}>Districts</Label>
                 {data.regionConfig &&
-                  data.regionConfig.chambers
+                  [...data.regionConfig.chambers]
+                    .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
                     .map(chamber => (
                       <Label
                         key={chamber.id}
@@ -274,7 +275,6 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                         </Label>
                       </div>
                     )}
-
                 {data.isCustom ? (
                   <Box sx={style.customInputContainer}>
                     <InputField
