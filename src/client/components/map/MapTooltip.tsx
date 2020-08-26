@@ -133,7 +133,9 @@ const MapTooltip = ({
   ) {
     const geoLevel = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
     const selectedGeounits =
-      feature && featuresToGeoUnits([feature], staticMetadata.geoLevelHierarchy);
+      highlightedGeounits.size > 0
+        ? highlightedGeounits
+        : feature && featuresToGeoUnits([feature], staticMetadata.geoLevelHierarchy);
     const demographics =
       selectedGeounits &&
       getDemographics(staticMetadata, geoUnitHierarchy, staticDemographics, selectedGeounits);
