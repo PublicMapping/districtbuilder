@@ -3,7 +3,8 @@ import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubu
 import Avatar from "react-avatar";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
+import * as H from "history";
 import Icon from "../components/Icon";
 import {
   Alert,
@@ -148,7 +149,7 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const HomeScreen = ({ projects, user }: StateProps) => {
+const HomeScreen = ({ projects, user, history }: StateProps & RouteComponentProps<"history">) => {
   const [resendEmail, setResendEmail] = useState<WriteResource<void, void>>({ data: void 0 });
   const isLoggedIn = getJWT() !== null;
   useEffect(() => {
@@ -217,7 +218,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
             </Link>
           </React.Fragment>
         ) : "resource" in user ? (
-          <Wrapper onSelection={handleSelection}>
+          <Wrapper onSelection={handleSelection(history)}>
             <MenuButton sx={style.menuButton}>
               <Avatar
                 name={user.resource.name}
@@ -318,9 +319,13 @@ const HomeScreen = ({ projects, user }: StateProps) => {
   );
 };
 
-function handleSelection(key: string | number) {
-  key === UserMenuKeys.Logout && logout();
-}
+const handleSelection = (history: H.History) => (key: string | number) => {
+  // eslint-disable-next-line
+  if (key === UserMenuKeys.Logout) {
+    logout();
+    history.push("/login");
+  }
+};
 
 function mapStateToProps(state: State): StateProps {
   return {

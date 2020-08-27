@@ -29,7 +29,7 @@ const App = () => (
   <ThemeProvider theme={theme}>
     <Router>
       <Switch>
-        <Route path="/" exact={true} component={HomeScreen} />
+        <PrivateRoute path="/" exact={true} component={HomeScreen} />
         <PrivateRoute path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />
