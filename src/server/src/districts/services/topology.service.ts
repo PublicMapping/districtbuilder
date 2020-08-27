@@ -15,17 +15,19 @@ function s3Options(path: S3URI, fileName: string): GetObjectRequest {
   return options;
 }
 
+interface Layers {
+  readonly [s3URI: string]: Promise<GeoUnitTopology | void>;
+}
+
 @Injectable()
 export class TopologyService {
-  private layers: {
-    readonly [s3URI: string]: Promise<GeoUnitTopology | void>;
-  } = {};
+  private _layers: Layers = {};
   private readonly logger = new Logger(TopologyService.name);
   private s3 = new S3();
 
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
     void repo.find().then(regionConfigs => {
-      this.layers = regionConfigs
+      this._layers = regionConfigs
         .map(regionConfig => regionConfig.s3URI)
         .reduce(
           (layers, s3URI) => ({
@@ -37,9 +39,13 @@ export class TopologyService {
     });
   }
 
+  public layers(): Readonly<Layers> {
+    return Object.freeze(this._layers);
+  }
+
   public async get(s3URI: S3URI): Promise<GeoUnitTopology | void> {
-    return s3URI in this.layers
-      ? this.layers[s3URI]
+    return s3URI in this._layers
+      ? this._layers[s3URI]
       : this.fetchLayer(s3URI).catch(err => {
           this.logger.error(err);
         });
