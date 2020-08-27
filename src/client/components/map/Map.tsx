@@ -76,6 +76,7 @@ const Map = ({
 
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
   const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
+  const overZoom = maxZoom + 4;
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
@@ -100,8 +101,8 @@ const Map = ({
       ),
       bounds: [b0, b1, b2, b3],
       fitBoundsOptions: { padding: 20 },
-      minZoom,
-      maxZoom
+      minZoom: minZoom,
+      maxZoom: overZoom
     });
 
     map.addControl(

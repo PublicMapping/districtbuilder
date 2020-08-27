@@ -231,7 +231,7 @@ export function getGeoLevelVisibility(
   return staticMetadata.geoLevelHierarchy
     .slice()
     .reverse()
-    .map(geoLevel => mapZoom <= geoLevel.maxZoom && mapZoom >= geoLevel.minZoom);
+    .map(geoLevel => mapZoom >= geoLevel.minZoom);
 }
 
 /* eslint-disable */
