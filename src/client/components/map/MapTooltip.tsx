@@ -7,8 +7,9 @@ import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
 import { GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
-import { geoLevelLabel, getTotalSelectedDemographics } from "../../../shared/functions";
-import { featuresToGeoUnits } from "./index";
+import { geoLevelLabel } from "../../../shared/functions";
+import { getTotalSelectedDemographics } from "../../functions";
+import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
 import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
@@ -68,36 +69,28 @@ const MapTooltip = ({
     : undefined;
 
   useEffect(() => {
+    const throttledSetFeature = throttle((point, geoLevel) => {
+      const features =
+        map &&
+        map.queryRenderedFeatures(point, {
+          layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
+        });
+      features && setFeature(features[0]);
+    }, SET_FEATURE_DELAY);
+
     const onMouseMoveThrottled = throttle((e: MapboxGL.MapMouseEvent) => {
       // eslint-disable-next-line
       if (map && staticMetadata && invertedGeoLevelIndex !== undefined) {
         const geoLevel = staticMetadata.geoLevelHierarchy[invertedGeoLevelIndex].id;
-        const features =
-          map &&
-          map.queryRenderedFeatures(e.point, {
-            layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
-          });
         setPoint({
           x: e.point.x,
           y: e.point.y
         });
-        setFeature(features[0]);
+        throttledSetFeature(e.point, geoLevel);
       }
     }, 5);
 
-    const onMouseOut = throttle((e: MouseEvent) => {
-      const isOnTooltip =
-        e.relatedTarget instanceof Element &&
-        tooltipRef.current &&
-        (e.relatedTarget === tooltipRef.current || tooltipRef.current.contains(e.relatedTarget));
-
-      !isOnTooltip && setFeature(undefined);
-      isOnTooltip &&
-        setPoint({
-          x: e.offsetX,
-          y: e.offsetY
-        });
-    }, 5);
+    const onMouseOut = throttle(() => setFeature(undefined), 5);
 
     const onDrag = (e: MapboxGL.MapMouseEvent) => {
       setPoint({ x: e.originalEvent.offsetX, y: e.originalEvent.offsetY });
@@ -171,7 +164,8 @@ const MapTooltip = ({
     return demographics ? (
       <Box
         ref={tooltipRef}
-        sx={{ ...style.tooltip, ...{ transform: `translate3d(${x}px, ${y}px, 0)` } }}
+        style={{ transform: `translate3d(${x}px, ${y}px, 0)` }}
+        sx={{ ...style.tooltip }}
       >
         {heading && (
           <Heading sx={{ fontSize: 2, fontFamily: "heading", color: "muted" }}>{heading}</Heading>

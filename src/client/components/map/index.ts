@@ -23,6 +23,9 @@ export const DISTRICTS_LAYER_ID = "districts";
 // Used only to make labels show up on top of all other layers
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 
+// Delay used to throttle calls to set the current feature(s), in milliseconds
+export const SET_FEATURE_DELAY = 100;
+
 export function getGeolevelLinePaintStyle(geoLevel: string) {
   const largeGeolevel = {
     "line-color": "#000",

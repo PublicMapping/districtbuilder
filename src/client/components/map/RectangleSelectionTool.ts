@@ -1,3 +1,4 @@
+import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import {
@@ -12,7 +13,8 @@ import {
   GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   levelToSelectionLayerId,
-  ISelectionTool
+  ISelectionTool,
+  SET_FEATURE_DELAY
 } from "./index";
 
 import {
@@ -23,6 +25,11 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../../shared/entities";
+
+const throttledSetHighlightedGeounits = throttle(
+  (geounits: GeoUnits) => store.dispatch(setHighlightedGeounits(geounits)),
+  SET_FEATURE_DELAY
+);
 
 /*
  * Allows user to click and drag to select all geounits within the rectangle
@@ -123,7 +130,7 @@ const RectangleSelectionTool: ISelectionTool = {
       const newGeoUnits = new Map(
         [...geoUnits].filter(([id]) => !setOfInitiallySelectedFeatures.has(id))
       );
-      store.dispatch(setHighlightedGeounits(newGeoUnits));
+      throttledSetHighlightedGeounits(newGeoUnits);
 
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
