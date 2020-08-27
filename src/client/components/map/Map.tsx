@@ -76,6 +76,9 @@ const Map = ({
 
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
   const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
+
+  // While a geolevel has tiles up to the maxZoom level, we want the enable the user to zoom in
+  // beyond that zoom level. Using lower zoom tiles at higher zoom levels is called overzoom.
   const overZoom = maxZoom + 4;
 
   // Add a color property to the geojson, so it can be used for styling
