@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import { geoLevelLabel } from "../../shared/functions";
+import { areAnyGeoUnitsSelected, geoLevelLabel } from "../functions";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -96,7 +96,7 @@ const GeoLevelButton = ({
   readonly selectedGeounits: GeoUnits;
 }) => {
   const label = geoLevelLabel(value.id);
-  const areGeoUnitsSelected = selectedGeounits.size > 0;
+  const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
   const isGeoLevelHidden = geoLevelVisibility[index] === false;
   const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
   const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;

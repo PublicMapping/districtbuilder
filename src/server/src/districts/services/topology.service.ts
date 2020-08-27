@@ -4,7 +4,7 @@ import S3, { GetObjectRequest } from "aws-sdk/clients/s3";
 import { Topology } from "topojson-specification";
 import { Repository } from "typeorm";
 
-import { IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
+import { UintArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 
@@ -82,10 +82,7 @@ export class TopologyService {
     }
   }
 
-  private async fetchStaticFiles(
-    path: S3URI,
-    files: readonly IStaticFile[]
-  ): Promise<ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>> {
+  private async fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<UintArrays> {
     const requests = files.map(fileMeta =>
       this.s3.getObject(s3Options(path, fileMeta.fileName)).promise()
     );

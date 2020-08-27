@@ -19,7 +19,50 @@ import {
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition } from "../actions/projectData";
 import { resetProjectState } from "../actions/root";
-import { GeoUnits, LockedDistricts } from "../../shared/entities";
+import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
+
+function setGeoUnitsForLevel(
+  currentGeoUnits: GeoUnitsForLevel,
+  geoUnitsToAdd: GeoUnitsForLevel,
+  geoUnitsToDelete: GeoUnitsForLevel
+): GeoUnitsForLevel {
+  const mutableSelected = new Map([...currentGeoUnits, ...geoUnitsToAdd]);
+  geoUnitsToDelete.forEach((_value, key) => {
+    mutableSelected.delete(key);
+  });
+  return mutableSelected;
+}
+
+function editGeoUnits(
+  currentGeoUnits: GeoUnits,
+  geoUnitsToAdd?: GeoUnits,
+  geoUnitsToDelete?: GeoUnits
+): GeoUnits {
+  const allKeys = new Set(
+    Object.keys(currentGeoUnits)
+      .concat(Object.keys(geoUnitsToAdd || {}))
+      .concat(Object.keys(geoUnitsToDelete || {}))
+  );
+  return [...allKeys].reduce((geoUnits, geoLevelId) => {
+    return {
+      ...geoUnits,
+      [geoLevelId]: setGeoUnitsForLevel(
+        currentGeoUnits[geoLevelId] || new Map(),
+        (geoUnitsToAdd && geoUnitsToAdd[geoLevelId]) || new Map(),
+        (geoUnitsToDelete && geoUnitsToDelete[geoLevelId]) || new Map()
+      )
+    };
+  }, {} as GeoUnits);
+}
+
+function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
+  return Object.keys(geoUnits).reduce((geoUnits, geoLevelId) => {
+    return {
+      ...geoUnits,
+      [geoLevelId]: new Map()
+    };
+  }, {});
+}
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
@@ -33,8 +76,8 @@ export interface DistrictDrawingState {
 
 export const initialState: DistrictDrawingState = {
   selectedDistrictId: 1,
-  selectedGeounits: new Map(),
-  highlightedGeounits: new Map(),
+  selectedGeounits: {},
+  highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0,
   geoLevelVisibility: [],
@@ -58,8 +101,7 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         state,
         Cmd.action(
           editSelectedGeounits({
-            add: action.payload,
-            remove: new Map()
+            add: action.payload
           })
         )
       );
@@ -68,35 +110,33 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         state,
         Cmd.action(
           editSelectedGeounits({
-            add: new Map(),
             remove: action.payload
           })
         )
       );
-    case getType(editSelectedGeounits): {
-      const mutableSelected = new Map([...state.selectedGeounits, ...action.payload.add]);
-      action.payload.remove.forEach((_value, key) => {
-        mutableSelected.delete(key);
-      });
+    case getType(editSelectedGeounits):
       return {
         ...state,
-        selectedGeounits: mutableSelected
+        selectedGeounits: editGeoUnits(
+          state.selectedGeounits,
+          action.payload.add,
+          action.payload.remove
+        )
       };
-    }
     case getType(clearSelectedGeounits):
       return {
         ...state,
-        selectedGeounits: new Map()
+        selectedGeounits: clearGeoUnits(state.selectedGeounits)
       };
     case getType(setHighlightedGeounits):
       return {
         ...state,
-        highlightedGeounits: new Map([...action.payload])
+        highlightedGeounits: action.payload
       };
     case getType(clearHighlightedGeounits):
       return {
         ...state,
-        highlightedGeounits: new Map()
+        highlightedGeounits: clearGeoUnits(state.highlightedGeounits)
       };
     case getType(setSelectionTool):
       return {

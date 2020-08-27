@@ -13,6 +13,7 @@ import length from "@turf/length";
 import polygonToLine from "@turf/polygon-to-line";
 
 import {
+  UintArrays,
   CompactnessScore,
   GeoUnitCollection,
   GeoUnitDefinition,
@@ -117,8 +118,8 @@ export class GeoUnitTopology {
     public readonly topology: Topology,
     public readonly definition: GeoUnitDefinition,
     public readonly staticMetadata: IStaticMetadata,
-    public readonly demographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-    public readonly geoLevels: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>
+    public readonly demographics: UintArrays,
+    public readonly geoLevels: UintArrays
   ) {
     this.hierarchy = group(topology, definition);
   }

@@ -61,9 +61,10 @@ const DefaultSelectionTool: ISelectionTool = {
         districtsDefinition,
         lockedDistricts
       );
+      const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
       const addFeatures = () => {
         map.setFeatureState(featureStateGeoLevel(feature), { selected: true });
-        const geoUnitIndices = geoUnits.get(feature.id as FeatureId) as GeoUnitIndices;
+        const geoUnitIndices = geoUnitsForLevel.get(feature.id as FeatureId) as GeoUnitIndices;
         const subFeatures = findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices);
         subFeatures.forEach(feature => {
           map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
@@ -86,7 +87,7 @@ const DefaultSelectionTool: ISelectionTool = {
         store.dispatch(removeSelectedGeounits(geoUnits));
       };
 
-      geoUnits.has(feature.id as FeatureId) &&
+      geoUnitsForLevel.has(feature.id as FeatureId) &&
         (isFeatureSelected(map, feature) ? removeFeatures() : addFeatures());
     };
     map.on("click", clickHandler);

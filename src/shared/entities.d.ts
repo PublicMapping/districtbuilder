@@ -125,11 +125,26 @@ export type GeoUnitIndices = readonly number[];
 
 export type FeatureId = number;
 
-// TODO: Store feature properties instead of the indices
-export type GeoUnits = ReadonlyMap<FeatureId, GeoUnitIndices>;
+// Geounits are partitioned by level to avoid feature id collisions
+// Feature ids are used to describe internal order for geounits at a given level
+export type GeoUnitsForLevel = ReadonlyMap<FeatureId, GeoUnitIndices>;
+
+export interface GeoUnits {
+  // eslint-disable-next-line
+  [geoLevelId: string]: GeoUnitsForLevel;
+}
 
 export type CompactnessScore = number | null | "non-contiguous";
 
 export type DistrictId = number;
 
 export type LockedDistricts = ReadonlySet<DistrictId>;
+
+export interface DemographicCounts {
+  // key is demographic group (eg. population, white, black, etc)
+  // value is the number of people in that group
+  [id: string]: number; // eslint-disable-line
+}
+
+export type UintArray = Uint8Array | Uint16Array | Uint32Array;
+export type UintArrays = ReadonlyArray<UintArray>;
