@@ -133,14 +133,21 @@ const MapTooltip = ({
       selectedGeounits &&
       getDemographics(staticMetadata, geoUnitHierarchy, staticDemographics, selectedGeounits);
 
-    const featureLabel = () => (<span sx={{ textTransform: "capitalize" }}>
-      {feature && feature.properties && typeof feature.properties.name === "string" ? (
-        feature.properties.name.endsWith('city') ? feature.properties.name : `${feature.properties.name} ${geoLevelId}`
-      ) : feature ? (
-        <span sx={{ textTransform: "capitalize" }}>{`${geoLevelId} #${feature.id}`}</span>
-      ) : (
-        ""
-      )}</span>);
+    const featureLabel = () => (
+      <span sx={{ textTransform: "capitalize" }}>
+        {feature && feature.properties && typeof feature.properties.name === "string" ? (
+          feature.properties.name.endsWith("city") ? (
+            feature.properties.name
+          ) : (
+            `${feature.properties.name} ${geoLevelId}`
+          )
+        ) : feature ? (
+          <span sx={{ textTransform: "capitalize" }}>{`${geoLevelId} #${feature.id}`}</span>
+        ) : (
+          ""
+        )}
+      </span>
+    );
     const highlightedGeounitsForLevel = highlightedGeounits[geoLevelId];
     const heading =
       feature &&
