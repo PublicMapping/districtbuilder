@@ -106,7 +106,10 @@ const GeoLevelButton = ({
     ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
       // non-block level selected, so disable block level
       (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
-  const isButtonDisabled = isGeoLevelHidden || areChangesPending;
+  // Always show the currently selected geolevel, even if it would otherwise be hidden
+  const isCurrentLevelSelected = index === geoLevelIndex;
+  const isButtonDisabled = !isCurrentLevelSelected && (isGeoLevelHidden || areChangesPending);
+
   return (
     <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
       <Tooltip

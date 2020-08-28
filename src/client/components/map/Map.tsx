@@ -35,6 +35,7 @@ import {
   onlyUnlockedGeoUnits
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
+import MapMessage from "./MapMessage";
 import MapTooltip from "./MapTooltip";
 import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
@@ -230,26 +231,6 @@ const DistrictsMap = ({
       );
   }, [map, project, lockedDistricts]);
 
-  useEffect(() => {
-    // eslint-disable-next-line
-    if (map) {
-      // Restrict zoom levels as per geolevel hierarchy if features are selected.
-      // Without this, zooming too far out before approving/cancelling a
-      // selection could make the user's selection disappear since not all
-      // layers are shown at each zoom level.
-      const restrictZoom = () => {
-        map.setMinZoom(
-          selectedGeounits[selectedGeolevel.id]?.size > 0 ? selectedGeolevel.minZoom : minZoom
-        );
-      };
-      map.on("zoomstart", restrictZoom);
-
-      return () => {
-        map.off("zoomstart", restrictZoom);
-      };
-    }
-  }, [map, selectedGeolevel, staticMetadata, selectedGeounits, minZoom]);
-
   // Update layer visibility when geolevel is selected
   useEffect(() => {
     // eslint-disable-next-line
@@ -404,6 +385,7 @@ const DistrictsMap = ({
   return (
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
+      <MapMessage />
     </Box>
   );
 };
