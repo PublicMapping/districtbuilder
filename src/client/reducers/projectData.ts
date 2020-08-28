@@ -7,6 +7,9 @@ import {
   updateDistrictsDefinition,
   updateDistrictsDefinitionFailure,
   updateDistrictsDefinitionSuccess,
+  projectFetch,
+  projectFetchSuccess,
+  projectFetchFailure,
   projectDataFetch,
   projectDataFetchFailure,
   projectDataFetchSuccess,
@@ -18,7 +21,7 @@ import { resetProjectState } from "../actions/root";
 
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { allGeoUnitIndices, assignGeounitsToDistrict } from "../functions";
-import { fetchProjectData, updateProject } from "../api";
+import { fetchProjectData, patchDistrictsDefinition } from "../api";
 import { Resource } from "../resource";
 import { fetchAllStaticData } from "../s3";
 
@@ -49,6 +52,29 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
   switch (action.type) {
     case getType(resetProjectState):
       return initialState;
+    case getType(projectFetch):
+      return loop(
+        state,
+        Cmd.run(fetchProjectData, {
+          successActionCreator: projectFetchSuccess,
+          failActionCreator: projectFetchFailure,
+          args: [action.payload] as Parameters<typeof fetchProjectData>
+        })
+      );
+    case getType(projectFetchSuccess):
+      return {
+        ...state,
+        projectData: {
+          resource: action.payload
+        }
+      };
+    case getType(projectFetchFailure):
+      return {
+        ...state,
+        projectData: {
+          errorMessage: action.payload
+        }
+      };
     case getType(projectDataFetch):
       return loop(
         {
@@ -76,16 +102,19 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
             isPending: true
           }
         },
-        Cmd.list<Action>([
-          Cmd.action(clearSelectedGeounits()),
-          Cmd.run(fetchAllStaticData, {
-            successActionCreator: staticDataFetchSuccess,
-            failActionCreator: staticDataFetchFailure,
-            args: [action.payload.project.regionConfig.s3URI] as Parameters<
-              typeof fetchAllStaticData
-            >
-          })
-        ])
+        Cmd.list<Action>(
+          [
+            Cmd.run(fetchAllStaticData, {
+              successActionCreator: staticDataFetchSuccess,
+              failActionCreator: staticDataFetchFailure,
+              args: [action.payload.project.regionConfig.s3URI] as Parameters<
+                typeof fetchAllStaticData
+              >
+            }),
+            Cmd.action(clearSelectedGeounits())
+          ],
+          { sequence: true }
+        )
       );
     case getType(projectDataFetchFailure):
       return {
@@ -112,7 +141,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       return "resource" in state.projectData && "resource" in state.staticData
         ? loop(
             state,
-            Cmd.run(updateProject, {
+            Cmd.run(patchDistrictsDefinition, {
               successActionCreator: updateDistrictsDefinitionSuccess,
               failActionCreator: updateDistrictsDefinitionFailure,
               args: [
@@ -123,20 +152,23 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
                   allGeoUnitIndices(action.payload.selectedGeounits),
                   action.payload.selectedDistrictId
                 )
-              ] as Parameters<typeof updateProject>
+              ] as Parameters<typeof patchDistrictsDefinition>
             })
           )
         : state;
     case getType(updateDistrictsDefinitionSuccess):
-      return loop(
-        {
-          ...state,
-          projectData: {
-            resource: action.payload
-          }
-        },
-        Cmd.action(clearSelectedGeounits())
-      );
+      return "resource" in state.projectData
+        ? loop(
+            state,
+            Cmd.list<Action>(
+              [
+                Cmd.action(projectFetch(state.projectData.resource.project.id)),
+                Cmd.action(clearSelectedGeounits())
+              ],
+              { sequence: true }
+            )
+          )
+        : state;
     case getType(updateDistrictsDefinitionFailure):
       // TODO (#188): implement a status area to display errors for this and other things
       // eslint-disable-next-line

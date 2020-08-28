@@ -155,7 +155,7 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
   });
 }
 
-async function patchDistrictsDefinition(
+export async function patchDistrictsDefinition(
   id: ProjectId,
   districtsDefinition: DistrictsDefinition
 ): Promise<IProject> {
@@ -165,14 +165,4 @@ async function patchDistrictsDefinition(
       .then(response => resolve(response.data))
       .catch(error => reject(error.response.data));
   });
-}
-
-export async function updateProject(
-  id: ProjectId,
-  districtsDefinition: DistrictsDefinition
-): Promise<DynamicProjectData> {
-  return Promise.all([
-    patchDistrictsDefinition(id, districtsDefinition),
-    fetchProjectGeoJson(id)
-  ]).then(([project, geojson]) => ({ project, geojson }));
 }
