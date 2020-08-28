@@ -15,6 +15,7 @@
     "check-format": "prettier --check 'src/{client,shared}/**/*.{ts,tsx,json,css}'"
   },
   "dependencies": {
+    "@redux-beacon/google-tag-manager": "1.0.1",
     "@tippyjs/react": "^4.1.0",
     "@types/jwt-decode": "2.2.1",
     "axios": "0.19.0",
@@ -33,6 +34,7 @@
     "react-scripts": "3.2.0",
     "react-toastify": "^6.0.8",
     "redux": "4.0.4",
+    "redux-beacon": "2.1.0",
     "redux-loop": "5.0.1",
     "theme-ui": "0.4.0-rc.1",
     "ts.data.json": "0.3.0",
