@@ -8,6 +8,6 @@ import { RegionConfigsService } from "./services/region-configs.service";
   imports: [TypeOrmModule.forFeature([RegionConfig])],
   controllers: [RegionConfigsController],
   providers: [RegionConfigsService],
-  exports: [RegionConfigsService]
+  exports: [RegionConfigsService, TypeOrmModule]
 })
 export class RegionConfigsModule {}
