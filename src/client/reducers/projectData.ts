@@ -1,4 +1,3 @@
-import { FeatureCollection, MultiPolygon } from "geojson";
 import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
@@ -32,8 +31,8 @@ export function isProjectDataLoading(projectDataState: ProjectDataState): boolea
 }
 
 export type ProjectDataState = {
-  projectData: Resource<DynamicProjectData>;
-  staticData: Resource<StaticProjectData>;
+  readonly projectData: Resource<DynamicProjectData>;
+  readonly staticData: Resource<StaticProjectData>;
 };
 
 export const initialState = {

@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import React, { useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
@@ -7,7 +6,6 @@ import {
   UintArrays,
   CompactnessScore,
   DistrictsDefinition,
-  DistrictProperties,
   GeoUnitHierarchy,
   GeoUnitIndices,
   GeoUnits,
@@ -313,6 +311,7 @@ const SidebarRow = ({
       ? positiveChangeColor
       : negativeChangeColor
     : "inherit";
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   const intermediatePopulation = district.properties.population + selectedPopulationDifference;
   const intermediateDeviation = deviation + selectedPopulationDifference;
   const populationDisplay = intermediatePopulation.toLocaleString();

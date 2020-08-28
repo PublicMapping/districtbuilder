@@ -9,7 +9,7 @@ import {
   JWT,
   ProjectId
 } from "../shared/entities";
-import { DistrictsGeoJSON, DynamicProjectData, ProjectData } from "./types";
+import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();

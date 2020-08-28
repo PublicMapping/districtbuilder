@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { FeatureCollection, MultiPolygon } from "geojson";
 import { useEffect, useRef, useState } from "react";
 import { Box, jsx } from "theme-ui";
 

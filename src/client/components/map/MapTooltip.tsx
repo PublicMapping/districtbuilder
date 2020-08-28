@@ -14,7 +14,6 @@ import {
 } from "../../functions";
 import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
-import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 

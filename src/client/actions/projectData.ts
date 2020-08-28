@@ -1,15 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { FeatureCollection, MultiPolygon } from "geojson";
-import {
-  UintArrays,
-  DistrictProperties,
-  GeoUnitHierarchy,
-  GeoUnits,
-  IProject,
-  IStaticMetadata,
-  ProjectId,
-  S3URI
-} from "../../shared/entities";
+import { GeoUnits, ProjectId } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 
 export const projectFetch = createAction("Project fetch")<ProjectId>();
