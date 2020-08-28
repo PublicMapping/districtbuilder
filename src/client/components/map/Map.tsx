@@ -14,12 +14,12 @@ import {
 import { getDistrictColor } from "../../constants/colors";
 import {
   UintArrays,
-  DistrictProperties,
   GeoUnits,
   IProject,
   IStaticMetadata,
   LockedDistricts
 } from "../../../shared/entities";
+import { DistrictsGeoJSON } from "../../types";
 import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
 import { getAllIndices } from "../../../shared/functions";
 import {
@@ -42,7 +42,7 @@ import store from "../../store";
 
 interface Props {
   readonly project: IProject;
-  readonly geojson: FeatureCollection<MultiPolygon, DistrictProperties>;
+  readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
   readonly staticDemographics: UintArrays;
   readonly staticGeoLevels: UintArrays;

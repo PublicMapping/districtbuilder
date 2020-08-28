@@ -15,6 +15,7 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
+import { DistrictGeoJSON, DistrictsGeoJSON } from "../types";
 import {
   allGeoUnitIndices,
   areAnyGeoUnitsSelected,
@@ -132,7 +133,7 @@ const ProjectSidebar = ({
   lockedDistricts
 }: {
   readonly project?: IProject;
-  readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
+  readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
   readonly staticDemographics?: UintArrays;
   readonly selectedDistrictId: number;
@@ -296,7 +297,7 @@ const SidebarRow = ({
   districtId,
   isDistrictLocked
 }: {
-  readonly district: Feature<MultiPolygon, DistrictProperties>;
+  readonly district: DistrictGeoJSON;
   readonly selected: boolean;
   readonly selectedPopulationDifference: number;
   readonly demographics: { readonly [id: string]: number };
@@ -470,7 +471,7 @@ const getSavedDistrictSelectedDemographics = (
 
 const getSidebarRows = (
   project: IProject,
-  geojson: FeatureCollection<MultiPolygon, DistrictProperties>,
+  geojson: DistrictsGeoJSON,
   staticMetadata: IStaticMetadata,
   staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
   selectedDistrictId: number,

@@ -7,6 +7,7 @@ import {
   DistrictProperties
 } from "../shared/entities";
 
+export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;
 export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
 
 export interface DynamicProjectData {
