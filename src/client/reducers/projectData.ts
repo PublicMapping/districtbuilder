@@ -38,6 +38,12 @@ import { fetchProject, fetchProjectGeoJson, patchDistrictsDefinition } from "../
 import { Resource } from "../resource";
 import { fetchStaticFiles, fetchStaticMetadata, fetchGeoUnitHierarchy } from "../s3";
 
+export function isProjectDataLoading(projectDataState: ProjectDataState): boolean {
+  return Object.values(projectDataState).some(
+    resource => "isPending" in resource && resource.isPending
+  );
+}
+
 export interface ProjectDataState {
   readonly project: Resource<IProject>;
   readonly staticMetadata: Resource<IStaticMetadata>;

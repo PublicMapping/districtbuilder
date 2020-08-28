@@ -142,10 +142,7 @@ const ProjectSidebar = ({
 } & LoadingProps) => {
   return (
     <Flex sx={style.sidebar}>
-      {project && geoUnitHierarchy && (
-        <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
-      )}
-
+      <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
         <Styled.table sx={{ mx: 2, mb: 2 }}>
           <thead>

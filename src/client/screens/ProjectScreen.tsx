@@ -16,7 +16,7 @@ import ProjectSidebar from "../components/ProjectSidebar";
 import Toast from "../components/Toast";
 import { State } from "../reducers";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
-import { ProjectDataState } from "../reducers/projectData";
+import { isProjectDataLoading, ProjectDataState } from "../reducers/projectData";
 import { Resource } from "../resource";
 import store from "../store";
 
@@ -38,9 +38,7 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
       : undefined;
   const geoUnitHierarchy =
     "resource" in projectData.geoUnitHierarchy ? projectData.geoUnitHierarchy.resource : undefined;
-  const isLoading =
-    ("isPending" in projectData.project && projectData.project.isPending) ||
-    ("isPending" in projectData.geojson && projectData.geojson.isPending);
+  const isLoading = isProjectDataLoading(projectData);
 
   const [label, setMapLabel] = useState<string | undefined>(undefined);
 
