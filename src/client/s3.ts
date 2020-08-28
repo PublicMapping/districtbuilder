@@ -9,6 +9,7 @@ import {
   IStaticMetadata,
   S3URI
 } from "../shared/entities";
+import { StaticProjectData } from "./types";
 
 const s3Axios = axios.create();
 
@@ -66,4 +67,22 @@ export async function fetchStaticFiles(
       )
       .catch(error => reject(error.message));
   });
+}
+
+export async function fetchAllStaticData(path: S3URI): Promise<StaticProjectData> {
+  return fetchStaticMetadata(path)
+    .then(staticMetadata =>
+      Promise.all([
+        Promise.resolve(staticMetadata),
+        fetchGeoUnitHierarchy(path),
+        fetchStaticFiles(path, staticMetadata.geoLevels),
+        fetchStaticFiles(path, staticMetadata.demographics)
+      ])
+    )
+    .then(([staticMetadata, geoUnitHierarchy, staticGeoLevels, staticDemographics]) => ({
+      staticMetadata,
+      geoUnitHierarchy,
+      staticGeoLevels,
+      staticDemographics
+    }));
 }

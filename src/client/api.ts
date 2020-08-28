@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from "axios";
-import { FeatureCollection, MultiPolygon } from "geojson";
 
 import {
   CreateProjectData,
@@ -10,6 +9,7 @@ import {
   JWT,
   ProjectId
 } from "../shared/entities";
+import { DistrictsGeoJSON, DynamicProjectData, ProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();
@@ -121,9 +121,7 @@ export async function fetchProject(id: ProjectId): Promise<readonly IProject[]> 
   });
 }
 
-export async function fetchProjectGeoJson(
-  id: ProjectId
-): Promise<FeatureCollection<MultiPolygon, { readonly [name: string]: number }>> {
+export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJSON> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}/export/geojson`)
@@ -160,4 +158,14 @@ export async function patchDistrictsDefinition(
       .then(response => resolve(response.data))
       .catch(error => reject(error.response.data));
   });
+}
+
+export async function updateProject(
+  id: ProjectId,
+  districtsDefinition: DistrictsDefinition
+): Promise<DynamicProjectData> {
+  return Promise.all([
+    patchDistrictsDefinition(id, districtsDefinition),
+    fetchProjectGeoJson(id)
+  ]).then(([project, geojson]) => ({ project, geojson }));
 }

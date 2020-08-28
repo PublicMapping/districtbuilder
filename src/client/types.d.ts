@@ -1,0 +1,24 @@
+import { FeatureCollection, MultiPolygon } from "geojson";
+import {
+  IProject,
+  IStaticMetadata,
+  UintArrays,
+  GeoUnitHierarchy,
+  DistrictProperties
+} from "../shared/entities";
+
+export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
+
+export interface DynamicProjectData {
+  readonly project: IProject;
+  readonly geojson: DistrictsGeoJSON;
+}
+
+export interface StaticProjectData {
+  readonly staticMetadata: IStaticMetadata;
+  readonly staticGeoLevels: UintArrays;
+  readonly staticDemographics: UintArrays;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
+}
+
+export type ProjectData = DynamicProjectData & StaticProjectData;
