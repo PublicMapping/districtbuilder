@@ -28,16 +28,26 @@ interface StateProps {
 
 const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
   const { projectId } = useParams();
-  const project = "resource" in projectData.project ? projectData.project.resource : undefined;
-  const geojson = "resource" in projectData.geojson ? projectData.geojson.resource : undefined;
+  const project =
+    "resource" in projectData.projectData ? projectData.projectData.resource.project : undefined;
+  const geojson =
+    "resource" in projectData.projectData ? projectData.projectData.resource.geojson : undefined;
   const staticMetadata =
-    "resource" in projectData.staticMetadata ? projectData.staticMetadata.resource : undefined;
+    "resource" in projectData.staticData
+      ? projectData.staticData.resource.staticMetadata
+      : undefined;
+  const staticGeoLevels =
+    "resource" in projectData.staticData
+      ? projectData.staticData.resource.staticGeoLevels
+      : undefined;
   const staticDemographics =
-    "resource" in projectData.staticDemographics
-      ? projectData.staticDemographics.resource
+    "resource" in projectData.staticData
+      ? projectData.staticData.resource.staticDemographics
       : undefined;
   const geoUnitHierarchy =
-    "resource" in projectData.geoUnitHierarchy ? projectData.geoUnitHierarchy.resource : undefined;
+    "resource" in projectData.staticData
+      ? projectData.staticData.resource.geoUnitHierarchy
+      : undefined;
   const isLoading = isProjectDataLoading(projectData);
 
   const [label, setMapLabel] = useState<string | undefined>(undefined);
@@ -106,17 +116,13 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
             geoLevelVisibility={districtDrawing.geoLevelVisibility}
             selectedGeounits={districtDrawing.selectedGeounits}
           />
-          {"resource" in projectData.project &&
-          "resource" in projectData.staticMetadata &&
-          "resource" in projectData.staticDemographics &&
-          "resource" in projectData.staticGeoLevels &&
-          "resource" in projectData.geojson ? (
+          {project && staticMetadata && staticDemographics && staticGeoLevels && geojson ? (
             <Map
-              project={projectData.project.resource}
-              geojson={projectData.geojson.resource}
-              staticMetadata={projectData.staticMetadata.resource}
-              staticDemographics={projectData.staticDemographics.resource}
-              staticGeoLevels={projectData.staticGeoLevels.resource}
+              project={project}
+              geojson={geojson}
+              staticMetadata={staticMetadata}
+              staticDemographics={staticDemographics}
+              staticGeoLevels={staticGeoLevels}
               selectedGeounits={districtDrawing.selectedGeounits}
               selectedDistrictId={districtDrawing.selectedDistrictId}
               selectionTool={districtDrawing.selectionTool}

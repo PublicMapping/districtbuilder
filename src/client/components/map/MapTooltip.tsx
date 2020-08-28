@@ -43,28 +43,22 @@ const style: ThemeUIStyleObject = {
 const MapTooltip = ({
   geoLevelIndex,
   highlightedGeounits,
-  staticDemographicsResource,
-  staticMetadataResource,
-  geoUnitHierarchyResource,
+  staticDemographics,
+  staticMetadata,
+  geoUnitHierarchy,
   map
 }: {
   readonly geoLevelIndex: number;
   readonly highlightedGeounits: GeoUnits;
-  readonly staticDemographicsResource: Resource<UintArrays>;
-  readonly staticMetadataResource: Resource<IStaticMetadata>;
-  readonly geoUnitHierarchyResource: Resource<GeoUnitHierarchy>;
+  readonly staticDemographics?: UintArrays;
+  readonly staticMetadata?: IStaticMetadata;
+  readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly map?: MapboxGL.Map;
 }) => {
   const [point, setPoint] = useState({ x: 0, y: 0 });
   const [feature, setFeature] = useState<MapboxGL.MapboxGeoJSONFeature | undefined>(undefined);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const staticMetadata =
-    "resource" in staticMetadataResource ? staticMetadataResource.resource : undefined;
-  const staticDemographics =
-    "resource" in staticDemographicsResource ? staticDemographicsResource.resource : undefined;
-  const geoUnitHierarchy =
-    "resource" in geoUnitHierarchyResource ? geoUnitHierarchyResource.resource : undefined;
   const invertedGeoLevelIndex = staticMetadata
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
@@ -194,9 +188,9 @@ function mapStateToProps(state: State) {
   return {
     geoLevelIndex: state.districtDrawing.geoLevelIndex,
     highlightedGeounits: state.districtDrawing.highlightedGeounits,
-    staticDemographicsResource: state.projectData.staticDemographics,
-    staticMetadataResource: state.projectData.staticMetadata,
-    geoUnitHierarchyResource: state.projectData.geoUnitHierarchy
+    staticDemographics: "resource" in state.projectData.staticData ? state.projectData.staticData.resource.staticDemographics : undefined,
+    staticMetadata: "resource" in state.projectData.staticData ? state.projectData.staticData.resource.staticMetadata : undefined,
+    geoUnitHierarchy: "resource" in state.projectData.staticData ? state.projectData.staticData.resource.geoUnitHierarchy : undefined,
   };
 }
 

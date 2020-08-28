@@ -112,7 +112,7 @@ export async function createProject({
   });
 }
 
-export async function fetchProject(id: ProjectId): Promise<readonly IProject[]> {
+async function fetchProject(id: ProjectId): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}`)
@@ -121,7 +121,7 @@ export async function fetchProject(id: ProjectId): Promise<readonly IProject[]> 
   });
 }
 
-export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJSON> {
+async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJSON> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}/export/geojson`)
@@ -139,6 +139,13 @@ export async function fetchProjects(): Promise<readonly IProject[]> {
   });
 }
 
+export async function fetchProjectData(id: ProjectId): Promise<DynamicProjectData> {
+  return Promise.all([fetchProject(id), fetchProjectGeoJson(id)]).then(([project, geojson]) => ({
+    project,
+    geojson
+  }));
+}
+
 export async function fetchRegionConfigs(): Promise<IRegionConfig> {
   return new Promise((resolve, reject) => {
     apiAxios
@@ -148,7 +155,7 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
   });
 }
 
-export async function patchDistrictsDefinition(
+async function patchDistrictsDefinition(
   id: ProjectId,
   districtsDefinition: DistrictsDefinition
 ): Promise<IProject> {

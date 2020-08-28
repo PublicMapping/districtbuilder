@@ -18,11 +18,11 @@ export function s3ToHttps(path: S3URI): HttpsURI {
   return resolve(`https://${uri.host}.s3.amazonaws.com`, uri.path || "");
 }
 
-export function staticDataUri(path: S3URI, fileName: string): HttpsURI {
+function staticDataUri(path: S3URI, fileName: string): HttpsURI {
   return resolve(s3ToHttps(path), fileName);
 }
 
-export async function fetchStaticMetadata(path: S3URI): Promise<IStaticMetadata> {
+async function fetchStaticMetadata(path: S3URI): Promise<IStaticMetadata> {
   return new Promise((resolve, reject) => {
     s3Axios
       .get(staticDataUri(path, "static-metadata.json"))
@@ -31,7 +31,7 @@ export async function fetchStaticMetadata(path: S3URI): Promise<IStaticMetadata>
   });
 }
 
-export async function fetchGeoUnitHierarchy(path: S3URI): Promise<GeoUnitHierarchy> {
+async function fetchGeoUnitHierarchy(path: S3URI): Promise<GeoUnitHierarchy> {
   return new Promise((resolve, reject) => {
     s3Axios
       .get(staticDataUri(path, "geounit-hierarchy.json"))
@@ -40,10 +40,7 @@ export async function fetchGeoUnitHierarchy(path: S3URI): Promise<GeoUnitHierarc
   });
 }
 
-export async function fetchStaticFiles(
-  path: S3URI,
-  files: readonly IStaticFile[]
-): Promise<UintArrays> {
+async function fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<UintArrays> {
   const requests = files.map(fileMeta =>
     s3Axios.get(staticDataUri(path, fileMeta.fileName), {
       responseType: "arraybuffer"

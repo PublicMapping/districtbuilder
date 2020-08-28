@@ -8,35 +8,19 @@ import {
   updateDistrictsDefinitionFailure,
   updateDistrictsDefinitionSuccess,
   projectDataFetch,
-  projectFetch,
-  projectFetchFailure,
-  projectFetchGeoJson,
-  projectFetchGeoJsonFailure,
-  projectFetchGeoJsonSuccess,
-  projectFetchSuccess,
-  staticDemographicsFetchFailure,
-  staticDemographicsFetchSuccess,
-  staticGeoLevelsFetchFailure,
-  staticGeoLevelsFetchSuccess,
-  staticGeounitHierarchyFetchFailure,
-  staticGeounitHierarchyFetchSuccess,
-  staticMetadataFetchFailure,
-  staticMetadataFetchSuccess
+  projectDataFetchFailure,
+  projectDataFetchSuccess,
+  staticDataFetchFailure,
+  staticDataFetchSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 
-import {
-  UintArrays,
-  DistrictProperties,
-  GeoUnitHierarchy,
-  IProject,
-  IStaticMetadata
-} from "../../shared/entities";
+import { DynamicProjectData, StaticProjectData } from "../types";
 import { allGeoUnitIndices, assignGeounitsToDistrict } from "../functions";
-import { fetchProject, fetchProjectGeoJson, patchDistrictsDefinition } from "../api";
+import { fetchProjectData, updateProject } from "../api";
 import { Resource } from "../resource";
-import { fetchStaticFiles, fetchStaticMetadata, fetchGeoUnitHierarchy } from "../s3";
+import { fetchAllStaticData } from "../s3";
 
 export function isProjectDataLoading(projectDataState: ProjectDataState): boolean {
   return Object.values(projectDataState).some(
@@ -44,22 +28,18 @@ export function isProjectDataLoading(projectDataState: ProjectDataState): boolea
   );
 }
 
-export interface ProjectDataState {
-  readonly project: Resource<IProject>;
-  readonly staticMetadata: Resource<IStaticMetadata>;
-  readonly staticGeoLevels: Resource<UintArrays>;
-  readonly staticDemographics: Resource<UintArrays>;
-  readonly geojson: Resource<FeatureCollection<MultiPolygon, DistrictProperties>>;
-  readonly geoUnitHierarchy: Resource<GeoUnitHierarchy>;
-}
+export type ProjectDataState = {
+  projectData: Resource<DynamicProjectData>;
+  staticData: Resource<StaticProjectData>;
+};
 
 export const initialState = {
-  project: { isPending: false },
-  staticMetadata: { isPending: false },
-  staticGeoLevels: { isPending: false },
-  staticDemographics: { isPending: false },
-  geojson: { isPending: false },
-  geoUnitHierarchy: { isPending: false }
+  projectData: {
+    isPending: false
+  },
+  staticData: {
+    isPending: false
+  }
 };
 
 const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
@@ -70,174 +50,80 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
     case getType(resetProjectState):
       return initialState;
     case getType(projectDataFetch):
-      return loop(state, Cmd.action(projectFetch(action.payload)));
-    case getType(projectFetch):
-      return loop(
-        { ...state, project: { isPending: true } },
-        Cmd.list<Action>([
-          Cmd.run(fetchProject, {
-            successActionCreator: projectFetchSuccess,
-            failActionCreator: projectFetchFailure,
-            args: [action.payload] as Parameters<typeof fetchProject>
-          }),
-          Cmd.action(projectFetchGeoJson(action.payload))
-        ])
-      );
-    case getType(projectFetchSuccess):
       return loop(
         {
           ...state,
-          project: { resource: action.payload },
-          staticMetadata: {
+          projectData: {
+            ...state.projectData,
+            isPending: true
+          }
+        },
+        Cmd.run(fetchProjectData, {
+          successActionCreator: projectDataFetchSuccess,
+          failActionCreator: projectDataFetchFailure,
+          args: [action.payload] as Parameters<typeof fetchProjectData>
+        })
+      );
+    case getType(projectDataFetchSuccess):
+      return loop(
+        {
+          ...state,
+          projectData: {
+            resource: action.payload
+          },
+          staticData: {
+            ...state.staticData,
             isPending: true
           }
         },
         Cmd.list<Action>([
-          Cmd.run(fetchStaticMetadata, {
-            successActionCreator: staticMetadataFetchSuccess,
-            failActionCreator: staticMetadataFetchFailure,
-            args: [action.payload.regionConfig.s3URI] as Parameters<typeof fetchStaticMetadata>
-          }),
-          Cmd.run(fetchGeoUnitHierarchy, {
-            successActionCreator: staticGeounitHierarchyFetchSuccess,
-            failActionCreator: staticGeounitHierarchyFetchFailure,
-            args: [action.payload.regionConfig.s3URI] as Parameters<typeof fetchGeoUnitHierarchy>
+          Cmd.action(clearSelectedGeounits()),
+          Cmd.run(fetchAllStaticData, {
+            successActionCreator: staticDataFetchSuccess,
+            failActionCreator: staticDataFetchFailure,
+            args: [action.payload.project.regionConfig.s3URI] as Parameters<
+              typeof fetchAllStaticData
+            >
           })
         ])
       );
-    case getType(projectFetchFailure):
+    case getType(projectDataFetchFailure):
       return {
         ...state,
-        project: { errorMessage: action.payload }
-      };
-    case getType(projectFetchGeoJsonSuccess):
-      return loop(
-        {
-          ...state,
-          geojson: { resource: action.payload }
-        },
-        Cmd.action(clearSelectedGeounits())
-      );
-    case getType(projectFetchGeoJson):
-      return loop(
-        {
-          ...state,
-          geojson: {
-            ...state.geojson,
-            isPending: true
-          }
-        },
-        Cmd.run(fetchProjectGeoJson, {
-          successActionCreator: projectFetchGeoJsonSuccess,
-          failActionCreator: projectFetchGeoJsonFailure,
-          args: [action.payload] as Parameters<typeof fetchProjectGeoJson>
-        })
-      );
-    case getType(projectFetchGeoJsonFailure):
-      return {
-        ...state,
-        geojson: { errorMessage: action.payload }
-      };
-    case getType(staticMetadataFetchSuccess):
-      return "resource" in state.project
-        ? loop(
-            {
-              ...state,
-              staticMetadata: {
-                resource: action.payload
-              },
-              staticGeoLevels: {
-                isPending: true
-              },
-              staticDemographics: {
-                isPending: true
-              }
-            },
-            Cmd.list<Action>([
-              Cmd.run(fetchStaticFiles, {
-                successActionCreator: staticGeoLevelsFetchSuccess,
-                failActionCreator: staticGeoLevelsFetchFailure,
-                args: [
-                  state.project.resource.regionConfig.s3URI,
-                  action.payload.geoLevels
-                ] as Parameters<typeof fetchStaticFiles>
-              }),
-              Cmd.run(fetchStaticFiles, {
-                successActionCreator: staticDemographicsFetchSuccess,
-                failActionCreator: staticDemographicsFetchFailure,
-                args: [
-                  state.project.resource.regionConfig.s3URI,
-                  action.payload.demographics
-                ] as Parameters<typeof fetchStaticFiles>
-              })
-            ])
-          )
-        : (state as never);
-    case getType(staticMetadataFetchFailure):
-      return {
-        ...state,
-        staticMetadata: {
+        projectData: {
           errorMessage: action.payload
         }
       };
-    case getType(staticGeoLevelsFetchSuccess):
+    case getType(staticDataFetchSuccess):
       return {
         ...state,
-        staticGeoLevels: {
+        staticData: {
           resource: action.payload
         }
       };
-    case getType(staticGeoLevelsFetchFailure):
+    case getType(staticDataFetchFailure):
       return {
         ...state,
-        staticGeoLevels: {
-          errorMessage: action.payload
-        }
-      };
-    case getType(staticDemographicsFetchSuccess):
-      return {
-        ...state,
-        staticDemographics: {
-          resource: action.payload
-        }
-      };
-    case getType(staticDemographicsFetchFailure):
-      return {
-        ...state,
-        staticDemographics: {
-          errorMessage: action.payload
-        }
-      };
-    case getType(staticGeounitHierarchyFetchSuccess):
-      return {
-        ...state,
-        geoUnitHierarchy: {
-          resource: action.payload
-        }
-      };
-    case getType(staticGeounitHierarchyFetchFailure):
-      return {
-        ...state,
-        geoUnitHierarchy: {
+        staticData: {
           errorMessage: action.payload
         }
       };
     case getType(updateDistrictsDefinition):
-      return "resource" in state.project && "resource" in state.geoUnitHierarchy
+      return "resource" in state.projectData && "resource" in state.staticData
         ? loop(
             state,
-            Cmd.run(patchDistrictsDefinition, {
+            Cmd.run(updateProject, {
               successActionCreator: updateDistrictsDefinitionSuccess,
               failActionCreator: updateDistrictsDefinitionFailure,
               args: [
-                state.project.resource.id,
+                state.projectData.resource.project.id,
                 assignGeounitsToDistrict(
-                  state.project.resource.districtsDefinition,
-                  state.geoUnitHierarchy.resource,
+                  state.projectData.resource.project.districtsDefinition,
+                  state.staticData.resource.geoUnitHierarchy,
                   allGeoUnitIndices(action.payload.selectedGeounits),
                   action.payload.selectedDistrictId
                 )
-              ] as Parameters<typeof patchDistrictsDefinition>
+              ] as Parameters<typeof updateProject>
             })
           )
         : state;
@@ -245,9 +131,11 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       return loop(
         {
           ...state,
-          project: { resource: action.payload }
+          projectData: {
+            resource: action.payload
+          }
         },
-        Cmd.action(projectFetchGeoJson(action.payload.id))
+        Cmd.action(clearSelectedGeounits())
       );
     case getType(updateDistrictsDefinitionFailure):
       // TODO (#188): implement a status area to display errors for this and other things
