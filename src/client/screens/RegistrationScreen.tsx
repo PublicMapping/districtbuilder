@@ -11,27 +11,20 @@ import { InputField, PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
 
-const isFormInvalid = (form: RegistrationForm): boolean =>
-  Object.values(form).some(value => value.trim() === "") || form.password !== form.confirmPassword;
-
-interface RegistrationForm extends Register {
-  readonly confirmPassword: string;
-}
+const isFormInvalid = (form: Register): boolean =>
+  Object.values(form).some(value => value.trim() === "");
 
 const RegistrationScreen = () => {
-  const [registrationResource, setRegistrationResource] = useState<
-    WriteResource<RegistrationForm, void>
-  >({
+  const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
     data: {
       email: "",
       password: "",
-      confirmPassword: "",
       name: ""
     }
   });
   const { data } = registrationResource;
 
-  const setForm = (field: keyof RegistrationForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const setForm = (field: keyof Register) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setRegistrationResource({
       data: { ...data, [field]: e.currentTarget.value }
     });
@@ -91,14 +84,6 @@ const RegistrationScreen = () => {
                   label="Password"
                   resource={registrationResource}
                   inputProps={{ onChange: setForm("password") }}
-                />
-              </Box>
-              <Box sx={{ mb: 4 }}>
-                <InputField
-                  field="confirmPassword"
-                  label="Confirm password"
-                  resource={registrationResource}
-                  inputProps={{ onChange: setForm("confirmPassword"), type: "password" }}
                 />
               </Box>
               <Button

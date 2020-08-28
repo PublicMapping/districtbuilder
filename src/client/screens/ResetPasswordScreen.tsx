@@ -8,17 +8,16 @@ import { ReactComponent as Logo } from "../media/logos/logo.svg";
 import { showPasswordResetNotice } from "../actions/auth";
 import { resetPassword } from "../api";
 import CenteredContent from "../components/CenteredContent";
-import { InputField, PasswordField } from "../components/Field";
+import { PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
 import store from "../store";
 
 const isFormInvalid = (form: ResetPasswordForm): boolean =>
-  Object.values(form).some(value => value.trim() === "") || form.password !== form.confirmPassword;
+  Object.values(form).some(value => value.trim() === "");
 
 interface ResetPasswordForm {
   readonly password: string;
-  readonly confirmPassword: string;
 }
 
 interface ResetPasswordScreenParams {
@@ -29,8 +28,7 @@ const ResetPasswordScreen = () => {
   const { token } = useParams<ResetPasswordScreenParams>();
   const [passwordResource, setPasswordResource] = useState<WriteResource<ResetPasswordForm, void>>({
     data: {
-      password: "",
-      confirmPassword: ""
+      password: ""
     }
   });
   const { data } = passwordResource;
@@ -77,21 +75,6 @@ const ResetPasswordScreen = () => {
                 onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
                   setPasswordResource({
                     data: { ...data, password: e.currentTarget.value }
-                  })
-              }}
-            />
-          </Box>
-          <Box sx={{ mb: 4 }}>
-            <InputField
-              field="confirmPassword"
-              label="Confirm password"
-              resource={passwordResource}
-              inputProps={{
-                required: true,
-                type: "password",
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                  setPasswordResource({
-                    data: { ...data, confirmPassword: e.currentTarget.value }
                   })
               }}
             />
