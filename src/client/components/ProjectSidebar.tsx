@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useState, Fragment } from "react";
+import React, { useEffect, useRef, useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
@@ -175,21 +175,18 @@ const ProjectSidebar = ({
             </Styled.tr>
           </thead>
           <tbody>
-            {project &&
-              geojson &&
-              staticMetadata &&
-              staticDemographics &&
-              geoUnitHierarchy &&
-              getSidebarRows(
-                project,
-                geojson,
-                staticMetadata,
-                staticDemographics,
-                selectedDistrictId,
-                selectedGeounits,
-                geoUnitHierarchy,
-                lockedDistricts
-              )}
+            {project && geojson && staticMetadata && staticDemographics && geoUnitHierarchy && (
+              <SidebarRows
+                project={project}
+                geojson={geojson}
+                staticMetadata={staticMetadata}
+                staticDemographics={staticDemographics}
+                selectedDistrictId={selectedDistrictId}
+                selectedGeounits={selectedGeounits}
+                geoUnitHierarchy={geoUnitHierarchy}
+                lockedDistricts={lockedDistricts}
+              />
+            )}
           </tbody>
         </Styled.table>
       </Box>
@@ -415,7 +412,7 @@ const SidebarRow = ({
 const getSavedDistrictSelectedDemographics = (
   project: IProject,
   staticMetadata: IStaticMetadata,
-  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  staticDemographics: UintArrays,
   selectedGeounits: GeoUnits,
   geoUnitHierarchy: GeoUnitHierarchy
 ) => {
@@ -468,16 +465,27 @@ const getSavedDistrictSelectedDemographics = (
   );
 };
 
-const getSidebarRows = (
-  project: IProject,
-  geojson: DistrictsGeoJSON,
-  staticMetadata: IStaticMetadata,
-  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  selectedDistrictId: number,
-  selectedGeounits: GeoUnits,
-  geoUnitHierarchy: GeoUnitHierarchy,
-  lockedDistricts: LockedDistricts
-) => {
+interface SidebarRowsProps {
+  readonly project: IProject;
+  readonly geojson: DistrictsGeoJSON;
+  readonly staticMetadata: IStaticMetadata;
+  readonly staticDemographics: UintArrays;
+  readonly selectedDistrictId: number;
+  readonly selectedGeounits: GeoUnits;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
+  readonly lockedDistricts: LockedDistricts;
+}
+
+const SidebarRows = ({
+  project,
+  geojson,
+  staticMetadata,
+  staticDemographics,
+  selectedDistrictId,
+  selectedGeounits,
+  geoUnitHierarchy,
+  lockedDistricts
+}: SidebarRowsProps) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
     staticMetadata,
@@ -504,34 +512,38 @@ const getSidebarRows = (
       0
     ) / project.numberOfDistricts;
 
-  return geojson.features.map(feature => {
-    const districtId = typeof feature.id === "number" ? feature.id : 0;
-    const selected = districtId === selectedDistrictId;
-    const demographics = feature.properties;
-    const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
-    const selectedPopulationDifference = selected
-      ? totalSelectedDemographics.population - selectedPopulation
-      : -1 * selectedPopulation;
+  return (
+    <React.Fragment>
+      {geojson.features.map(feature => {
+        const districtId = typeof feature.id === "number" ? feature.id : 0;
+        const selected = districtId === selectedDistrictId;
+        const demographics = feature.properties;
+        const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
+        const selectedPopulationDifference = selected
+          ? totalSelectedDemographics.population - selectedPopulation
+          : -1 * selectedPopulation;
 
-    return (
-      <SidebarRow
-        district={feature}
-        selected={selected}
-        selectedPopulationDifference={selectedPopulationDifference}
-        demographics={demographics}
-        deviation={
-          // The population goal for the unassigned district is 0,
-          // so it's deviation is equal to its population
-          districtId === 0
-            ? feature.properties.population
-            : feature.properties.population - averagePopulation
-        }
-        key={districtId}
-        isDistrictLocked={lockedDistricts.has(districtId)}
-        districtId={districtId}
-      />
-    );
-  });
+        return (
+          <SidebarRow
+            district={feature}
+            selected={selected}
+            selectedPopulationDifference={selectedPopulationDifference}
+            demographics={demographics}
+            deviation={
+              // The population goal for the unassigned district is 0,
+              // so it's deviation is equal to its population
+              districtId === 0
+                ? feature.properties.population
+                : feature.properties.population - averagePopulation
+            }
+            key={districtId}
+            isDistrictLocked={lockedDistricts.has(districtId)}
+            districtId={districtId}
+          />
+        );
+      })}
+    </React.Fragment>
+  );
 };
 
 export default ProjectSidebar;
