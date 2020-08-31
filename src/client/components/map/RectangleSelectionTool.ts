@@ -142,15 +142,13 @@ const RectangleSelectionTool: ISelectionTool = {
           districtsDefinition,
           lockedDistricts
         );
-        Object.entries(prevGeoUnits).forEach(([geoLevelId, geoUnitsForLevel]) => {
-          Array.from(prevGeoUnits[geoLevelId].keys())
-            .filter(
-              id => !setOfInitiallySelectedFeatures[geoLevelId].has(id) && !geoUnitsForLevel.has(id)
-            )
-            .forEach(id => {
-              map.setFeatureState(featureStateExpression(id), { selected: false });
-            });
-        });
+        Array.from(prevGeoUnits[geoLevelId].keys())
+          .filter(
+            id => !setOfInitiallySelectedFeatures[geoLevelId].has(id) && !geoUnitsForLevel.has(id)
+          )
+          .forEach(id => {
+            map.setFeatureState(featureStateExpression(id), { selected: false });
+          });
       }
     }
 
