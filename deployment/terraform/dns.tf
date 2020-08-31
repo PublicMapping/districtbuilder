@@ -50,9 +50,9 @@ resource "aws_route53_record" "origin" {
   }
 }
 
-resource "aws_route53_record" "www" {
+resource "aws_route53_record" "app" {
   zone_id = aws_route53_zone.external.zone_id
-  name    = var.r53_public_hosted_zone
+  name    = "app.${var.r53_public_hosted_zone}"
   type    = "A"
 
   alias {
@@ -62,9 +62,9 @@ resource "aws_route53_record" "www" {
   }
 }
 
-resource "aws_route53_record" "www_ipv6" {
+resource "aws_route53_record" "app_ipv6" {
   zone_id = aws_route53_zone.external.zone_id
-  name    = var.r53_public_hosted_zone
+  name    = "app.${var.r53_public_hosted_zone}"
   type    = "AAAA"
 
   alias {

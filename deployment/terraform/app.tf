@@ -122,7 +122,7 @@ resource "aws_ecs_task_definition" "app" {
     postgres_password = var.rds_database_password
     postgres_db       = var.rds_database_name
 
-    default_from_email   = var.default_from_email
+    default_from_email   = "no-reply@${var.r53_public_hosted_zone}"
     jwt_secret           = var.jwt_secret
     jwt_expiration_in_ms = var.jwt_expiration_in_ms
     client_url           = var.client_url

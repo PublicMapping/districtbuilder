@@ -51,16 +51,16 @@ While `server` is running, the [Create React App](https://github.com/facebook/cr
 If you want to develop the `client` locally against a `server` running in the AWS staging environment, you can configure a local proxy using the `BASE_URL` environment variable:
 
 ```#bash
-BASE_URL=https://staging.districtbuilder.azavea.com docker-compose up client
+BASE_URL=https://staging.districtbuilder.org docker-compose up client
 ```
 
-This will proxy local all requests directed at `/api` to `https://staging.districtbuilder.azavea.com`.
+This will proxy local all requests directed at `/api` to `https://staging.districtbuilder.org`.
 
 ### Development Data
 
 To have data to work with, you'll need to do a two step process:
 
-1. Process the GeoJSON for your state/region (this outputs all the static files DistrictBuilder needs to work in a local directory) 
+1. Process the GeoJSON for your state/region (this outputs all the static files DistrictBuilder needs to work in a local directory)
 1. Publish the resulting files (upload to S3 for use by the app)
 
 To process PA data, first copy the GeoJSON file into the `src/manage/data` directory, create an output directory (eg. `src/manage/data/output-pa`), and then run this command:

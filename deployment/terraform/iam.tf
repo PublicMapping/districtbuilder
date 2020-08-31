@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "scoped_email_sending" {
       test     = "StringEquals"
       variable = "ses:FromAddress"
 
-      values = [var.default_from_email]
+      values = ["no-reply@${var.r53_public_hosted_zone}"]
     }
   }
 }

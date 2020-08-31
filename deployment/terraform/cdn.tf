@@ -17,7 +17,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   comment         = "${var.project} (${var.environment})"
 
   price_class = var.cloudfront_price_class
-  aliases     = [var.r53_public_hosted_zone]
+  aliases     = ["app.${var.r53_public_hosted_zone}"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
