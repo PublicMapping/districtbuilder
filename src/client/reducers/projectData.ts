@@ -101,19 +101,16 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
             isPending: true
           }
         },
-        Cmd.list<Action>(
-          [
-            Cmd.run(fetchAllStaticData, {
-              successActionCreator: staticDataFetchSuccess,
-              failActionCreator: staticDataFetchFailure,
-              args: [action.payload.project.regionConfig.s3URI] as Parameters<
-                typeof fetchAllStaticData
-              >
-            }),
-            Cmd.action(clearSelectedGeounits())
-          ],
-          { sequence: true }
-        )
+        Cmd.list<Action>([
+          Cmd.action(clearSelectedGeounits()),
+          Cmd.run(fetchAllStaticData, {
+            successActionCreator: staticDataFetchSuccess,
+            failActionCreator: staticDataFetchFailure,
+            args: [action.payload.project.regionConfig.s3URI] as Parameters<
+              typeof fetchAllStaticData
+            >
+          })
+        ])
       );
     case getType(projectDataFetchFailure):
       return {
@@ -159,13 +156,10 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
       return "resource" in state.projectData
         ? loop(
             state,
-            Cmd.list<Action>(
-              [
-                Cmd.action(projectFetch(state.projectData.resource.project.id)),
-                Cmd.action(clearSelectedGeounits())
-              ],
-              { sequence: true }
-            )
+            Cmd.list<Action>([
+              Cmd.action(clearSelectedGeounits()),
+              Cmd.action(projectFetch(state.projectData.resource.project.id))
+            ])
           )
         : state;
     case getType(updateDistrictsDefinitionFailure):
