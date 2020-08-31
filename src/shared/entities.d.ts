@@ -97,6 +97,7 @@ export interface IProject {
   readonly numberOfDistricts: number;
   readonly districtsDefinition: DistrictsDefinition;
   readonly user: IUser;
+  readonly advancedEditingEnabled: boolean;
 }
 
 export interface CreateProjectData {

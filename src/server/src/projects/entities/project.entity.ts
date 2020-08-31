@@ -32,4 +32,7 @@ export class Project implements IProject {
 
   @Column({ type: "timestamp with time zone", name: "created_dt", default: () => "NOW()" })
   createdDt: Date;
+
+  @Column({ default: false })
+  advancedEditingEnabled: boolean;
 }
