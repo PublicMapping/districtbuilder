@@ -170,11 +170,6 @@ const ProjectSidebar = ({
                   <span>Race</span>
                 </Tooltip>
               </Styled.th>
-              <Styled.th sx={style.th}>
-                <Tooltip content="Political party">
-                  <span>Pol.</span>
-                </Tooltip>
-              </Styled.th>
               <Styled.th sx={{ ...style.th, ...style.number }}>
                 <Tooltip content="Compactness score">
                   <span>Comp.</span>
