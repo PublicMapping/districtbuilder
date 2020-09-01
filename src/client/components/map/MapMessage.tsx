@@ -1,10 +1,11 @@
 /** @jsx jsx */
 import { connect } from "react-redux";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
+
 import { State } from "../../reducers";
 import { geoLevelLabel } from "../../functions";
-import { Resource } from "../../resource";
 import { IStaticMetadata } from "../../../shared/entities";
+import { destructureResource } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   message: {
@@ -27,14 +28,12 @@ const style: ThemeUIStyleObject = {
 const MapMessage = ({
   geoLevelIndex,
   geoLevelVisibility,
-  staticMetadataResource
+  staticMetadata
 }: {
   readonly geoLevelIndex: number;
   readonly geoLevelVisibility: readonly boolean[];
-  readonly staticMetadataResource: Resource<IStaticMetadata>;
+  readonly staticMetadata?: IStaticMetadata;
 }) => {
-  const staticMetadata =
-    "resource" in staticMetadataResource ? staticMetadataResource.resource : undefined;
   const invertedGeoLevelIndex = staticMetadata
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
@@ -55,9 +54,9 @@ const MapMessage = ({
 
 function mapStateToProps(state: State) {
   return {
-    geoLevelIndex: state.districtDrawing.geoLevelIndex,
-    geoLevelVisibility: state.districtDrawing.geoLevelVisibility,
-    staticMetadataResource: state.projectData.staticMetadata
+    geoLevelIndex: state.project.geoLevelIndex,
+    geoLevelVisibility: state.project.geoLevelVisibility,
+    staticMetadata: destructureResource(state.project.staticData, "staticMetadata")
   };
 }
 
