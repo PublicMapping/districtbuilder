@@ -1,5 +1,6 @@
-import { compose, createStore } from "redux";
+import { compose, createStore, applyMiddleware } from "redux";
 import { install, StoreCreator } from "redux-loop";
+import GTM from "./GTM";
 import rootReducer, { initialState } from "./reducers";
 
 const enhancedCreateStore = createStore as StoreCreator;
@@ -11,4 +12,8 @@ declare global {
   }
 }
 
-export default enhancedCreateStore(rootReducer, initialState, composeEnhancers(install()));
+export default enhancedCreateStore(
+  rootReducer,
+  initialState,
+  composeEnhancers(install(), applyMiddleware(GTM))
+);
