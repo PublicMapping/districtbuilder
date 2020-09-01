@@ -33,6 +33,7 @@ import {
   levelToLineLayerId,
   onlyUnlockedGeoUnits
 } from "./index";
+import AdvancedEditingModal from "./AdvancedEditingModal";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import MapMessage from "./MapMessage";
 import MapTooltip from "./MapTooltip";
@@ -385,6 +386,7 @@ const DistrictsMap = ({
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
       <MapMessage />
+      <AdvancedEditingModal id={project.id} geoLevels={staticMetadata.geoLevelHierarchy} />
     </Box>
   );
 };

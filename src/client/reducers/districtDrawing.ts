@@ -13,6 +13,7 @@ import {
   setHighlightedGeounits,
   setSelectedDistrictId,
   setSelectionTool,
+  showAdvancedEditingModal,
   toggleDistrictLocked
 } from "../actions/districtDrawing";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -71,6 +72,7 @@ export interface DistrictDrawingState {
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
   readonly lockedDistricts: LockedDistricts;
+  readonly showAdvancedEditingModal: boolean;
 }
 
 export const initialDistrictDrawingState: DistrictDrawingState = {
@@ -80,7 +82,8 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   selectionTool: SelectionTool.Default,
   geoLevelIndex: 0,
   geoLevelVisibility: [],
-  lockedDistricts: new Set()
+  lockedDistricts: new Set(),
+  showAdvancedEditingModal: false
 };
 
 const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
@@ -165,6 +168,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
               )
             : [...state.lockedDistricts.values(), action.payload]
         )
+      };
+    case getType(showAdvancedEditingModal):
+      return {
+        ...state,
+        showAdvancedEditingModal: action.payload
       };
     default:
       return state as never;

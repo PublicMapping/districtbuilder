@@ -22,7 +22,7 @@ import { DynamicProjectData, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
 import { allGeoUnitIndices, assignGeounitsToDistrict } from "../functions";
-import { fetchProjectData, patchDistrictsDefinition } from "../api";
+import { fetchProjectData, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
 
 export type ProjectDataState = {
@@ -139,18 +139,20 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return "resource" in state.projectData && "resource" in state.staticData
         ? loop(
             state,
-            Cmd.run(patchDistrictsDefinition, {
+            Cmd.run(patchProject, {
               successActionCreator: updateDistrictsDefinitionSuccess,
               failActionCreator: updateDistrictsDefinitionFailure,
               args: [
                 state.projectData.resource.project.id,
-                assignGeounitsToDistrict(
-                  state.projectData.resource.project.districtsDefinition,
-                  state.staticData.resource.geoUnitHierarchy,
-                  allGeoUnitIndices(state.selectedGeounits),
-                  state.selectedDistrictId
-                )
-              ] as Parameters<typeof patchDistrictsDefinition>
+                {
+                  districtsDefinition: assignGeounitsToDistrict(
+                    state.projectData.resource.project.districtsDefinition,
+                    state.staticData.resource.geoUnitHierarchy,
+                    allGeoUnitIndices(state.selectedGeounits),
+                    state.selectedDistrictId
+                  )
+                }
+              ] as Parameters<typeof patchProject>
             })
           )
         : state;

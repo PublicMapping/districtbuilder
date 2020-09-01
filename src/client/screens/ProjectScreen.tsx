@@ -117,6 +117,7 @@ const ProjectScreen = ({
             geoLevelIndex={districtDrawing.geoLevelIndex}
             geoLevelVisibility={districtDrawing.geoLevelVisibility}
             selectedGeounits={districtDrawing.selectedGeounits}
+            advancedEditingEnabled={project?.advancedEditingEnabled}
           />
           {project && staticMetadata && staticDemographics && staticGeoLevels && geojson ? (
             <Map
