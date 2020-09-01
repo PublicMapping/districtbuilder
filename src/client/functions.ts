@@ -205,12 +205,3 @@ export function destructureResource<T extends object>(
 ): any | undefined {
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
 }
-
-export function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
-  return Object.keys(geoUnits).reduce((geoUnits, geoLevelId) => {
-    return {
-      ...geoUnits,
-      [geoLevelId]: new Map()
-    };
-  }, {});
-}

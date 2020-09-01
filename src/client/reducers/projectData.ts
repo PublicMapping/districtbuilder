@@ -15,12 +15,13 @@ import {
   staticDataFetchFailure,
   staticDataFetchSuccess
 } from "../actions/projectData";
+import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
-import { allGeoUnitIndices, assignGeounitsToDistrict, clearGeoUnits } from "../functions";
+import { allGeoUnitIndices, assignGeounitsToDistrict } from "../functions";
 import { fetchProjectData, patchDistrictsDefinition } from "../api";
 import { fetchAllStaticData } from "../s3";
 
@@ -64,13 +65,15 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(projectFetchSuccess):
-      return {
-        ...state,
-        selectedGeounits: clearGeoUnits(state.selectedGeounits),
-        projectData: {
-          resource: action.payload
-        }
-      };
+      return loop(
+        {
+          ...state,
+          projectData: {
+            resource: action.payload
+          }
+        },
+        Cmd.action(clearSelectedGeounits())
+      );
     case getType(projectFetchFailure):
       return {
         ...state,

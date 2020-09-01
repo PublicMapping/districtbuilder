@@ -18,7 +18,6 @@ import {
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
-import { clearGeoUnits } from "../functions";
 import { ProjectState, initialProjectState } from "./project";
 
 function setGeoUnitsForLevel(
@@ -53,6 +52,15 @@ function editGeoUnits(
       )
     };
   }, {} as GeoUnits);
+}
+
+function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
+  return Object.keys(geoUnits).reduce((geoUnits, geoLevelId) => {
+    return {
+      ...geoUnits,
+      [geoLevelId]: new Map()
+    };
+  }, {});
 }
 
 export interface DistrictDrawingState {
