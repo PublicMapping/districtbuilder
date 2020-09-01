@@ -15,27 +15,21 @@ import {
   staticDataFetchFailure,
   staticDataFetchSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
-
 import { DynamicProjectData, StaticProjectData } from "../types";
-import { allGeoUnitIndices, assignGeounitsToDistrict } from "../functions";
-import { fetchProjectData, patchDistrictsDefinition } from "../api";
 import { Resource } from "../resource";
-import { fetchAllStaticData } from "../s3";
 
-export function isProjectDataLoading(projectDataState: ProjectDataState): boolean {
-  return Object.values(projectDataState).some(
-    resource => "isPending" in resource && resource.isPending
-  );
-}
+import { allGeoUnitIndices, assignGeounitsToDistrict, clearGeoUnits } from "../functions";
+import { fetchProjectData, patchDistrictsDefinition } from "../api";
+import { fetchAllStaticData } from "../s3";
 
 export type ProjectDataState = {
   readonly projectData: Resource<DynamicProjectData>;
   readonly staticData: Resource<StaticProjectData>;
 };
 
-export const initialState = {
+export const initialProjectDataState = {
   projectData: {
     isPending: false
   },
@@ -44,16 +38,25 @@ export const initialState = {
   }
 };
 
-const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
-  state: ProjectDataState = initialState,
+const projectDataReducer: LoopReducer<ProjectState, Action> = (
+  state: ProjectState = initialProjectState,
   action: Action
-): ProjectDataState | Loop<ProjectDataState, Action> => {
+): ProjectState | Loop<ProjectState, Action> => {
   switch (action.type) {
     case getType(resetProjectState):
-      return initialState;
+      return {
+        ...state,
+        ...initialProjectDataState
+      };
     case getType(projectFetch):
       return loop(
-        state,
+        {
+          ...state,
+          projectData: {
+            ...state.projectData,
+            isPending: true
+          }
+        },
         Cmd.run(fetchProjectData, {
           successActionCreator: projectFetchSuccess,
           failActionCreator: projectFetchFailure,
@@ -63,6 +66,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
     case getType(projectFetchSuccess):
       return {
         ...state,
+        selectedGeounits: clearGeoUnits(state.selectedGeounits),
         projectData: {
           resource: action.payload
         }
@@ -101,16 +105,11 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
             isPending: true
           }
         },
-        Cmd.list<Action>([
-          Cmd.action(clearSelectedGeounits()),
-          Cmd.run(fetchAllStaticData, {
-            successActionCreator: staticDataFetchSuccess,
-            failActionCreator: staticDataFetchFailure,
-            args: [action.payload.project.regionConfig.s3URI] as Parameters<
-              typeof fetchAllStaticData
-            >
-          })
-        ])
+        Cmd.run(fetchAllStaticData, {
+          successActionCreator: staticDataFetchSuccess,
+          failActionCreator: staticDataFetchFailure,
+          args: [action.payload.project.regionConfig.s3URI] as Parameters<typeof fetchAllStaticData>
+        })
       );
     case getType(projectDataFetchFailure):
       return {
@@ -145,8 +144,8 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
                 assignGeounitsToDistrict(
                   state.projectData.resource.project.districtsDefinition,
                   state.staticData.resource.geoUnitHierarchy,
-                  allGeoUnitIndices(action.payload.selectedGeounits),
-                  action.payload.selectedDistrictId
+                  allGeoUnitIndices(state.selectedGeounits),
+                  state.selectedDistrictId
                 )
               ] as Parameters<typeof patchDistrictsDefinition>
             })
@@ -154,13 +153,7 @@ const projectDataReducer: LoopReducer<ProjectDataState, Action> = (
         : state;
     case getType(updateDistrictsDefinitionSuccess):
       return "resource" in state.projectData
-        ? loop(
-            state,
-            Cmd.list<Action>([
-              Cmd.action(clearSelectedGeounits()),
-              Cmd.action(projectFetch(state.projectData.resource.project.id))
-            ])
-          )
+        ? loop(state, Cmd.action(projectFetch(state.projectData.resource.project.id)))
         : state;
     case getType(updateDistrictsDefinitionFailure):
       // TODO (#188): implement a status area to display errors for this and other things

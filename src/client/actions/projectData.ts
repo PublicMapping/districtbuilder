@@ -17,10 +17,7 @@ export const staticDataFetchSuccess = createAction("Static data fetch success")<
 >();
 export const staticDataFetchFailure = createAction("Static data fetch failure")<string>();
 
-export const updateDistrictsDefinition = createAction("Update districts definition")<{
-  readonly selectedGeounits: GeoUnits;
-  readonly selectedDistrictId: number;
-}>();
+export const updateDistrictsDefinition = createAction("Update districts definition")();
 
 export const updateDistrictsDefinitionSuccess = createAction("Update districts definition success")<
   DynamicProjectData

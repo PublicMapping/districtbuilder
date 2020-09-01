@@ -9,6 +9,7 @@ import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 import { UintArrays, GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
 import {
   areAnyGeoUnitsSelected,
+  destructureResource,
   geoLevelLabel,
   getTotalSelectedDemographics
 } from "../../functions";
@@ -185,11 +186,11 @@ const MapTooltip = ({
 
 function mapStateToProps(state: State) {
   return {
-    geoLevelIndex: state.districtDrawing.geoLevelIndex,
-    highlightedGeounits: state.districtDrawing.highlightedGeounits,
-    staticDemographics: "resource" in state.projectData.staticData ? state.projectData.staticData.resource.staticDemographics : undefined,
-    staticMetadata: "resource" in state.projectData.staticData ? state.projectData.staticData.resource.staticMetadata : undefined,
-    geoUnitHierarchy: "resource" in state.projectData.staticData ? state.projectData.staticData.resource.geoUnitHierarchy : undefined,
+    geoLevelIndex: state.project.geoLevelIndex,
+    highlightedGeounits: state.project.highlightedGeounits,
+    staticDemographics: destructureResource(state.project.staticData, "staticDemographics"),
+    staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
+    geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy")
   };
 }
 

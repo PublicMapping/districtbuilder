@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useEffect, useRef, useState, Fragment } from "react";
+import React, { useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
@@ -32,9 +32,9 @@ import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
 
+import { updateDistrictsDefinition } from "../actions/projectData";
 import {
   clearSelectedGeounits,
-  saveDistrictsDefinition,
   setSelectedDistrictId,
   toggleDistrictLocked
 } from "../actions/districtDrawing";
@@ -226,7 +226,7 @@ const SidebarHeader = ({
             variant="circular"
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(saveDistrictsDefinition());
+              store.dispatch(updateDistrictsDefinition());
             }}
           >
             <Icon name="check" />
