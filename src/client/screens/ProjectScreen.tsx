@@ -8,11 +8,9 @@ import { destructureResource } from "../functions";
 import { DistrictsGeoJSON } from "../types";
 import {
   GeoUnitHierarchy,
-  GeoUnits,
   IProject,
   IStaticMetadata,
   IUser,
-  LockedDistricts,
   UintArrays
 } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";

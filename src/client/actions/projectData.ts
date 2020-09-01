@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { GeoUnits, ProjectId } from "../../shared/entities";
+import { ProjectId } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 
 export const projectFetch = createAction("Project fetch")<ProjectId>();

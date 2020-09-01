@@ -197,9 +197,11 @@ export function getSelectedGeoLevel(geoLevelHierarchy: GeoLevelHierarchy, geoLev
   return geoLevelHierarchy[geoLevelHierarchy.length - 1 - geoLevelIndex];
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function destructureResource<T extends object>(
   resourceT: Resource<T>,
   key: keyof T
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any | undefined {
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
 }
