@@ -2,7 +2,6 @@ import axios, { AxiosResponse } from "axios";
 
 import {
   CreateProjectData,
-  DistrictsDefinition,
   IProject,
   IRegionConfig,
   IUser,
@@ -155,13 +154,13 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
   });
 }
 
-export async function patchDistrictsDefinition(
+export async function patchProject(
   id: ProjectId,
-  districtsDefinition: DistrictsDefinition
+  projectData: Partial<IProject>
 ): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .patch(`/api/projects/${id}`, { districtsDefinition })
+      .patch(`/api/projects/${id}`, projectData)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response.data));
   });

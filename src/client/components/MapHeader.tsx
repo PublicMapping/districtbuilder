@@ -5,7 +5,12 @@ import { areAnyGeoUnitsSelected, geoLevelLabel } from "../functions";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
-import { setGeoLevelIndex, setSelectionTool, SelectionTool } from "../actions/districtDrawing";
+import {
+  setGeoLevelIndex,
+  setSelectionTool,
+  SelectionTool,
+  showAdvancedEditingModal
+} from "../actions/districtDrawing";
 import store from "../store";
 
 const style: ThemeUIStyleObject = {
@@ -86,7 +91,8 @@ const GeoLevelButton = ({
   geoLevelIndex,
   geoLevelHierarchy,
   geoLevelVisibility,
-  selectedGeounits
+  selectedGeounits,
+  advancedEditingEnabled
 }: {
   readonly index: number;
   readonly value: GeoLevelInfo;
@@ -94,6 +100,7 @@ const GeoLevelButton = ({
   readonly geoLevelHierarchy: GeoLevelHierarchy;
   readonly geoLevelVisibility: readonly boolean[];
   readonly selectedGeounits: GeoUnits;
+  readonly advancedEditingEnabled?: boolean;
 }) => {
   const label = geoLevelLabel(value.id);
   const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
@@ -131,7 +138,13 @@ const GeoLevelButton = ({
             key={index}
             sx={{ ...style.selectionButton, ...{ mr: "1px" } }}
             className={buttonClassName(geoLevelIndex === index)}
-            onClick={() => store.dispatch(setGeoLevelIndex(index))}
+            onClick={() =>
+              store.dispatch(
+                !isCurrentLevelBaseGeoLevel || advancedEditingEnabled
+                  ? setGeoLevelIndex(index)
+                  : showAdvancedEditingModal(true)
+              )
+            }
             disabled={isButtonDisabled}
           >
             {label}
@@ -151,7 +164,8 @@ const MapHeader = ({
   selectionTool,
   geoLevelIndex,
   geoLevelVisibility,
-  selectedGeounits
+  selectedGeounits,
+  advancedEditingEnabled
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
@@ -160,6 +174,7 @@ const MapHeader = ({
   readonly geoLevelIndex: number;
   readonly geoLevelVisibility: readonly boolean[];
   readonly selectedGeounits: GeoUnits;
+  readonly advancedEditingEnabled?: boolean;
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
@@ -181,6 +196,7 @@ const MapHeader = ({
             geoLevelHierarchy={geoLevelHierarchy}
             geoLevelVisibility={geoLevelVisibility}
             selectedGeounits={selectedGeounits}
+            advancedEditingEnabled={advancedEditingEnabled}
           />
         ))
     : [];

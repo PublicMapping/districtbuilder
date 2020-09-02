@@ -26,3 +26,7 @@ export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();
 export const setGeoLevelVisibility = createAction("Set geolevel visibility")<readonly boolean[]>();
 
 export const toggleDistrictLocked = createAction("Toggle district locked")<DistrictId>();
+
+export const showAdvancedEditingModal = createAction("Show advanced editing warning modal")<
+  boolean
+>();
