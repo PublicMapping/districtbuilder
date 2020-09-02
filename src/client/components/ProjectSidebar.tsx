@@ -215,7 +215,7 @@ const SidebarHeader = ({
         <Flex sx={{ variant: "header.right" }}>
           <Button
             variant="circularSubtle"
-            sx={{ mr: "2", cursor: "pointer" }}
+            sx={{ mr: "2" }}
             onClick={() => {
               store.dispatch(clearSelectedGeounits());
             }}
@@ -224,7 +224,6 @@ const SidebarHeader = ({
           </Button>
           <Button
             variant="circular"
-            sx={{ cursor: "pointer" }}
             onClick={() => {
               store.dispatch(updateDistrictsDefinition());
             }}
