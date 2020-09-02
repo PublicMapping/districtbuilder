@@ -380,9 +380,6 @@ const SidebarRow = ({
           </span>
         </Tooltip>
       </Styled.td>
-      <Styled.td sx={{ ...style.td, ...style.number, ...style.blankValue }}>
-        {BLANK_VALUE}
-      </Styled.td>
       <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
       <Styled.td>
         {isDistrictLocked ? (
