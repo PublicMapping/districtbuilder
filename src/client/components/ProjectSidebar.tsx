@@ -57,7 +57,7 @@ const style: ThemeUIStyleObject = {
     flexDirection: "column",
     flexShrink: 0,
     height: "100%",
-    minWidth: "400px",
+    minWidth: "415px",
     position: "relative",
     color: "gray.8",
     zIndex: 200
@@ -143,7 +143,7 @@ const ProjectSidebar = ({
     <Flex sx={style.sidebar}>
       <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
-        <Styled.table sx={{ mx: 2, mb: 2 }}>
+        <Styled.table sx={{ width: "calc(100% - 16px)", mx: 2, mb: 2 }}>
           <thead>
             <Styled.tr>
               <Styled.th sx={style.th}>
@@ -250,7 +250,7 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
         </em>
       }
     >
-      <span>{BLANK_VALUE}</span>
+      <span sx={{ color: "gray.2" }}>{BLANK_VALUE}</span>
     </Tooltip>
   ) : typeof compactness === "number" ? (
     <Tooltip
