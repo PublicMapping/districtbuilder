@@ -18,7 +18,7 @@ const appButtonStyles = {
   "& > svg": {
     mr: 1
   },
-  "&:hover:not([disabled])": {
+  "&:hover:not([disabled]):not(:active)": {
     bg: "blue.5"
   },
   "&:active": {
@@ -29,7 +29,8 @@ const appButtonStyles = {
     boxShadow: "focus"
   },
   "&[disabled]": {
-    opacity: 0.6,
+    opacity: 0.2,
+    bg: "gray.3",
     cursor: "not-allowed"
   }
 };
@@ -182,8 +183,8 @@ const theme: Theme & StyledSystemTheme = {
     secondary: {
       ...appButtonStyles,
       ...{
-        backgroundColor: "secondary",
-        "&:hover:not([disabled])": {
+        bg: "secondary",
+        "&:hover:not([disabled]):not(:active)": {
           bg: "gray.6"
         },
         "&:active": {
@@ -194,8 +195,8 @@ const theme: Theme & StyledSystemTheme = {
     ghost: {
       ...appButtonStyles,
       ...{
-        backgroundColor: "rgba(256,256,256,0.2)",
-        "&:hover": {
+        bg: "rgba(256,256,256,0.2)",
+        "&:hover:not([disabled]):not(:active)": {
           bg: "rgba(256,256,256,0.3)"
         },
         "&:active": {
@@ -207,16 +208,37 @@ const theme: Theme & StyledSystemTheme = {
     subtle: {
       ...appButtonStyles,
       ...{
-        backgroundColor: "gray.1",
+        bg: "gray.1",
         color: "heading"
+      },
+      "&:hover:not([disabled]):not(:active)": {
+        bg: "gray.2"
+      },
+      "&:active": {
+        bg: "gray.3",
+        color: "muted"
+      },
+      "&[disabled]": {
+        bg: "gray.1",
+        color: "heading",
+        opacity: 0.25,
+        cursor: "not-allowed"
       }
     },
     minimal: {
       ...appButtonStyles,
       ...{
-        background: "none",
-        "&:hover:not([disabled])": {
+        bg: "transparent",
+        color: "gray.8",
+        "&:hover:not([disabled]):not(:active)": {
+          textDecoration: "underline",
           bg: "rgba(256,256,256,0.2)"
+        },
+        "&[disabled]": {
+          bg: "transparent",
+          color: "gray.8",
+          opacity: 0.25,
+          cursor: "not-allowed"
         },
         "&:active": {
           bg: "rgba(256,256,256,0.3)"
@@ -240,7 +262,7 @@ const theme: Theme & StyledSystemTheme = {
       "& > svg": {
         mr: 1
       },
-      "&:hover:not([disabled])": {
+      "&:hover:not([disabled]):not(:active)": {
         bg: "gray.1"
       },
       "&:active": {
@@ -251,8 +273,9 @@ const theme: Theme & StyledSystemTheme = {
         boxShadow: "focus"
       },
       "&[disabled]": {
-        opacity: 0.6,
-        cursor: "not-allowed"
+        cursor: "not-allowed",
+        bg: "muted",
+        opacity: 0.25
       }
     },
     quiet: {
@@ -260,7 +283,7 @@ const theme: Theme & StyledSystemTheme = {
       ...{
         backgroundColor: "#fff",
         color: "text",
-        "&:hover": {
+        "&:hover:not([disabled]):not(:active)": {
           bg: "blue.1"
         },
         "&:active": {
@@ -288,7 +311,7 @@ const theme: Theme & StyledSystemTheme = {
         borderRadius: "100px",
         backgroundColor: "gray.1",
         color: "heading",
-        "&:hover:not([disabled])": {
+        "&:hover:not([disabled]):not(:active)": {
           bg: "gray.2"
         },
         "&:active": {
@@ -312,7 +335,8 @@ const theme: Theme & StyledSystemTheme = {
         borderColor: "primary",
         boxShadow: "focus",
         outline: "none"
-      }
+      },
+      "&[type='radio']": {}
     },
     select: {
       borderColor: "gray.2",
