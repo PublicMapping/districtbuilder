@@ -1,6 +1,6 @@
 import GoogleTagManager from "@redux-beacon/google-tag-manager";
 import { createMiddleware, EventsMap, EventDefinition } from "redux-beacon";
-import { saveDistrictsDefinition } from "./actions/districtDrawing";
+import { updateDistrictsDefinition } from "./actions/projectData";
 import { projectsFetch } from "./actions/projects";
 import { projectFetch } from "./actions/projectData";
 import { regionConfigsFetch } from "./actions/regionConfig";
@@ -12,7 +12,7 @@ const trackingActionTypes = [
   projectFetch, // user loaded a project
   projectsFetch, // user loaded the home page
   regionConfigsFetch, // user loaded the create project screen
-  saveDistrictsDefinition // user saved a district
+  updateDistrictsDefinition // user saved a district
 ];
 
 const gtm = GoogleTagManager();

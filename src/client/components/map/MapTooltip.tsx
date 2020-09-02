@@ -9,12 +9,12 @@ import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 import { UintArrays, GeoUnits, GeoUnitHierarchy, IStaticMetadata } from "../../../shared/entities";
 import {
   areAnyGeoUnitsSelected,
+  destructureResource,
   geoLevelLabel,
   getTotalSelectedDemographics
 } from "../../functions";
 import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
-import { Resource } from "../../resource";
 import DemographicsTooltip from "../DemographicsTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 
@@ -43,28 +43,22 @@ const style: ThemeUIStyleObject = {
 const MapTooltip = ({
   geoLevelIndex,
   highlightedGeounits,
-  staticDemographicsResource,
-  staticMetadataResource,
-  geoUnitHierarchyResource,
+  staticDemographics,
+  staticMetadata,
+  geoUnitHierarchy,
   map
 }: {
   readonly geoLevelIndex: number;
   readonly highlightedGeounits: GeoUnits;
-  readonly staticDemographicsResource: Resource<UintArrays>;
-  readonly staticMetadataResource: Resource<IStaticMetadata>;
-  readonly geoUnitHierarchyResource: Resource<GeoUnitHierarchy>;
+  readonly staticDemographics?: UintArrays;
+  readonly staticMetadata?: IStaticMetadata;
+  readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly map?: MapboxGL.Map;
 }) => {
   const [point, setPoint] = useState({ x: 0, y: 0 });
   const [feature, setFeature] = useState<MapboxGL.MapboxGeoJSONFeature | undefined>(undefined);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const staticMetadata =
-    "resource" in staticMetadataResource ? staticMetadataResource.resource : undefined;
-  const staticDemographics =
-    "resource" in staticDemographicsResource ? staticDemographicsResource.resource : undefined;
-  const geoUnitHierarchy =
-    "resource" in geoUnitHierarchyResource ? geoUnitHierarchyResource.resource : undefined;
   const invertedGeoLevelIndex = staticMetadata
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
@@ -198,11 +192,11 @@ const MapTooltip = ({
 
 function mapStateToProps(state: State) {
   return {
-    geoLevelIndex: state.districtDrawing.geoLevelIndex,
-    highlightedGeounits: state.districtDrawing.highlightedGeounits,
-    staticDemographicsResource: state.projectData.staticDemographics,
-    staticMetadataResource: state.projectData.staticMetadata,
-    geoUnitHierarchyResource: state.projectData.geoUnitHierarchy
+    geoLevelIndex: state.project.geoLevelIndex,
+    highlightedGeounits: state.project.highlightedGeounits,
+    staticDemographics: destructureResource(state.project.staticData, "staticDemographics"),
+    staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
+    geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy")
   };
 }
 

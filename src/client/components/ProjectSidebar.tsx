@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import React, { useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
@@ -7,7 +6,6 @@ import {
   UintArrays,
   CompactnessScore,
   DistrictsDefinition,
-  DistrictProperties,
   GeoUnitHierarchy,
   GeoUnitIndices,
   GeoUnits,
@@ -15,6 +13,7 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
+import { DistrictGeoJSON, DistrictsGeoJSON } from "../types";
 import {
   allGeoUnitIndices,
   areAnyGeoUnitsSelected,
@@ -33,9 +32,9 @@ import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
 
+import { updateDistrictsDefinition } from "../actions/projectData";
 import {
   clearSelectedGeounits,
-  saveDistrictsDefinition,
   setSelectedDistrictId,
   toggleDistrictLocked
 } from "../actions/districtDrawing";
@@ -132,7 +131,7 @@ const ProjectSidebar = ({
   lockedDistricts
 }: {
   readonly project?: IProject;
-  readonly geojson?: FeatureCollection<MultiPolygon, DistrictProperties>;
+  readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
   readonly staticDemographics?: UintArrays;
   readonly selectedDistrictId: number;
@@ -142,10 +141,7 @@ const ProjectSidebar = ({
 } & LoadingProps) => {
   return (
     <Flex sx={style.sidebar}>
-      {project && geoUnitHierarchy && (
-        <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
-      )}
-
+      <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
         <Styled.table sx={{ mx: 2, mb: 2 }}>
           <thead>
@@ -179,21 +175,18 @@ const ProjectSidebar = ({
             </Styled.tr>
           </thead>
           <tbody>
-            {project &&
-              geojson &&
-              staticMetadata &&
-              staticDemographics &&
-              geoUnitHierarchy &&
-              getSidebarRows(
-                project,
-                geojson,
-                staticMetadata,
-                staticDemographics,
-                selectedDistrictId,
-                selectedGeounits,
-                geoUnitHierarchy,
-                lockedDistricts
-              )}
+            {project && geojson && staticMetadata && staticDemographics && geoUnitHierarchy && (
+              <SidebarRows
+                project={project}
+                geojson={geojson}
+                staticMetadata={staticMetadata}
+                staticDemographics={staticDemographics}
+                selectedDistrictId={selectedDistrictId}
+                selectedGeounits={selectedGeounits}
+                geoUnitHierarchy={geoUnitHierarchy}
+                lockedDistricts={lockedDistricts}
+              />
+            )}
           </tbody>
         </Styled.table>
       </Box>
@@ -233,7 +226,7 @@ const SidebarHeader = ({
             variant="circular"
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              store.dispatch(saveDistrictsDefinition());
+              store.dispatch(updateDistrictsDefinition());
             }}
           >
             <Icon name="check" />
@@ -299,7 +292,7 @@ const SidebarRow = ({
   districtId,
   isDistrictLocked
 }: {
-  readonly district: Feature<MultiPolygon, DistrictProperties>;
+  readonly district: DistrictGeoJSON;
   readonly selected: boolean;
   readonly selectedPopulationDifference: number;
   readonly demographics: { readonly [id: string]: number };
@@ -315,6 +308,7 @@ const SidebarRow = ({
       ? positiveChangeColor
       : negativeChangeColor
     : "inherit";
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   const intermediatePopulation = district.properties.population + selectedPopulationDifference;
   const intermediateDeviation = deviation + selectedPopulationDifference;
   const populationDisplay = intermediatePopulation.toLocaleString();
@@ -415,7 +409,7 @@ const SidebarRow = ({
 const getSavedDistrictSelectedDemographics = (
   project: IProject,
   staticMetadata: IStaticMetadata,
-  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
+  staticDemographics: UintArrays,
   selectedGeounits: GeoUnits,
   geoUnitHierarchy: GeoUnitHierarchy
 ) => {
@@ -468,16 +462,27 @@ const getSavedDistrictSelectedDemographics = (
   );
 };
 
-const getSidebarRows = (
-  project: IProject,
-  geojson: FeatureCollection<MultiPolygon, DistrictProperties>,
-  staticMetadata: IStaticMetadata,
-  staticDemographics: ReadonlyArray<Uint8Array | Uint16Array | Uint32Array>,
-  selectedDistrictId: number,
-  selectedGeounits: GeoUnits,
-  geoUnitHierarchy: GeoUnitHierarchy,
-  lockedDistricts: LockedDistricts
-) => {
+interface SidebarRowsProps {
+  readonly project: IProject;
+  readonly geojson: DistrictsGeoJSON;
+  readonly staticMetadata: IStaticMetadata;
+  readonly staticDemographics: UintArrays;
+  readonly selectedDistrictId: number;
+  readonly selectedGeounits: GeoUnits;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
+  readonly lockedDistricts: LockedDistricts;
+}
+
+const SidebarRows = ({
+  project,
+  geojson,
+  staticMetadata,
+  staticDemographics,
+  selectedDistrictId,
+  selectedGeounits,
+  geoUnitHierarchy,
+  lockedDistricts
+}: SidebarRowsProps) => {
   // Aggregated demographics for the geounit selection
   const totalSelectedDemographics = getTotalSelectedDemographics(
     staticMetadata,
@@ -504,34 +509,38 @@ const getSidebarRows = (
       0
     ) / project.numberOfDistricts;
 
-  return geojson.features.map(feature => {
-    const districtId = typeof feature.id === "number" ? feature.id : 0;
-    const selected = districtId === selectedDistrictId;
-    const demographics = feature.properties;
-    const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
-    const selectedPopulationDifference = selected
-      ? totalSelectedDemographics.population - selectedPopulation
-      : -1 * selectedPopulation;
+  return (
+    <React.Fragment>
+      {geojson.features.map(feature => {
+        const districtId = typeof feature.id === "number" ? feature.id : 0;
+        const selected = districtId === selectedDistrictId;
+        const demographics = feature.properties;
+        const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
+        const selectedPopulationDifference = selected
+          ? totalSelectedDemographics.population - selectedPopulation
+          : -1 * selectedPopulation;
 
-    return (
-      <SidebarRow
-        district={feature}
-        selected={selected}
-        selectedPopulationDifference={selectedPopulationDifference}
-        demographics={demographics}
-        deviation={
-          // The population goal for the unassigned district is 0,
-          // so it's deviation is equal to its population
-          districtId === 0
-            ? feature.properties.population
-            : feature.properties.population - averagePopulation
-        }
-        key={districtId}
-        isDistrictLocked={lockedDistricts.has(districtId)}
-        districtId={districtId}
-      />
-    );
-  });
+        return (
+          <SidebarRow
+            district={feature}
+            selected={selected}
+            selectedPopulationDifference={selectedPopulationDifference}
+            demographics={demographics}
+            deviation={
+              // The population goal for the unassigned district is 0,
+              // so it's deviation is equal to its population
+              districtId === 0
+                ? feature.properties.population
+                : feature.properties.population - averagePopulation
+            }
+            key={districtId}
+            isDistrictLocked={lockedDistricts.has(districtId)}
+            districtId={districtId}
+          />
+        );
+      })}
+    </React.Fragment>
+  );
 };
 
 export default ProjectSidebar;

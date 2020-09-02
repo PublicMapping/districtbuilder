@@ -3,13 +3,11 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
-  SelectionTool,
   addSelectedGeounits,
   clearHighlightedGeounits,
   clearSelectedGeounits,
   editSelectedGeounits,
   removeSelectedGeounits,
-  saveDistrictsDefinition,
   setGeoLevelIndex,
   setGeoLevelVisibility,
   setHighlightedGeounits,
@@ -17,9 +15,10 @@ import {
   setSelectionTool,
   toggleDistrictLocked
 } from "../actions/districtDrawing";
-import { updateDistrictsDefinition } from "../actions/projectData";
+import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
+import { ProjectState, initialProjectState } from "./project";
 
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
@@ -74,7 +73,7 @@ export interface DistrictDrawingState {
   readonly lockedDistricts: LockedDistricts;
 }
 
-export const initialState: DistrictDrawingState = {
+export const initialDistrictDrawingState: DistrictDrawingState = {
   selectedDistrictId: 1,
   selectedGeounits: {},
   highlightedGeounits: {},
@@ -84,13 +83,16 @@ export const initialState: DistrictDrawingState = {
   lockedDistricts: new Set()
 };
 
-const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
-  state: DistrictDrawingState = initialState,
+const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
+  state: ProjectState = initialProjectState,
   action: Action
-): DistrictDrawingState | Loop<DistrictDrawingState, Action> => {
+): ProjectState | Loop<ProjectState, Action> => {
   switch (action.type) {
     case getType(resetProjectState):
-      return initialState;
+      return {
+        ...state,
+        ...initialDistrictDrawingState
+      };
     case getType(setSelectedDistrictId):
       return {
         ...state,
@@ -148,16 +150,6 @@ const districtDrawingReducer: LoopReducer<DistrictDrawingState, Action> = (
         ...state,
         geoLevelIndex: action.payload
       };
-    case getType(saveDistrictsDefinition):
-      return loop(
-        state,
-        Cmd.action(
-          updateDistrictsDefinition({
-            selectedGeounits: state.selectedGeounits,
-            selectedDistrictId: state.selectedDistrictId
-          })
-        )
-      );
     case getType(setGeoLevelVisibility):
       return {
         ...state,

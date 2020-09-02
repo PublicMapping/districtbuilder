@@ -3,8 +3,18 @@ import { useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
-import { IUser } from "../../shared/entities";
+
+import { destructureResource } from "../functions";
+import { DistrictsGeoJSON } from "../types";
+import {
+  GeoUnitHierarchy,
+  IProject,
+  IStaticMetadata,
+  IUser,
+  UintArrays
+} from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
+import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -15,33 +25,33 @@ import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
 import Toast from "../components/Toast";
 import { State } from "../reducers";
-import { DistrictDrawingState } from "../reducers/districtDrawing";
-import { ProjectDataState } from "../reducers/projectData";
 import { Resource } from "../resource";
 import store from "../store";
 
 interface StateProps {
-  readonly projectData: ProjectDataState;
-  readonly user: Resource<IUser>;
+  readonly project?: IProject;
+  readonly geojson?: DistrictsGeoJSON;
+  readonly staticMetadata?: IStaticMetadata;
+  readonly staticDemographics?: UintArrays;
+  readonly staticGeoLevels: UintArrays;
+  readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly districtDrawing: DistrictDrawingState;
+  readonly isLoading: boolean;
+  readonly user: Resource<IUser>;
 }
 
-const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
+const ProjectScreen = ({
+  project,
+  geojson,
+  staticMetadata,
+  staticDemographics,
+  staticGeoLevels,
+  geoUnitHierarchy,
+  districtDrawing,
+  isLoading,
+  user
+}: StateProps) => {
   const { projectId } = useParams();
-  const project = "resource" in projectData.project ? projectData.project.resource : undefined;
-  const geojson = "resource" in projectData.geojson ? projectData.geojson.resource : undefined;
-  const staticMetadata =
-    "resource" in projectData.staticMetadata ? projectData.staticMetadata.resource : undefined;
-  const staticDemographics =
-    "resource" in projectData.staticDemographics
-      ? projectData.staticDemographics.resource
-      : undefined;
-  const geoUnitHierarchy =
-    "resource" in projectData.geoUnitHierarchy ? projectData.geoUnitHierarchy.resource : undefined;
-  const isLoading =
-    ("isPending" in projectData.project && projectData.project.isPending) ||
-    ("isPending" in projectData.geojson && projectData.geojson.isPending);
-
   const [label, setMapLabel] = useState<string | undefined>(undefined);
 
   // Reset component redux state on unmount
@@ -108,17 +118,13 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
             geoLevelVisibility={districtDrawing.geoLevelVisibility}
             selectedGeounits={districtDrawing.selectedGeounits}
           />
-          {"resource" in projectData.project &&
-          "resource" in projectData.staticMetadata &&
-          "resource" in projectData.staticDemographics &&
-          "resource" in projectData.staticGeoLevels &&
-          "resource" in projectData.geojson ? (
+          {project && staticMetadata && staticDemographics && staticGeoLevels && geojson ? (
             <Map
-              project={projectData.project.resource}
-              geojson={projectData.geojson.resource}
-              staticMetadata={projectData.staticMetadata.resource}
-              staticDemographics={projectData.staticDemographics.resource}
-              staticGeoLevels={projectData.staticGeoLevels.resource}
+              project={project}
+              geojson={geojson}
+              staticMetadata={staticMetadata}
+              staticDemographics={staticDemographics}
+              staticGeoLevels={staticGeoLevels}
               selectedGeounits={districtDrawing.selectedGeounits}
               selectedDistrictId={districtDrawing.selectedDistrictId}
               selectionTool={districtDrawing.selectionTool}
@@ -135,9 +141,17 @@ const ProjectScreen = ({ projectData, user, districtDrawing }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    projectData: state.projectData,
-    user: state.user,
-    districtDrawing: state.districtDrawing
+    project: destructureResource(state.project.projectData, "project"),
+    geojson: destructureResource(state.project.projectData, "geojson"),
+    staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
+    staticGeoLevels: destructureResource(state.project.staticData, "staticGeoLevels"),
+    staticDemographics: destructureResource(state.project.staticData, "staticDemographics"),
+    geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
+    districtDrawing: state.project,
+    isLoading:
+      ("isPending" in state.project.projectData && state.project.projectData.isPending) ||
+      ("isPending" in state.project.staticData && state.project.staticData.isPending),
+    user: state.user
   };
 }
 

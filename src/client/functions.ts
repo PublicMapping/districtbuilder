@@ -1,4 +1,5 @@
 import memoize from "memoizee";
+import { cloneDeep } from "lodash";
 
 import {
   DemographicCounts,
@@ -11,6 +12,7 @@ import {
   IStaticMetadata,
   NestedArray
 } from "../shared/entities";
+import { Resource } from "./resource";
 import { getDemographics as getDemographicsBase } from "../shared/functions";
 
 // TODO: merge this function with shared/functions once the ability to import
@@ -147,6 +149,7 @@ export function assignGeounitsToDistrict(
   geounitIndices: readonly GeoUnitIndices[],
   districtId: number
 ): DistrictsDefinition {
+  const districtsDefinitionCopy = cloneDeep(districtsDefinition);
   return geounitIndices.reduce((newDistrictsDefinition, geounitData) => {
     const initialGeounitId = geounitData[0];
     // eslint-disable-next-line
@@ -162,7 +165,7 @@ export function assignGeounitsToDistrict(
             districtId
           );
     return newDistrictsDefinition;
-  }, districtsDefinition);
+  }, districtsDefinitionCopy);
 }
 
 /*
@@ -192,4 +195,13 @@ export const geoLevelLabel = (id: string): string => {
 
 export function getSelectedGeoLevel(geoLevelHierarchy: GeoLevelHierarchy, geoLevelIndex: number) {
   return geoLevelHierarchy[geoLevelHierarchy.length - 1 - geoLevelIndex];
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function destructureResource<T extends object>(
+  resourceT: Resource<T>,
+  key: keyof T
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any | undefined {
+  return "resource" in resourceT ? resourceT.resource[key] : undefined;
 }
