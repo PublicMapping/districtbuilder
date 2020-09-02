@@ -1,10 +1,9 @@
 /** @jsx jsx */
-import { Box, Button, Flex, jsx, Text } from "theme-ui";
+import { Box, Flex, jsx, Text } from "theme-ui";
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
 import { IProject } from "../../shared/entities";
-import Icon from "../components/Icon";
 import { heights } from "../theme";
 
 const HeaderDivider = () => {
@@ -45,15 +44,7 @@ const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
         </Text>
       </Flex>
     </Flex>
-    <Flex sx={{ variant: "header.right" }}>
-      <Button sx={{ variant: "buttons.minimal", fontWeight: "light" }}>
-        <Icon name="search" /> Find
-      </Button>
-      <Button sx={{ variant: "buttons.minimal", fontWeight: "light" }}>Settings</Button>
-      <Button sx={{ variant: "buttons.minimal", fontWeight: "light" }}>Find</Button>
-      <HeaderDivider sx={{ opacity: 0 }} />
-      <Button sx={{ variant: "buttons.ghost", fontWeight: "light" }}>Evaluate</Button>
-    </Flex>
+    <Flex sx={{ variant: "header.right" }} />
   </Flex>
 );
 
