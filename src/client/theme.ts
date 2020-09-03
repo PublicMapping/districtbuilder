@@ -329,14 +329,25 @@ const theme: Theme & StyledSystemTheme = {
       textAlign: "left",
       variant: "text.caps"
     },
+    radio: {
+      "input:focus ~ &": {
+        bg: "muted",
+        boxShadow: "focus"
+      }
+    },
+    checkbox: {
+      "input:focus ~ &": {
+        bg: "muted",
+        boxShadow: "focus"
+      }
+    },
     input: {
       borderColor: "gray.2",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
         outline: "none"
-      },
-      "&[type='radio']": {}
+      }
     },
     select: {
       borderColor: "gray.2",
