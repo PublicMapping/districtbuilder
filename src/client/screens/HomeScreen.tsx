@@ -78,7 +78,7 @@ const style: ThemeUIStyleObject = {
   },
   menuButton: {
     display: "flex",
-    alignItems: "baseline",
+    alignItems: "center",
     bg: "transparent",
     p: 1,
     borderRadius: "small",
