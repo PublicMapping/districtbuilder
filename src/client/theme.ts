@@ -428,6 +428,14 @@ const theme: Theme & StyledSystemTheme = {
       py: 1
     }
   },
+  linkButton: {
+    ...appButtonStyles,
+    backgroundColor: "primary",
+    color: "white",
+    textDecoration: "none",
+    px: 3,
+    py: 2
+  },
   header: {
     app: {
       height: heights.header,

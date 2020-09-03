@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
+/** @jsx jsx */
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Flex, Spinner } from "theme-ui";
+import { Link } from "react-router-dom";
+import { Box, Flex, Spinner, Card, Styled, jsx, Text } from "theme-ui";
+import { ReactComponent as Logo } from "../media/logos/logo.svg";
+import { ReactComponent as SuccessIllustration } from "../media/successfully-registered-illustration.svg";
 
 import { activateAccount } from "../api";
 import CenteredContent from "../components/CenteredContent";
@@ -25,7 +29,36 @@ const ActivateAccountScreen = () => {
   return (
     <CenteredContent>
       {"resource" in activationResource ? (
-        <Box>Thank you for activating your account!</Box>
+        <Box>
+          <Logo sx={{ width: "15rem", mx: "auto", mb: 4 }} />
+          <Card
+            sx={{
+              variant: "card.floating",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "stretch"
+            }}
+          >
+            <Box sx={{ mb: 3, mx: "auto" }}>
+              <SuccessIllustration />
+            </Box>
+            <Text
+              as="p"
+              sx={{
+                variant: "header.title",
+                textAlign: "center",
+                fontSize: 3,
+                mb: 4
+              }}
+            >
+              Thank you for activating your account!
+            </Text>
+
+            <Styled.a as={Link} to="/login" sx={{ variant: "linkButton" }}>
+              Log in
+            </Styled.a>
+          </Card>
+        </Box>
       ) : "errorMessage" in activationResource ? (
         <Box style={{ color: "red" }}>{activationResource.errorMessage}</Box>
       ) : "isPending" in activationResource && activationResource.isPending ? (
