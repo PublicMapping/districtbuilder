@@ -29,7 +29,7 @@ const ActivateAccountScreen = () => {
   return (
     <CenteredContent>
       {"resource" in activationResource ? (
-        <Box>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Logo sx={{ width: "15rem", mx: "auto", mb: 4 }} />
           <Card
             sx={{
