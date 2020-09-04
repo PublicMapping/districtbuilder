@@ -1,26 +1,22 @@
 /** @jsx jsx */
-import React, { useState, Fragment } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
-  UintArrays,
   CompactnessScore,
-  DistrictsDefinition,
+  DemographicCounts,
   GeoUnitHierarchy,
-  GeoUnitIndices,
   GeoUnits,
   IProject,
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
 import { DistrictGeoJSON, DistrictsGeoJSON } from "../types";
+import { areAnyGeoUnitsSelected, assertNever } from "../functions";
 import {
-  allGeoUnitIndices,
-  areAnyGeoUnitsSelected,
-  assertNever,
-  getDemographics,
+  getSavedDistrictSelectedDemographics,
   getTotalSelectedDemographics
-} from "../functions";
+} from "../worker-functions";
 import {
   getDistrictColor,
   negativeChangeColor,
@@ -124,7 +120,6 @@ const ProjectSidebar = ({
   geojson,
   isLoading,
   staticMetadata,
-  staticDemographics,
   selectedDistrictId,
   selectedGeounits,
   geoUnitHierarchy,
@@ -133,7 +128,6 @@ const ProjectSidebar = ({
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
-  readonly staticDemographics?: UintArrays;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
@@ -175,15 +169,13 @@ const ProjectSidebar = ({
             </Styled.tr>
           </thead>
           <tbody>
-            {project && geojson && staticMetadata && staticDemographics && geoUnitHierarchy && (
+            {project && geojson && staticMetadata && geoUnitHierarchy && (
               <SidebarRows
                 project={project}
                 geojson={geojson}
                 staticMetadata={staticMetadata}
-                staticDemographics={staticDemographics}
                 selectedDistrictId={selectedDistrictId}
                 selectedGeounits={selectedGeounits}
-                geoUnitHierarchy={geoUnitHierarchy}
                 lockedDistricts={lockedDistricts}
               />
             )}
@@ -293,7 +285,7 @@ const SidebarRow = ({
 }: {
   readonly district: DistrictGeoJSON;
   readonly selected: boolean;
-  readonly selectedPopulationDifference: number;
+  readonly selectedPopulationDifference?: number;
   readonly demographics: { readonly [id: string]: number };
   readonly deviation: number;
   readonly districtId: number;
@@ -302,18 +294,23 @@ const SidebarRow = ({
   const [isHovered, setHover] = useState(false);
 
   const showPopulationChange = selectedPopulationDifference !== 0;
-  const textColor = showPopulationChange
-    ? selectedPopulationDifference > 0
-      ? positiveChangeColor
-      : negativeChangeColor
-    : "inherit";
+  const textColor =
+    selectedPopulationDifference && showPopulationChange
+      ? selectedPopulationDifference > 0
+        ? positiveChangeColor
+        : negativeChangeColor
+      : "inherit";
   // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   const intermediatePopulation = district.properties.population + selectedPopulationDifference;
-  const intermediateDeviation = deviation + selectedPopulationDifference;
+  const intermediateDeviation =
+    selectedPopulationDifference && deviation + selectedPopulationDifference;
   const populationDisplay = intermediatePopulation.toLocaleString();
-  const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
-    intermediateDeviation
-  ).toLocaleString()}`;
+  const deviationDisplay =
+    intermediateDeviation !== undefined
+      ? `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
+          intermediateDeviation
+        ).toLocaleString()}`
+      : BLANK_VALUE;
   const compactnessDisplay =
     districtId === 0 ? (
       <span sx={style.blankValue}>{BLANK_VALUE}</span>
@@ -403,72 +400,12 @@ const SidebarRow = ({
   );
 };
 
-// Drill into the district definition and collect the base geounits for
-// every district that's part of the selection
-const getSavedDistrictSelectedDemographics = (
-  project: IProject,
-  staticMetadata: IStaticMetadata,
-  staticDemographics: UintArrays,
-  selectedGeounits: GeoUnits,
-  geoUnitHierarchy: GeoUnitHierarchy
-) => {
-  /* eslint-disable */
-  // Note: not using Array.fill to populate these, because the empty array in memory gets shared
-  const mutableDistrictGeounitAccum: number[][] = [];
-  for (let i = 0; i <= project.numberOfDistricts; i = i + 1) {
-    mutableDistrictGeounitAccum[i] = [];
-  }
-  /* eslint-enable */
-
-  // Collect all base geounits found in the selection
-  const accumulateGeounits = (
-    subIndices: GeoUnitIndices,
-    subDefinition: DistrictsDefinition | number,
-    subHierarchy: GeoUnitHierarchy | number
-  ) => {
-    if (typeof subHierarchy === "number" && typeof subDefinition === "number") {
-      // The base case: we made it to the bottom of the trees and need to assign this
-      // base geonunit to the district found in the district definition
-      // eslint-disable-next-line
-      mutableDistrictGeounitAccum[subDefinition].push(subHierarchy);
-      return;
-    } else if (subIndices.length === 0 && typeof subHierarchy !== "number") {
-      // We've exhausted the base indices. This means we ned to grab all the indices found
-      // at this level and accumulate them all
-      subHierarchy.forEach((_, ind) => accumulateGeounits([ind], subDefinition, subHierarchy));
-      return;
-    } else {
-      // Recurse by drilling into all three data structures:
-      // geounit indices, district definition, and geounit hierarchy
-      const currIndex = subIndices[0];
-      const currDefn =
-        typeof subDefinition === "number"
-          ? subDefinition
-          : (subDefinition[currIndex] as DistrictsDefinition);
-      const currHierarchy =
-        typeof subHierarchy === "number" ? subHierarchy : subHierarchy[currIndex];
-      accumulateGeounits(subIndices.slice(1), currDefn, currHierarchy);
-      return;
-    }
-  };
-
-  allGeoUnitIndices(selectedGeounits).forEach(geoUnitIndices => {
-    accumulateGeounits(geoUnitIndices, project.districtsDefinition, geoUnitHierarchy);
-  });
-
-  return mutableDistrictGeounitAccum.map(baseGeounitIdsForDistrict =>
-    getDemographics(baseGeounitIdsForDistrict, staticMetadata, staticDemographics)
-  );
-};
-
 interface SidebarRowsProps {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticDemographics: UintArrays;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
-  readonly geoUnitHierarchy: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
 }
 
@@ -476,28 +413,34 @@ const SidebarRows = ({
   project,
   geojson,
   staticMetadata,
-  staticDemographics,
   selectedDistrictId,
   selectedGeounits,
-  geoUnitHierarchy,
   lockedDistricts
 }: SidebarRowsProps) => {
-  // Aggregated demographics for the geounit selection
-  const totalSelectedDemographics = getTotalSelectedDemographics(
-    staticMetadata,
-    geoUnitHierarchy,
-    staticDemographics,
-    selectedGeounits
-  );
+  const [totalSelectedDemographics, setTotalSelectDemographics] = useState<
+    DemographicCounts | undefined
+  >(undefined);
+  const [savedDistrictSelectedDemographics, setSavedDistrictSelectedDemographics] = useState<
+    readonly DemographicCounts[] | undefined
+  >(undefined);
+  useEffect(() => {
+    async function getData() {
+      // Aggregated demographics for the geounit selection
+      setTotalSelectDemographics(
+        await getTotalSelectedDemographics(
+          staticMetadata,
+          project.regionConfig.s3URI,
+          selectedGeounits
+        )
+      );
 
-  // The demographic composition of the selection for each saved district
-  const savedDistrictSelectedDemographics = getSavedDistrictSelectedDemographics(
-    project,
-    staticMetadata,
-    staticDemographics,
-    selectedGeounits,
-    geoUnitHierarchy
-  );
+      // The demographic composition of the selection for each saved district
+      setSavedDistrictSelectedDemographics(
+        await getSavedDistrictSelectedDemographics(project, staticMetadata, selectedGeounits)
+      );
+    }
+    void getData();
+  }, [project, staticMetadata, selectedGeounits]);
 
   // The target population is based on the average population of all districts,
   // not including the unassigned district, so we use the number of districts,
@@ -514,10 +457,15 @@ const SidebarRows = ({
         const districtId = typeof feature.id === "number" ? feature.id : 0;
         const selected = districtId === selectedDistrictId;
         const demographics = feature.properties;
-        const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
-        const selectedPopulationDifference = selected
-          ? totalSelectedDemographics.population - selectedPopulation
-          : -1 * selectedPopulation;
+        const selectedPopulation = savedDistrictSelectedDemographics
+          ? savedDistrictSelectedDemographics[districtId].population
+          : undefined;
+        const selectedPopulationDifference =
+          selectedPopulation !== undefined && totalSelectedDemographics !== undefined && selected
+            ? totalSelectedDemographics.population - selectedPopulation
+            : selectedPopulation !== undefined
+            ? -1 * selectedPopulation
+            : undefined;
 
         return (
           <SidebarRow

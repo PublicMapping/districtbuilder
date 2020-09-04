@@ -9,7 +9,7 @@ import {
   IStaticMetadata,
   S3URI
 } from "../shared/entities";
-import { StaticProjectData } from "./types";
+import { StaticProjectData, WorkerProjectData } from "./types";
 
 const s3Axios = axios.create();
 
@@ -72,14 +72,25 @@ export async function fetchAllStaticData(path: S3URI): Promise<StaticProjectData
       Promise.all([
         Promise.resolve(staticMetadata),
         fetchGeoUnitHierarchy(path),
-        fetchStaticFiles(path, staticMetadata.geoLevels),
-        fetchStaticFiles(path, staticMetadata.demographics)
+        fetchStaticFiles(path, staticMetadata.geoLevels)
       ])
     )
-    .then(([staticMetadata, geoUnitHierarchy, staticGeoLevels, staticDemographics]) => ({
+    .then(([staticMetadata, geoUnitHierarchy, staticGeoLevels]) => ({
       staticMetadata,
       geoUnitHierarchy,
-      staticGeoLevels,
-      staticDemographics
+      staticGeoLevels
     }));
+}
+
+export async function fetchWorkerStaticData(
+  path: S3URI,
+  staticMetadata: IStaticMetadata
+): Promise<WorkerProjectData> {
+  return Promise.all([
+    fetchGeoUnitHierarchy(path),
+    fetchStaticFiles(path, staticMetadata.demographics)
+  ]).then(([geoUnitHierarchy, staticDemographics]) => ({
+    geoUnitHierarchy,
+    staticDemographics
+  }));
 }

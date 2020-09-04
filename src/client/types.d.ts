@@ -18,6 +18,10 @@ export interface DynamicProjectData {
 export interface StaticProjectData {
   readonly staticMetadata: IStaticMetadata;
   readonly staticGeoLevels: UintArrays;
+  readonly geoUnitHierarchy: GeoUnitHierarchy;
+}
+
+export interface WorkerProjectData {
   readonly staticDemographics: UintArrays;
   readonly geoUnitHierarchy: GeoUnitHierarchy;
 }

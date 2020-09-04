@@ -44,7 +44,6 @@ interface Props {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticDemographics: UintArrays;
   readonly staticGeoLevels: UintArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
@@ -58,7 +57,6 @@ const DistrictsMap = ({
   project,
   geojson,
   staticMetadata,
-  staticDemographics,
   staticGeoLevels,
   selectedGeounits,
   selectedDistrictId,
@@ -372,15 +370,7 @@ const DistrictsMap = ({
       }
       /* eslint-enable */
     }
-  }, [
-    map,
-    selectionTool,
-    selectedGeolevel,
-    staticMetadata,
-    staticDemographics,
-    project,
-    lockedDistricts
-  ]);
+  }, [map, selectionTool, selectedGeolevel, staticMetadata, project, lockedDistricts]);
 
   return (
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
