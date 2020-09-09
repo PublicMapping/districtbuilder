@@ -152,6 +152,8 @@ resource "aws_ecs_service" "app" {
   deployment_minimum_healthy_percent = var.fargate_app_deployment_min_percent
   deployment_maximum_percent         = var.fargate_app_deployment_max_percent
 
+  health_check_grace_period_seconds = var.districtbuilder_state_count * var.health_check_grace_period_per_state
+
   launch_type      = "FARGATE"
   platform_version = var.fargate_platform_version
 
