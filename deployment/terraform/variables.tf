@@ -246,6 +246,10 @@ variable "fargate_app_deployment_max_percent" {
   type    = number
 }
 
+variable "health_check_grace_period_per_state" {
+  type = number
+}
+
 variable "districtbuilder_state_count" {
   type = number
 }

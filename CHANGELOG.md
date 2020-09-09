@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extend Jenkins pipeline to support production releases [#325](https://github.com/PublicMapping/districtbuilder/pull/325)
 - Add support for Rollbar [#338](https://github.com/PublicMapping/districtbuilder/pull/338)
 - Provide math for scaling task memory with additional states [#309](https://github.com/PublicMapping/districtbuilder/pull/309)
+- Add ability to tune health check grace period for ECS service [#393](https://github.com/PublicMapping/districtbuilder/pull/393)
 
 ### Changed
 - Migrate DNS records to districtbuilder.org hosted zones [#360](https://github.com/PublicMapping/districtbuilder/pull/360)
