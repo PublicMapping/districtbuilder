@@ -12,7 +12,7 @@ import {
   LockedDistricts
 } from "../../shared/entities";
 import { DistrictGeoJSON, DistrictsGeoJSON } from "../types";
-import { areAnyGeoUnitsSelected, assertNever } from "../functions";
+import { areAnyGeoUnitsSelected, assertNever, combineGeoUnits } from "../functions";
 import {
   getSavedDistrictSelectedDemographics,
   getTotalSelectedDemographics
@@ -122,6 +122,7 @@ const ProjectSidebar = ({
   staticMetadata,
   selectedDistrictId,
   selectedGeounits,
+  highlightedGeounits,
   geoUnitHierarchy,
   lockedDistricts
 }: {
@@ -130,6 +131,7 @@ const ProjectSidebar = ({
   readonly staticMetadata?: IStaticMetadata;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
+  readonly highlightedGeounits: GeoUnits;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
 } & LoadingProps) => {
@@ -176,6 +178,7 @@ const ProjectSidebar = ({
                 staticMetadata={staticMetadata}
                 selectedDistrictId={selectedDistrictId}
                 selectedGeounits={selectedGeounits}
+                highlightedGeounits={highlightedGeounits}
                 lockedDistricts={lockedDistricts}
               />
             )}
@@ -406,6 +409,7 @@ interface SidebarRowsProps {
   readonly staticMetadata: IStaticMetadata;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
+  readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
 }
 
@@ -415,6 +419,7 @@ const SidebarRows = ({
   staticMetadata,
   selectedDistrictId,
   selectedGeounits,
+  highlightedGeounits,
   lockedDistricts
 }: SidebarRowsProps) => {
   const [totalSelectedDemographics, setTotalSelectDemographics] = useState<
@@ -424,23 +429,34 @@ const SidebarRows = ({
     readonly DemographicCounts[] | undefined
   >(undefined);
   useEffect(() => {
+    // eslint-disable-next-line
+    let outdated = false;
+
     async function getData() {
+      const combinedSelection = combineGeoUnits(selectedGeounits, highlightedGeounits);
       // Aggregated demographics for the geounit selection
-      setTotalSelectDemographics(
-        await getTotalSelectedDemographics(
-          staticMetadata,
-          project.regionConfig.s3URI,
-          selectedGeounits
-        )
+      const selectedTotals = await getTotalSelectedDemographics(
+        staticMetadata,
+        project.regionConfig.s3URI,
+        combinedSelection
+      );
+      // The demographic composition of the selection for each saved district
+      const districtTotals = await getSavedDistrictSelectedDemographics(
+        project,
+        staticMetadata,
+        combinedSelection
       );
 
-      // The demographic composition of the selection for each saved district
-      setSavedDistrictSelectedDemographics(
-        await getSavedDistrictSelectedDemographics(project, staticMetadata, selectedGeounits)
-      );
+      // Don't overwrite current results with outdated ones
+      !outdated && setTotalSelectDemographics(selectedTotals);
+      !outdated && setSavedDistrictSelectedDemographics(districtTotals);
     }
     void getData();
-  }, [project, staticMetadata, selectedGeounits]);
+
+    return () => {
+      outdated = true;
+    };
+  }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
   // The target population is based on the average population of all districts,
   // not including the unassigned district, so we use the number of districts,
