@@ -1,5 +1,3 @@
-import memoize from "memoizee";
-
 import {
   DemographicCounts,
   DistrictsDefinition,
@@ -35,18 +33,13 @@ function fetchRegionData(regionURI: S3URI, staticMetadata: IStaticMetadata): Reg
   return regionData;
 }
 
-const getDemographicsMemoized = memoize(getDemographicsBase, {
-  normalizer: args => JSON.stringify([[...args[0]].sort(), args[1]]),
-  primitive: true
-});
-
-export async function getDemographics(
+async function getDemographics(
   baseIndices: readonly number[] | ReadonlySet<number>,
   staticMetadata: IStaticMetadata,
   regionURI: S3URI
 ): Promise<DemographicCounts> {
   const data = await fetchRegionData(regionURI, staticMetadata).data;
-  return getDemographicsMemoized(baseIndices, staticMetadata, data.staticDemographics);
+  return getDemographicsBase(baseIndices, staticMetadata, data.staticDemographics);
 }
 
 /*
