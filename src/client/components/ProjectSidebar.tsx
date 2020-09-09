@@ -229,7 +229,7 @@ const SidebarHeader = ({
             }}
           >
             <Icon name="check" />
-            Approve
+            Accept
           </Button>
         </Flex>
       ) : null}
