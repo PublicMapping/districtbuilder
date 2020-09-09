@@ -329,14 +329,25 @@ const theme: Theme & StyledSystemTheme = {
       textAlign: "left",
       variant: "text.caps"
     },
+    radio: {
+      "input:focus ~ &": {
+        bg: "muted",
+        boxShadow: "focus"
+      }
+    },
+    checkbox: {
+      "input:focus ~ &": {
+        bg: "muted",
+        boxShadow: "focus"
+      }
+    },
     input: {
       borderColor: "gray.2",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
         outline: "none"
-      },
-      "&[type='radio']": {}
+      }
     },
     select: {
       borderColor: "gray.2",
@@ -416,6 +427,14 @@ const theme: Theme & StyledSystemTheme = {
     td: {
       py: 1
     }
+  },
+  linkButton: {
+    ...appButtonStyles,
+    backgroundColor: "primary",
+    color: "white",
+    textDecoration: "none",
+    px: 3,
+    py: 2
   },
   header: {
     app: {
