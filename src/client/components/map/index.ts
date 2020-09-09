@@ -20,29 +20,43 @@ export const GEOLEVELS_SOURCE_ID = "db";
 export const DISTRICTS_SOURCE_ID = "districts";
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
-// Used only to make labels show up on top of all other layers
+// Used only to make districts appear in the correct position in the layer stack
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
+// Used only to make highlights appear in the correct position in the layer stack
+export const HIGHLIGHTS_PLACEHOLDER_LAYER_ID = "highlight-placeholder";
+// Used only to make lines appear in the correct position in the layer stack
+export const LINES_PLACEHOLDER_LAYER_ID = "line-placeholder";
+// Used only to make labels appear in the correct position in the layer stack
+export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
 
 // Delay used to throttle calls to set the current feature(s), in milliseconds
 export const SET_FEATURE_DELAY = 100;
+
+// Layers in the Mapbox Studio project that we filter to only show the active region.
+const filteredLabelLayers = [
+  "settlement-major-label",
+  "settlement-minor-label",
+  "settlement-subdivision-label",
+  "poi-label"
+];
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
   const largeGeolevel = {
     "line-color": "#000",
     "line-opacity": 1,
-    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 14, 5]
+    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 14, 4.5]
   };
 
   const mediumGeolevel = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.6],
-    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.3, 14, 3]
+    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.3, 14, 2.5]
   };
 
   const smallGeolevel = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.3],
-    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 14, 2]
+    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 14, 1.5]
   };
 
   switch (geoLevel) {
@@ -59,89 +73,122 @@ export function getGeolevelLinePaintStyle(geoLevel: string) {
   }
 }
 
-export function getMapboxStyle(
+export function generateMapLayers(
   path: string,
+  regionCode: string,
   geoLevels: readonly GeoLevelInfo[],
   minZoom: number,
-  maxZoom: number
-): MapboxGL.Style {
-  const lineLayers = geoLevels.flatMap(level => [
-    {
-      id: levelToLineLayerId(level.id),
-      type: "line",
-      source: GEOLEVELS_SOURCE_ID,
-      "source-layer": level.id,
-      layout: { visibility: "none" },
-      paint: getGeolevelLinePaintStyle(level.id)
-    }
-  ]);
+  maxZoom: number,
+  map: any,
+  geojson: any
+) {
+  map.addSource(DISTRICTS_SOURCE_ID, {
+    type: "geojson",
+    data: geojson
+  });
 
-  const selectionLayers = geoLevels.flatMap(level => [
+  map.addSource(GEOLEVELS_SOURCE_ID, {
+    type: "vector",
+    tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
+    minzoom: minZoom,
+    maxzoom: maxZoom
+  });
+
+  map.addLayer(
     {
-      id: levelToSelectionLayerId(level.id),
+      id: DISTRICTS_LAYER_ID,
       type: "fill",
-      source: GEOLEVELS_SOURCE_ID,
-      "source-layer": level.id,
+      source: DISTRICTS_SOURCE_ID,
+      layout: {},
       paint: {
-        "fill-color": "#000",
-        "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
+        "fill-color": { type: "identity", property: "color" },
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.66, 14, 0.45]
       }
-    }
-  ]);
+    },
+    DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
 
-  const labelLayers = geoLevels.flatMap(level => [
+  map.addLayer(
     {
+      id: "districts-locked",
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: {},
+      paint: {
+        "fill-pattern": "circle-1",
+        "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
+      }
+    },
+    DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+
+  geoLevels.forEach(level => {
+    map.addLayer(
+      {
+        id: levelToLineLayerId(level.id),
+        type: "line",
+        source: GEOLEVELS_SOURCE_ID,
+        "source-layer": level.id,
+        layout: { visibility: "none" },
+        paint: getGeolevelLinePaintStyle(level.id)
+      },
+      LINES_PLACEHOLDER_LAYER_ID
+    );
+  });
+
+  geoLevels.forEach(level => {
+    map.addLayer(
+      {
+        id: levelToSelectionLayerId(level.id),
+        type: "fill",
+        source: GEOLEVELS_SOURCE_ID,
+        "source-layer": level.id,
+        paint: {
+          "fill-color": "#000",
+          "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
+        }
+      },
+      HIGHLIGHTS_PLACEHOLDER_LAYER_ID
+    );
+  });
+
+  geoLevels.forEach(level => {
+    map.addLayer({
       id: levelToLabelLayerId(level.id),
       type: "symbol",
       source: GEOLEVELS_SOURCE_ID,
       "source-layer": `${level.id}labels`,
       layout: {
-        "text-size": 12,
-        "text-padding": 3,
+        "text-size": 13,
+        "text-padding": 2,
         "text-field": "",
         "text-max-width": 10,
-        "text-font": ["GR"],
+        "text-font": ["Atlas Grotesk Bold"],
         visibility: "none"
       },
       paint: {
-        "text-color": "#000",
-        "text-opacity": 0.9,
+        "text-color": "#222",
+        "text-opacity": 1,
         "text-halo-color": "#fff",
-        "text-halo-width": 1.25,
+        "text-halo-width": 1,
         "text-halo-blur": 0
       }
-    }
-  ]);
+    });
+  });
 
-  return {
-    layers: [
-      {
-        id: DISTRICTS_PLACEHOLDER_LAYER_ID,
-        type: "background",
-        paint: {
-          "background-color": "transparent"
-        },
-        layout: {
-          visibility: "none"
-        }
-      },
-      ...selectionLayers,
-      ...lineLayers,
-      ...labelLayers
-    ] as MapboxGL.Layer[], // eslint-disable-line
-    glyphs: window.location.origin + "/fonts/{fontstack}/{range}.pbf",
-    sprite: window.location.origin + "/sprites/sprite",
-    name: "District Builder",
-    sources: {
-      [GEOLEVELS_SOURCE_ID]: {
-        type: "vector",
-        tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
-        minzoom: minZoom,
-        maxzoom: maxZoom
-      }
-    },
-    version: 8
-  };
+  // These are layers that already exist and have their own filters. First, we get the
+  // existing filter, then merge that with a custom filter that only shows labels from
+  // the selected region. Finally, we set the layer to visible. In Mapbox Studio, the
+  // layer was set to invisible to avoid a flash where the labels appear before the filter
+  // is applied.
+  filteredLabelLayers.forEach(layer => {
+    map.setFilter(layer, [
+      "all",
+      map.getFilter(layer),
+      ["match", ["get", "iso_3166_2"], [`US-${regionCode}`], true, false]
+    ]);
+    map.setLayoutProperty(layer, "visibility", "visible");
+  });
 }
 
 // Retuns a label layer id given the geolevel
@@ -269,12 +316,15 @@ export function featuresToGeoUnits(
         .filter(feature => feature.sourceLayer === geoLevelId)
         .map((feature: MapboxGeoJSONFeature) => [
           feature.id as FeatureId,
-          geoLevelHierarchyKeys.reduce((geounitData, key) => {
-            const geounitId = feature.properties && feature.properties[key];
-            return geounitId !== undefined && geounitId !== null
-              ? [geounitId, ...geounitData]
-              : geounitData;
-          }, [] as readonly number[])
+          geoLevelHierarchyKeys.reduce(
+            (geounitData, key) => {
+              const geounitId = feature.properties && feature.properties[key];
+              return geounitId !== undefined && geounitId !== null
+                ? [geounitId, ...geounitData]
+                : geounitData;
+            },
+            [] as readonly number[]
+          )
         ])
     );
     return geounitData;
