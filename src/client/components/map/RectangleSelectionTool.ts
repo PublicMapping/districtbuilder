@@ -23,7 +23,8 @@ import {
   GeoUnits,
   GeoUnitIndices,
   IStaticMetadata,
-  LockedDistricts
+  LockedDistricts,
+  UintArrays
 } from "../../../shared/entities";
 
 const throttledSetHighlightedGeounits = throttle(
@@ -48,7 +49,8 @@ const RectangleSelectionTool: ISelectionTool = {
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
-    lockedDistricts: LockedDistricts
+    lockedDistricts: LockedDistricts,
+    staticGeoLevels: UintArrays
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
@@ -114,9 +116,10 @@ const RectangleSelectionTool: ISelectionTool = {
       const features = getFeaturesInBoundingBox([start, current]);
       const geoUnits = featuresToUnlockedGeoUnits(
         features,
-        staticMetadata.geoLevelHierarchy,
+        staticMetadata,
         districtsDefinition,
-        lockedDistricts
+        lockedDistricts,
+        staticGeoLevels
       );
       const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
 
@@ -138,9 +141,10 @@ const RectangleSelectionTool: ISelectionTool = {
       if (prevFeatures) {
         const prevGeoUnits = featuresToUnlockedGeoUnits(
           prevFeatures,
-          staticMetadata.geoLevelHierarchy,
+          staticMetadata,
           districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
         Array.from(prevGeoUnits[geoLevelId].keys())
           .filter(
@@ -159,9 +163,10 @@ const RectangleSelectionTool: ISelectionTool = {
 
       setOfInitiallySelectedFeatures = featuresToUnlockedGeoUnits(
         getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
-        staticMetadata.geoLevelHierarchy,
+        staticMetadata,
         districtsDefinition,
-        lockedDistricts
+        lockedDistricts,
+        staticGeoLevels
       );
 
       // Capture the first xy coordinates
@@ -213,9 +218,10 @@ const RectangleSelectionTool: ISelectionTool = {
         const selectedFeatures = getFeaturesInBoundingBox(bbox);
         const geoUnits = featuresToUnlockedGeoUnits(
           selectedFeatures,
-          staticMetadata.geoLevelHierarchy,
+          staticMetadata,
           districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
         const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
         const subFeatures = selectedFeatures.flatMap(feature => {
@@ -232,9 +238,10 @@ const RectangleSelectionTool: ISelectionTool = {
         });
         const subGeoUnits = featuresToUnlockedGeoUnits(
           subFeatures,
-          staticMetadata.geoLevelHierarchy,
+          staticMetadata,
           districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
         store.dispatch(
           editSelectedGeounits({

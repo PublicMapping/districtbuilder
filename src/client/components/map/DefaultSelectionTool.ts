@@ -15,7 +15,8 @@ import {
   FeatureId,
   GeoUnitIndices,
   IStaticMetadata,
-  LockedDistricts
+  LockedDistricts,
+  UintArrays
 } from "../../../shared/entities";
 
 /*
@@ -27,7 +28,8 @@ const DefaultSelectionTool: ISelectionTool = {
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
-    lockedDistricts: LockedDistricts
+    lockedDistricts: LockedDistricts,
+    staticGeoLevels: UintArrays
   ) {
     /* eslint-disable */
     this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
@@ -57,9 +59,10 @@ const DefaultSelectionTool: ISelectionTool = {
 
       const geoUnits = featuresToUnlockedGeoUnits(
         [feature],
-        staticMetadata.geoLevelHierarchy,
+        staticMetadata,
         districtsDefinition,
-        lockedDistricts
+        lockedDistricts,
+        staticGeoLevels
       );
       const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
       const addFeatures = () => {
@@ -71,9 +74,10 @@ const DefaultSelectionTool: ISelectionTool = {
         });
         const subGeoUnits = featuresToUnlockedGeoUnits(
           subFeatures,
-          staticMetadata.geoLevelHierarchy,
+          staticMetadata,
           districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
         store.dispatch(
           editSelectedGeounits({

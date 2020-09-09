@@ -1,4 +1,5 @@
 import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
+import { cloneDeep } from "lodash";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
 
@@ -10,9 +11,12 @@ import {
   GeoLevelInfo,
   GeoUnitIndices,
   GeoUnits,
+  MutableGeoUnits,
   IStaticMetadata,
-  LockedDistricts
+  LockedDistricts,
+  UintArrays
 } from "../../../shared/entities";
+import { getAllIndices } from "../../../shared/functions";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -239,6 +243,9 @@ export function isFeatureSelected(
   return featureState.selected === true;
 }
 
+/*
+ * Returns true if this geounit or any of its children are locked.
+ */
 function isGeoUnitLocked(
   districtsDefinition: GeoUnitCollection,
   lockedDistricts: LockedDistricts,
@@ -315,52 +322,114 @@ export function featuresToGeoUnits(
     // to keep track of for map management. Note that if keys are duplicated the
     // value set last will be used (thus achieving the uniqueness of sets).
     // eslint-disable-next-line
-    geounitData[geoLevelId] = new Map(
-      features
-        .filter(feature => feature.sourceLayer === geoLevelId)
-        .map((feature: MapboxGeoJSONFeature) => [
-          feature.id as FeatureId,
-          geoLevelHierarchyKeys.reduce((geounitData, key) => {
-            const geounitId = feature.properties && feature.properties[key];
-            return geounitId !== undefined && geounitId !== null
-              ? [geounitId, ...geounitData]
-              : geounitData;
-          }, [] as readonly number[])
-        ])
-    );
-    return geounitData;
+    return {
+      ...geounitData,
+      [geoLevelId]: new Map(
+        features
+          .filter(feature => feature.sourceLayer === geoLevelId)
+          .map((feature: MapboxGeoJSONFeature) => [
+            feature.id as FeatureId,
+            geoLevelHierarchyKeys.reduce((geounitData, key) => {
+              const geounitId = feature.properties && feature.properties[key];
+              return geounitId !== undefined && geounitId !== null
+                ? [geounitId, ...geounitData]
+                : geounitData;
+            }, [] as readonly number[])
+          ])
+      )
+    };
   }, {});
+}
+
+export function getChildGeoUnits(
+  geoUnitIndices: GeoUnitIndices,
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: UintArrays
+) {
+  const geoUnitIdx = geoUnitIndices[0];
+  const childGeoLevelIdx = staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
+  const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
+  const childGeoUnitIds = getAllIndices(staticGeoLevels[childGeoLevelIdx], new Set([geoUnitIdx]));
+  const childGeoUnits = {
+    [childGeoLevel.id]: new Map(
+      childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
+    )
+  };
+  return { childGeoLevel, childGeoUnitIds, childGeoUnits };
 }
 
 export function onlyUnlockedGeoUnits(
   districtsDefinition: DistrictsDefinition,
   lockedDistricts: LockedDistricts,
-  geoUnits: GeoUnits
+  geoUnits: GeoUnits,
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: UintArrays
 ): GeoUnits {
-  return Object.entries(geoUnits).reduce((geoUnits: GeoUnits, [geoLevelId, geoUnitsForLevel]) => {
-    const geoUnitsForLevelCopy = new Map(geoUnitsForLevel);
-    geoUnitsForLevelCopy.forEach((geoUnitIndices, featureId) => {
+  const unlockedGeoUnits = cloneDeep(geoUnits) as MutableGeoUnits;
+  removeLockedGeoUnits(
+    districtsDefinition,
+    lockedDistricts,
+    unlockedGeoUnits,
+    staticMetadata,
+    staticGeoLevels
+  );
+  return unlockedGeoUnits;
+}
+
+/*
+ * Recursively remove locked geounits in-place.
+ */
+export function removeLockedGeoUnits(
+  districtsDefinition: DistrictsDefinition,
+  lockedDistricts: LockedDistricts,
+  geoUnits: MutableGeoUnits,
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: UintArrays
+) {
+  Object.entries(geoUnits).forEach(([geoLevel, geoUnitsForLevel]) => {
+    geoUnitsForLevel.forEach((geoUnitIndices, featureId) => {
       // eslint-disable-next-line
       if (isGeoUnitLocked(districtsDefinition, lockedDistricts, geoUnitIndices)) {
+        // Remove locked geounit
         // eslint-disable-next-line
-        geoUnitsForLevelCopy.delete(featureId);
+        geoUnits[geoLevel].delete(featureId);
+        // eslint-disable-next-line
+        if (geoUnitIndices.length < staticMetadata.geoLevelHierarchy.length - 1) {
+          // This geounit's children are not base geounits, so they may be selected.
+          // Add any unlocked sub-geounits to allow for partial selection.
+          const { childGeoLevel, childGeoUnits } = getChildGeoUnits(
+            geoUnitIndices,
+            staticMetadata,
+            staticGeoLevels
+          );
+          childGeoUnits[childGeoLevel.id].forEach((childGeoUnitIndices, childFeatureId) => {
+            geoUnits[childGeoLevel.id].set(childFeatureId, childGeoUnitIndices);
+          });
+          removeLockedGeoUnits(
+            districtsDefinition,
+            lockedDistricts,
+            geoUnits,
+            staticMetadata,
+            staticGeoLevels
+          );
+        }
       }
     });
-    // eslint-disable-next-line
-    geoUnits[geoLevelId] = geoUnitsForLevelCopy;
-    return geoUnits;
-  }, {});
+  });
 }
 
 export function featuresToUnlockedGeoUnits(
   features: readonly MapboxGeoJSONFeature[],
-  geoLevelHierarchy: readonly GeoLevelInfo[],
+  staticMetadata: IStaticMetadata,
   districtsDefinition: DistrictsDefinition,
-  lockedDistricts: LockedDistricts
+  lockedDistricts: LockedDistricts,
+  staticGeoLevels: UintArrays
 ): GeoUnits {
   return onlyUnlockedGeoUnits(
     districtsDefinition,
     lockedDistricts,
-    featuresToGeoUnits(features, geoLevelHierarchy)
+    featuresToGeoUnits(features, staticMetadata.geoLevelHierarchy),
+    staticMetadata,
+    staticGeoLevels
   );
 }
