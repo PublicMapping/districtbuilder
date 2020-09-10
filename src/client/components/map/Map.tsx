@@ -93,6 +93,7 @@ const DistrictsMap = ({
       return;
     }
 
+    // eslint-disable-next-line
     MapboxGL.accessToken =
       "pk.eyJ1IjoiZGlzdHJpY3RidWlsZGVyIiwiYSI6ImNrZXZzeXlvMjIxb2QycW1yeGpuMDJ2ZGwifQ.FdOGNk3y1BPkGvF_yCjjGQ";
 

@@ -79,8 +79,10 @@ export function generateMapLayers(
   geoLevels: readonly GeoLevelInfo[],
   minZoom: number,
   maxZoom: number,
+  /* eslint-disable */
   map: any,
   geojson: any
+  /* eslint-enable */
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
     type: "geojson",
