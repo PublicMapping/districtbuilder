@@ -91,6 +91,17 @@ const theme: Theme & StyledSystemTheme = {
       "#595959",
       "#2c2c2c",
       "#141414"
+    ],
+    peach: [
+      "#FFF7E8",
+      "#FFEDD1",
+      "#FFE0BB",
+      "#FFD4AA",
+      "#ffc08e",
+      "#DB9467",
+      "#B76C47",
+      "#93492D",
+      "#7A301B"
     ]
   },
   radii: {
