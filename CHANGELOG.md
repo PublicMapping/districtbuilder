@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow for selecting partially locked districts [#420](https://github.com/PublicMapping/districtbuilder/pull/420)
 
 ### Changed
+- Reduce noise in log output [#399](https://github.com/PublicMapping/districtbuilder/pull/399)
 
 ### Fixed
 - Fix S3 permissions to allow CloudFront logging [#410](https://github.com/PublicMapping/districtbuilder/pull/410)
