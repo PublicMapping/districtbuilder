@@ -214,10 +214,12 @@ export function levelToSelectionLayerId(geoLevel: string) {
   return `${geoLevel}-selected`;
 }
 
+type FeatureLike = Pick<MapboxGL.MapboxGeoJSONFeature, "id" | "sourceLayer">;
+
 /*
  * Used for getting/setting feature state for geounits in geography.
  */
-export function featureStateGeoLevel(feature: MapboxGL.MapboxGeoJSONFeature) {
+export function featureStateGeoLevel(feature: FeatureLike) {
   return {
     source: GEOLEVELS_SOURCE_ID,
     id: feature.id,
@@ -235,10 +237,7 @@ export function featureStateDistricts(districtId: DistrictId) {
   };
 }
 
-export function isFeatureSelected(
-  map: MapboxGL.Map,
-  feature: MapboxGL.MapboxGeoJSONFeature
-): boolean {
+export function isFeatureSelected(map: MapboxGL.Map, feature: FeatureLike): boolean {
   const featureState = map.getFeatureState(featureStateGeoLevel(feature));
   return featureState.selected === true;
 }
@@ -269,7 +268,7 @@ function isGeoUnitLocked(
 export function findSelectedSubFeatures(
   map: MapboxGL.Map,
   staticMetadata: IStaticMetadata,
-  feature: MapboxGL.MapboxGeoJSONFeature,
+  feature: FeatureLike,
   geoUnitIndices: GeoUnitIndices
 ): readonly MapboxGeoJSONFeature[] {
   const geoLevel: GeoLevelInfo | undefined =
@@ -349,13 +348,21 @@ export function getChildGeoUnits(
   const geoUnitIdx = geoUnitIndices[0];
   const childGeoLevelIdx = staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
   const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
-  const childGeoUnitIds = getAllIndices(staticGeoLevels[childGeoLevelIdx], new Set([geoUnitIdx]));
-  const childGeoUnits = {
-    [childGeoLevel.id]: new Map(
-      childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
-    )
-  };
-  return { childGeoLevel, childGeoUnitIds, childGeoUnits };
+  if (!childGeoLevel) {
+    return {
+      childGeoLevel,
+      childGeoUnitIds: [],
+      childGeoUnits: {}
+    };
+  } else {
+    const childGeoUnitIds = getAllIndices(staticGeoLevels[childGeoLevelIdx], new Set([geoUnitIdx]));
+    const childGeoUnits = {
+      [childGeoLevel.id]: new Map(
+        childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
+      )
+    };
+    return { childGeoLevel, childGeoUnitIds, childGeoUnits };
+  }
 }
 
 export function onlyUnlockedGeoUnits(
@@ -377,7 +384,7 @@ export function onlyUnlockedGeoUnits(
 }
 
 /*
- * Recursively remove locked geounits in-place.
+ * Recursively remove locked geounits in-place, adding any unlocked children along the way.
  */
 export function removeLockedGeoUnits(
   districtsDefinition: DistrictsDefinition,

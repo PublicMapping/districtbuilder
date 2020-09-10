@@ -5,15 +5,14 @@ import {
   DISTRICTS_LAYER_ID,
   isFeatureSelected,
   featureStateGeoLevel,
-  findSelectedSubFeatures,
   levelToSelectionLayerId,
   ISelectionTool,
-  featuresToUnlockedGeoUnits
+  featuresToUnlockedGeoUnits,
+  getChildGeoUnits
 } from "./index";
 import {
   DistrictsDefinition,
   FeatureId,
-  GeoUnitIndices,
   IStaticMetadata,
   LockedDistricts,
   UintArrays
@@ -64,35 +63,52 @@ const DefaultSelectionTool: ISelectionTool = {
         lockedDistricts,
         staticGeoLevels
       );
-      const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
-      const addFeatures = () => {
-        map.setFeatureState(featureStateGeoLevel(feature), { selected: true });
-        const geoUnitIndices = geoUnitsForLevel.get(feature.id as FeatureId) as GeoUnitIndices;
-        const subFeatures = findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices);
-        subFeatures.forEach(feature => {
-          map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
-        });
-        const subGeoUnits = featuresToUnlockedGeoUnits(
-          subFeatures,
-          staticMetadata,
-          districtsDefinition,
-          lockedDistricts,
-          staticGeoLevels
-        );
-        store.dispatch(
-          editSelectedGeounits({
-            add: geoUnits,
-            remove: subGeoUnits
-          })
-        );
-      };
-      const removeFeatures = () => {
+      // eslint-disable-next-line
+      if (isFeatureSelected(map, feature)) {
+        // Geounit is selected, so deselect it
         map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
         store.dispatch(removeSelectedGeounits(geoUnits));
-      };
-
-      geoUnitsForLevel.has(feature.id as FeatureId) &&
-        (isFeatureSelected(map, feature) ? removeFeatures() : addFeatures());
+      } else {
+        // Geounit is not selected, so select it, making sure to remove the selection on any child
+        // geounits since the parent selection supercedes any child selections
+        Object.entries(geoUnits).forEach(([geoLevelId, geoUnitsForLevel]) => {
+          [...geoUnitsForLevel.keys()].forEach(featureId => {
+            const currentFeature = { id: featureId, sourceLayer: geoLevelId };
+            map.setFeatureState(featureStateGeoLevel(currentFeature), { selected: true });
+          });
+        });
+        // NOTE: This only works for child geounits one level down.
+        const geoUnitForFeature = geoUnits[geoLevelId].get(feature.id as FeatureId);
+        // eslint-disable-next-line
+        if (geoUnitForFeature) {
+          const { childGeoLevel, childGeoUnits } = getChildGeoUnits(
+            geoUnitForFeature,
+            staticMetadata,
+            staticGeoLevels
+          );
+          childGeoLevel &&
+            childGeoUnits[childGeoLevel.id] &&
+            [...childGeoUnits[childGeoLevel.id].keys()].forEach(childFeatureId => {
+              map.setFeatureState(
+                featureStateGeoLevel({ id: childFeatureId, sourceLayer: childGeoLevel.id }),
+                { selected: false }
+              );
+            });
+          store.dispatch(
+            editSelectedGeounits({
+              add: geoUnits,
+              remove: childGeoUnits
+            })
+          );
+          // eslint-disable-next-line
+        } else {
+          store.dispatch(
+            editSelectedGeounits({
+              add: geoUnits
+            })
+          );
+        }
+      }
     };
     map.on("click", clickHandler);
     // Save the click handler function so it can be removed later
