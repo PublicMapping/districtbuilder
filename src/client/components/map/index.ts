@@ -265,22 +265,17 @@ function isGeoUnitLocked(
       );
 }
 
-export function findSelectedSubFeatures(
+export function setFeaturesSelectedFromGeoUnits(
   map: MapboxGL.Map,
-  staticMetadata: IStaticMetadata,
-  feature: FeatureLike,
-  geoUnitIndices: GeoUnitIndices
-): readonly MapboxGeoJSONFeature[] {
-  const geoLevel: GeoLevelInfo | undefined =
-    geoUnitIndices && staticMetadata.geoLevelHierarchy[geoUnitIndices.length];
-  return geoLevel
-    ? map
-        .queryRenderedFeatures(undefined, {
-          layers: [levelToSelectionLayerId(geoLevel.id)],
-          filter: ["==", ["get", `${feature.sourceLayer}Idx`], geoUnitIndices[0]]
-        })
-        .filter(feature => isFeatureSelected(map, feature))
-    : [];
+  geoUnits: GeoUnits,
+  selected: boolean
+) {
+  Object.entries(geoUnits).forEach(([geoLevelId, geoUnitsForLevel]) => {
+    [...geoUnitsForLevel.keys()].forEach(featureId => {
+      const currentFeature = { id: featureId, sourceLayer: geoLevelId };
+      map.setFeatureState(featureStateGeoLevel(currentFeature), { selected });
+    });
+  });
 }
 
 export function getGeoLevelVisibility(
@@ -345,7 +340,6 @@ export function getChildGeoUnits(
   staticMetadata: IStaticMetadata,
   staticGeoLevels: UintArrays
 ) {
-  const geoUnitIdx = geoUnitIndices[0];
   const childGeoLevelIdx = staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
   const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
   if (!childGeoLevel) {
@@ -354,15 +348,15 @@ export function getChildGeoUnits(
       childGeoUnitIds: [],
       childGeoUnits: {}
     };
-  } else {
-    const childGeoUnitIds = getAllIndices(staticGeoLevels[childGeoLevelIdx], new Set([geoUnitIdx]));
-    const childGeoUnits = {
-      [childGeoLevel.id]: new Map(
-        childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
-      )
-    };
-    return { childGeoLevel, childGeoUnitIds, childGeoUnits };
   }
+  const geoUnitIdx = geoUnitIndices[0];
+  const childGeoUnitIds = getAllIndices(staticGeoLevels[childGeoLevelIdx], new Set([geoUnitIdx]));
+  const childGeoUnits = {
+    [childGeoLevel.id]: new Map(
+      childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
+    )
+  };
+  return { childGeoLevel, childGeoUnitIds, childGeoUnits };
 }
 
 export function onlyUnlockedGeoUnits(

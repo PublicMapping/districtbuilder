@@ -2,26 +2,25 @@ import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import {
-  editSelectedGeounits,
+  setSelectedGeounits,
   clearHighlightedGeounits,
   setHighlightedGeounits
 } from "../../actions/districtDrawing";
 import {
   featuresToUnlockedGeoUnits,
-  featureStateGeoLevel,
-  findSelectedSubFeatures,
   GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   levelToSelectionLayerId,
   ISelectionTool,
-  SET_FEATURE_DELAY
+  SET_FEATURE_DELAY,
+  setFeaturesSelectedFromGeoUnits,
+  getChildGeoUnits
 } from "./index";
 
 import {
   DistrictsDefinition,
-  FeatureId,
   GeoUnits,
-  GeoUnitIndices,
+  MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
   UintArrays
@@ -73,7 +72,7 @@ const RectangleSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
-    let setOfInitiallySelectedFeatures: GeoUnits; // eslint-disable-line
+    let initiallySelectedGeoUnits: GeoUnits; // eslint-disable-line
 
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
@@ -121,20 +120,42 @@ const RectangleSelectionTool: ISelectionTool = {
         lockedDistricts,
         staticGeoLevels
       );
-      const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
 
-      // Set any newly selected features on the map within the bounding box to selected state
-      const newFeatures = features.filter(
-        feature => geoUnitsForLevel.has(feature.id as FeatureId) && !isFeatureSelected(map, feature)
+      const newGeoUnits = Object.entries(geoUnits).reduce(
+        (newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
+          return {
+            ...newGeoUnits,
+            [geoLevelId]: new Map(
+              [...geoUnitsForLevel].filter(
+                ([id]) =>
+                  !initiallySelectedGeoUnits[geoLevelId].has(id) &&
+                  !isFeatureSelected(map, {
+                    id,
+                    sourceLayer: geoLevelId
+                  })
+              )
+            )
+          };
+        },
+        geoUnits
       );
-      newFeatures.forEach(feature => {
-        map.setFeatureState(featureStateExpression(feature.id), { selected: true });
+      setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
+      Object.values(newGeoUnits).forEach(geoUnitsForLevel => {
+        geoUnitsForLevel.forEach(geoUnitIndices => {
+          // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
+          // also can't be selected at the same time as features from one geolevel up)
+          if (geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2) {
+            const { childGeoUnits } = getChildGeoUnits(
+              geoUnitIndices,
+              staticMetadata,
+              staticGeoLevels
+            );
+            setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
+          }
+        });
       });
 
-      const newGeoUnits = new Map(
-        [...geoUnitsForLevel].filter(([id]) => !setOfInitiallySelectedFeatures[geoLevelId].has(id))
-      );
-      throttledSetHighlightedGeounits({ [geoLevelId]: newGeoUnits });
+      throttledSetHighlightedGeounits(newGeoUnits);
 
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
@@ -148,7 +169,7 @@ const RectangleSelectionTool: ISelectionTool = {
         );
         Array.from(prevGeoUnits[geoLevelId].keys())
           .filter(
-            id => !setOfInitiallySelectedFeatures[geoLevelId].has(id) && !geoUnitsForLevel.has(id)
+            id => !initiallySelectedGeoUnits[geoLevelId].has(id) && !geoUnits[geoLevelId].has(id)
           )
           .forEach(id => {
             map.setFeatureState(featureStateExpression(id), { selected: false });
@@ -161,7 +182,7 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
 
-      setOfInitiallySelectedFeatures = featuresToUnlockedGeoUnits(
+      initiallySelectedGeoUnits = featuresToUnlockedGeoUnits(
         getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
         staticMetadata,
         districtsDefinition,
@@ -223,32 +244,15 @@ const RectangleSelectionTool: ISelectionTool = {
           lockedDistricts,
           staticGeoLevels
         );
-        const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
-        const subFeatures = selectedFeatures.flatMap(feature => {
-          const geoUnitIndices = geoUnitsForLevel.get(feature.id as FeatureId) as GeoUnitIndices;
-          return geoUnitsForLevel.has(feature.id as FeatureId) &&
-            // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
-            // also can't be selected at the same time as features from one geolevel up)
-            geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2
-            ? findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices)
-            : [];
+        const mergedGeoUnits: MutableGeoUnits = {};
+        Object.entries(geoUnits).forEach(([geoLevelId, geoUnitsForLevel]) => {
+          const mergedGeoUnitsForLevel = new Map(geoUnitsForLevel);
+          initiallySelectedGeoUnits[geoLevelId].forEach((geoUnitIndices, featureId) => {
+            mergedGeoUnitsForLevel.set(featureId, geoUnitIndices);
+          });
+          mergedGeoUnits[geoLevelId] = mergedGeoUnitsForLevel;
         });
-        subFeatures.forEach(feature => {
-          map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
-        });
-        const subGeoUnits = featuresToUnlockedGeoUnits(
-          subFeatures,
-          staticMetadata,
-          districtsDefinition,
-          lockedDistricts,
-          staticGeoLevels
-        );
-        store.dispatch(
-          editSelectedGeounits({
-            add: geoUnits,
-            remove: subGeoUnits
-          })
-        );
+        store.dispatch(setSelectedGeounits(mergedGeoUnits));
       }
       store.dispatch(clearHighlightedGeounits());
     }

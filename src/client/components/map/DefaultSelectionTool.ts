@@ -1,6 +1,6 @@
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
-import { editSelectedGeounits, removeSelectedGeounits } from "../../actions/districtDrawing";
+import { removeSelectedGeounits, editSelectedGeounits } from "../../actions/districtDrawing";
 import {
   DISTRICTS_LAYER_ID,
   isFeatureSelected,
@@ -8,7 +8,8 @@ import {
   levelToSelectionLayerId,
   ISelectionTool,
   featuresToUnlockedGeoUnits,
-  getChildGeoUnits
+  getChildGeoUnits,
+  setFeaturesSelectedFromGeoUnits
 } from "./index";
 import {
   DistrictsDefinition,
@@ -71,43 +72,18 @@ const DefaultSelectionTool: ISelectionTool = {
       } else {
         // Geounit is not selected, so select it, making sure to remove the selection on any child
         // geounits since the parent selection supercedes any child selections
-        Object.entries(geoUnits).forEach(([geoLevelId, geoUnitsForLevel]) => {
-          [...geoUnitsForLevel.keys()].forEach(featureId => {
-            const currentFeature = { id: featureId, sourceLayer: geoLevelId };
-            map.setFeatureState(featureStateGeoLevel(currentFeature), { selected: true });
-          });
-        });
-        // NOTE: This only works for child geounits one level down.
+        setFeaturesSelectedFromGeoUnits(map, geoUnits, true);
         const geoUnitForFeature = geoUnits[geoLevelId].get(feature.id as FeatureId);
-        // eslint-disable-next-line
-        if (geoUnitForFeature) {
-          const { childGeoLevel, childGeoUnits } = getChildGeoUnits(
-            geoUnitForFeature,
-            staticMetadata,
-            staticGeoLevels
-          );
-          childGeoLevel &&
-            childGeoUnits[childGeoLevel.id] &&
-            [...childGeoUnits[childGeoLevel.id].keys()].forEach(childFeatureId => {
-              map.setFeatureState(
-                featureStateGeoLevel({ id: childFeatureId, sourceLayer: childGeoLevel.id }),
-                { selected: false }
-              );
-            });
-          store.dispatch(
-            editSelectedGeounits({
-              add: geoUnits,
-              remove: childGeoUnits
-            })
-          );
-          // eslint-disable-next-line
-        } else {
-          store.dispatch(
-            editSelectedGeounits({
-              add: geoUnits
-            })
-          );
-        }
+        const { childGeoUnits } = geoUnitForFeature
+          ? getChildGeoUnits(geoUnitForFeature, staticMetadata, staticGeoLevels)
+          : { childGeoUnits: {} };
+        setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
+        store.dispatch(
+          editSelectedGeounits({
+            add: geoUnits,
+            remove: childGeoUnits
+          })
+        );
       }
     };
     map.on("click", clickHandler);
