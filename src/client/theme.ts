@@ -6,6 +6,7 @@ export const heights = {
 };
 
 const appButtonStyles = {
+  color: "muted",
   display: "inline-flex",
   alignItems: "center",
   flexShrink: 0,
@@ -19,9 +20,12 @@ const appButtonStyles = {
     mr: 1
   },
   "&:hover:not([disabled]):not(:active)": {
-    bg: "blue.5"
+    bg: "blue.5",
+    color: "muted",
+    textDecoration: "none"
   },
   "&:active": {
+    color: "muted",
     bg: "blue.7"
   },
   "&:focus": {
@@ -32,6 +36,10 @@ const appButtonStyles = {
     opacity: 0.2,
     bg: "gray.3",
     cursor: "not-allowed"
+  },
+  "&:visited": {
+    color: "muted",
+    fontWeight: "medium"
   }
 };
 
@@ -370,7 +378,7 @@ const theme: Theme & StyledSystemTheme = {
     button: {
       ...appButtonStyles,
       backgroundColor: "primary",
-      color: "white",
+      color: "muted",
       textDecoration: "none",
       px: 3,
       py: 2
@@ -398,6 +406,18 @@ const theme: Theme & StyledSystemTheme = {
       color: "gray.2"
     },
     a: {
+      color: "blue.6",
+      fontWeight: "bold",
+      textDecoration: "none",
+      "&:visited": {
+        color: "blue.6"
+      },
+      "&:hover:not([disabled]):not(:active)": {
+        textDecoration: "underline"
+      },
+      "&:active": {
+        color: "blue.8"
+      },
       "&:focus": {
         borderRadius: "small",
         boxShadow: "focus",
@@ -431,7 +451,7 @@ const theme: Theme & StyledSystemTheme = {
   linkButton: {
     ...appButtonStyles,
     backgroundColor: "primary",
-    color: "white",
+    color: "muted",
     textDecoration: "none",
     px: 3,
     py: 2
