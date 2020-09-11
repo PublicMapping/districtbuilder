@@ -170,7 +170,7 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mouseup", onMouseUp);
 
       initiallySelectedGeoUnits = featuresToUnlockedGeoUnits(
-        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
+        getAllSelectedFeatures(),
         staticMetadata,
         districtsDefinition,
         lockedDistricts,
@@ -201,11 +201,21 @@ const RectangleSelectionTool: ISelectionTool = {
 
     function getFeaturesInBoundingBox(
       // eslint-disable-next-line
-      bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]
+      bbox: [MapboxGL.PointLike, MapboxGL.PointLike]
     ): readonly MapboxGL.MapboxGeoJSONFeature[] {
       return map.queryRenderedFeatures(bbox, {
         layers: [levelToSelectionLayerId(geoLevelId)]
       });
+    }
+
+    function getAllSelectedFeatures(): readonly MapboxGL.MapboxGeoJSONFeature[] {
+      return map
+        .queryRenderedFeatures(undefined, {
+          layers: staticMetadata.geoLevelHierarchy.map(geoLevel =>
+            levelToSelectionLayerId(geoLevel.id)
+          )
+        })
+        .filter(feature => isFeatureSelected(map, feature));
     }
 
     // eslint-disable-next-line
