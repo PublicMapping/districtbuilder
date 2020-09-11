@@ -64,24 +64,6 @@ const style: ThemeUIStyleObject = {
       boxShadow: "focus"
     }
   },
-  guideLink: {
-    fontSize: 1,
-    borderRadius: "small",
-    bg: "peach.1",
-    color: "peach.8",
-    px: 2,
-    py: 1,
-    display: "flex",
-    alignItems: "center",
-    ml: "auto",
-    mr: "3",
-    "&:visited": {
-      color: "peach.8"
-    },
-    "> svg": {
-      mr: 1
-    }
-  },
   avatar: {
     fontFamily: "heading",
     cursor: "pointer",
@@ -236,40 +218,30 @@ const HomeScreen = ({ projects, user, history }: StateProps & RouteComponentProp
             </Link>
           </React.Fragment>
         ) : "resource" in user ? (
-          <React.Fragment>
-            <Styled.a
-              sx={style.guideLink}
-              href="https://github.com/PublicMapping/districtbuilder/wiki/Getting-Started-with-DistrictBuilder"
-              target="_blank"
-            >
-              <Icon name="book-spells" />
-              Getting Started Guide
-            </Styled.a>
-            <Wrapper onSelection={handleSelection(history)}>
-              <MenuButton sx={style.menuButton}>
-                <Avatar
-                  name={user.resource.name}
-                  round={true}
-                  size={"2.5rem"}
-                  color={"#2c485e"}
-                  maxInitials={3}
-                  sx={style.avatar}
-                />
-                <div sx={{ ml: 2 }}>
-                  <Icon name="chevron-down" />
-                </div>
-              </MenuButton>
-              <Menu sx={style.menu}>
-                <ul sx={style.menuList}>
-                  <li key={UserMenuKeys.Logout}>
-                    <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
-                      Logout
-                    </MenuItem>
-                  </li>
-                </ul>
-              </Menu>
-            </Wrapper>
-          </React.Fragment>
+          <Wrapper onSelection={handleSelection(history)}>
+            <MenuButton sx={style.menuButton}>
+              <Avatar
+                name={user.resource.name}
+                round={true}
+                size={"2.5rem"}
+                color={"#2c485e"}
+                maxInitials={3}
+                sx={style.avatar}
+              />
+              <div sx={{ ml: 2 }}>
+                <Icon name="chevron-down" />
+              </div>
+            </MenuButton>
+            <Menu sx={style.menu}>
+              <ul sx={style.menuList}>
+                <li key={UserMenuKeys.Logout}>
+                  <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
+                    Logout
+                  </MenuItem>
+                </li>
+              </ul>
+            </Menu>
+          </Wrapper>
         ) : null}
       </Flex>
       <Flex
