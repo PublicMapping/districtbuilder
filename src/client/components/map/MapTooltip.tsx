@@ -64,14 +64,23 @@ const MapTooltip = ({
     : undefined;
 
   useEffect(() => {
-    const throttledSetFeature = throttle((point, geoLevel) => {
-      const features =
-        map &&
-        map.queryRenderedFeatures(point, {
-          layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
-        });
-      features && setFeature(features[0]);
-    }, SET_FEATURE_DELAY);
+    const throttledSetFeature = throttle(
+      (point: MapboxGL.Point | undefined, geoLevel: string | undefined) => {
+        // eslint-disable-next-line
+        if (!point || !geoLevel) {
+          setFeature(undefined);
+          // eslint-disable-next-line
+        } else {
+          const features =
+            map &&
+            map.queryRenderedFeatures(point, {
+              layers: [levelToLineLayerId(geoLevel), levelToSelectionLayerId(geoLevel)]
+            });
+          features && setFeature(features[0]);
+        }
+      },
+      SET_FEATURE_DELAY
+    );
 
     const onMouseMoveThrottled = throttle((e: MapboxGL.MapMouseEvent) => {
       // eslint-disable-next-line
@@ -85,7 +94,9 @@ const MapTooltip = ({
       }
     }, 5);
 
-    const onMouseOut = throttle(() => setFeature(undefined), 5);
+    const onMouseOut = throttle(() => {
+      throttledSetFeature(undefined, undefined);
+    }, 5);
 
     const onDrag = (e: MapboxGL.MapMouseEvent) => {
       setPoint({ x: e.originalEvent.offsetX, y: e.originalEvent.offsetY });
