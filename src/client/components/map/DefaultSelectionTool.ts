@@ -69,6 +69,7 @@ const DefaultSelectionTool: ISelectionTool = {
         // Geounit is selected, so deselect it
         map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
         store.dispatch(removeSelectedGeounits(geoUnits));
+        // eslint-disable-next-line
       } else {
         // Geounit is not selected, so select it, making sure to remove the selection on any child
         // geounits since the parent selection supercedes any child selections

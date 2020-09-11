@@ -207,13 +207,14 @@ export function destructureResource<T extends object>(
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
 }
 
-export function mergedGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
+export function mergedGeoUnits(geoUnitsA: GeoUnits, geoUnitsB: GeoUnits): GeoUnits {
   const mergedGeoUnits: MutableGeoUnits = {};
-  Object.entries(a).forEach(([geoLevelId, geoUnitsForLevel]) => {
+  Object.entries(geoUnitsA).forEach(([geoLevelId, geoUnitsForLevel]) => {
     const mergedGeoUnitsForLevel = new Map(geoUnitsForLevel);
-    b[geoLevelId].forEach((geoUnitIndices, featureId) => {
+    geoUnitsB[geoLevelId].forEach((geoUnitIndices, featureId) => {
       mergedGeoUnitsForLevel.set(featureId, geoUnitIndices);
     });
+    // eslint-disable-next-line
     mergedGeoUnits[geoLevelId] = mergedGeoUnitsForLevel;
   });
   return mergedGeoUnits;

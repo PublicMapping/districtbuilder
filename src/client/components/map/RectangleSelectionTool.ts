@@ -139,11 +139,15 @@ const RectangleSelectionTool: ISelectionTool = {
         },
         geoUnits
       );
+      // Select new features
       setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
+      // Deselect any child features as appropriate (this comes into a play when, for example, a
+      // blockground is selected and then the county _containing_ that blockgroup is selected)
       Object.values(newGeoUnits).forEach(geoUnitsForLevel => {
         geoUnitsForLevel.forEach(geoUnitIndices => {
           // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
           // also can't be selected at the same time as features from one geolevel up)
+          // eslint-disable-next-line
           if (geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2) {
             const { childGeoUnits } = getChildGeoUnits(
               geoUnitIndices,

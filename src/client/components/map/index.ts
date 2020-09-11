@@ -342,6 +342,7 @@ export function getChildGeoUnits(
 ) {
   const childGeoLevelIdx = staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
   const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
+  // eslint-disable-next-line
   if (!childGeoLevel) {
     return {
       childGeoLevel,
