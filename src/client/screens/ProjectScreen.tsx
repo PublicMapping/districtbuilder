@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
 
-import { destructureResource } from "../functions";
+import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import { DistrictsGeoJSON } from "../types";
 import {
   GeoUnitHierarchy,
@@ -27,6 +27,7 @@ import Toast from "../components/Toast";
 import { State } from "../reducers";
 import { Resource } from "../resource";
 import store from "../store";
+import { useBeforeunload } from "react-beforeunload";
 
 interface StateProps {
   readonly project?: IProject;
@@ -53,6 +54,22 @@ const ProjectScreen = ({
 }: StateProps) => {
   const { projectId } = useParams();
   const [label, setMapLabel] = useState<string | undefined>(undefined);
+
+  // Warn the user when attempting to leave the page with selected geounits
+  useBeforeunload(event => {
+    // Disabling 'functional/no-conditional-statement' without naming it.
+    // eslint-disable-next-line
+    if (areAnyGeoUnitsSelected(districtDrawing.selectedGeounits)) {
+      // Old style, used by e.g. Chrome
+      // Disabling 'functional/immutable-data' without naming it.
+      // eslint-disable-next-line
+      event.returnValue = true;
+      // New style, used by e.g. Firefox
+      event.preventDefault();
+      // The message isn't actually displayed on most browsers
+      return "You have unsaved changes. Accept or reject changes to save your map.";
+    }
+  });
 
   // Reset component redux state on unmount
   useEffect(
