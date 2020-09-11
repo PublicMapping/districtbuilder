@@ -44,11 +44,16 @@ export class TopologyService {
   }
 
   public async get(s3URI: S3URI): Promise<GeoUnitTopology | void> {
-    return s3URI in this._layers
-      ? this._layers[s3URI]
-      : this.fetchLayer(s3URI).catch(err => {
-          this.logger.error(err);
-        });
+    if (!(s3URI in this._layers)) {
+      // If we encounter a new layer (i.e. one added after the service has started),
+      // then store the results in the `_layers` object.
+      // @ts-ignore
+      // eslint-disable-next-line functional/immutable-data
+      this._layers[s3URI] = this.fetchLayer(s3URI).catch(err => {
+        this.logger.error(err);
+      });
+    }
+    return this._layers[s3URI];
   }
 
   private async fetchLayer(s3URI: S3URI): Promise<GeoUnitTopology | void> {
