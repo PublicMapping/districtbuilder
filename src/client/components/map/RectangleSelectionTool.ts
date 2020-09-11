@@ -16,11 +16,11 @@ import {
   setFeaturesSelectedFromGeoUnits,
   getChildGeoUnits
 } from "./index";
+import { mergedGeoUnits } from "../../functions";
 
 import {
   DistrictsDefinition,
   GeoUnits,
-  MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
   UintArrays
@@ -244,15 +244,7 @@ const RectangleSelectionTool: ISelectionTool = {
           lockedDistricts,
           staticGeoLevels
         );
-        const mergedGeoUnits: MutableGeoUnits = {};
-        Object.entries(geoUnits).forEach(([geoLevelId, geoUnitsForLevel]) => {
-          const mergedGeoUnitsForLevel = new Map(geoUnitsForLevel);
-          initiallySelectedGeoUnits[geoLevelId].forEach((geoUnitIndices, featureId) => {
-            mergedGeoUnitsForLevel.set(featureId, geoUnitIndices);
-          });
-          mergedGeoUnits[geoLevelId] = mergedGeoUnitsForLevel;
-        });
-        store.dispatch(setSelectedGeounits(mergedGeoUnits));
+        store.dispatch(setSelectedGeounits(mergedGeoUnits(geoUnits, initiallySelectedGeoUnits)));
       }
       store.dispatch(clearHighlightedGeounits());
     }

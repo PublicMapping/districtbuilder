@@ -10,7 +10,8 @@ import {
   GeoUnitIndices,
   GeoUnitHierarchy,
   IStaticMetadata,
-  NestedArray
+  NestedArray,
+  MutableGeoUnits
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { getDemographics as getDemographicsBase } from "../shared/functions";
@@ -204,4 +205,16 @@ export function destructureResource<T extends object>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any | undefined {
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
+}
+
+export function mergedGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
+  const mergedGeoUnits: MutableGeoUnits = {};
+  Object.entries(a).forEach(([geoLevelId, geoUnitsForLevel]) => {
+    const mergedGeoUnitsForLevel = new Map(geoUnitsForLevel);
+    b[geoLevelId].forEach((geoUnitIndices, featureId) => {
+      mergedGeoUnitsForLevel.set(featureId, geoUnitIndices);
+    });
+    mergedGeoUnits[geoLevelId] = mergedGeoUnitsForLevel;
+  });
+  return mergedGeoUnits;
 }
