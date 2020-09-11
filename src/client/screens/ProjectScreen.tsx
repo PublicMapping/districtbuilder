@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
-import { Redirect, useParams } from "react-router-dom";
+import { Redirect, useParams, RouteComponentProps } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
 
 import { destructureResource } from "../functions";
@@ -49,8 +49,9 @@ const ProjectScreen = ({
   geoUnitHierarchy,
   districtDrawing,
   isLoading,
-  user
-}: StateProps) => {
+  user,
+  history
+}: StateProps & RouteComponentProps<"history">) => {
   const { projectId } = useParams();
   const [label, setMapLabel] = useState<string | undefined>(undefined);
 
@@ -105,7 +106,7 @@ const ProjectScreen = ({
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
       <Toast />
-      <ProjectHeader project={project} />
+      <ProjectHeader project={project} user={user} history={history} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         {sidebar}
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>

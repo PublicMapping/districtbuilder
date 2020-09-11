@@ -2,9 +2,11 @@
 import { Box, Flex, jsx, Text } from "theme-ui";
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
-
+import { UserState } from "../reducers/user";
+import * as H from "history";
 import { IProject } from "../../shared/entities";
 import { heights } from "../theme";
+import AvatarMenu from "../components/AvatarMenu";
 
 const HeaderDivider = () => {
   return (
@@ -19,7 +21,15 @@ const HeaderDivider = () => {
   );
 };
 
-const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
+const ProjectHeader = ({
+  project,
+  user,
+  history
+}: {
+  readonly project?: IProject;
+  readonly user: UserState;
+  readonly history: H.History;
+}) => (
   <Flex
     sx={{
       variant: "header.app",
@@ -44,7 +54,9 @@ const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
         </Text>
       </Flex>
     </Flex>
-    <Flex sx={{ variant: "header.right" }} />
+    <Flex sx={{ variant: "header.right" }}>
+      <AvatarMenu user={user} history={history} />
+    </Flex>
   </Flex>
 );
 
