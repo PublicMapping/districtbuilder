@@ -207,7 +207,7 @@ export function destructureResource<T extends object>(
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
 }
 
-export function mergedGeoUnits(geoUnitsA: GeoUnits, geoUnitsB: GeoUnits): GeoUnits {
+export function mergeGeoUnits(geoUnitsA: GeoUnits, geoUnitsB: GeoUnits): GeoUnits {
   const mergedGeoUnits: MutableGeoUnits = {};
   Object.entries(geoUnitsA).forEach(([geoLevelId, geoUnitsForLevel]) => {
     const mergedGeoUnitsForLevel = new Map(geoUnitsForLevel);

@@ -335,6 +335,9 @@ export function featuresToGeoUnits(
   }, {});
 }
 
+/*
+ * Return child geounits (direct descendents-only)
+ */
 export function getChildGeoUnits(
   geoUnitIndices: GeoUnitIndices,
   staticMetadata: IStaticMetadata,

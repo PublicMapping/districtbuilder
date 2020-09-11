@@ -16,7 +16,7 @@ import {
   setFeaturesSelectedFromGeoUnits,
   getChildGeoUnits
 } from "./index";
-import { mergedGeoUnits } from "../../functions";
+import { mergeGeoUnits } from "../../functions";
 
 import {
   DistrictsDefinition,
@@ -258,7 +258,7 @@ const RectangleSelectionTool: ISelectionTool = {
             }
           });
         });
-        store.dispatch(setSelectedGeounits(mergedGeoUnits(geoUnits, initiallySelectedGeoUnits)));
+        store.dispatch(setSelectedGeounits(mergeGeoUnits(geoUnits, initiallySelectedGeoUnits)));
       }
       store.dispatch(clearHighlightedGeounits());
     }
