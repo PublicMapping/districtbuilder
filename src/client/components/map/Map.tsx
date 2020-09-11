@@ -23,11 +23,9 @@ import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
 import { getAllIndices } from "../../../shared/functions";
 import {
   GEOLEVELS_SOURCE_ID,
-  DISTRICTS_PLACEHOLDER_LAYER_ID,
   DISTRICTS_SOURCE_ID,
-  DISTRICTS_LAYER_ID,
   featureStateDistricts,
-  getMapboxStyle,
+  generateMapLayers,
   getGeoLevelVisibility,
   levelToLabelLayerId,
   levelToLineLayerId,
@@ -95,14 +93,13 @@ const DistrictsMap = ({
       return;
     }
 
+    // eslint-disable-next-line
+    MapboxGL.accessToken =
+      "pk.eyJ1IjoiZGlzdHJpY3RidWlsZGVyIiwiYSI6ImNrZXZzeXlvMjIxb2QycW1yeGpuMDJ2ZGwifQ.FdOGNk3y1BPkGvF_yCjjGQ";
+
     const map = new MapboxGL.Map({
       container: mapRef.current,
-      style: getMapboxStyle(
-        project.regionConfig.s3URI,
-        staticMetadata.geoLevelHierarchy,
-        minZoom,
-        maxZoom
-      ),
+      style: "mapbox://styles/districtbuilder/ckexc26lz0d3k19owrswhxz9o",
       bounds: [b0, b1, b2, b3],
       fitBoundsOptions: { padding: 20 },
       minZoom: minZoom,
@@ -126,35 +123,14 @@ const DistrictsMap = ({
     const onMapLoad = () => {
       setMap(map);
 
-      map.addSource(DISTRICTS_SOURCE_ID, {
-        type: "geojson",
-        data: geojson
-      });
-      map.addLayer(
-        {
-          id: DISTRICTS_LAYER_ID,
-          type: "fill",
-          source: DISTRICTS_SOURCE_ID,
-          layout: {},
-          paint: {
-            "fill-color": { type: "identity", property: "color" },
-            "fill-opacity": 1
-          }
-        },
-        DISTRICTS_PLACEHOLDER_LAYER_ID
-      );
-      map.addLayer(
-        {
-          id: "districts-locked",
-          type: "fill",
-          source: DISTRICTS_SOURCE_ID,
-          layout: {},
-          paint: {
-            "fill-pattern": "circle-1",
-            "fill-opacity": ["case", ["boolean", ["feature-state", "locked"], false], 1, 0]
-          }
-        },
-        DISTRICTS_PLACEHOLDER_LAYER_ID
+      generateMapLayers(
+        project.regionConfig.s3URI,
+        project.regionConfig.regionCode,
+        staticMetadata.geoLevelHierarchy,
+        minZoom,
+        maxZoom,
+        map,
+        geojson
       );
 
       map.resize();
