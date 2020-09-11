@@ -144,7 +144,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
           </Link>
         </Box>
         <Heading as="h2" sx={{ variant: "text.h4", color: "blue.0", my: 0 }}>
-          New Project
+          New Map
         </Heading>
       </Flex>
       <Flex as="main" sx={{ width: "100%" }}>
@@ -270,7 +270,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                           <Radio name="project-district" value="" onChange={onDistrictChanged} />
                           <Flex as="span" sx={{ flexDirection: "column" }}>
                             <div sx={style.radioHeading}>Custom</div>
-                            <div sx={style.radioSubHeading}>Define other types of districts</div>
+                            <div sx={style.radioSubHeading}>
+                              Define a custom number of districts
+                            </div>
                           </Flex>
                         </Label>
                       </div>
@@ -310,7 +312,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                   !("errorMessage" in createProjectResource)
                 }
               >
-                Create project
+                Create map
               </Button>
             </Box>
           </Flex>
