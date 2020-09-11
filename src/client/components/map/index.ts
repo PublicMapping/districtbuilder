@@ -315,7 +315,6 @@ export function featuresToGeoUnits(
     // the same set). Here the feature id is used as the key which we also want
     // to keep track of for map management. Note that if keys are duplicated the
     // value set last will be used (thus achieving the uniqueness of sets).
-    // eslint-disable-next-line
     return {
       ...geounitData,
       [geoLevelId]: new Map(
