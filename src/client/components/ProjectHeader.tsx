@@ -1,10 +1,23 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Text } from "theme-ui";
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
+import { Box, Flex, jsx, Text, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
 import { heights } from "../theme";
+import SupportMenu from "../components/SupportMenu";
+
+const style: ThemeUIStyleObject = {
+  projectHeader: {
+    variant: "header.app",
+    backgroundColor: "blue.8",
+    borderBottom: "1px solid",
+    borderColor: "blue.6"
+  },
+  menuButton: {
+    color: "muted"
+  }
+};
 
 const HeaderDivider = () => {
   return (
@@ -20,14 +33,7 @@ const HeaderDivider = () => {
 };
 
 const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
-  <Flex
-    sx={{
-      variant: "header.app",
-      backgroundColor: "blue.8",
-      borderBottom: "1px solid",
-      borderColor: "blue.6"
-    }}
-  >
+  <Flex sx={style.projectHeader}>
     <Flex sx={{ variant: "header.left" }}>
       <Link to="/" sx={{ lineHeight: "0" }}>
         <Logo sx={{ width: "1.75rem" }} />
@@ -44,7 +50,9 @@ const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
         </Text>
       </Flex>
     </Flex>
-    <Flex sx={{ variant: "header.right" }} />
+    <Flex sx={{ variant: "header.right" }}>
+      <SupportMenu invert={true} />
+    </Flex>
   </Flex>
 );
 
