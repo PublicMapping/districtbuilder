@@ -13,16 +13,22 @@ import store from "../../store";
 
 const style: ThemeUIStyleObject = {
   modal: {
-    backgroundColor: "muted",
+    bg: "muted",
     p: 3,
-    width: "medium",
+    width: "small",
     maxWidth: "90vw"
+  },
+  header: {
+    bg: "warning",
+    padding: "16px 12px",
+    margin: "-12px -12px 24px"
   },
   footer: {
     flex: "auto",
     textAlign: "right",
     fontVariant: "tabular-nums",
-    py: 0,
+    py: 2,
+    mt: 2,
     fontSize: 1
   }
 };
@@ -50,22 +56,36 @@ const AdvancedEditingModal = ({
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
       <Box sx={style.modal}>
-        <Heading as="h3" id="advanced-editing-header">{`${geoLevelTitle} Editing`}</Heading>
+        <Box sx={style.header}>
+          <Heading
+            as="h3"
+            sx={{ marginBottom: "0", fontWeight: "medium" }}
+            id="advanced-editing-header"
+          >{`${geoLevelTitle} Editing`}</Heading>
+        </Box>
         <Box>
+          <Heading sx={{ fontWeight: "medium", mt: 5, mb: 3 }} as="h4">
+            For advanced builders
+          </Heading>
           <p>
-            {geoLevelTitle} editing is our advanced editing mode, which enables the most accurate
-            redistricting possible. It can be used to create redistricting planes with 0 deviation
-            and is most useful as a way to change fine level details after you’ve built a
-            redistricting plan that is nearly complete.
+            {geoLevelTitle} Editing is our most advanced editing mode, which enables the most
+            accurate redistricting possible. It is used to fine-tune your districts when your map is
+            nearly complete (e.g. to achieve zero population deviation). {geoLevelTitle} Editing is
+            only recommended for experienced users who are comfortable navigating around the map and
+            drawing controls.
           </p>
-          <b>Limitations of {geoLevel} level editing:</b>
+          <Heading sx={{ fontWeight: "medium", mt: 5, mb: 3 }} as="h4">
+            Limitations of {geoLevelTitle} Editing
+          </Heading>
           <ul>
             <li>
-              You are limited in how far you can zoom out your map while still seeing your changes
+              {geoLevelTitle} are only visible when you zoom in. If you zoom out too far, the{" "}
+              {geoLevel}s will be hidden (but don't worry, they'll still be there for you when you
+              zoom back in!)
             </li>
             <li>
-              You will need to resolve any changes to your map (“Reject” or “Accept changes”) before
-              you leave {geoLevel} editing.
+              Once you select one or more {geoLevel}s, you will need to resolve pending changes
+              (click Accept or Reject) before you can leave {geoLevelTitle} Editing.
             </li>
           </ul>
         </Box>
