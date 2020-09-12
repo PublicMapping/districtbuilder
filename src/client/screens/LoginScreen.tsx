@@ -96,13 +96,13 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
       </Card>
       <Box sx={{ fontSize: 1, mt: 3, textAlign: "center" }}>
         Need an account?{" "}
-        <Styled.a as={Link} to="/register" sx={{ color: "primary" }}>
+        <Styled.a as={Link} to="/register">
           Sign up for free
         </Styled.a>
       </Box>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Forgot password?{" "}
-        <Styled.a as={Link} to="/forgot-password" sx={{ color: "primary" }}>
+        <Styled.a as={Link} to="/forgot-password">
           Password reset
         </Styled.a>
       </Box>

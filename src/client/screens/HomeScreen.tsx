@@ -300,8 +300,14 @@ const HomeScreen = ({ projects, user, history }: StateProps & RouteComponentProp
               </Heading>
 
               <Text sx={{ fontSize: 3, color: "text", textAlign: "center", mb: 5 }}>
-                Start building your first map. DistrictBuilder gives you access to the same
-                block-level data used in legal redistricting plans.
+                Start building your first map or check out our{" "}
+                <Styled.a
+                  href="https://github.com/PublicMapping/districtbuilder/wiki/Getting-Started-with-DistrictBuilder"
+                  target="_blank"
+                >
+                  Getting Started Guide
+                </Styled.a>{" "}
+                to learn how!
               </Text>
               <Styled.a
                 as={Link}
