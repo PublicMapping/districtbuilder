@@ -61,11 +61,9 @@ const style: ThemeUIStyleObject = {
 const buttonClassName = (isSelected: boolean) => `${isSelected ? "selected" : ""}`;
 
 const GeoLevelTooltip = ({
-  isGeoLevelHidden,
   areChangesPending,
   label
 }: {
-  readonly isGeoLevelHidden: boolean;
   readonly areChangesPending: boolean;
   readonly label: string;
 }) => {
@@ -73,14 +71,7 @@ const GeoLevelTooltip = ({
   return (
     <span>
       <strong>Disabled: </strong>
-      {isGeoLevelHidden && areChangesPending ? (
-        <span>{zoomText} and resolve changes</span>
-      ) : isGeoLevelHidden ? (
-        <span>{zoomText}</span>
-      ) : (
-        <strong>Resolve changes</strong>
-      )}
-      &nbsp;to edit {label.toLowerCase()}
+      Resolve changes to edit {label.toLowerCase()}
     </span>
   );
 };
@@ -104,7 +95,6 @@ const GeoLevelButton = ({
 }) => {
   const label = geoLevelLabel(value.id);
   const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
-  const isGeoLevelHidden = geoLevelVisibility[index] === false;
   const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
   const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
   const areChangesPending =
@@ -115,7 +105,7 @@ const GeoLevelButton = ({
       (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
   // Always show the currently selected geolevel, even if it would otherwise be hidden
   const isCurrentLevelSelected = index === geoLevelIndex;
-  const isButtonDisabled = !isCurrentLevelSelected && (isGeoLevelHidden || areChangesPending);
+  const isButtonDisabled = !isCurrentLevelSelected && areChangesPending;
 
   return (
     <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
@@ -123,11 +113,7 @@ const GeoLevelButton = ({
         key={index}
         content={
           isButtonDisabled ? (
-            <GeoLevelTooltip
-              isGeoLevelHidden={isGeoLevelHidden}
-              areChangesPending={areChangesPending}
-              label={label}
-            />
+            <GeoLevelTooltip areChangesPending={areChangesPending} label={label} />
           ) : (
             `Select ${label.toLowerCase()}`
           )
