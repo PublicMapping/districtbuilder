@@ -32,11 +32,13 @@ const style: ThemeUIStyleObject = {
     height: "auto",
     borderRadius: "small",
     boxShadow: "small",
-    maxWidth: "160px",
+    width: "170px",
     overflow: "hidden",
     pointerEvents: "none",
     p: 2,
-    zIndex: 1
+    zIndex: 1,
+    lineHeight: 1.3,
+    fontSize: 0
   }
 };
 
@@ -179,11 +181,22 @@ const MapTooltip = ({
         sx={{ ...style.tooltip }}
       >
         {heading && (
-          <Heading sx={{ fontSize: 2, fontFamily: "heading", color: "muted" }}>{heading}</Heading>
+          <Heading
+            sx={{
+              fontSize: 1,
+              fontFamily: "heading",
+              color: "muted",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}
+          >
+            {heading}
+          </Heading>
         )}
         <Grid gap={2} columns={[2, "1fr 2fr"]}>
           <Box>Pop.</Box>
-          <Box sx={{ fontVariant: "tabular-nums", ml: "7px" }}>
+          <Box sx={{ fontVariant: "tabular-nums", ml: "7px", fontSize: 1, lineHeight: 1, fontWeight: "medium" }}>
             {Number(demographics.population).toLocaleString()}
           </Box>
         </Grid>

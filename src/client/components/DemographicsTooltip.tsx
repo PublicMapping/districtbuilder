@@ -9,15 +9,14 @@ const style: ThemeUIStyleObject = {
     textAlign: "left",
     py: 0,
     pr: 2,
-    textTransform: "capitalize",
-    fontSize: 1
+    textTransform: "capitalize"
   },
   number: {
     flex: "auto",
     textAlign: "right",
     fontVariant: "tabular-nums",
     py: 0,
-    fontSize: 1
+    fontWeight: "light"
   }
 };
 
@@ -72,7 +71,7 @@ const DemographicsTooltip = ({
   ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
-      <Styled.table sx={{ margin: "0" }}>
+      <Styled.table sx={{ margin: "0", width: "100%" }}>
         <tbody>{rows}</tbody>
       </Styled.table>
     </Box>
