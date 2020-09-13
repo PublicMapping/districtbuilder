@@ -49,8 +49,8 @@ export function getGeolevelLinePaintStyle(geoLevel: string) {
 
   const mediumGeolevel = {
     "line-color": "#000",
-    "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.6],
-    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.3, 14, 2.5]
+    "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 14, 0.6],
+    "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.75, 14, 2.25]
   };
 
   const smallGeolevel = {
@@ -104,7 +104,8 @@ export function generateMapLayers(
       layout: {},
       paint: {
         "fill-color": { type: "identity", property: "color" },
-        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.66, 14, 0.45]
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.66, 14, 0.45],
+        "fill-antialias": false
       }
     },
     DISTRICTS_PLACEHOLDER_LAYER_ID
@@ -147,7 +148,8 @@ export function generateMapLayers(
         "source-layer": level.id,
         paint: {
           "fill-color": "#000",
-          "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0]
+          "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.5, 0],
+          "fill-antialias": false
         }
       },
       HIGHLIGHTS_PLACEHOLDER_LAYER_ID
@@ -318,12 +320,15 @@ export function featuresToGeoUnits(
         .filter(feature => feature.sourceLayer === geoLevelId)
         .map((feature: MapboxGeoJSONFeature) => [
           feature.id as FeatureId,
-          geoLevelHierarchyKeys.reduce((geounitData, key) => {
-            const geounitId = feature.properties && feature.properties[key];
-            return geounitId !== undefined && geounitId !== null
-              ? [geounitId, ...geounitData]
-              : geounitData;
-          }, [] as readonly number[])
+          geoLevelHierarchyKeys.reduce(
+            (geounitData, key) => {
+              const geounitId = feature.properties && feature.properties[key];
+              return geounitId !== undefined && geounitId !== null
+                ? [geounitId, ...geounitData]
+                : geounitData;
+            },
+            [] as readonly number[]
+          )
         ])
     );
     return geounitData;
