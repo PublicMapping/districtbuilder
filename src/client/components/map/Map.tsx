@@ -361,7 +361,7 @@ const DistrictsMap = ({
   return (
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
-      <MapMessage />
+      <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <AdvancedEditingModal id={project.id} geoLevels={staticMetadata.geoLevelHierarchy} />
     </Box>
   );

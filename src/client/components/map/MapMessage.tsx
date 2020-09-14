@@ -1,6 +1,8 @@
 /** @jsx jsx */
 import { connect } from "react-redux";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
+import MapboxGL from "mapbox-gl";
+import Icon from "../Icon";
 
 import { State } from "../../reducers";
 import { geoLevelLabel } from "../../functions";
@@ -11,28 +13,50 @@ const style: ThemeUIStyleObject = {
   message: {
     position: "absolute",
     margin: "30px",
-    backgroundColor: "white",
+    color: "muted",
+    bg: "gray.8",
+    display: "flex",
     alignItems: "center",
     px: 2,
     py: 1,
-    borderBottom: "1px solid",
-    borderColor: "gray.2",
+    border: "none",
+    borderRadius: "small",
     boxShadow: "small",
     fontSize: 2,
     left: "50%",
     transform: "translate(-50%, -50%)",
-    zIndex: 1
+    zIndex: 1,
+    cursor: "pointer",
+    "> svg": {
+      mr: 1
+    },
+    "&:hover:not([disabled]):not(:active)": {
+      bg: "gray.7",
+      color: "muted"
+    },
+    "&:active": {
+      color: "muted",
+      bg: "gray.8"
+    },
+    "&:focus": {
+      outline: "none",
+      boxShadow: "focus"
+    }
   }
 };
 
 const MapMessage = ({
   geoLevelIndex,
   geoLevelVisibility,
-  staticMetadata
+  staticMetadata,
+  map,
+  maxZoom
 }: {
   readonly geoLevelIndex: number;
   readonly geoLevelVisibility: readonly boolean[];
   readonly staticMetadata?: IStaticMetadata;
+  readonly map?: MapboxGL.Map;
+  readonly maxZoom: number;
 }) => {
   const invertedGeoLevelIndex = staticMetadata
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
@@ -44,10 +68,12 @@ const MapMessage = ({
   const levelLabel = geoLevelLabel(geoLevelId || "").toLocaleLowerCase();
 
   return geoLevelVisibility[geoLevelIndex] ? null : (
-    <Box sx={style.message}>
-      <span>
-        <strong>+</strong> Zoom in to work with {levelLabel}
-      </span>
+    <Box
+      sx={style.message}
+      as="button"
+      onClick={() => (map !== undefined ? map.zoomTo(maxZoom) : null)}
+    >
+      <Icon name="plus" /> Zoom in to work with {levelLabel}
     </Box>
   );
 };
