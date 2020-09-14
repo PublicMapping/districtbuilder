@@ -4,14 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
+
 ### Added
-- Explicitly set Fargate platform version for ECS services [#318](https://github.com/PublicMapping/districtbuilder/pull/318)
-- Update Terraform AWS provider to 3.x [#329](https://github.com/PublicMapping/districtbuilder/pull/329)
-- Extend Jenkins pipeline to support production releases [#325](https://github.com/PublicMapping/districtbuilder/pull/325)
-- Add support for Rollbar [#338](https://github.com/PublicMapping/districtbuilder/pull/338)
-- Provide math for scaling task memory with additional states [#309](https://github.com/PublicMapping/districtbuilder/pull/309)
-- Add ability to tune health check grace period for ECS service [#393](https://github.com/PublicMapping/districtbuilder/pull/393)
 
 ### Changed
-- Migrate DNS records to districtbuilder.org hosted zones [#360](https://github.com/PublicMapping/districtbuilder/pull/360)
+
+### Fixed
+
+
+## [0.1.0] - 2020-09-14
+- Initial release
+
+
+[Unreleased]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...HEAD
+[0.1.0]: https://github.com/publicmapping/districtbuilder/compare/b9c63f4...0.1.0
