@@ -320,15 +320,12 @@ export function featuresToGeoUnits(
         .filter(feature => feature.sourceLayer === geoLevelId)
         .map((feature: MapboxGeoJSONFeature) => [
           feature.id as FeatureId,
-          geoLevelHierarchyKeys.reduce(
-            (geounitData, key) => {
-              const geounitId = feature.properties && feature.properties[key];
-              return geounitId !== undefined && geounitId !== null
-                ? [geounitId, ...geounitData]
-                : geounitData;
-            },
-            [] as readonly number[]
-          )
+          geoLevelHierarchyKeys.reduce((geounitData, key) => {
+            const geounitId = feature.properties && feature.properties[key];
+            return geounitId !== undefined && geounitId !== null
+              ? [geounitId, ...geounitData]
+              : geounitData;
+          }, [] as readonly number[])
         ])
     );
     return geounitData;

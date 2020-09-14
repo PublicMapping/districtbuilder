@@ -60,14 +60,7 @@ const style: ThemeUIStyleObject = {
 
 const buttonClassName = (isSelected: boolean) => `${isSelected ? "selected" : ""}`;
 
-const GeoLevelTooltip = ({
-  areChangesPending,
-  label
-}: {
-  readonly areChangesPending: boolean;
-  readonly label: string;
-}) => {
-  const zoomText = "Zoom in";
+const GeoLevelTooltip = ({ label }: { readonly label: string }) => {
   return (
     <span>
       <strong>Disabled: </strong>
@@ -81,7 +74,6 @@ const GeoLevelButton = ({
   value,
   geoLevelIndex,
   geoLevelHierarchy,
-  geoLevelVisibility,
   selectedGeounits,
   advancedEditingEnabled
 }: {
@@ -89,7 +81,6 @@ const GeoLevelButton = ({
   readonly value: GeoLevelInfo;
   readonly geoLevelIndex: number;
   readonly geoLevelHierarchy: GeoLevelHierarchy;
-  readonly geoLevelVisibility: readonly boolean[];
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
 }) => {
@@ -112,11 +103,7 @@ const GeoLevelButton = ({
       <Tooltip
         key={index}
         content={
-          isButtonDisabled ? (
-            <GeoLevelTooltip areChangesPending={areChangesPending} label={label} />
-          ) : (
-            `Select ${label.toLowerCase()}`
-          )
+          isButtonDisabled ? <GeoLevelTooltip label={label} /> : `Select ${label.toLowerCase()}`
         }
       >
         <span>
@@ -149,7 +136,6 @@ const MapHeader = ({
   metadata,
   selectionTool,
   geoLevelIndex,
-  geoLevelVisibility,
   selectedGeounits,
   advancedEditingEnabled
 }: {
@@ -158,7 +144,6 @@ const MapHeader = ({
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
-  readonly geoLevelVisibility: readonly boolean[];
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
 }) => {
@@ -180,7 +165,6 @@ const MapHeader = ({
             value={val}
             geoLevelIndex={geoLevelIndex}
             geoLevelHierarchy={geoLevelHierarchy}
-            geoLevelVisibility={geoLevelVisibility}
             selectedGeounits={selectedGeounits}
             advancedEditingEnabled={advancedEditingEnabled}
           />

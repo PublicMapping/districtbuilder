@@ -132,7 +132,6 @@ const ProjectScreen = ({
             metadata={staticMetadata}
             selectionTool={districtDrawing.selectionTool}
             geoLevelIndex={districtDrawing.geoLevelIndex}
-            geoLevelVisibility={districtDrawing.geoLevelVisibility}
             selectedGeounits={districtDrawing.selectedGeounits}
             advancedEditingEnabled={project?.advancedEditingEnabled}
           />
