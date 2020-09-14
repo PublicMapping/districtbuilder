@@ -4,6 +4,7 @@ import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
+import Icon from "../Icon";
 import { GeoLevelInfo, ProjectId } from "../../../shared/entities";
 import { setGeoLevelIndex, showAdvancedEditingModal } from "../../actions/districtDrawing";
 import { projectFetch } from "../../actions/projectData";
@@ -59,14 +60,16 @@ const AdvancedEditingModal = ({
         <Box sx={style.header}>
           <Heading
             as="h3"
-            sx={{ marginBottom: "0", fontWeight: "medium" }}
+            sx={{ marginBottom: "0", fontWeight: "medium", display: "flex", alignItems: "center" }}
             id="advanced-editing-header"
-          >{`${geoLevelTitle} Editing`}</Heading>
+          >
+            <span sx={{ fontSize: 4, mr: 2, display: "flex" }}>
+              <Icon name="alert-triangle" />
+            </span>
+            {`${geoLevelTitle} Editing (for advanced builders)`}
+          </Heading>
         </Box>
         <Box>
-          <Heading sx={{ fontWeight: "medium", mt: 5, mb: 3 }} as="h4">
-            For advanced builders
-          </Heading>
           <p>
             {geoLevelTitle} Editing is our most advanced editing mode, which enables the most
             accurate redistricting possible. It is used to fine-tune your districts when your map is
