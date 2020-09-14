@@ -176,7 +176,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                 field="name"
                 label={
                   <Box as="span" sx={style.cardLabel}>
-                    Map Name
+                    Map name
                   </Box>
                 }
                 resource={createProjectResource}
