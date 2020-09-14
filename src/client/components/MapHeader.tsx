@@ -56,27 +56,11 @@ const style: ThemeUIStyleObject = {
 
 const buttonClassName = (isSelected: boolean) => `${isSelected ? "selected" : ""}`;
 
-const GeoLevelTooltip = ({
-  isGeoLevelHidden,
-  areChangesPending,
-  label
-}: {
-  readonly isGeoLevelHidden: boolean;
-  readonly areChangesPending: boolean;
-  readonly label: string;
-}) => {
-  const zoomText = "Zoom in";
+const GeoLevelTooltip = ({ label }: { readonly label: string }) => {
   return (
     <span>
       <strong>Disabled: </strong>
-      {isGeoLevelHidden && areChangesPending ? (
-        <span>{zoomText} and resolve changes</span>
-      ) : isGeoLevelHidden ? (
-        <span>{zoomText}</span>
-      ) : (
-        <strong>Resolve changes</strong>
-      )}
-      &nbsp;to edit {label.toLowerCase()}
+      Resolve changes to edit {label.toLowerCase()}
     </span>
   );
 };
@@ -86,7 +70,6 @@ const GeoLevelButton = ({
   value,
   geoLevelIndex,
   geoLevelHierarchy,
-  geoLevelVisibility,
   selectedGeounits,
   advancedEditingEnabled
 }: {
@@ -94,13 +77,11 @@ const GeoLevelButton = ({
   readonly value: GeoLevelInfo;
   readonly geoLevelIndex: number;
   readonly geoLevelHierarchy: GeoLevelHierarchy;
-  readonly geoLevelVisibility: readonly boolean[];
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
 }) => {
   const label = geoLevelLabel(value.id);
   const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
-  const isGeoLevelHidden = geoLevelVisibility[index] === false;
   const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
   const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
   const areChangesPending =
@@ -111,22 +92,14 @@ const GeoLevelButton = ({
       (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
   // Always show the currently selected geolevel, even if it would otherwise be hidden
   const isCurrentLevelSelected = index === geoLevelIndex;
-  const isButtonDisabled = !isCurrentLevelSelected && (isGeoLevelHidden || areChangesPending);
+  const isButtonDisabled = !isCurrentLevelSelected && areChangesPending;
 
   return (
     <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
       <Tooltip
         key={index}
         content={
-          isButtonDisabled ? (
-            <GeoLevelTooltip
-              isGeoLevelHidden={isGeoLevelHidden}
-              areChangesPending={areChangesPending}
-              label={label}
-            />
-          ) : (
-            `Select ${label.toLowerCase()}`
-          )
+          isButtonDisabled ? <GeoLevelTooltip label={label} /> : `Select ${label.toLowerCase()}`
         }
       >
         <span>
@@ -159,7 +132,6 @@ const MapHeader = ({
   metadata,
   selectionTool,
   geoLevelIndex,
-  geoLevelVisibility,
   selectedGeounits,
   advancedEditingEnabled
 }: {
@@ -168,7 +140,6 @@ const MapHeader = ({
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
-  readonly geoLevelVisibility: readonly boolean[];
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
 }) => {
@@ -190,7 +161,6 @@ const MapHeader = ({
             value={val}
             geoLevelIndex={geoLevelIndex}
             geoLevelHierarchy={geoLevelHierarchy}
-            geoLevelVisibility={geoLevelVisibility}
             selectedGeounits={selectedGeounits}
             advancedEditingEnabled={advancedEditingEnabled}
           />
