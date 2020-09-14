@@ -148,7 +148,7 @@ export async function fetchProjectData(id: ProjectId): Promise<DynamicProjectDat
 export async function fetchRegionConfigs(): Promise<IRegionConfig> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get("/api/region-configs")
+      .get("/api/region-configs?sort=name,ASC")
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });
