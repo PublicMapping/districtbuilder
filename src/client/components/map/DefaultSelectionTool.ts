@@ -28,22 +28,24 @@ function areAllUnlockedChildGeoUnitsSelected(
   unlockedGeoUnits: GeoUnits,
   geoUnitForFeature: GeoUnitIndices | undefined,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: UintArrays,
-  childGeoLevelId: string | undefined
+  staticGeoLevels: UintArrays
 ): boolean {
-  if (!geoUnitForFeature || !childGeoLevelId) {
+  if (!geoUnitForFeature) {
     return false;
   } else {
-    const childGeoUnits = getChildGeoUnits(geoUnitForFeature, staticMetadata, staticGeoLevels)
-      .childGeoUnits;
+    const { childGeoUnits, childGeoLevel } = getChildGeoUnits(
+      geoUnitForFeature,
+      staticMetadata,
+      staticGeoLevels
+    );
     return (
       childGeoUnits &&
       allGeoUnitIds(childGeoUnits)
-        .filter(featureId => unlockedGeoUnits[childGeoLevelId].has(featureId))
+        .filter(featureId => unlockedGeoUnits[childGeoLevel.id].has(featureId))
         .every(featureId =>
           isFeatureSelected(map, {
             id: featureId,
-            sourceLayer: childGeoLevelId
+            sourceLayer: childGeoLevel.id
           })
         )
     );
@@ -57,7 +59,6 @@ const DefaultSelectionTool: ISelectionTool = {
   enable: function(
     map: MapboxGL.Map,
     geoLevelId: string,
-    childGeoLevelId: string | undefined,
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
@@ -106,8 +107,7 @@ const DefaultSelectionTool: ISelectionTool = {
         unlockedGeoUnits,
         geoUnitForFeature,
         staticMetadata,
-        staticGeoLevels,
-        childGeoLevelId
+        staticGeoLevels
       );
       // eslint-disable-next-line
       if (isSelected) {
