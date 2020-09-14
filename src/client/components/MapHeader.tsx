@@ -38,18 +38,14 @@ const style: ThemeUIStyleObject = {
     }
   },
   rightCapButton: {
-    variant: "buttons.outlined",
-    py: 1,
     borderTopRightRadius: "0",
     borderBottomRightRadius: "0",
-    mr: "1px",
+    borderRight: "none",
     "& > svg": {
       mr: "0"
     }
   },
   leftCapButton: {
-    variant: "buttons.outlined",
-    py: 1,
     borderTopLeftRadius: "0",
     borderBottomLeftRadius: "0",
     "& > svg": {
