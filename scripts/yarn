@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
+
+function usage() {
+    echo -n \
+        "Usage: $(basename "$0") client | server | manage [command [flags]]
+Execute Yarn CLI commands.
+"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    if [[ "${1:-}" == "--help" ]] || [[ ! "${1}" == "client" && ! "${1}" == "server" && ! "${1}" == "manage" ]]; then
+        usage
+    elif [[ "${1}" == "server" ]]; then
+        docker-compose \
+            run --rm --no-deps "${1}" \
+            "${@:2}"
+    else
+        docker-compose \
+            run --rm --no-deps "${1}" \
+            bash -c "yarn ${*:2}"
+    fi
+fi

@@ -1,0 +1,28 @@
+version: "2.4"
+services:
+  server:
+    image: "districtbuilder:${GIT_COMMIT:-latest}"
+
+  manage:
+    image: "districtbuilder-manage:${GIT_COMMIT:-latest}"
+
+  shellcheck:
+    image: koalaman/shellcheck:stable
+    volumes:
+      - ./:/usr/local/src
+    working_dir: /usr/local/src
+
+  terraform:
+    image: quay.io/azavea/terraform:0.12.29
+    volumes:
+      - ./:/usr/local/src
+      - $HOME/.aws:/root/.aws:ro
+    environment:
+      - AWS_PROFILE=${AWS_PROFILE:-district-builder}
+      - GIT_COMMIT=${GIT_COMMIT:-latest}
+      - DB_DEBUG=1
+      - DB_SETTINGS_BUCKET=${DB_SETTINGS_BUCKET:-districtbuilder-staging-config-us-east-1}
+      - DB_ROLLBAR_ACCESS_TOKEN
+      - DB_DEPLOYMENT_ENVIRONMENT=${DB_DEPLOYMENT_ENVIRONMENT:-staging}
+    working_dir: /usr/local/src
+    entrypoint: bash

@@ -1,0 +1,5 @@
+*
+!dist
+!ormconfig.js
+!package.json
+!yarn.lock

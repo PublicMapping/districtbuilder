@@ -1,0 +1,62 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
+
+function usage() {
+    echo -n \
+        "Usage: $(basename "$0")
+Run linters and tests.
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    else
+        echo "Linting Bash scripts"
+        docker-compose \
+            -f docker-compose.ci.yml \
+            run --rm --no-deps shellcheck \
+            scripts/*
+
+        echo "Linting client source code"
+        ./scripts/yarn client \
+            lint
+        ./scripts/yarn client \
+            check-format
+
+        echo "Linting server source code"
+        ./scripts/yarn server \
+            lint
+        ./scripts/yarn server \
+            check-format
+
+        echo "Linting manage source code"
+        ./scripts/yarn manage \
+            lint
+        ./scripts/yarn manage \
+            check-format
+
+        echo "Executing client test suite"
+        ./scripts/yarn client \
+            test --watchAll=false
+
+        if [[ -n "${CI}" ]]; then
+            GIT_COMMIT="${GIT_COMMIT}" docker-compose \
+                -f docker-compose.yml \
+                -f docker-compose.ci.yml \
+                run --rm --no-deps \
+                -e "CI=${CI}" \
+                server \
+                test --watchAll=false --passWithNoTests
+        else
+            echo "Executing server test suite"
+            ./scripts/yarn server \
+                test --watchAll=false --passWithNoTests
+        fi
+    fi
+fi

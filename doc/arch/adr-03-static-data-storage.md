@@ -1,0 +1,23 @@
+# Static Data Storage
+
+## Context
+
+In order to support fast block-level district editing by users, it will be necessary to push a large amount of static data up to the client-side. It may initially appear that we will be able to get all the data we need from the vector tiles, but given that block-level vector tiles need to be zoom-level restricted (due to the abundance of features at lower zoom levels), there are some operations that require additional information. For example, say a user loads a set of districts where districts split blockgroups (a common situation). If a user wants to select a split blockgroup to move from one district to another, it won't be possible to calculate changes in demographic data on the client-side for the changed districts without having the appropriate block-level vector tiles available.
+
+The solution to this problem is to load static block-level data for demographics on the client-side. Another piece of static data that's needed is a mapping of which blocks belong to geounits in higher geolevels. For example, we need to know which blocks belong to each blockgroup, so we'll be able to collect their underlying demographic data to perform calculations. For a more detailed conversation about how this data will be used on the front-end when a user makes a selection on the map, see [this](https://github.com/PublicMapping/district-builder/pull/18#issuecomment-572671925) conversation, particularly the answer to the third question.
+
+
+## Decision
+
+Through testing, we've determined that in order to efficiently store large amounts of static data in client-side memory, we will need to make use of [typed arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays). The reduced memory footprint and efficient storage mechanics make typed arrays ideal for storing a large amount of fixed integer arrays, and from our testing, the lack of sluggishness was immediately apparent, even with a large amount of data loaded.
+
+In order to make use of typed arrays, we need to stick with the theme of [ADR 02](./adr-02-district-data-storage.md), and make use of an internally consistent geolevel ordering across all static data files. The demographic static data will be an array that contains an element for each base geounit (e.g. block), whose value is set to the demographic value for the demographic type in question. That means there will be one file for each demographic type. Similarly, the geolevel static data will be an array that contains an element for each base geounit whose value is set to the index of the geounit for the geolevel type in question. Again, there will be one file for each non-base geolevel. Take counties and blocks for an example. There are 3 counties in Delaware, and the idea is to create a flat array that will specify which blocks belong to which counties. So we need to create a file that is as long as the number of blocks, where each element will either be 0, 1, or 2, depending on which county that belongs to. All of these files will have the same length, since they are all mappings of geounits contained in the base geolevel.
+
+Since the data is all static, we will be able to know in advance the information contained within these files, and will be able to programatically make decisions about what kinds of typed arrays to use upon creation. For most files, we will need to use `Uint16Array`, which can store values from 0 to 65535, but in some situations we'll be able to use `Uint8Array`, which can store values from 0 to 255, and is half the size. Unlikely, but if a situation ever demands the need for even larger numbers, we can use `Uint32Array`, which expands to 4294967295.
+
+We've tested the ability to both store data files in such a format, as well as read them back in, on both the server-side and client-side, and there are no problems. On the client-side, the `fetch` function supports specifying that the input data is an `ArrayBuffer`, and then the proper typed array can be constructed without any overhead.
+
+
+## Consequences
+
+This appears to be the safest bet for pushing a large amount of data up to the front-end with the most efficient memory characteristics. Working with these arrays in practice may pose a small amount of developer friction, since we will need to do some additionally processing occasionally to actually work with it. For example, if a user selects a county and we need to know which blocks belong to the county, we will need to filter the geolevel typed array in order to find the elements. Storing them in a JSON structure that has this grouping in place would be easier to work with, however, we'd miss out on all the performance benefits of using typed arrays, so the trade-off seems worthwhile and necessary.

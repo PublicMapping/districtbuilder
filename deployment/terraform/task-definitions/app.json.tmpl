@@ -1,0 +1,79 @@
+[
+  {
+    "name": "app",
+    "image": "${image}",
+    "cpu": 0,
+    "essential": true,
+    "environment": [
+      {
+        "name": "POSTGRES_HOST",
+        "value": "${postgres_host}"
+      },
+      {
+        "name": "POSTGRES_PORT",
+        "value": "${postgres_port}"
+      },
+      {
+        "name": "POSTGRES_USER",
+        "value": "${postgres_user}"
+      },
+      {
+        "name": "POSTGRES_PASSWORD",
+        "value": "${postgres_password}"
+      },
+      {
+        "name": "POSTGRES_DB",
+        "value": "${postgres_db}"
+      },
+      {
+        "name": "NODE_ENV",
+        "value": "${environment}"
+      },
+      {
+        "name": "NODE_OPTIONS",
+        "value": "--max_old_space_size=${max_old_space_size}"
+      },
+      {
+        "name": "AWS_REGION",
+        "value": "${aws_region}"
+      },
+      {
+        "name": "DEFAULT_FROM_EMAIL",
+        "value": "${default_from_email}"
+      },
+      {
+        "name": "JWT_SECRET",
+        "value": "${jwt_secret}"
+      },
+      {
+        "name": "JWT_EXPIRATION_IN_MS",
+        "value": "${jwt_expiration_in_ms}"
+      },
+      {
+        "name": "CLIENT_URL",
+        "value": "${client_url}"
+      },
+      {
+        "name": "ROLLBAR_ACCESS_TOKEN",
+        "value": "${rollbar_access_token}"
+      }
+    ],
+    "mountPoints": [],
+    "portMappings": [
+      {
+        "containerPort": ${app_port},
+        "hostPort": ${app_port},
+        "protocol": "tcp"
+      }
+    ],
+    "volumesFrom": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "log${environment}App",
+        "awslogs-region": "${aws_region}",
+        "awslogs-stream-prefix": "${lower(project)}-app"
+      }
+    }
+  }
+]
