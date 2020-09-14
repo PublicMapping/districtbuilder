@@ -208,6 +208,9 @@ const RectangleSelectionTool: ISelectionTool = {
       });
     }
 
+    /*
+     * Get all selected features for all geolevels.
+     */
     function getAllSelectedFeatures(): readonly MapboxGL.MapboxGeoJSONFeature[] {
       return map
         .queryRenderedFeatures(undefined, {

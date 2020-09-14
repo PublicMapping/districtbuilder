@@ -262,7 +262,7 @@ function isGeoUnitLocked(
     : // Check if any district at this geolevel is locked
       districtsDefinition.some(districtId =>
         typeof districtId === "number"
-          ? // Whole district is assigned so it can be looked up direclty
+          ? // Whole district is assigned so it can be looked up directly
             lockedDistricts.has(districtId)
           : // District definition has more nesting so it must be followed further
             isGeoUnitLocked(districtId, lockedDistricts, geoUnitIndices)
@@ -348,22 +348,22 @@ export function getChildGeoUnits(
 ) {
   const childGeoLevelIdx = staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
   const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
-  // eslint-disable-next-line
   if (!childGeoLevel) {
     return {
       childGeoLevel,
       childGeoUnitIds: [],
       childGeoUnits: {}
     };
+  } else {
+    const geoUnitIdx = geoUnitIndices[0];
+    const childGeoUnitIds = getAllIndices(staticGeoLevels[childGeoLevelIdx], new Set([geoUnitIdx]));
+    const childGeoUnits = {
+      [childGeoLevel.id]: new Map(
+        childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
+      )
+    };
+    return { childGeoLevel, childGeoUnitIds, childGeoUnits };
   }
-  const geoUnitIdx = geoUnitIndices[0];
-  const childGeoUnitIds = getAllIndices(staticGeoLevels[childGeoLevelIdx], new Set([geoUnitIdx]));
-  const childGeoUnits = {
-    [childGeoLevel.id]: new Map(
-      childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
-    )
-  };
-  return { childGeoLevel, childGeoUnitIds, childGeoUnits };
 }
 
 export function onlyUnlockedGeoUnits(
