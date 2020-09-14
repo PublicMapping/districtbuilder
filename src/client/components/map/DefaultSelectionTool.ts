@@ -23,7 +23,7 @@ import {
   UintArrays
 } from "../../../shared/entities";
 
-function areAnyChildGeoUnitsSelected(
+function areAllUnlockedChildGeoUnitsSelected(
   map: MapboxGL.Map,
   unlockedGeoUnits: GeoUnits,
   geoUnitForFeature: GeoUnitIndices | undefined,
@@ -38,14 +38,14 @@ function areAnyChildGeoUnitsSelected(
     .childGeoUnits;
   return (
     childGeoUnits &&
-    allGeoUnitIds(childGeoUnits).some(
-      featureId =>
-        unlockedGeoUnits[childGeoLevelId].has(featureId) &&
+    allGeoUnitIds(childGeoUnits)
+      .filter(featureId => unlockedGeoUnits[childGeoLevelId].has(featureId))
+      .every(featureId =>
         isFeatureSelected(map, {
           id: featureId,
           sourceLayer: childGeoLevelId
         })
-    )
+      )
   );
 }
 
@@ -100,7 +100,7 @@ const DefaultSelectionTool: ISelectionTool = {
       const geoUnitForFeature = geoUnits[geoLevelId].get(feature.id as FeatureId);
       const unlockedGeoUnitForFeature = unlockedGeoUnits[geoLevelId].get(feature.id as FeatureId);
       const isPartiallyLocked = geoUnitForFeature && !unlockedGeoUnitForFeature;
-      const isPartiallySelected = areAnyChildGeoUnitsSelected(
+      const isPartiallySelected = areAllUnlockedChildGeoUnitsSelected(
         map,
         unlockedGeoUnits,
         geoUnitForFeature,
