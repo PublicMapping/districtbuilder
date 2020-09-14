@@ -83,8 +83,8 @@ const AdvancedEditingModal = ({
           <ul>
             <li>
               {geoLevelTitle} are only visible when you zoom in. If you zoom out too far, the{" "}
-              {geoLevel}s will be hidden (but don't worry, they'll still be there for you when you
-              zoom back in!)
+              {geoLevel}s will be hidden (but don&lsquo;t worry, they&lsquo;ll still be there for
+              you when you zoom back in!)
             </li>
             <li>
               Once you select one or more {geoLevel}s, you will need to resolve pending changes
