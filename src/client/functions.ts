@@ -10,8 +10,7 @@ import {
   GeoUnitIndices,
   GeoUnitHierarchy,
   IStaticMetadata,
-  NestedArray,
-  MutableGeoUnits
+  NestedArray
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { getDemographics as getDemographicsBase } from "../shared/functions";
@@ -211,15 +210,11 @@ export function destructureResource<T extends object>(
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
 }
 
-export function mergeGeoUnits(geoUnitsA: GeoUnits, geoUnitsB: GeoUnits): GeoUnits {
-  const mergedGeoUnits: MutableGeoUnits = {};
-  Object.entries(geoUnitsA).forEach(([geoLevelId, geoUnitsForLevel]) => {
-    const mergedGeoUnitsForLevel = new Map(geoUnitsForLevel);
-    geoUnitsB[geoLevelId].forEach((geoUnitIndices, featureId) => {
-      mergedGeoUnitsForLevel.set(featureId, geoUnitIndices);
-    });
-    // eslint-disable-next-line
-    mergedGeoUnits[geoLevelId] = mergedGeoUnitsForLevel;
-  });
-  return mergedGeoUnits;
+export function mergeGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
+  const geoLevels = [...new Set([...Object.keys(a), ...Object.keys(b)])];
+  return Object.fromEntries(
+    geoLevels.map(geoLevelId => {
+      return [geoLevelId, new Map([...(a[geoLevelId] || []), ...(b[geoLevelId] || [])])];
+    })
+  );
 }
