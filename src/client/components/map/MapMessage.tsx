@@ -12,7 +12,7 @@ import { destructureResource } from "../../functions";
 const style: ThemeUIStyleObject = {
   message: {
     position: "absolute",
-    margin: "30px",
+    mt: 6,
     color: "muted",
     bg: "gray.8",
     display: "flex",
@@ -24,7 +24,7 @@ const style: ThemeUIStyleObject = {
     boxShadow: "small",
     fontSize: 2,
     left: "50%",
-    transform: "translate(-50%, -50%)",
+    transform: "translateX(-50%)",
     zIndex: 1,
     cursor: "pointer",
     "> svg": {
@@ -68,11 +68,7 @@ const MapMessage = ({
   const levelLabel = geoLevelLabel(geoLevelId || "").toLocaleLowerCase();
 
   return geoLevelVisibility[geoLevelIndex] ? null : (
-    <Box
-      sx={style.message}
-      as="button"
-      onClick={() => (map !== undefined ? map.zoomTo(maxZoom) : null)}
-    >
+    <Box sx={style.message} as="button" onClick={() => map !== undefined && map.zoomTo(maxZoom)}>
       <Icon name="plus" /> Zoom in to work with {levelLabel}
     </Box>
   );
