@@ -59,7 +59,8 @@ const theme: Theme & StyledSystemTheme = {
     secondary: "#6d6d6d",
     muted: "#fff",
     accent: "#ffc08e",
-    warning: "#f06543",
+    warning: "#eec643",
+    error: "#f06543",
     success: [
       "#f7fde8",
       "#DCF8A5",
@@ -105,6 +106,7 @@ const theme: Theme & StyledSystemTheme = {
   },
   sizes: {
     form: "350px",
+    small: "580px",
     medium: "750px",
     large: "1040px"
   },
