@@ -18,9 +18,6 @@ import { State } from "../../reducers";
 import DemographicsTooltip from "../DemographicsTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 
-const X_BUFFER = 300;
-const Y_BUFFER = 300;
-
 const getDemographics = memoize(getTotalSelectedDemographics);
 
 const style: ThemeUIStyleObject = {
@@ -32,11 +29,14 @@ const style: ThemeUIStyleObject = {
     height: "auto",
     borderRadius: "small",
     boxShadow: "small",
-    maxWidth: "160px",
+    width: "170px",
     overflow: "hidden",
     pointerEvents: "none",
     p: 2,
-    zIndex: 1
+    zIndex: 1,
+    lineHeight: 1.3,
+    fontSize: 0,
+    willChange: "transform"
   }
 };
 
@@ -164,13 +164,8 @@ const MapTooltip = ({
           ).toLowerCase()}`
         : featureLabel();
 
-    const canvas = map.getCanvas();
-    const { width, height } = canvas;
-    const tooltipWidth = tooltipRef.current && tooltipRef.current.offsetWidth;
-    const tooltipHeight = tooltipRef.current && tooltipRef.current.offsetHeight;
-    const x = !tooltipWidth || width - point.x > X_BUFFER ? point.x : point.x - tooltipWidth - 40;
-    const y =
-      !tooltipHeight || height - point.y > Y_BUFFER ? point.y : point.y - tooltipHeight - 40;
+    const x = point.x;
+    const y = point.y;
 
     return demographics ? (
       <Box
@@ -179,11 +174,30 @@ const MapTooltip = ({
         sx={{ ...style.tooltip }}
       >
         {heading && (
-          <Heading sx={{ fontSize: 2, fontFamily: "heading", color: "muted" }}>{heading}</Heading>
+          <Heading
+            sx={{
+              fontSize: 1,
+              fontFamily: "heading",
+              color: "muted",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}
+          >
+            {heading}
+          </Heading>
         )}
         <Grid gap={2} columns={[2, "1fr 2fr"]}>
           <Box>Pop.</Box>
-          <Box sx={{ fontVariant: "tabular-nums", ml: "7px" }}>
+          <Box
+            sx={{
+              fontVariant: "tabular-nums",
+              ml: "7px",
+              fontSize: 1,
+              lineHeight: 1,
+              fontWeight: "medium"
+            }}
+          >
             {Number(demographics.population).toLocaleString()}
           </Box>
         </Grid>

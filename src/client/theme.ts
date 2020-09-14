@@ -110,7 +110,7 @@ const theme: Theme & StyledSystemTheme = {
     medium: "750px",
     large: "1040px"
   },
-  fontSizes: [11, 13, 15, 18, 21, 31, 37, 54],
+  fontSizes: [12, 14, 16, 18, 21, 31, 37, 54],
   fontWeights: {
     light: 300,
     medium: 500,
