@@ -33,20 +33,21 @@ function areAllUnlockedChildGeoUnitsSelected(
 ): boolean {
   if (!geoUnitForFeature || !childGeoLevelId) {
     return false;
+  } else {
+    const childGeoUnits = getChildGeoUnits(geoUnitForFeature, staticMetadata, staticGeoLevels)
+      .childGeoUnits;
+    return (
+      childGeoUnits &&
+      allGeoUnitIds(childGeoUnits)
+        .filter(featureId => unlockedGeoUnits[childGeoLevelId].has(featureId))
+        .every(featureId =>
+          isFeatureSelected(map, {
+            id: featureId,
+            sourceLayer: childGeoLevelId
+          })
+        )
+    );
   }
-  const childGeoUnits = getChildGeoUnits(geoUnitForFeature, staticMetadata, staticGeoLevels)
-    .childGeoUnits;
-  return (
-    childGeoUnits &&
-    allGeoUnitIds(childGeoUnits)
-      .filter(featureId => unlockedGeoUnits[childGeoLevelId].has(featureId))
-      .every(featureId =>
-        isFeatureSelected(map, {
-          id: featureId,
-          sourceLayer: childGeoLevelId
-        })
-      )
-  );
 }
 
 /*
