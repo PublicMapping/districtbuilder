@@ -7,17 +7,47 @@ import {
   featureStateGeoLevel,
   levelToSelectionLayerId,
   ISelectionTool,
-  featuresToUnlockedGeoUnits,
+  featuresToGeoUnits,
+  onlyUnlockedGeoUnits,
   getChildGeoUnits,
   setFeaturesSelectedFromGeoUnits
 } from "./index";
+import { allGeoUnitIds } from "../../functions";
 import {
+  GeoUnits,
+  GeoUnitIndices,
   DistrictsDefinition,
   FeatureId,
   IStaticMetadata,
   LockedDistricts,
   UintArrays
 } from "../../../shared/entities";
+
+function areAnyChildGeoUnitsSelected(
+  map: MapboxGL.Map,
+  unlockedGeoUnits: GeoUnits,
+  geoUnitForFeature: GeoUnitIndices | undefined,
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: UintArrays,
+  childGeoLevelId: string | undefined
+): boolean {
+  if (!geoUnitForFeature || !childGeoLevelId) {
+    return false;
+  }
+  const childGeoUnits = getChildGeoUnits(geoUnitForFeature, staticMetadata, staticGeoLevels)
+    .childGeoUnits;
+  return (
+    childGeoUnits &&
+    allGeoUnitIds(childGeoUnits).some(
+      featureId =>
+        unlockedGeoUnits[childGeoLevelId].has(featureId) &&
+        isFeatureSelected(map, {
+          id: featureId,
+          sourceLayer: childGeoLevelId
+        })
+    )
+  );
+}
 
 /*
  * Allows users to individually select/deselect specific geounits by clicking them.
@@ -26,6 +56,7 @@ const DefaultSelectionTool: ISelectionTool = {
   enable: function(
     map: MapboxGL.Map,
     geoLevelId: string,
+    childGeoLevelId: string | undefined,
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
@@ -57,31 +88,50 @@ const DefaultSelectionTool: ISelectionTool = {
       }
       const feature = features[0];
 
-      const geoUnits = featuresToUnlockedGeoUnits(
-        [feature],
-        staticMetadata,
+      const geoUnits = featuresToGeoUnits(features, staticMetadata.geoLevelHierarchy);
+      const unlockedGeoUnits = onlyUnlockedGeoUnits(
         districtsDefinition,
         lockedDistricts,
+        geoUnits,
+        staticMetadata,
         staticGeoLevels
       );
+      const isSelected = isFeatureSelected(map, feature);
+      const geoUnitForFeature = geoUnits[geoLevelId].get(feature.id as FeatureId);
+      const unlockedGeoUnitForFeature = unlockedGeoUnits[geoLevelId].get(feature.id as FeatureId);
+      const isPartiallyLocked = geoUnitForFeature && !unlockedGeoUnitForFeature;
+      const isPartiallySelected = areAnyChildGeoUnitsSelected(
+        map,
+        unlockedGeoUnits,
+        geoUnitForFeature,
+        staticMetadata,
+        staticGeoLevels,
+        childGeoLevelId
+      );
       // eslint-disable-next-line
-      if (isFeatureSelected(map, feature)) {
+      if (isSelected) {
         // Geounit is selected, so deselect it
         map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
-        store.dispatch(removeSelectedGeounits(geoUnits));
+        store.dispatch(removeSelectedGeounits(unlockedGeoUnits));
+        // eslint-disable-next-line
+      } else if (!isSelected && isPartiallyLocked && isPartiallySelected) {
+        // We're in a situation where we need to deselect a partially selected feature. Partial
+        // selection is where we only select the unlocked geounits within the selected feature, so
+        // we want to deselect only those.
+        setFeaturesSelectedFromGeoUnits(map, unlockedGeoUnits, false);
+        store.dispatch(removeSelectedGeounits(unlockedGeoUnits));
         // eslint-disable-next-line
       } else {
         // Geounit is not selected, so select it, making sure to remove the selection on any child
         // geounits since the parent selection supercedes any child selections
-        setFeaturesSelectedFromGeoUnits(map, geoUnits, true);
-        const geoUnitForFeature = geoUnits[geoLevelId].get(feature.id as FeatureId);
-        const { childGeoUnits } = geoUnitForFeature
-          ? getChildGeoUnits(geoUnitForFeature, staticMetadata, staticGeoLevels)
+        setFeaturesSelectedFromGeoUnits(map, unlockedGeoUnits, true);
+        const { childGeoUnits } = unlockedGeoUnitForFeature
+          ? getChildGeoUnits(unlockedGeoUnitForFeature, staticMetadata, staticGeoLevels)
           : { childGeoUnits: {} };
         setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
         store.dispatch(
           editSelectedGeounits({
-            add: geoUnits,
+            add: unlockedGeoUnits,
             remove: childGeoUnits
           })
         );

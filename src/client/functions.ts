@@ -73,6 +73,10 @@ export function allGeoUnitIndices(geoUnits: GeoUnits) {
   return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.values()));
 }
 
+export function allGeoUnitIds(geoUnits: GeoUnits) {
+  return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.keys()));
+}
+
 // Aggregate all demographics that are included in the selection
 function getTotalSelectedDemographicsBase(
   staticMetadata: IStaticMetadata,

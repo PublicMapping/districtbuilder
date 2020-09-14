@@ -72,6 +72,7 @@ const DistrictsMap = ({
   const [b0, b1, b2, b3] = staticMetadata.bbox;
 
   const selectedGeolevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex);
+  const nextGeoLevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex + 1);
 
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
   const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
@@ -324,6 +325,7 @@ const DistrictsMap = ({
         DefaultSelectionTool.enable(
           map,
           selectedGeolevel.id,
+          nextGeoLevel ? nextGeoLevel.id : undefined,
           staticMetadata,
           project.districtsDefinition,
           lockedDistricts,
@@ -345,6 +347,7 @@ const DistrictsMap = ({
     map,
     selectionTool,
     selectedGeolevel,
+    nextGeoLevel,
     staticMetadata,
     staticDemographics,
     staticGeoLevels,
