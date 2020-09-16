@@ -13,6 +13,7 @@ import {
   setHighlightedGeounits,
   setSelectedDistrictId,
   setSelectionTool,
+  setSelectedGeounits,
   showAdvancedEditingModal,
   toggleDistrictLocked
 } from "../actions/districtDrawing";
@@ -127,6 +128,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           action.payload.add,
           action.payload.remove
         )
+      };
+    case getType(setSelectedGeounits):
+      return {
+        ...state,
+        selectedGeounits: action.payload
       };
     case getType(clearSelectedGeounits):
       return {

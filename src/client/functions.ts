@@ -72,6 +72,10 @@ export function allGeoUnitIndices(geoUnits: GeoUnits) {
   return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.values()));
 }
 
+export function allGeoUnitIds(geoUnits: GeoUnits) {
+  return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.keys()));
+}
+
 // Aggregate all demographics that are included in the selection
 function getTotalSelectedDemographicsBase(
   staticMetadata: IStaticMetadata,
@@ -204,4 +208,13 @@ export function destructureResource<T extends object>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any | undefined {
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
+}
+
+export function mergeGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
+  const geoLevels = [...new Set([...Object.keys(a), ...Object.keys(b)])];
+  return Object.fromEntries(
+    geoLevels.map(geoLevelId => {
+      return [geoLevelId, new Map([...(a[geoLevelId] || []), ...(b[geoLevelId] || [])])];
+    })
+  );
 }
