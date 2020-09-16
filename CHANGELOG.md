@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Allow for selecting partially locked districts [#420](https://github.com/PublicMapping/districtbuilder/pull/420)
 
 ### Changed
 
