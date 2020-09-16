@@ -245,7 +245,7 @@ const RectangleSelectionTool: ISelectionTool = {
           staticGeoLevels
         );
         // Deselect any child features as appropriate (this comes into a play when, for example, a
-        // blockground is selected and then the county _containing_ that blockgroup is selected)
+        // blockgroup is selected and then the county _containing_ that blockgroup is selected)
         Object.values(geoUnits).forEach(geoUnitsForLevel => {
           geoUnitsForLevel.forEach(geoUnitIndices => {
             // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
