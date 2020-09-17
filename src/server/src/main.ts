@@ -3,9 +3,12 @@ import { Reflector } from "@nestjs/core";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { BadRequestExceptionFilter } from "./common/bad-request-exception.filter";
+import { DEBUG } from "./common/constants";
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: DEBUG ? ["debug", "verbose", "log", "warn", "error"] : ["log", "warn", "error"]
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       exceptionFactory: errors => new BadRequestException(errors),
