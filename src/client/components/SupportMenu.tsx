@@ -80,7 +80,11 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const SupportMenu = (props: any) => {
+interface SupportProps {
+  invert?: boolean;
+}
+
+const SupportMenu = (props: SupportProps) => {
   return (
     <Wrapper sx={{ position: "relative" }}>
       <MenuButton

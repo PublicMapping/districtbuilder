@@ -32,7 +32,11 @@ const HeaderDivider = () => {
   );
 };
 
-const ProjectHeader = ({ project }: { readonly project?: IProject }) => (
+interface SupportProps {
+  readonly invert?: boolean;
+}
+
+const ProjectHeader = ({ project }: { readonly project?: IProject } & SupportProps) => (
   <Flex sx={style.projectHeader}>
     <Flex sx={{ variant: "header.left" }}>
       <Link to="/" sx={{ lineHeight: "0" }}>

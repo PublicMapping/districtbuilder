@@ -2,7 +2,7 @@
 import { ThemeUIStyleObject } from "theme-ui";
 
 export interface ButtonStyleProps {
-  invert?: boolean;
+  readonly invert?: boolean;
 }
 
 export const styles = ({ invert }: ButtonStyleProps): ThemeUIStyleObject => ({
