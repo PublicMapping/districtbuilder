@@ -81,7 +81,7 @@ const style: ThemeUIStyleObject = {
 };
 
 interface SupportProps {
-  invert?: boolean;
+  readonly invert?: boolean;
 }
 
 const SupportMenu = (props: SupportProps) => {
