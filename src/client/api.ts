@@ -162,6 +162,6 @@ export async function patchProject(
     apiAxios
       .patch(`/api/projects/${id}`, projectData)
       .then(response => resolve(response.data))
-      .catch(error => reject(error.response.data));
+      .catch(() => reject());
   });
 }
