@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Redirect, Route, RouteProps, Switch } from "re
 import { ThemeProvider } from "theme-ui";
 
 import { getJWT, jwtIsExpired } from "./jwt";
+import Toast from "./components/Toast";
 import ActivateAccountScreen from "./screens/ActivateAccountScreen";
 import CreateProjectScreen from "./screens/CreateProjectScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
@@ -27,6 +28,7 @@ const PrivateRoute = ({ component, ...props }: RouteProps) => {
 
 const App = () => (
   <ThemeProvider theme={theme}>
+    <Toast />
     <Router>
       <Switch>
         <PrivateRoute path="/" exact={true} component={HomeScreen} />
