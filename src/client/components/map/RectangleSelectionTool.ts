@@ -121,28 +121,32 @@ const RectangleSelectionTool: ISelectionTool = {
         staticGeoLevels
       );
 
-      const newGeoUnits = Object.entries(geoUnits).reduce(
-        (newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
+      // Helper for filtering matching geounits given an include function
+      const filterGeoUnits = (units: GeoUnits, includeFn: (id: number) => boolean) =>
+        Object.entries(units).reduce((newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
           return {
             ...newGeoUnits,
-            [geoLevelId]: new Map(
-              [...geoUnitsForLevel].filter(
-                ([id]) =>
-                  !initiallySelectedGeoUnits[geoLevelId].has(id) &&
-                  !isFeatureSelected(map, {
-                    id,
-                    sourceLayer: geoLevelId
-                  })
-              )
-            )
+            [geoLevelId]: new Map([...geoUnitsForLevel].filter(([id]) => includeFn(id)))
           };
-        },
-        geoUnits
-      );
-      // Select new features
-      setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
+        }, units);
 
-      throttledSetHighlightedGeounits(newGeoUnits);
+      // Highlighted shouldn't include the geounits initially selected
+      const highlightedGeoUnits = filterGeoUnits(
+        geoUnits,
+        id => !initiallySelectedGeoUnits[geoLevelId].has(id)
+      );
+      throttledSetHighlightedGeounits(highlightedGeoUnits);
+
+      // New geounits (to select on map) are the highlighted ones that aren't already selected
+      const newGeoUnits = filterGeoUnits(
+        highlightedGeoUnits,
+        id =>
+          !isFeatureSelected(map, {
+            id,
+            sourceLayer: geoLevelId
+          })
+      );
+      setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
 
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
