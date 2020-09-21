@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support menu on landing and project page [#435](https://github.com/PublicMapping/districtbuilder/pull/435)
 - Allow for selecting partially locked districts [#420](https://github.com/PublicMapping/districtbuilder/pull/420)
+- Show toast on errors
 
 ### Changed
 - Improved lock button UX [#436](https://github.com/PublicMapping/districtbuilder/pull/436)
