@@ -44,12 +44,14 @@ export default function Field<D, R>({
 
 interface InputFieldProps<D, R> extends FieldProps<D, R> {
   readonly label: string | React.ReactElement;
+  readonly description?: string | React.ReactElement;
   readonly inputProps: RefAttributes<HTMLInputElement> & InputProps;
 }
 
 export function InputField<D, R>({
   field,
   label,
+  description,
   resource,
   inputProps
 }: InputFieldProps<D, R>): React.ReactElement {
@@ -57,10 +59,18 @@ export function InputField<D, R>({
     <Field field={field} resource={resource}>
       {hasErrors => (
         <React.Fragment>
-          <span sx={{ display: "block" }}>{label}</span>
+          <Label htmlFor={field.toString()} sx={{ display: "block" }}>
+            {label}
+          </Label>
+          {description && (
+            <span id={`description-${field.toString()}`} sx={{ display: "block" }}>
+              {description}
+            </span>
+          )}
           <Input
             {...inputProps}
             id={field.toString()}
+            aria-describedby={description ? `description-${field.toString()}` : undefined}
             sx={{ borderColor: hasErrors ? "warning" : undefined }}
           />
         </React.Fragment>
@@ -72,12 +82,14 @@ export function InputField<D, R>({
 interface SelectFieldProps<D, R> extends FieldProps<D, R> {
   readonly children: React.ReactNode;
   readonly label: string | React.ReactElement;
+  readonly description?: string | React.ReactElement;
   readonly selectProps: RefAttributes<HTMLSelectElement> & SelectProps;
 }
 
 export function SelectField<D, R>({
   field,
   label,
+  description,
   resource,
   children,
   selectProps
@@ -86,10 +98,18 @@ export function SelectField<D, R>({
     <Field field={field} resource={resource}>
       {hasErrors => (
         <React.Fragment>
-          <span sx={{ display: "block" }}>{label}</span>
+          <Label htmlFor={field.toString()} sx={{ display: "block" }}>
+            {label}
+          </Label>
+          {description && (
+            <span id={`description-${field.toString()}`} sx={{ display: "block" }}>
+              {description}
+            </span>
+          )}
           <Select
             {...selectProps}
             id={field.toString()}
+            aria-describedby={description ? `description-${field.toString()}` : undefined}
             sx={{ borderColor: hasErrors ? "warning" : undefined }}
           >
             {children}
