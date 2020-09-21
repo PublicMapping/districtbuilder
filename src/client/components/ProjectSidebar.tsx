@@ -57,10 +57,15 @@ const style: ThemeUIStyleObject = {
     flexDirection: "column",
     flexShrink: 0,
     height: "100%",
-    minWidth: "415px",
+    minWidth: "430px",
     position: "relative",
     color: "gray.8",
     zIndex: 200
+  },
+  table: {
+    width: "calc(100% - 16px)",
+    mx: 2,
+    mb: 2
   },
   tooltip: {
     position: "absolute",
@@ -100,7 +105,7 @@ const style: ThemeUIStyleObject = {
     fontWeight: "body",
     color: "gray.8",
     fontSize: 1,
-    px: 2,
+    p: 2,
     textAlign: "left",
     verticalAlign: "bottom"
   },
@@ -116,6 +121,11 @@ const style: ThemeUIStyleObject = {
   },
   blankValue: {
     color: "gray.2"
+  },
+  lockButton: {
+    p: "6px",
+    display: "inline-block",
+    lineHeight: "0"
   }
 };
 
@@ -143,7 +153,7 @@ const ProjectSidebar = ({
     <Flex sx={style.sidebar}>
       <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
-        <Styled.table sx={{ width: "calc(100% - 16px)", mx: 2, mb: 2 }}>
+        <Styled.table sx={style.table}>
           <thead>
             <Styled.tr>
               <Styled.th sx={style.th}>
@@ -383,19 +393,20 @@ const SidebarRow = ({
               </span>
             }
           >
-            <span onClick={toggleLocked} sx={{ display: "inline-block", lineHeight: "0" }}>
+            <Button variant="icon" onClick={toggleLocked} sx={style.lockButton}>
               <Icon name="lock-locked" color="#131f28" size={0.75} />
-            </span>
+            </Button>
           </Tooltip>
         ) : (
           <Tooltip content="Lock this district">
-            <span
+            <Button
+              variant="icon"
               style={{ visibility: isHovered ? "visible" : "hidden" }}
               onClick={toggleLocked}
-              sx={{ display: "inline-block", lineHeight: "0" }}
+              sx={style.lockButton}
             >
               <Icon name="lock-unlocked" size={0.75} />
-            </span>
+            </Button>
           </Tooltip>
         )}
       </Styled.td>
