@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Support menu on landing and project page [#435](https://github.com/PublicMapping/districtbuilder/pull/435)
 - Allow for selecting partially locked districts [#420](https://github.com/PublicMapping/districtbuilder/pull/420)
+- Show toast on errors [#437](https://github.com/PublicMapping/districtbuilder/pull/437)
 
 ### Changed
+- Improved lock button UX [#436](https://github.com/PublicMapping/districtbuilder/pull/436)
 - Reduce noise in log output [#399](https://github.com/PublicMapping/districtbuilder/pull/399)
 - Upgrade development database to PostgreSQL 12.2 and PostGIS 3 [#421](https://github.com/PublicMapping/districtbuilder/pull/421)
 

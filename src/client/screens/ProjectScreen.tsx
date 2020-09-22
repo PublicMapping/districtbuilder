@@ -23,7 +23,6 @@ import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
-import Toast from "../components/Toast";
 import { State } from "../reducers";
 import { Resource } from "../resource";
 import store from "../store";
@@ -121,7 +120,6 @@ const ProjectScreen = ({
     <Redirect to={"/login"} />
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
-      <Toast />
       <ProjectHeader project={project} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         {sidebar}

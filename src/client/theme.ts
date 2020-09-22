@@ -16,6 +16,7 @@ const appButtonStyles = {
   fontWeight: "medium",
   borderRadius: "3px",
   cursor: "pointer",
+  transition: "0.2s background ease-out, 0.2s background-color ease-out",
   "& > svg": {
     mr: 1
   },
@@ -328,6 +329,29 @@ const theme: Theme & StyledSystemTheme = {
         },
         "&:active": {
           bg: "gray.3"
+        }
+      }
+    },
+    icon: {
+      ...appButtonStyles,
+      ...{
+        p: 1,
+        bg: "transparent",
+        color: "gray.8",
+        borderRadius: "100%",
+        "> svg": {
+          mx: 0
+        },
+        "&:hover:not([disabled]):not(:active)": {
+          bg: "rgba(89, 89, 89, 0.1)"
+        },
+        "&[disabled]": {
+          bg: "transparent",
+          opacity: 0.25,
+          cursor: "not-allowed"
+        },
+        "&:active": {
+          bg: "rgba(89, 89, 89, 0.3)"
         }
       }
     }

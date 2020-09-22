@@ -23,5 +23,5 @@ export const updateDistrictsDefinitionSuccess = createAction("Update districts d
   DynamicProjectData
 >();
 export const updateDistrictsDefinitionFailure = createAction("Update districts definition failure")<
-  string
+  void
 >();
