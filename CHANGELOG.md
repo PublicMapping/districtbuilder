@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved lock button UX [#436](https://github.com/PublicMapping/districtbuilder/pull/436)
 - Allow for selecting partially locked districts [#420](https://github.com/PublicMapping/districtbuilder/pull/420)
-- Add "Saved" notification in sidebar to indicate when project has been successfully saved to server [#439](https://github.com/PublicMapping/districtbuilder/pull/439)
+- Add "Saved" notification in sidebar when map is successfully saved to cloud [#439](https://github.com/PublicMapping/districtbuilder/pull/439)
 
 ### Changed
 
