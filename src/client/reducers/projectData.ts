@@ -21,7 +21,12 @@ import { resetProjectState } from "../actions/root";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
-import { allGeoUnitIndices, assignGeounitsToDistrict } from "../functions";
+import {
+  allGeoUnitIndices,
+  assignGeounitsToDistrict,
+  showActionFailedToast,
+  showResourceFailedToast
+} from "../functions";
 import { fetchProjectData, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
 
@@ -115,12 +120,15 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(projectDataFetchFailure):
-      return {
-        ...state,
-        projectData: {
-          errorMessage: action.payload
-        }
-      };
+      return loop(
+        {
+          ...state,
+          projectData: {
+            errorMessage: action.payload
+          }
+        },
+        Cmd.run(showResourceFailedToast)
+      );
     case getType(staticDataFetchSuccess):
       return {
         ...state,
@@ -129,12 +137,15 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         }
       };
     case getType(staticDataFetchFailure):
-      return {
-        ...state,
-        staticData: {
-          errorMessage: action.payload
-        }
-      };
+      return loop(
+        {
+          ...state,
+          staticData: {
+            errorMessage: action.payload
+          }
+        },
+        Cmd.run(showResourceFailedToast)
+      );
     case getType(updateDistrictsDefinition):
       return "resource" in state.projectData && "resource" in state.staticData
         ? loop(
@@ -161,10 +172,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         ? loop(state, Cmd.action(projectFetch(state.projectData.resource.project.id)))
         : state;
     case getType(updateDistrictsDefinitionFailure):
-      // TODO (#188): implement a status area to display errors for this and other things
-      // eslint-disable-next-line
-      console.log("Error patching districts definition: ", action.payload);
-      return state;
+      return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state as never;
   }

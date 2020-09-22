@@ -6,6 +6,7 @@ import { projectsFetch, projectsFetchFailure, projectsFetchSuccess } from "../ac
 
 import { IProject } from "../../shared/entities";
 import { fetchProjects } from "../api";
+import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
 
 export type ProjectsState = Resource<readonly IProject[]>;
@@ -35,9 +36,12 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         resource: action.payload
       };
     case getType(projectsFetchFailure):
-      return {
-        errorMessage: action.payload
-      };
+      return loop(
+        {
+          errorMessage: action.payload
+        },
+        Cmd.run(showResourceFailedToast)
+      );
     default:
       return state;
   }

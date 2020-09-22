@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Redirect, Route, RouteProps, Switch } from "re
 import { ThemeProvider } from "theme-ui";
 
 import { getJWT, jwtIsExpired } from "./jwt";
+import Toast from "./components/Toast";
 import ActivateAccountScreen from "./screens/ActivateAccountScreen";
 import CreateProjectScreen from "./screens/CreateProjectScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
@@ -11,7 +12,6 @@ import LoginScreen from "./screens/LoginScreen";
 import ProjectScreen from "./screens/ProjectScreen";
 import RegistrationScreen from "./screens/RegistrationScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
-import ToastDemo from "./screens/ToastDemo";
 import theme from "./theme";
 
 import "./App.css";
@@ -27,6 +27,7 @@ const PrivateRoute = ({ component, ...props }: RouteProps) => {
 
 const App = () => (
   <ThemeProvider theme={theme}>
+    <Toast />
     <Router>
       <Switch>
         <PrivateRoute path="/" exact={true} component={HomeScreen} />
@@ -36,7 +37,6 @@ const App = () => (
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
         <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
-        <Route path="/toast-demo" exact={true} component={ToastDemo} />
         <PrivateRoute path="/create-project" exact={true} component={CreateProjectScreen} />
       </Switch>
     </Router>

@@ -6,6 +6,7 @@ import { userFetch, userFetchFailure, userFetchSuccess } from "../actions/user";
 
 import { IUser } from "../../shared/entities";
 import { fetchUser } from "../api";
+import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
 
 export type UserState = Resource<IUser>;
@@ -35,9 +36,12 @@ const userReducer: LoopReducer<UserState, Action> = (
         resource: action.payload
       };
     case getType(userFetchFailure):
-      return {
-        errorMessage: action.payload
-      };
+      return loop(
+        {
+          errorMessage: action.payload
+        },
+        Cmd.run(showResourceFailedToast)
+      );
     default:
       return state;
   }
