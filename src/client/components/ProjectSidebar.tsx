@@ -228,7 +228,7 @@ const SidebarHeader = ({
             placement="top-start"
             content={
               <span>
-                <strong>Cancel changes:</strong> revert to your previously saved map
+                <strong>Cancel changes</strong> to revert to your previously saved map
               </span>
             }
           >
@@ -246,7 +246,7 @@ const SidebarHeader = ({
             placement="top-start"
             content={
               <span>
-                <strong>Accept changes:</strong> save your map to the cloud
+                <strong>Accept changes</strong> to save your map
               </span>
             }
           >
@@ -262,7 +262,7 @@ const SidebarHeader = ({
           </Tooltip>
         </Flex>
       ) : (
-        <Tooltip placement="top-start" content={<span>Your map is saved to the cloud</span>}>
+        <Tooltip placement="top-start" content={<span>Your map is saved</span>}>
           <Flex sx={{ display: "flex", color: "gray.3", alignItems: "center", userSelect: "none" }}>
             <Icon name="check-circle" size={1.1} />
             <Text sx={{ fontSize: 1, ml: 1 }}>Saved</Text>
