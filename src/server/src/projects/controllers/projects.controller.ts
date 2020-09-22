@@ -15,6 +15,7 @@ import {
   CrudController,
   CrudRequest,
   CrudRequestInterceptor,
+  GetManyDefaultResponse,
   Override,
   ParsedBody,
   ParsedRequest
@@ -47,6 +48,10 @@ import { RegionConfigsService } from "../../region-configs/services/region-confi
     join: {
       regionConfig: {
         eager: true
+      },
+      user: {
+        allow: ["id"],
+        eager: true
       }
     }
   },
@@ -55,19 +60,23 @@ import { RegionConfigsService } from "../../region-configs/services/region-confi
   }
 })
 @CrudAuth({
-  property: "user",
-  filter: (user: User) => {
-    return {
-      user_id: user ? user.id : undefined
-    };
+  filter: (req: any) => {
+    // Filter to user's projects for all update requests and for full project
+    // list. Unauthenticated access is allowed for individual projects
+    if (req.method !== "GET" || req.url === "/api/projects") {
+      const user = req.user as User;
+      return {
+        user_id: user ? user.id : undefined
+      };
+    }
   },
-  persist: (user: User) => {
+  persist: (req: any) => {
+    const user = req.user as User;
     return {
       userId: user ? user.id : undefined
     };
   }
 })
-@UseGuards(JwtAuthGuard)
 @Controller("api/projects")
 // @ts-ignore
 export class ProjectsController implements CrudController<Project> {
@@ -81,7 +90,30 @@ export class ProjectsController implements CrudController<Project> {
     private readonly regionConfigService: RegionConfigsService
   ) {}
 
+  // Overriden to add JwtAuthGuard
   @Override()
+  @UseGuards(JwtAuthGuard)
+  getMany(@ParsedRequest() req: CrudRequest): Promise<GetManyDefaultResponse<Project> | Project[]> {
+    if (!this.base.getManyBase) {
+      this.logger.error("Routes misconfigured. Missing `getManyBase` route");
+      throw new InternalServerErrorException();
+    }
+    return this.base.getManyBase(req);
+  }
+
+  // Overriden to add JwtAuthGuard
+  @Override()
+  @UseGuards(JwtAuthGuard)
+  updateOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Project) {
+    if (!this.base.updateOneBase) {
+      this.logger.error("Routes misconfigured. Missing `updateOneBase` route");
+      throw new InternalServerErrorException();
+    }
+    return this.base.updateOneBase(req, dto);
+  }
+
+  @Override()
+  @UseGuards(JwtAuthGuard)
   async createOne(
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateProjectDto
