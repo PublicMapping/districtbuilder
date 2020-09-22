@@ -39,7 +39,14 @@ interface SupportProps {
 const ProjectHeader = ({ project }: { readonly project?: IProject } & SupportProps) => (
   <Flex sx={style.projectHeader}>
     <Flex sx={{ variant: "header.left" }}>
-      <Link to="/" sx={{ lineHeight: "0" }}>
+      <Link
+        to="/"
+        sx={{
+          lineHeight: "0",
+          borderRadius: "small",
+          "&:focus": { outline: "none", boxShadow: "focus" }
+        }}
+      >
         <Logo sx={{ width: "1.75rem" }} />
       </Link>
       <HeaderDivider />
