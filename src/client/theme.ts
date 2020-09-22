@@ -390,17 +390,17 @@ const theme: Theme & StyledSystemTheme = {
   },
   spinner: {
     small: {
-      color: "accent",
+      color: "primary",
       size: "24px",
       strokeWidth: "3px"
     },
     medium: {
-      color: "accent",
+      color: "primary",
       size: "48px",
       strokeWidth: "3px"
     },
     large: {
-      color: "accent",
+      color: "primary",
       strokeWidth: "3px",
       size: "60px"
     }
