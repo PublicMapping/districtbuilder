@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { Link, RouteComponentProps } from "react-router-dom";
 import * as H from "history";
 import Icon from "../components/Icon";
+import SupportMenu from "../components/SupportMenu";
 import {
   Alert,
   Box,
@@ -218,30 +219,33 @@ const HomeScreen = ({ projects, user, history }: StateProps & RouteComponentProp
             </Link>
           </React.Fragment>
         ) : "resource" in user ? (
-          <Wrapper onSelection={handleSelection(history)}>
-            <MenuButton sx={style.menuButton}>
-              <Avatar
-                name={user.resource.name}
-                round={true}
-                size={"2.5rem"}
-                color={"#2c485e"}
-                maxInitials={3}
-                sx={style.avatar}
-              />
-              <div sx={{ ml: 2 }}>
-                <Icon name="chevron-down" />
-              </div>
-            </MenuButton>
-            <Menu sx={style.menu}>
-              <ul sx={style.menuList}>
-                <li key={UserMenuKeys.Logout}>
-                  <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
-                    Logout
-                  </MenuItem>
-                </li>
-              </ul>
-            </Menu>
-          </Wrapper>
+          <React.Fragment>
+            <SupportMenu />
+            <Wrapper onSelection={handleSelection(history)} sx={{ ml: 3 }}>
+              <MenuButton sx={style.menuButton}>
+                <Avatar
+                  name={user.resource.name}
+                  round={true}
+                  size={"2.5rem"}
+                  color={"#2c485e"}
+                  maxInitials={3}
+                  sx={style.avatar}
+                />
+                <div sx={{ ml: 2 }}>
+                  <Icon name="chevron-down" />
+                </div>
+              </MenuButton>
+              <Menu sx={style.menu}>
+                <ul sx={style.menuList}>
+                  <li key={UserMenuKeys.Logout}>
+                    <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
+                      Logout
+                    </MenuItem>
+                  </li>
+                </ul>
+              </Menu>
+            </Wrapper>
+          </React.Fragment>
         ) : null}
       </Flex>
       <Flex
