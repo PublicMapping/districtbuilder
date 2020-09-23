@@ -77,7 +77,8 @@ const GeoLevelButton = ({
   geoLevelIndex,
   geoLevelHierarchy,
   selectedGeounits,
-  advancedEditingEnabled
+  advancedEditingEnabled,
+  isReadOnly
 }: {
   readonly index: number;
   readonly value: GeoLevelInfo;
@@ -85,6 +86,7 @@ const GeoLevelButton = ({
   readonly geoLevelHierarchy: GeoLevelHierarchy;
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
+  readonly isReadOnly: boolean;
 }) => {
   const label = geoLevelLabel(value.id);
   const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
@@ -115,7 +117,7 @@ const GeoLevelButton = ({
             className={buttonClassName(geoLevelIndex === index)}
             onClick={() =>
               store.dispatch(
-                !isCurrentLevelBaseGeoLevel || advancedEditingEnabled
+                !isCurrentLevelBaseGeoLevel || (!isReadOnly && advancedEditingEnabled)
                   ? setGeoLevelIndex(index)
                   : showAdvancedEditingModal(true)
               )
@@ -139,7 +141,8 @@ const MapHeader = ({
   selectionTool,
   geoLevelIndex,
   selectedGeounits,
-  advancedEditingEnabled
+  advancedEditingEnabled,
+  isReadOnly
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
@@ -148,6 +151,7 @@ const MapHeader = ({
   readonly geoLevelIndex: number;
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
+  readonly isReadOnly: boolean;
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
@@ -169,6 +173,7 @@ const MapHeader = ({
             geoLevelHierarchy={geoLevelHierarchy}
             selectedGeounits={selectedGeounits}
             advancedEditingEnabled={advancedEditingEnabled}
+            isReadOnly={isReadOnly}
           />
         ))
     : [];

@@ -37,11 +37,13 @@ const style: ThemeUIStyleObject = {
 const AdvancedEditingModal = ({
   id,
   geoLevels,
-  showModal
+  showModal,
+  isReadOnly
 }: {
   readonly id: ProjectId;
   readonly geoLevels: readonly GeoLevelInfo[];
   readonly showModal: boolean;
+  readonly isReadOnly: boolean;
 }) => {
   const [isPending, setIsPending] = useState(false);
   const geoLevel = geoLevels[0].id;
@@ -87,8 +89,10 @@ const AdvancedEditingModal = ({
               you when you zoom back in!)
             </li>
             <li>
-              Once you select one or more {geoLevel}s, you will need to resolve pending changes
-              (click Accept or Reject) before you can leave {geoLevelTitle} Editing.
+              Once you select one or more {geoLevel}s, you will need to{" "}
+              {!isReadOnly ? "resolve" : "clear"} pending changes
+              {isReadOnly || " (click Accept or Cancel) "} before you can leave {geoLevelTitle}{" "}
+              Editing.
             </li>
           </ul>
         </Box>
@@ -103,14 +107,21 @@ const AdvancedEditingModal = ({
           <Button
             disabled={isPending}
             onClick={() => {
-              setIsPending(true);
-              patchProject(id, { advancedEditingEnabled: true })
-                .then(() => {
-                  store.dispatch(setGeoLevelIndex(geoLevels.length - 1));
-                  store.dispatch(projectFetch(id));
-                  hideModal();
-                })
-                .finally(() => setIsPending(false));
+              if (isReadOnly) {
+                store.dispatch(setGeoLevelIndex(geoLevels.length - 1));
+                hideModal();
+                return;
+              } else {
+                setIsPending(true);
+                patchProject(id, { advancedEditingEnabled: true })
+                  .then(() => {
+                    store.dispatch(setGeoLevelIndex(geoLevels.length - 1));
+                    store.dispatch(projectFetch(id));
+                    hideModal();
+                  })
+                  .finally(() => setIsPending(false));
+                return;
+              }
             }}
           >
             Start {geoLevel} editing

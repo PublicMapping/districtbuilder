@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
@@ -18,11 +18,13 @@ import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
+import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
 import CenteredContent from "../components/CenteredContent";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
+import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { Resource } from "../resource";
 import store from "../store";
@@ -37,6 +39,7 @@ interface StateProps {
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
+  readonly isReadOnly: boolean;
   readonly user: Resource<IUser>;
 }
 
@@ -49,10 +52,13 @@ const ProjectScreen = ({
   geoUnitHierarchy,
   districtDrawing,
   isLoading,
+  isReadOnly,
   user
 }: StateProps) => {
   const { projectId } = useParams();
   const [label, setMapLabel] = useState<string | undefined>(undefined);
+  const isLoggedIn = getJWT() !== null;
+  const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
@@ -79,9 +85,9 @@ const ProjectScreen = ({
   );
 
   useEffect(() => {
-    store.dispatch(userFetch());
+    isLoggedIn && store.dispatch(userFetch());
     projectId && store.dispatch(projectDataFetch(projectId));
-  }, [projectId]);
+  }, [projectId, isLoggedIn]);
 
   const sidebar = useMemo(
     () => (
@@ -112,7 +118,7 @@ const ProjectScreen = ({
     ]
   );
 
-  return "isPending" in user ? (
+  return isFirstLoadPending ? (
     <CenteredContent>
       <Flex sx={{ justifyContent: "center" }}>
         <Spinner variant="spinner.large" />
@@ -134,21 +140,29 @@ const ProjectScreen = ({
             geoLevelIndex={districtDrawing.geoLevelIndex}
             selectedGeounits={districtDrawing.selectedGeounits}
             advancedEditingEnabled={project?.advancedEditingEnabled}
+            isReadOnly={isReadOnly}
           />
           {project && staticMetadata && staticDemographics && staticGeoLevels && geojson ? (
-            <Map
-              project={project}
-              geojson={geojson}
-              staticMetadata={staticMetadata}
-              staticDemographics={staticDemographics}
-              staticGeoLevels={staticGeoLevels}
-              selectedGeounits={districtDrawing.selectedGeounits}
-              selectedDistrictId={districtDrawing.selectedDistrictId}
-              selectionTool={districtDrawing.selectionTool}
-              geoLevelIndex={districtDrawing.geoLevelIndex}
-              lockedDistricts={districtDrawing.lockedDistricts}
-              label={label}
-            />
+            <React.Fragment>
+              <Map
+                project={project}
+                geojson={geojson}
+                staticMetadata={staticMetadata}
+                staticDemographics={staticDemographics}
+                staticGeoLevels={staticGeoLevels}
+                selectedGeounits={districtDrawing.selectedGeounits}
+                selectedDistrictId={districtDrawing.selectedDistrictId}
+                selectionTool={districtDrawing.selectionTool}
+                geoLevelIndex={districtDrawing.geoLevelIndex}
+                lockedDistricts={districtDrawing.lockedDistricts}
+                label={label}
+              />
+              <AdvancedEditingModal
+                id={project.id}
+                geoLevels={staticMetadata.geoLevelHierarchy}
+                isReadOnly={isReadOnly}
+              />
+            </React.Fragment>
           ) : null}
         </Flex>
       </Flex>
@@ -157,8 +171,9 @@ const ProjectScreen = ({
 };
 
 function mapStateToProps(state: State): StateProps {
+  const project = destructureResource(state.project.projectData, "project");
   return {
-    project: destructureResource(state.project.projectData, "project"),
+    project,
     geojson: destructureResource(state.project.projectData, "geojson"),
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
     staticGeoLevels: destructureResource(state.project.staticData, "staticGeoLevels"),
@@ -168,6 +183,9 @@ function mapStateToProps(state: State): StateProps {
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||
       ("isPending" in state.project.staticData && state.project.staticData.isPending),
+    isReadOnly:
+      !("resource" in state.user) ||
+      (project !== undefined && state.user.resource.id !== project.user.id),
     user: state.user
   };
 }
