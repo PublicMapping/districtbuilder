@@ -80,12 +80,15 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         Cmd.action(clearSelectedGeounits())
       );
     case getType(projectFetchFailure):
-      return {
-        ...state,
-        projectData: {
-          errorMessage: action.payload
-        }
-      };
+      return loop(
+        {
+          ...state,
+          projectData: {
+            errorMessage: action.payload
+          }
+        },
+        Cmd.run(showActionFailedToast)
+      );
     case getType(projectDataFetch):
       return loop(
         {
