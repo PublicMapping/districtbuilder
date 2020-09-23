@@ -13,7 +13,7 @@ const Icon = ({ name, color, size }: IconProps) => {
   const iconSize = size ? size : 1;
   return (
     <svg sx={{ height: `${iconSize}em`, width: `${iconSize}em` }} viewBox={viewBox}>
-      <path d={path} fill={color ? color : "currentColor"} />
+      <path d={path} sx={{ fill: color ? color : "currentColor" }} />
     </svg>
   );
 };
