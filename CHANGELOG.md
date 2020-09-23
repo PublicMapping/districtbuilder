@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow for selecting partially locked districts [#420](https://github.com/PublicMapping/districtbuilder/pull/420)
 - Show toast on errors [#437](https://github.com/PublicMapping/districtbuilder/pull/437)
 - Add the ability to query ALB logs with Athena [#441](https://github.com/PublicMapping/districtbuilder/pull/441)
+- Don't re-request data unnecessarily after saving project changes [#443](https://github.com/PublicMapping/districtbuilder/pull/443)
 
 ### Changed
 
