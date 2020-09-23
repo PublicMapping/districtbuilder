@@ -181,7 +181,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             }));
           },
           {
-            successActionCreator: projectFetchSuccess
+            successActionCreator: projectFetchSuccess,
+            failActionCreator: updateDistrictsDefinitionFailure
           }
         )
       );
