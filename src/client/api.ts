@@ -120,7 +120,7 @@ async function fetchProject(id: ProjectId): Promise<IProject> {
   });
 }
 
-async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJSON> {
+export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJSON> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}/export/geojson`)

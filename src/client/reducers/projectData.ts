@@ -4,8 +4,8 @@ import { getType } from "typesafe-actions";
 import { Action } from "../actions";
 import {
   updateDistrictsDefinition,
-  updateDistrictsDefinitionFailure,
   updateDistrictsDefinitionSuccess,
+  updateDistrictsDefinitionFailure,
   projectFetch,
   projectFetchSuccess,
   projectFetchFailure,
@@ -18,7 +18,7 @@ import {
 import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
-import { DynamicProjectData, StaticProjectData } from "../types";
+import { DistrictsGeoJSON, DynamicProjectData, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
 import {
@@ -27,7 +27,7 @@ import {
   showActionFailedToast,
   showResourceFailedToast
 } from "../functions";
-import { fetchProjectData, patchProject } from "../api";
+import { fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
 
 export type ProjectDataState = {
@@ -171,9 +171,20 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           )
         : state;
     case getType(updateDistrictsDefinitionSuccess):
-      return "resource" in state.projectData
-        ? loop(state, Cmd.action(projectFetch(state.projectData.resource.project.id)))
-        : state;
+      return loop(
+        state,
+        Cmd.run(
+          () => {
+            return fetchProjectGeoJson(action.payload.id).then((geojson: DistrictsGeoJSON) => ({
+              project: action.payload,
+              geojson
+            }));
+          },
+          {
+            successActionCreator: projectFetchSuccess
+          }
+        )
+      );
     case getType(updateDistrictsDefinitionFailure):
       return loop(state, Cmd.run(showActionFailedToast));
     default:
