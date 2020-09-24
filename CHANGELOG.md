@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix S3 permissions to allow CloudFront logging [#410](https://github.com/PublicMapping/districtbuilder/pull/410)
 - Fix problem with highlighted resetting [#442](https://github.com/PublicMapping/districtbuilder/pull/442)
+- Fix saved notification [#445](https://github.com/PublicMapping/districtbuilder/pull/445)
 
 ## [0.1.0] - 2020-09-14
 

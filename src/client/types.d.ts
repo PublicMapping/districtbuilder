@@ -23,3 +23,5 @@ export interface StaticProjectData {
 }
 
 export type ProjectData = DynamicProjectData & StaticProjectData;
+
+export type SavingState = "unsaved" | "saving" | "saved" | "failed";

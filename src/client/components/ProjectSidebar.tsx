@@ -23,7 +23,7 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
-import { DistrictGeoJSON, DistrictsGeoJSON } from "../types";
+import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
 import {
   allGeoUnitIndices,
   areAnyGeoUnitsSelected,
@@ -149,7 +149,8 @@ const ProjectSidebar = ({
   selectedDistrictId,
   selectedGeounits,
   geoUnitHierarchy,
-  lockedDistricts
+  lockedDistricts,
+  saving
 }: {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -159,10 +160,11 @@ const ProjectSidebar = ({
   readonly selectedGeounits: GeoUnits;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
+  readonly saving: SavingState;
 } & LoadingProps) => {
   return (
     <Flex sx={style.sidebar}>
-      <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} />
+      <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} saving={saving} />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
         <Styled.table sx={style.table}>
           <thead>
@@ -206,6 +208,7 @@ const ProjectSidebar = ({
                 selectedGeounits={selectedGeounits}
                 geoUnitHierarchy={geoUnitHierarchy}
                 lockedDistricts={lockedDistricts}
+                saving={saving}
               />
             )}
           </tbody>
@@ -217,9 +220,11 @@ const ProjectSidebar = ({
 
 const SidebarHeader = ({
   selectedGeounits,
-  isLoading
+  isLoading,
+  saving
 }: {
   readonly selectedGeounits: GeoUnits;
+  readonly saving: SavingState;
 } & LoadingProps) => {
   return (
     <Flex sx={style.header}>
@@ -228,7 +233,7 @@ const SidebarHeader = ({
           Districts
         </Heading>
       </Flex>
-      {isLoading ? (
+      {isLoading || saving === "saving" ? (
         <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
           <Spinner variant="spinner.small" />
         </Flex>
@@ -246,7 +251,7 @@ const SidebarHeader = ({
               variant="circularSubtle"
               sx={{ mr: "2" }}
               onClick={() => {
-                store.dispatch(clearSelectedGeounits());
+                store.dispatch(clearSelectedGeounits(true));
               }}
             >
               Cancel
@@ -271,14 +276,14 @@ const SidebarHeader = ({
             </Button>
           </Tooltip>
         </Flex>
-      ) : (
+      ) : saving === "saved" ? (
         <Tooltip placement="top-start" content={<span>Your map is saved</span>}>
           <Flex sx={{ display: "flex", color: "gray.3", alignItems: "center", userSelect: "none" }}>
             <Icon name="check-circle" size={1.1} />
             <Text sx={{ fontSize: 1, ml: 1 }}>Saved</Text>
           </Flex>
         </Tooltip>
-      )}
+      ) : null}
     </Flex>
   );
 };
@@ -517,6 +522,7 @@ interface SidebarRowsProps {
   readonly selectedGeounits: GeoUnits;
   readonly geoUnitHierarchy: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
+  readonly saving: SavingState;
 }
 
 const SidebarRows = ({
