@@ -2,6 +2,8 @@ import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
+import { SavingState } from "../types";
+
 import {
   addSelectedGeounits,
   clearHighlightedGeounits,
@@ -74,6 +76,7 @@ export interface DistrictDrawingState {
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
   readonly lockedDistricts: LockedDistricts;
   readonly showAdvancedEditingModal: boolean;
+  readonly saving: SavingState;
 }
 
 export const initialDistrictDrawingState: DistrictDrawingState = {
@@ -84,7 +87,8 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   geoLevelIndex: 0,
   geoLevelVisibility: [],
   lockedDistricts: new Set(),
-  showAdvancedEditingModal: false
+  showAdvancedEditingModal: false,
+  saving: "unsaved"
 };
 
 const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
@@ -134,11 +138,14 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         selectedGeounits: action.payload
       };
-    case getType(clearSelectedGeounits):
+    case getType(clearSelectedGeounits): {
+      const clearedViaCancel = action.payload;
       return {
         ...state,
+        saving: clearedViaCancel ? "unsaved" : "saved",
         selectedGeounits: clearGeoUnits(state.selectedGeounits)
       };
+    }
     case getType(setHighlightedGeounits):
       return {
         ...state,

@@ -10,7 +10,11 @@ export const setSelectedDistrictId = createAction("Set selected district id")<nu
 
 export const addSelectedGeounits = createAction("Add selected geounits")<GeoUnits>();
 export const removeSelectedGeounits = createAction("Remove selected geounits")<GeoUnits>();
-export const clearSelectedGeounits = createAction("Clear selected geounits")();
+
+// Payload boolean is for "canceled". True when cancel button is pressed, false when cleared
+// due to districts being updated. Needed for showing correct status on sidebar.
+export const clearSelectedGeounits = createAction("Clear selected geounits")<boolean>();
+
 export const editSelectedGeounits = createAction("Edit selected geounits")<{
   readonly add?: GeoUnits;
   readonly remove?: GeoUnits;

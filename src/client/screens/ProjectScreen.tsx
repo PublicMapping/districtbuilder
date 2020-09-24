@@ -95,6 +95,7 @@ const ProjectScreen = ({
         selectedGeounits={districtDrawing.selectedGeounits}
         geoUnitHierarchy={geoUnitHierarchy}
         lockedDistricts={districtDrawing.lockedDistricts}
+        saving={districtDrawing.saving}
       />
     ),
     [
@@ -106,7 +107,8 @@ const ProjectScreen = ({
       districtDrawing.selectedDistrictId,
       districtDrawing.selectedGeounits,
       geoUnitHierarchy,
-      districtDrawing.lockedDistricts
+      districtDrawing.lockedDistricts,
+      districtDrawing.saving
     ]
   );
 

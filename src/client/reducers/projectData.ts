@@ -77,7 +77,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             resource: action.payload
           }
         },
-        Cmd.action(clearSelectedGeounits())
+        Cmd.action(clearSelectedGeounits(false))
       );
     case getType(projectFetchFailure):
       return loop(
@@ -152,7 +152,10 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
     case getType(updateDistrictsDefinition):
       return "resource" in state.projectData && "resource" in state.staticData
         ? loop(
-            state,
+            {
+              ...state,
+              saving: "saving"
+            },
             Cmd.run(patchProject, {
               successActionCreator: updateDistrictsDefinitionSuccess,
               failActionCreator: updateDistrictsDefinitionFailure,
@@ -187,7 +190,13 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         )
       );
     case getType(updateDistrictsDefinitionFailure):
-      return loop(state, Cmd.run(showActionFailedToast));
+      return loop(
+        {
+          ...state,
+          saving: "failed"
+        },
+        Cmd.run(showActionFailedToast)
+      );
     default:
       return state as never;
   }
