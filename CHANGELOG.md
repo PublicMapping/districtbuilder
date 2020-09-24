@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+
+### Changed
+
+
+### Fixed
+
+
+## [1.0.0] - 2020-09-23
+
+### Added
+
 - Support menu on landing and project page [#435](https://github.com/PublicMapping/districtbuilder/pull/435)
 - Allow for selecting partially locked districts [#420](https://github.com/PublicMapping/districtbuilder/pull/420)
 - Show toast on errors [#437](https://github.com/PublicMapping/districtbuilder/pull/437)
@@ -34,5 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...1.0.0
 [0.1.0]: https://github.com/publicmapping/districtbuilder/compare/b9c63f4...0.1.0
