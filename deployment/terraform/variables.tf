@@ -295,3 +295,8 @@ variable "aws_ecs_task_execution_role_policy_arn" {
   default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   type    = string
 }
+
+variable "aws_cloudfront_canonical_user_id" {
+  default = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
+  type    = string
+}

@@ -131,8 +131,12 @@ export type FeatureId = number;
 export type GeoUnitsForLevel = ReadonlyMap<FeatureId, GeoUnitIndices>;
 
 export interface GeoUnits {
+  readonly [geoLevelId: string]: GeoUnitsForLevel;
+}
+
+export interface MutableGeoUnits {
   // eslint-disable-next-line
-  [geoLevelId: string]: GeoUnitsForLevel;
+  [geoLevelId: string]: Map<FeatureId, GeoUnitIndices>;
 }
 
 export type CompactnessScore = number | null | "non-contiguous";

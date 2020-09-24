@@ -2,28 +2,28 @@ import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import {
-  editSelectedGeounits,
+  setSelectedGeounits,
   clearHighlightedGeounits,
   setHighlightedGeounits
 } from "../../actions/districtDrawing";
 import {
   featuresToUnlockedGeoUnits,
-  featureStateGeoLevel,
-  findSelectedSubFeatures,
   GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   levelToSelectionLayerId,
   ISelectionTool,
-  SET_FEATURE_DELAY
+  SET_FEATURE_DELAY,
+  setFeaturesSelectedFromGeoUnits,
+  getChildGeoUnits
 } from "./index";
+import { mergeGeoUnits } from "../../functions";
 
 import {
   DistrictsDefinition,
-  FeatureId,
   GeoUnits,
-  GeoUnitIndices,
   IStaticMetadata,
-  LockedDistricts
+  LockedDistricts,
+  UintArrays
 } from "../../../shared/entities";
 
 const throttledSetHighlightedGeounits = throttle(
@@ -48,7 +48,8 @@ const RectangleSelectionTool: ISelectionTool = {
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
-    lockedDistricts: LockedDistricts
+    lockedDistricts: LockedDistricts,
+    staticGeoLevels: UintArrays
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
@@ -71,7 +72,7 @@ const RectangleSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
-    let setOfInitiallySelectedFeatures: GeoUnits; // eslint-disable-line
+    let initiallySelectedGeoUnits: GeoUnits; // eslint-disable-line
 
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
@@ -114,37 +115,52 @@ const RectangleSelectionTool: ISelectionTool = {
       const features = getFeaturesInBoundingBox([start, current]);
       const geoUnits = featuresToUnlockedGeoUnits(
         features,
-        staticMetadata.geoLevelHierarchy,
+        staticMetadata,
         districtsDefinition,
-        lockedDistricts
+        lockedDistricts,
+        staticGeoLevels
       );
-      const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
 
-      // Set any newly selected features on the map within the bounding box to selected state
-      const newFeatures = features.filter(
-        feature => geoUnitsForLevel.has(feature.id as FeatureId) && !isFeatureSelected(map, feature)
-      );
-      newFeatures.forEach(feature => {
-        map.setFeatureState(featureStateExpression(feature.id), { selected: true });
-      });
+      // Helper for filtering matching geounits given an include function
+      const filterGeoUnits = (units: GeoUnits, includeFn: (id: number) => boolean) =>
+        Object.entries(units).reduce((newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
+          return {
+            ...newGeoUnits,
+            [geoLevelId]: new Map([...geoUnitsForLevel].filter(([id]) => includeFn(id)))
+          };
+        }, units);
 
-      const newGeoUnits = new Map(
-        [...geoUnitsForLevel].filter(([id]) => !setOfInitiallySelectedFeatures[geoLevelId].has(id))
+      // Highlighted shouldn't include the geounits initially selected
+      const highlightedGeoUnits = filterGeoUnits(
+        geoUnits,
+        id => !initiallySelectedGeoUnits[geoLevelId].has(id)
       );
-      throttledSetHighlightedGeounits({ [geoLevelId]: newGeoUnits });
+      throttledSetHighlightedGeounits(highlightedGeoUnits);
+
+      // New geounits (to select on map) are the highlighted ones that aren't already selected
+      const newGeoUnits = filterGeoUnits(
+        highlightedGeoUnits,
+        id =>
+          !isFeatureSelected(map, {
+            id,
+            sourceLayer: geoLevelId
+          })
+      );
+      setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
 
       // Set any features that were previously selected and just became unselected to unselected
       // eslint-disable-next-line
       if (prevFeatures) {
         const prevGeoUnits = featuresToUnlockedGeoUnits(
           prevFeatures,
-          staticMetadata.geoLevelHierarchy,
+          staticMetadata,
           districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
         Array.from(prevGeoUnits[geoLevelId].keys())
           .filter(
-            id => !setOfInitiallySelectedFeatures[geoLevelId].has(id) && !geoUnitsForLevel.has(id)
+            id => !initiallySelectedGeoUnits[geoLevelId].has(id) && !geoUnits[geoLevelId].has(id)
           )
           .forEach(id => {
             map.setFeatureState(featureStateExpression(id), { selected: false });
@@ -157,11 +173,12 @@ const RectangleSelectionTool: ISelectionTool = {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
 
-      setOfInitiallySelectedFeatures = featuresToUnlockedGeoUnits(
-        getFeaturesInBoundingBox().filter(feature => isFeatureSelected(map, feature)),
-        staticMetadata.geoLevelHierarchy,
+      initiallySelectedGeoUnits = featuresToUnlockedGeoUnits(
+        getAllSelectedFeatures(),
+        staticMetadata,
         districtsDefinition,
-        lockedDistricts
+        lockedDistricts,
+        staticGeoLevels
       );
 
       // Capture the first xy coordinates
@@ -188,11 +205,24 @@ const RectangleSelectionTool: ISelectionTool = {
 
     function getFeaturesInBoundingBox(
       // eslint-disable-next-line
-      bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]
+      bbox: [MapboxGL.PointLike, MapboxGL.PointLike]
     ): readonly MapboxGL.MapboxGeoJSONFeature[] {
       return map.queryRenderedFeatures(bbox, {
         layers: [levelToSelectionLayerId(geoLevelId)]
       });
+    }
+
+    /*
+     * Get all selected features for all geolevels.
+     */
+    function getAllSelectedFeatures(): readonly MapboxGL.MapboxGeoJSONFeature[] {
+      return map
+        .queryRenderedFeatures(undefined, {
+          layers: staticMetadata.geoLevelHierarchy.map(geoLevel =>
+            levelToSelectionLayerId(geoLevel.id)
+          )
+        })
+        .filter(feature => isFeatureSelected(map, feature));
     }
 
     // eslint-disable-next-line
@@ -213,35 +243,29 @@ const RectangleSelectionTool: ISelectionTool = {
         const selectedFeatures = getFeaturesInBoundingBox(bbox);
         const geoUnits = featuresToUnlockedGeoUnits(
           selectedFeatures,
-          staticMetadata.geoLevelHierarchy,
+          staticMetadata,
           districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
-        const geoUnitsForLevel = geoUnits[geoLevelId] || new Map();
-        const subFeatures = selectedFeatures.flatMap(feature => {
-          const geoUnitIndices = geoUnitsForLevel.get(feature.id as FeatureId) as GeoUnitIndices;
-          return geoUnitsForLevel.has(feature.id as FeatureId) &&
+        // Deselect any child features as appropriate (this comes into a play when, for example, a
+        // blockgroup is selected and then the county _containing_ that blockgroup is selected)
+        Object.values(geoUnits).forEach(geoUnitsForLevel => {
+          geoUnitsForLevel.forEach(geoUnitIndices => {
             // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
             // also can't be selected at the same time as features from one geolevel up)
-            geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2
-            ? findSelectedSubFeatures(map, staticMetadata, feature, geoUnitIndices)
-            : [];
+            // eslint-disable-next-line
+            if (geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2) {
+              const { childGeoUnits } = getChildGeoUnits(
+                geoUnitIndices,
+                staticMetadata,
+                staticGeoLevels
+              );
+              setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
+            }
+          });
         });
-        subFeatures.forEach(feature => {
-          map.setFeatureState(featureStateGeoLevel(feature), { selected: false });
-        });
-        const subGeoUnits = featuresToUnlockedGeoUnits(
-          subFeatures,
-          staticMetadata.geoLevelHierarchy,
-          districtsDefinition,
-          lockedDistricts
-        );
-        store.dispatch(
-          editSelectedGeounits({
-            add: geoUnits,
-            remove: subGeoUnits
-          })
-        );
+        store.dispatch(setSelectedGeounits(mergeGeoUnits(geoUnits, initiallySelectedGeoUnits)));
       }
       store.dispatch(clearHighlightedGeounits());
     }

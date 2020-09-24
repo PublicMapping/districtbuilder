@@ -1,7 +1,7 @@
 version: "2.4"
 services:
   database:
-    image: quay.io/azavea/postgis:2.5-postgres11.5-slim
+    image: quay.io/azavea/postgis:3-postgres12.2-slim
     environment:
       - POSTGRES_USER=districtbuilder
       - POSTGRES_PASSWORD=districtbuilder

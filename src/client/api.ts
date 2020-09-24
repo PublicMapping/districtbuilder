@@ -40,7 +40,7 @@ export async function authenticateUser(email: string, password: string): Promise
     apiAxios
       .post("/api/auth/email/login", { email, password })
       .then(response => resolve(saveJWT(response)))
-      .catch(error => reject(error.response.data));
+      .catch(error => reject(error.response?.data || error));
   });
 }
 
@@ -58,7 +58,7 @@ export async function registerUser(name: string, email: string, password: string
     apiAxios
       .post("/api/auth/email/register", { name, email, password })
       .then(response => resolve(saveJWT(response)))
-      .catch(error => reject(error.response.data));
+      .catch(error => reject(error.response?.data || error));
   });
 }
 
@@ -67,7 +67,7 @@ export async function initiateForgotPassword(email: string): Promise<void> {
     apiAxios
       .post(`/api/auth/email/forgot-password/${email}`)
       .then(() => resolve())
-      .catch(error => reject(error.response.data));
+      .catch(error => reject(error.response?.data || error));
   });
 }
 
@@ -76,7 +76,7 @@ export async function resendConfirmationEmail(email: string): Promise<void> {
     apiAxios
       .post(`/api/auth/email/resend-verification/${email}`)
       .then(() => resolve())
-      .catch(error => reject(error.response && error.response.data));
+      .catch(error => reject(error.response?.data || error));
   });
 }
 
@@ -94,7 +94,7 @@ export async function resetPassword(token: string, password: string): Promise<vo
     apiAxios
       .post(`/api/auth/email/reset-password/${token}`, { password })
       .then(() => resolve())
-      .catch(error => reject(error.response.data));
+      .catch(error => reject(error.response?.data || error));
   });
 }
 
@@ -107,7 +107,7 @@ export async function createProject({
     apiAxios
       .post("/api/projects", { name, numberOfDistricts, regionConfig })
       .then(response => resolve(response.data))
-      .catch(error => reject(error.response.data));
+      .catch(error => reject(error.response?.data || error));
   });
 }
 
@@ -120,7 +120,7 @@ async function fetchProject(id: ProjectId): Promise<IProject> {
   });
 }
 
-async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJSON> {
+export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJSON> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}/export/geojson`)
@@ -162,6 +162,6 @@ export async function patchProject(
     apiAxios
       .patch(`/api/projects/${id}`, projectData)
       .then(response => resolve(response.data))
-      .catch(error => reject(error.response.data));
+      .catch(() => reject());
   });
 }

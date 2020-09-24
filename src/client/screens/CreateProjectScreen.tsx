@@ -10,6 +10,7 @@ import { IProject, IRegionConfig } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { createProject } from "../api";
 import { InputField, SelectField } from "../components/Field";
+import FormError from "../components/FormError";
 import { State } from "../reducers";
 import { RegionConfigState } from "../reducers/regionConfig";
 import { WriteResource } from "../resource";
@@ -172,6 +173,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
             }}
           >
             <Card sx={{ variant: "card.flat" }}>
+              <FormError resource={createProjectResource} />
               <InputField
                 field="name"
                 label={

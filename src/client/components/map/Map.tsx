@@ -20,7 +20,6 @@ import {
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
 import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
-import { getAllIndices } from "../../../shared/functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -29,7 +28,8 @@ import {
   getGeoLevelVisibility,
   levelToLabelLayerId,
   levelToLineLayerId,
-  onlyUnlockedGeoUnits
+  onlyUnlockedGeoUnits,
+  getChildGeoUnits
 } from "./index";
 import AdvancedEditingModal from "./AdvancedEditingModal";
 import DefaultSelectionTool from "./DefaultSelectionTool";
@@ -268,13 +268,10 @@ const DistrictsMap = ({
         });
 
         // Select features of the child geolevel
-        const geoUnitIdx = geoUnitIndices[0];
-        const childGeoLevelIdx =
-          staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
-        const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
-        const childGeoUnitIds = getAllIndices(
-          staticGeoLevels[childGeoLevelIdx],
-          new Set([geoUnitIdx])
+        const { childGeoLevel, childGeoUnitIds, childGeoUnits } = getChildGeoUnits(
+          geoUnitIndices,
+          staticMetadata,
+          staticGeoLevels
         );
         childGeoUnitIds.forEach(id => {
           map.setFeatureState(
@@ -286,18 +283,12 @@ const DistrictsMap = ({
             { selected: true }
           );
         });
-        // NOTE: We can't use Mapbox's query functions to get the geounit data from the feature
-        // since they require that the feature be within the viewport which we can't rely on.
-        // Instead we recreate the geounit from static metadata.
-        const childGeoUnits = {
-          [childGeoLevel.id]: new Map(
-            childGeoUnitIds.map((id, index) => [id, [...geoUnitIndices, index]])
-          )
-        };
         const unlockedChildGeoUnits = onlyUnlockedGeoUnits(
           project.districtsDefinition,
           lockedDistricts,
-          childGeoUnits
+          childGeoUnits,
+          staticMetadata,
+          staticGeoLevels
         );
         // Update state
         store.dispatch(
@@ -335,7 +326,8 @@ const DistrictsMap = ({
           selectedGeolevel.id,
           staticMetadata,
           project.districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
       } else if (selectionTool === SelectionTool.Rectangle) {
         RectangleSelectionTool.enable(
@@ -343,7 +335,8 @@ const DistrictsMap = ({
           selectedGeolevel.id,
           staticMetadata,
           project.districtsDefinition,
-          lockedDistricts
+          lockedDistricts,
+          staticGeoLevels
         );
       }
       /* eslint-enable */
@@ -354,6 +347,7 @@ const DistrictsMap = ({
     selectedGeolevel,
     staticMetadata,
     staticDemographics,
+    staticGeoLevels,
     project,
     lockedDistricts
   ]);

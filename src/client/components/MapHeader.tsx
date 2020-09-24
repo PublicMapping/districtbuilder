@@ -14,6 +14,27 @@ import {
 import store from "../store";
 
 const style: ThemeUIStyleObject = {
+  buttonGroup: {
+    button: {
+      margin: "0 !important"
+    },
+    "& button > svg": {
+      marginRight: "0"
+    },
+    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)": {
+      borderRadius: 0,
+      borderRightWidth: 0
+    },
+    "&:first-of-type > span > button, & > button:first-of-type": {
+      borderTopRightRadius: 0,
+      borderBottomRightRadius: 0,
+      borderRightWidth: 0
+    },
+    "&:last-of-type > span > button, & > button:last-of-type": {
+      borderTopLeftRadius: 0,
+      borderBottomLeftRadius: 0
+    }
+  },
   header: {
     variant: "header.app",
     backgroundColor: "white",
@@ -35,21 +56,6 @@ const style: ThemeUIStyleObject = {
       borderBottom: "2px solid",
       borderBottomColor: "blue.5",
       color: "blue.8"
-    }
-  },
-  rightCapButton: {
-    borderTopRightRadius: "0",
-    borderBottomRightRadius: "0",
-    borderRight: "none",
-    "& > svg": {
-      mr: "0"
-    }
-  },
-  leftCapButton: {
-    borderTopLeftRadius: "0",
-    borderBottomLeftRadius: "0",
-    "& > svg": {
-      mr: "0"
     }
   }
 };
@@ -95,7 +101,7 @@ const GeoLevelButton = ({
   const isButtonDisabled = !isCurrentLevelSelected && areChangesPending;
 
   return (
-    <Box sx={{ display: "inline-block", position: "relative" }} className="button-wrapper">
+    <Box sx={{ ...style.buttonGroup, ...{ display: "inline-block", position: "relative" } }}>
       <Tooltip
         key={index}
         content={
@@ -169,10 +175,10 @@ const MapHeader = ({
   return (
     <Flex sx={style.header}>
       <Flex>
-        <Flex sx={{ mr: 3 }}>
+        <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
           <Tooltip content="Point-and-click selection">
             <Button
-              sx={{ ...style.selectionButton, ...style.rightCapButton }}
+              sx={{ ...style.selectionButton }}
               className={buttonClassName(selectionTool === SelectionTool.Default)}
               onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
             >
@@ -181,7 +187,7 @@ const MapHeader = ({
           </Tooltip>
           <Tooltip content="Rectangle selection">
             <Button
-              sx={{ ...style.selectionButton, ...style.leftCapButton }}
+              sx={{ ...style.selectionButton }}
               className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
               onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
             >

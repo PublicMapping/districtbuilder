@@ -30,11 +30,24 @@ resource "aws_lb" "app" {
   security_groups = [aws_security_group.alb.id]
   subnets         = module.vpc.public_subnet_ids
 
+  access_logs {
+    bucket  = aws_s3_bucket.logs.id
+    prefix  = "ALB/APP"
+    enabled = true
+  }
+
   tags = {
     Name        = "alb${var.environment}App"
     Project     = var.project
     Environment = var.environment
   }
+
+  # In order to enable access logging, the ELB service account needs S3 access.
+  # This is a "hidden" dependency that Terraform cannot automatically infer, so
+  # it must be declared explicitly.
+  depends_on = [
+    aws_s3_bucket_policy.alb_access_logging
+  ]
 }
 
 resource "aws_lb_target_group" "app" {

@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { ProjectId } from "../../shared/entities";
+import { IProject, ProjectId } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 
 export const projectFetch = createAction("Project fetch")<ProjectId>();
@@ -20,8 +20,8 @@ export const staticDataFetchFailure = createAction("Static data fetch failure")<
 export const updateDistrictsDefinition = createAction("Update districts definition")();
 
 export const updateDistrictsDefinitionSuccess = createAction("Update districts definition success")<
-  DynamicProjectData
+  IProject
 >();
 export const updateDistrictsDefinitionFailure = createAction("Update districts definition failure")<
-  string
+  void
 >();

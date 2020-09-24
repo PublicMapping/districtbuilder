@@ -1,4 +1,5 @@
 import memoize from "memoizee";
+import { toast } from "react-toastify";
 import { cloneDeep } from "lodash";
 
 import {
@@ -70,6 +71,10 @@ export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
 
 export function allGeoUnitIndices(geoUnits: GeoUnits) {
   return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.values()));
+}
+
+export function allGeoUnitIds(geoUnits: GeoUnits) {
+  return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.keys()));
 }
 
 // Aggregate all demographics that are included in the selection
@@ -205,3 +210,16 @@ export function destructureResource<T extends object>(
 ): any | undefined {
   return "resource" in resourceT ? resourceT.resource[key] : undefined;
 }
+
+export function mergeGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
+  const geoLevels = [...new Set([...Object.keys(a), ...Object.keys(b)])];
+  return Object.fromEntries(
+    geoLevels.map(geoLevelId => {
+      return [geoLevelId, new Map([...(a[geoLevelId] || []), ...(b[geoLevelId] || [])])];
+    })
+  );
+}
+
+export const showActionFailedToast = () => toast.error("Something went wrong, please try again.");
+export const showResourceFailedToast = () =>
+  toast.error("Something went wrong, please refresh the page.");
