@@ -96,7 +96,7 @@ export interface IProject {
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly districtsDefinition: DistrictsDefinition;
-  readonly user: IUser;
+  readonly user: Pick<IUser, "id">;
   readonly advancedEditingEnabled: boolean;
 }
 

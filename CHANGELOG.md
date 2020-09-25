@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Project page sharing & read-only mode [#449](https://github.com/PublicMapping/districtbuilder/pull/449)
 
 ### Changed
 

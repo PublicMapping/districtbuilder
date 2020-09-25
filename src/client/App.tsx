@@ -31,7 +31,7 @@ const App = () => (
     <Router>
       <Switch>
         <PrivateRoute path="/" exact={true} component={HomeScreen} />
-        <PrivateRoute path="/projects/:projectId" exact={true} component={ProjectScreen} />
+        <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />

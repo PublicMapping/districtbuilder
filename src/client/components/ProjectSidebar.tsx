@@ -1,16 +1,6 @@
 /** @jsx jsx */
 import React, { useState, Fragment } from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  jsx,
-  Spinner,
-  Styled,
-  Text,
-  ThemeUIStyleObject
-} from "theme-ui";
+import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
   UintArrays,
@@ -26,7 +16,6 @@ import {
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
 import {
   allGeoUnitIndices,
-  areAnyGeoUnitsSelected,
   assertNever,
   getDemographics,
   getTotalSelectedDemographics
@@ -40,14 +29,10 @@ import {
 import DemographicsChart from "./DemographicsChart";
 import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
+import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
 
-import { updateDistrictsDefinition } from "../actions/projectData";
-import {
-  clearSelectedGeounits,
-  setSelectedDistrictId,
-  toggleDistrictLocked
-} from "../actions/districtDrawing";
+import { setSelectedDistrictId, toggleDistrictLocked } from "../actions/districtDrawing";
 import store from "../store";
 
 interface LoadingProps {
@@ -55,11 +40,6 @@ interface LoadingProps {
 }
 
 const style: ThemeUIStyleObject = {
-  header: {
-    variant: "header.app",
-    borderBottom: "1px solid",
-    borderColor: "gray.2"
-  },
   sidebar: {
     bg: "muted",
     boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
@@ -164,7 +144,11 @@ const ProjectSidebar = ({
 } & LoadingProps) => {
   return (
     <Flex sx={style.sidebar}>
-      <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} saving={saving} />
+      <ProjectSidebarHeader
+        selectedGeounits={selectedGeounits}
+        isLoading={isLoading}
+        saving={saving}
+      />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
         <Styled.table sx={style.table}>
           <thead>
@@ -214,76 +198,6 @@ const ProjectSidebar = ({
           </tbody>
         </Styled.table>
       </Box>
-    </Flex>
-  );
-};
-
-const SidebarHeader = ({
-  selectedGeounits,
-  isLoading,
-  saving
-}: {
-  readonly selectedGeounits: GeoUnits;
-  readonly saving: SavingState;
-} & LoadingProps) => {
-  return (
-    <Flex sx={style.header}>
-      <Flex sx={{ variant: "header.left" }}>
-        <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
-          Districts
-        </Heading>
-      </Flex>
-      {isLoading || saving === "saving" ? (
-        <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
-          <Spinner variant="spinner.small" />
-        </Flex>
-      ) : areAnyGeoUnitsSelected(selectedGeounits) ? (
-        <Flex sx={{ variant: "header.right" }}>
-          <Tooltip
-            placement="top-start"
-            content={
-              <span>
-                <strong>Cancel changes</strong> to revert to your previously saved map
-              </span>
-            }
-          >
-            <Button
-              variant="circularSubtle"
-              sx={{ mr: "2" }}
-              onClick={() => {
-                store.dispatch(clearSelectedGeounits(true));
-              }}
-            >
-              Cancel
-            </Button>
-          </Tooltip>
-          <Tooltip
-            placement="top-start"
-            content={
-              <span>
-                <strong>Accept changes</strong> to save your map
-              </span>
-            }
-          >
-            <Button
-              variant="circular"
-              onClick={() => {
-                store.dispatch(updateDistrictsDefinition());
-              }}
-            >
-              <Icon name="check" />
-              Accept
-            </Button>
-          </Tooltip>
-        </Flex>
-      ) : saving === "saved" ? (
-        <Tooltip placement="top-start" content={<span>Your map is saved</span>}>
-          <Flex sx={{ display: "flex", color: "gray.3", alignItems: "center", userSelect: "none" }}>
-            <Icon name="check-circle" size={1.1} />
-            <Text sx={{ fontSize: 1, ml: 1 }}>Saved</Text>
-          </Flex>
-        </Tooltip>
-      ) : null}
     </Flex>
   );
 };
