@@ -5,6 +5,7 @@ import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 import { Box, Flex, jsx, Text, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
 import { heights } from "../theme";
+import ShareMenu from "../components/ShareMenu";
 import SupportMenu from "../components/SupportMenu";
 
 const style: ThemeUIStyleObject = {
@@ -62,6 +63,7 @@ const ProjectHeader = ({ project }: { readonly project?: IProject } & SupportPro
       </Flex>
     </Flex>
     <Flex sx={{ variant: "header.right" }}>
+      <ShareMenu invert={true} />
       <SupportMenu invert={true} />
     </Flex>
   </Flex>
