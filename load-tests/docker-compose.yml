@@ -1,0 +1,11 @@
+version: "3"
+services:
+  k6:
+    image: loadimpact/k6
+    environment:
+      - DB_JWT_AUTH_TOKEN
+      - DB_PROJECT_ID
+      - DB_DOMAIN=${DB_DOMAIN:-app.staging.districtbuilder.org}
+    volumes:
+      - ./:/scripts/
+    command: run /scripts/pa-50-districts.js
