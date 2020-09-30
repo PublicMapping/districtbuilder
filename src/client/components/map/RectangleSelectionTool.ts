@@ -1,4 +1,5 @@
 import throttle from "lodash/throttle";
+import { isEqual } from "lodash";
 import MapboxGL from "mapbox-gl";
 import store from "../../store";
 import {
@@ -25,11 +26,6 @@ import {
   LockedDistricts,
   UintArrays
 } from "../../../shared/entities";
-
-const throttledSetHighlightedGeounits = throttle(
-  (geounits: GeoUnits) => store.dispatch(setHighlightedGeounits(geounits)),
-  SET_FEATURE_DELAY
-);
 
 /*
  * Allows user to click and drag to select all geounits within the rectangle
@@ -74,6 +70,14 @@ const RectangleSelectionTool: ISelectionTool = {
 
     let initiallySelectedGeoUnits: GeoUnits; // eslint-disable-line
 
+    // Since this function is throttled, check that the box still exists before setting any
+    // highlighted geounits. When the mouse is released, box is set to null, and we don't
+    // want any stale data being dispatched
+    const throttledSetHighlightedGeounits = throttle(
+      (geounits: GeoUnits) => box && store.dispatch(setHighlightedGeounits(geounits)),
+      SET_FEATURE_DELAY
+    );
+
     // Return the xy coordinates of the mouse position
     function mousePos(e: MouseEvent) {
       const rect = canvas.getBoundingClientRect();
@@ -113,6 +117,15 @@ const RectangleSelectionTool: ISelectionTool = {
       /* eslint-enable */
 
       const features = getFeaturesInBoundingBox([start, current]);
+
+      // Short circuit if the features are exactly the same as the last time.
+      // Don't do this for single features though, because we want to recalculate
+      // on the following condition: selecting a single feature, then canceling, then selecting again.
+      // eslint-disable-next-line
+      if (features.length > 1 && isEqual(prevFeatures, features)) {
+        return;
+      }
+
       const geoUnits = featuresToUnlockedGeoUnits(
         features,
         staticMetadata,

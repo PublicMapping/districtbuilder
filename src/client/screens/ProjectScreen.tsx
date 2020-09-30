@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
@@ -34,7 +34,6 @@ interface StateProps {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
-  readonly staticDemographics?: UintArrays;
   readonly staticGeoLevels: UintArrays;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly districtDrawing: DistrictDrawingState;
@@ -47,7 +46,6 @@ const ProjectScreen = ({
   project,
   geojson,
   staticMetadata,
-  staticDemographics,
   staticGeoLevels,
   geoUnitHierarchy,
   districtDrawing,
@@ -89,35 +87,6 @@ const ProjectScreen = ({
     projectId && store.dispatch(projectDataFetch(projectId));
   }, [projectId, isLoggedIn]);
 
-  const sidebar = useMemo(
-    () => (
-      <ProjectSidebar
-        project={project}
-        geojson={geojson}
-        isLoading={isLoading}
-        staticMetadata={staticMetadata}
-        staticDemographics={staticDemographics}
-        selectedDistrictId={districtDrawing.selectedDistrictId}
-        selectedGeounits={districtDrawing.selectedGeounits}
-        geoUnitHierarchy={geoUnitHierarchy}
-        lockedDistricts={districtDrawing.lockedDistricts}
-        saving={districtDrawing.saving}
-      />
-    ),
-    [
-      project,
-      geojson,
-      isLoading,
-      staticMetadata,
-      staticDemographics,
-      districtDrawing.selectedDistrictId,
-      districtDrawing.selectedGeounits,
-      geoUnitHierarchy,
-      districtDrawing.lockedDistricts,
-      districtDrawing.saving
-    ]
-  );
-
   return isFirstLoadPending ? (
     <CenteredContent>
       <Flex sx={{ justifyContent: "center" }}>
@@ -130,7 +99,18 @@ const ProjectScreen = ({
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
       <ProjectHeader project={project} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
-        {sidebar}
+        <ProjectSidebar
+          project={project}
+          geojson={geojson}
+          isLoading={isLoading}
+          staticMetadata={staticMetadata}
+          selectedDistrictId={districtDrawing.selectedDistrictId}
+          selectedGeounits={districtDrawing.selectedGeounits}
+          highlightedGeounits={districtDrawing.highlightedGeounits}
+          geoUnitHierarchy={geoUnitHierarchy}
+          lockedDistricts={districtDrawing.lockedDistricts}
+          saving={districtDrawing.saving}
+        />
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           <MapHeader
             label={label}
@@ -142,13 +122,12 @@ const ProjectScreen = ({
             advancedEditingEnabled={project?.advancedEditingEnabled}
             isReadOnly={isReadOnly}
           />
-          {project && staticMetadata && staticDemographics && staticGeoLevels && geojson ? (
+          {project && staticMetadata && staticGeoLevels && geojson ? (
             <React.Fragment>
               <Map
                 project={project}
                 geojson={geojson}
                 staticMetadata={staticMetadata}
-                staticDemographics={staticDemographics}
                 staticGeoLevels={staticGeoLevels}
                 selectedGeounits={districtDrawing.selectedGeounits}
                 selectedDistrictId={districtDrawing.selectedDistrictId}
@@ -177,7 +156,6 @@ function mapStateToProps(state: State): StateProps {
     geojson: destructureResource(state.project.projectData, "geojson"),
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
     staticGeoLevels: destructureResource(state.project.staticData, "staticGeoLevels"),
-    staticDemographics: destructureResource(state.project.staticData, "staticDemographics"),
     geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
     districtDrawing: state.project,
     isLoading:
