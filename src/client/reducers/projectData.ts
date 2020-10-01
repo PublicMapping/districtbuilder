@@ -13,7 +13,8 @@ import {
   projectDataFetchFailure,
   projectDataFetchSuccess,
   staticDataFetchFailure,
-  staticDataFetchSuccess
+  staticDataFetchSuccess,
+  updateDistrictsDefinitionRefetchGeoJsonSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { ProjectState, initialProjectState } from "./project";
@@ -32,6 +33,8 @@ import { fetchAllStaticData } from "../s3";
 
 export type ProjectDataState = {
   readonly projectData: Resource<DynamicProjectData>;
+  readonly previousProjectData?: Resource<DynamicProjectData>;
+  readonly currentProjectData?: Resource<DynamicProjectData>;
   readonly staticData: Resource<StaticProjectData>;
 };
 
@@ -165,7 +168,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                   districtsDefinition: assignGeounitsToDistrict(
                     state.projectData.resource.project.districtsDefinition,
                     state.staticData.resource.geoUnitHierarchy,
-                    allGeoUnitIndices(state.selectedGeounits),
+                    allGeoUnitIndices(state.undoHistory.present.selectedGeounits),
                     state.selectedDistrictId
                   )
                 }
@@ -175,7 +178,9 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         : state;
     case getType(updateDistrictsDefinitionSuccess):
       return loop(
-        state,
+        {
+          ...state
+        },
         Cmd.run(
           () => {
             return fetchProjectGeoJson(action.payload.id).then((geojson: DistrictsGeoJSON) => ({
@@ -184,10 +189,26 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             }));
           },
           {
-            successActionCreator: projectFetchSuccess,
+            successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
             failActionCreator: updateDistrictsDefinitionFailure
           }
         )
+      );
+    case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess):
+      return loop(
+        "resource" in state.projectData
+          ? {
+              ...state,
+              previousProjectData: state.projectData,
+              currentProjectData: { resource: action.payload },
+              undoHistory: {
+                ...state.undoHistory,
+                past: [],
+                future: []
+              }
+            }
+          : state,
+        Cmd.action(projectFetchSuccess(action.payload))
       );
     case getType(updateDistrictsDefinitionFailure):
       return loop(

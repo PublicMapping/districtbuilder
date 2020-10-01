@@ -235,7 +235,7 @@ const MapTooltip = ({
 
 function mapStateToProps(state: State) {
   return {
-    geoLevelIndex: state.project.geoLevelIndex,
+    geoLevelIndex: state.project.undoHistory.present.geoLevelIndex,
     highlightedGeounits: state.project.highlightedGeounits,
     project: destructureResource(state.project.projectData, "project"),
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata")

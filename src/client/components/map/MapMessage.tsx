@@ -76,8 +76,8 @@ const MapMessage = ({
 
 function mapStateToProps(state: State) {
   return {
-    geoLevelIndex: state.project.geoLevelIndex,
-    geoLevelVisibility: state.project.geoLevelVisibility,
+    geoLevelIndex: state.project.undoHistory.present.geoLevelIndex,
+    geoLevelVisibility: state.project.undoHistory.present.geoLevelVisibility,
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata")
   };
 }
