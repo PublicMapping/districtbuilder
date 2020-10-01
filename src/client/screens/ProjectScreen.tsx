@@ -25,6 +25,7 @@ import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
+import Tour from "../components/Tour";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { Resource } from "../resource";
@@ -127,6 +128,7 @@ const ProjectScreen = ({
           />
           {project && staticMetadata && staticGeoLevels && geojson ? (
             <React.Fragment>
+              <Tour project={project} />
               <Map
                 project={project}
                 geojson={geojson}

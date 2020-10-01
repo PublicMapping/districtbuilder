@@ -40,7 +40,7 @@ const ProjectSidebarHeader = ({
 } & LoadingProps &
   StateProps) => {
   return (
-    <Flex sx={style.header}>
+    <Flex sx={style.header} className="sidebar-header">
       <Flex sx={{ variant: "header.left" }}>
         <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
           Districts

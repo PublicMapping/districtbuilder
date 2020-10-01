@@ -28,6 +28,7 @@ const SupportMenu = (props: SupportProps) => {
           ...invertStyles(props),
           ...props
         }}
+        className="support-menu"
       >
         <Icon name="question-circle" />
         Support

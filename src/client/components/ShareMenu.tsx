@@ -41,6 +41,7 @@ const SupportMenu = (props: SupportProps) => {
           ...invertStyles(props),
           ...props
         }}
+        className="share-menu"
       >
         <Icon name="share" />
         Share

@@ -142,7 +142,7 @@ const ProjectSidebar = ({
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
   return (
-    <Flex sx={style.sidebar}>
+    <Flex sx={style.sidebar} className="map-sidebar">
       <ProjectSidebarHeader
         selectedGeounits={selectedGeounits}
         isLoading={isLoading}
@@ -164,7 +164,7 @@ const ProjectSidebar = ({
               </Styled.th>
               <Styled.th sx={{ ...style.th, ...style.number }}>
                 <Tooltip content="Population needed to match the ideal number for this district">
-                  <span>Deviation</span>
+                  <span className="deviation-header">Deviation</span>
                 </Tooltip>
               </Styled.th>
               <Styled.th sx={style.th}>
@@ -301,6 +301,7 @@ const SidebarRow = memo(
         }}
         onMouseOver={toggleHover}
         onMouseOut={toggleHover}
+        className={district.id ? null : "unassigned-row"}
       >
         <Styled.td sx={style.td}>
           <Flex sx={{ alignItems: "center" }}>

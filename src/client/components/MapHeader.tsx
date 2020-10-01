@@ -202,7 +202,7 @@ const MapHeader = ({
             </Tooltip>
           </Flex>
         )}
-        <Flex>{geoLevelOptions}</Flex>
+        <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
         <Flex sx={{ alignItems: "baseline" }}>
