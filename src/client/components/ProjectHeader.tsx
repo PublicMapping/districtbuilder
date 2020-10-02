@@ -1,14 +1,26 @@
 /** @jsx jsx */
+import MapboxGL from "mapbox-gl";
+import React from "react";
+import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
-import { Box, Flex, jsx, Text, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, jsx, Text, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
+import { undo, redo } from "../actions/districtDrawing";
 import { heights } from "../theme";
+import Icon from "../components/Icon";
 import ShareMenu from "../components/ShareMenu";
 import SupportMenu from "../components/SupportMenu";
+import store from "../store";
+import { State } from "../reducers";
+import { UndoHistory } from "../reducers/districtDrawing";
 
 const style: ThemeUIStyleObject = {
+  undoRedo: {
+    variant: "buttons.icon",
+    color: "muted"
+  },
   projectHeader: {
     variant: "header.app",
     backgroundColor: "blue.8",
@@ -37,7 +49,15 @@ interface SupportProps {
   readonly invert?: boolean;
 }
 
-const ProjectHeader = ({ project }: { readonly project?: IProject } & SupportProps) => (
+interface StateProps {
+  readonly undoHistory: UndoHistory;
+}
+
+const ProjectHeader = ({
+  map,
+  project,
+  undoHistory
+}: { readonly map?: MapboxGL.Map; readonly project?: IProject } & SupportProps & StateProps) => (
   <Flex sx={style.projectHeader}>
     <Flex sx={{ variant: "header.left" }}>
       <Link
@@ -63,10 +83,34 @@ const ProjectHeader = ({ project }: { readonly project?: IProject } & SupportPro
       </Flex>
     </Flex>
     <Flex sx={{ variant: "header.right" }}>
+      {map && (
+        <React.Fragment>
+          <Button
+            sx={style.undoRedo}
+            disabled={undoHistory.past.length === 0}
+            onClick={() => store.dispatch(undo(map))}
+          >
+            <Icon name="undo" />
+          </Button>
+          <Button
+            sx={{ ...style.undoRedo, pr: 4 }}
+            disabled={undoHistory.future.length === 0}
+            onClick={() => store.dispatch(redo(map))}
+          >
+            <Icon name="redo" />
+          </Button>
+        </React.Fragment>
+      )}
       <ShareMenu invert={true} />
       <SupportMenu invert={true} />
     </Flex>
   </Flex>
 );
 
-export default ProjectHeader;
+function mapStateToProps(state: State): StateProps {
+  return {
+    undoHistory: state.project.undoHistory
+  };
+}
+
+export default connect(mapStateToProps)(ProjectHeader);

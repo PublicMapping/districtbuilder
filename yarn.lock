@@ -9750,6 +9750,11 @@ redux-beacon@2.1.0:
   dependencies:
     array-flatten "2.1.1"
 
+redux-devtools-extension@^2.13.8:
+  version "2.13.8"
+  resolved "https://registry.yarnpkg.com/redux-devtools-extension/-/redux-devtools-extension-2.13.8.tgz#37b982688626e5e4993ff87220c9bbb7cd2d96e1"
+  integrity sha512-8qlpooP2QqPtZHQZRhx3x3OP5skEV1py/zUdMY28WNAocbafxdG2tRD1MWE7sp8obGMNYuLWanhhQ7EQvT1FBg==
+
 redux-loop@5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/redux-loop/-/redux-loop-5.0.1.tgz#8d58c0b1d8d71ebc011cb3d9254eddd0535066f4"

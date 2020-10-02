@@ -1,14 +1,14 @@
 /** @jsx jsx */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Box, jsx } from "theme-ui";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import {
-  editSelectedGeounits,
   setGeoLevelVisibility,
-  SelectionTool
+  SelectionTool,
+  replaceSelectedGeounits
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -48,6 +48,9 @@ interface Props {
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly label?: string;
+  readonly map?: MapboxGL.Map;
+  // eslint-disable-next-line
+  readonly setMap: (map: MapboxGL.Map) => void;
 }
 
 const DistrictsMap = ({
@@ -60,9 +63,10 @@ const DistrictsMap = ({
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
-  label
+  label,
+  map,
+  setMap
 }: Props) => {
-  const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
   // Conversion from readonly -> mutable to match Mapbox interface
@@ -289,7 +293,7 @@ const DistrictsMap = ({
         );
         // Update state
         store.dispatch(
-          editSelectedGeounits({
+          replaceSelectedGeounits({
             add: unlockedChildGeoUnits,
             remove: {
               [prevSelectedGeoLevel.id]: new Map([selectedGeoUnit])

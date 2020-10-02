@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import MapboxGL from "mapbox-gl";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
@@ -55,6 +56,7 @@ const ProjectScreen = ({
 }: StateProps) => {
   const { projectId } = useParams();
   const [label, setMapLabel] = useState<string | undefined>(undefined);
+  const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
 
@@ -62,7 +64,7 @@ const ProjectScreen = ({
   useBeforeunload(event => {
     // Disabling 'functional/no-conditional-statement' without naming it.
     // eslint-disable-next-line
-    if (areAnyGeoUnitsSelected(districtDrawing.selectedGeounits)) {
+    if (areAnyGeoUnitsSelected(districtDrawing.undoHistory.present.selectedGeounits)) {
       // Old style, used by e.g. Chrome
       // Disabling 'functional/immutable-data' without naming it.
       // eslint-disable-next-line
@@ -97,7 +99,7 @@ const ProjectScreen = ({
     <Redirect to={"/login"} />
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
-      <ProjectHeader project={project} />
+      <ProjectHeader map={map} project={project} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         <ProjectSidebar
           project={project}
@@ -105,10 +107,10 @@ const ProjectScreen = ({
           isLoading={isLoading}
           staticMetadata={staticMetadata}
           selectedDistrictId={districtDrawing.selectedDistrictId}
-          selectedGeounits={districtDrawing.selectedGeounits}
+          selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
           highlightedGeounits={districtDrawing.highlightedGeounits}
           geoUnitHierarchy={geoUnitHierarchy}
-          lockedDistricts={districtDrawing.lockedDistricts}
+          lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
           saving={districtDrawing.saving}
         />
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
@@ -117,8 +119,8 @@ const ProjectScreen = ({
             setMapLabel={setMapLabel}
             metadata={staticMetadata}
             selectionTool={districtDrawing.selectionTool}
-            geoLevelIndex={districtDrawing.geoLevelIndex}
-            selectedGeounits={districtDrawing.selectedGeounits}
+            geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
+            selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
             advancedEditingEnabled={project?.advancedEditingEnabled}
             isReadOnly={isReadOnly}
           />
@@ -129,12 +131,14 @@ const ProjectScreen = ({
                 geojson={geojson}
                 staticMetadata={staticMetadata}
                 staticGeoLevels={staticGeoLevels}
-                selectedGeounits={districtDrawing.selectedGeounits}
+                selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
                 selectedDistrictId={districtDrawing.selectedDistrictId}
                 selectionTool={districtDrawing.selectionTool}
-                geoLevelIndex={districtDrawing.geoLevelIndex}
-                lockedDistricts={districtDrawing.lockedDistricts}
+                geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
+                lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
                 label={label}
+                map={map}
+                setMap={setMap}
               />
               <AdvancedEditingModal
                 id={project.id}
