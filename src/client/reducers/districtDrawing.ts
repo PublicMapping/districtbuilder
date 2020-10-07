@@ -74,6 +74,8 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
 function pushState(state: ProjectState, undoState: UndoableState): ProjectState {
   return {
     ...state,
+    // Need to clear new project GeoJSON whenever clearing redo states
+    currentProjectData: undefined,
     undoHistory: {
       past: [...state.undoHistory.past, state.undoHistory.present],
       present: undoState,
