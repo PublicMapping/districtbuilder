@@ -101,7 +101,6 @@ const ProjectHeader = ({
           </Button>
         </React.Fragment>
       )}
-      <ShareMenu invert={true} />
       <SupportMenu invert={true} />
     </Flex>
   </Flex>
