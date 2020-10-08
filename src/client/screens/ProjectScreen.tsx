@@ -1,5 +1,6 @@
 /** @jsx jsx */
-import { useEffect, useMemo, useState } from "react";
+import MapboxGL from "mapbox-gl";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner } from "theme-ui";
@@ -18,11 +19,13 @@ import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
+import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
 import CenteredContent from "../components/CenteredContent";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
+import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { Resource } from "../resource";
 import store from "../store";
@@ -32,11 +35,11 @@ interface StateProps {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
-  readonly staticDemographics?: UintArrays;
   readonly staticGeoLevels: UintArrays;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
+  readonly isReadOnly: boolean;
   readonly user: Resource<IUser>;
 }
 
@@ -44,21 +47,24 @@ const ProjectScreen = ({
   project,
   geojson,
   staticMetadata,
-  staticDemographics,
   staticGeoLevels,
   geoUnitHierarchy,
   districtDrawing,
   isLoading,
+  isReadOnly,
   user
 }: StateProps) => {
   const { projectId } = useParams();
   const [label, setMapLabel] = useState<string | undefined>(undefined);
+  const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
+  const isLoggedIn = getJWT() !== null;
+  const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
     // Disabling 'functional/no-conditional-statement' without naming it.
     // eslint-disable-next-line
-    if (areAnyGeoUnitsSelected(districtDrawing.selectedGeounits)) {
+    if (areAnyGeoUnitsSelected(districtDrawing.undoHistory.present.selectedGeounits)) {
       // Old style, used by e.g. Chrome
       // Disabling 'functional/immutable-data' without naming it.
       // eslint-disable-next-line
@@ -79,40 +85,11 @@ const ProjectScreen = ({
   );
 
   useEffect(() => {
-    store.dispatch(userFetch());
+    isLoggedIn && store.dispatch(userFetch());
     projectId && store.dispatch(projectDataFetch(projectId));
-  }, [projectId]);
+  }, [projectId, isLoggedIn]);
 
-  const sidebar = useMemo(
-    () => (
-      <ProjectSidebar
-        project={project}
-        geojson={geojson}
-        isLoading={isLoading}
-        staticMetadata={staticMetadata}
-        staticDemographics={staticDemographics}
-        selectedDistrictId={districtDrawing.selectedDistrictId}
-        selectedGeounits={districtDrawing.selectedGeounits}
-        geoUnitHierarchy={geoUnitHierarchy}
-        lockedDistricts={districtDrawing.lockedDistricts}
-        saving={districtDrawing.saving}
-      />
-    ),
-    [
-      project,
-      geojson,
-      isLoading,
-      staticMetadata,
-      staticDemographics,
-      districtDrawing.selectedDistrictId,
-      districtDrawing.selectedGeounits,
-      geoUnitHierarchy,
-      districtDrawing.lockedDistricts,
-      districtDrawing.saving
-    ]
-  );
-
-  return "isPending" in user ? (
+  return isFirstLoadPending ? (
     <CenteredContent>
       <Flex sx={{ justifyContent: "center" }}>
         <Spinner variant="spinner.large" />
@@ -122,33 +99,53 @@ const ProjectScreen = ({
     <Redirect to={"/login"} />
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
-      <ProjectHeader project={project} />
+      <ProjectHeader map={map} project={project} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
-        {sidebar}
+        <ProjectSidebar
+          project={project}
+          geojson={geojson}
+          isLoading={isLoading}
+          staticMetadata={staticMetadata}
+          selectedDistrictId={districtDrawing.selectedDistrictId}
+          selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+          highlightedGeounits={districtDrawing.highlightedGeounits}
+          geoUnitHierarchy={geoUnitHierarchy}
+          lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
+          saving={districtDrawing.saving}
+        />
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           <MapHeader
             label={label}
             setMapLabel={setMapLabel}
             metadata={staticMetadata}
             selectionTool={districtDrawing.selectionTool}
-            geoLevelIndex={districtDrawing.geoLevelIndex}
-            selectedGeounits={districtDrawing.selectedGeounits}
+            geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
+            selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
             advancedEditingEnabled={project?.advancedEditingEnabled}
+            isReadOnly={isReadOnly}
           />
-          {project && staticMetadata && staticDemographics && staticGeoLevels && geojson ? (
-            <Map
-              project={project}
-              geojson={geojson}
-              staticMetadata={staticMetadata}
-              staticDemographics={staticDemographics}
-              staticGeoLevels={staticGeoLevels}
-              selectedGeounits={districtDrawing.selectedGeounits}
-              selectedDistrictId={districtDrawing.selectedDistrictId}
-              selectionTool={districtDrawing.selectionTool}
-              geoLevelIndex={districtDrawing.geoLevelIndex}
-              lockedDistricts={districtDrawing.lockedDistricts}
-              label={label}
-            />
+          {project && staticMetadata && staticGeoLevels && geojson ? (
+            <React.Fragment>
+              <Map
+                project={project}
+                geojson={geojson}
+                staticMetadata={staticMetadata}
+                staticGeoLevels={staticGeoLevels}
+                selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+                selectedDistrictId={districtDrawing.selectedDistrictId}
+                selectionTool={districtDrawing.selectionTool}
+                geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
+                lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
+                label={label}
+                map={map}
+                setMap={setMap}
+              />
+              <AdvancedEditingModal
+                id={project.id}
+                geoLevels={staticMetadata.geoLevelHierarchy}
+                isReadOnly={isReadOnly}
+              />
+            </React.Fragment>
           ) : null}
         </Flex>
       </Flex>
@@ -157,17 +154,20 @@ const ProjectScreen = ({
 };
 
 function mapStateToProps(state: State): StateProps {
+  const project = destructureResource(state.project.projectData, "project");
   return {
-    project: destructureResource(state.project.projectData, "project"),
+    project,
     geojson: destructureResource(state.project.projectData, "geojson"),
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
     staticGeoLevels: destructureResource(state.project.staticData, "staticGeoLevels"),
-    staticDemographics: destructureResource(state.project.staticData, "staticDemographics"),
     geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
     districtDrawing: state.project,
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||
       ("isPending" in state.project.staticData && state.project.staticData.isPending),
+    isReadOnly:
+      !("resource" in state.user) ||
+      (project !== undefined && state.user.resource.id !== project.user.id),
     user: state.user
   };
 }

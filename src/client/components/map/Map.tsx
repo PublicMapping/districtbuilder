@@ -1,14 +1,14 @@
 /** @jsx jsx */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Box, jsx } from "theme-ui";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import {
-  editSelectedGeounits,
   setGeoLevelVisibility,
-  SelectionTool
+  SelectionTool,
+  replaceSelectedGeounits
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -31,7 +31,6 @@ import {
   onlyUnlockedGeoUnits,
   getChildGeoUnits
 } from "./index";
-import AdvancedEditingModal from "./AdvancedEditingModal";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import MapMessage from "./MapMessage";
 import MapTooltip from "./MapTooltip";
@@ -42,7 +41,6 @@ interface Props {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticDemographics: UintArrays;
   readonly staticGeoLevels: UintArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
@@ -50,22 +48,25 @@ interface Props {
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly label?: string;
+  readonly map?: MapboxGL.Map;
+  // eslint-disable-next-line
+  readonly setMap: (map: MapboxGL.Map) => void;
 }
 
 const DistrictsMap = ({
   project,
   geojson,
   staticMetadata,
-  staticDemographics,
   staticGeoLevels,
   selectedGeounits,
   selectedDistrictId,
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
-  label
+  label,
+  map,
+  setMap
 }: Props) => {
-  const [map, setMap] = useState<MapboxGL.Map | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
 
   // Conversion from readonly -> mutable to match Mapbox interface
@@ -292,7 +293,7 @@ const DistrictsMap = ({
         );
         // Update state
         store.dispatch(
-          editSelectedGeounits({
+          replaceSelectedGeounits({
             add: unlockedChildGeoUnits,
             remove: {
               [prevSelectedGeoLevel.id]: new Map([selectedGeoUnit])
@@ -346,7 +347,6 @@ const DistrictsMap = ({
     selectionTool,
     selectedGeolevel,
     staticMetadata,
-    staticDemographics,
     staticGeoLevels,
     project,
     lockedDistricts
@@ -356,7 +356,6 @@ const DistrictsMap = ({
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
-      <AdvancedEditingModal id={project.id} geoLevels={staticMetadata.geoLevelHierarchy} />
     </Box>
   );
 };

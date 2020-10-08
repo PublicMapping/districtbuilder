@@ -34,7 +34,7 @@ export const LINES_PLACEHOLDER_LAYER_ID = "line-placeholder";
 export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
 
 // Delay used to throttle calls to set the current feature(s), in milliseconds
-export const SET_FEATURE_DELAY = 100;
+export const SET_FEATURE_DELAY = 300;
 
 // Layers in the Mapbox Studio project that we filter to only show the active region.
 const filteredLabelLayers = [

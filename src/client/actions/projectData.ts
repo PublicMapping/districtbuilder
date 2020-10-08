@@ -22,6 +22,9 @@ export const updateDistrictsDefinition = createAction("Update districts definiti
 export const updateDistrictsDefinitionSuccess = createAction("Update districts definition success")<
   IProject
 >();
+export const updateDistrictsDefinitionRefetchGeoJsonSuccess = createAction(
+  "Update districts definition refetch geojson success"
+)<DynamicProjectData>();
 export const updateDistrictsDefinitionFailure = createAction("Update districts definition failure")<
   void
 >();

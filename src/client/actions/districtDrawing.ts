@@ -1,3 +1,4 @@
+import MapboxGL from "mapbox-gl";
 import { createAction } from "typesafe-actions";
 import { DistrictId, GeoUnits } from "../../shared/entities";
 
@@ -19,6 +20,10 @@ export const editSelectedGeounits = createAction("Edit selected geounits")<{
   readonly add?: GeoUnits;
   readonly remove?: GeoUnits;
 }>();
+export const replaceSelectedGeounits = createAction("Replace selected geounits")<{
+  readonly add?: GeoUnits;
+  readonly remove?: GeoUnits;
+}>();
 export const setSelectedGeounits = createAction("Set selected geounits")<GeoUnits>();
 
 export const setHighlightedGeounits = createAction("Add highlighted geounit ids")<GeoUnits>();
@@ -35,3 +40,6 @@ export const toggleDistrictLocked = createAction("Toggle district locked")<Distr
 export const showAdvancedEditingModal = createAction("Show advanced editing warning modal")<
   boolean
 >();
+
+export const undo = createAction("Undo project action")<MapboxGL.Map>();
+export const redo = createAction("Redo project action")<MapboxGL.Map>();

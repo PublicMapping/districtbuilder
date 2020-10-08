@@ -1,36 +1,22 @@
 /** @jsx jsx */
-import React, { useState, Fragment } from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  jsx,
-  Spinner,
-  Styled,
-  Text,
-  ThemeUIStyleObject
-} from "theme-ui";
+import React, { memo, useEffect, useState, Fragment } from "react";
+import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
-  UintArrays,
   CompactnessScore,
-  DistrictsDefinition,
+  DemographicCounts,
   GeoUnitHierarchy,
-  GeoUnitIndices,
   GeoUnits,
   IProject,
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
+import { areAnyGeoUnitsSelected, assertNever, mergeGeoUnits } from "../functions";
 import {
-  allGeoUnitIndices,
-  areAnyGeoUnitsSelected,
-  assertNever,
-  getDemographics,
+  getSavedDistrictSelectedDemographics,
   getTotalSelectedDemographics
-} from "../functions";
+} from "../worker-functions";
 import {
   getDistrictColor,
   negativeChangeColor,
@@ -40,14 +26,10 @@ import {
 import DemographicsChart from "./DemographicsChart";
 import DemographicsTooltip from "./DemographicsTooltip";
 import Icon from "./Icon";
+import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
 
-import { updateDistrictsDefinition } from "../actions/projectData";
-import {
-  clearSelectedGeounits,
-  setSelectedDistrictId,
-  toggleDistrictLocked
-} from "../actions/districtDrawing";
+import { setSelectedDistrictId, toggleDistrictLocked } from "../actions/districtDrawing";
 import store from "../store";
 
 interface LoadingProps {
@@ -55,11 +37,6 @@ interface LoadingProps {
 }
 
 const style: ThemeUIStyleObject = {
-  header: {
-    variant: "header.app",
-    borderBottom: "1px solid",
-    borderColor: "gray.2"
-  },
   sidebar: {
     bg: "muted",
     boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
@@ -145,9 +122,9 @@ const ProjectSidebar = ({
   geojson,
   isLoading,
   staticMetadata,
-  staticDemographics,
   selectedDistrictId,
   selectedGeounits,
+  highlightedGeounits,
   geoUnitHierarchy,
   lockedDistricts,
   saving
@@ -155,16 +132,20 @@ const ProjectSidebar = ({
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
-  readonly staticDemographics?: UintArrays;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
+  readonly highlightedGeounits: GeoUnits;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
   readonly saving: SavingState;
 } & LoadingProps) => {
   return (
     <Flex sx={style.sidebar}>
-      <SidebarHeader selectedGeounits={selectedGeounits} isLoading={isLoading} saving={saving} />
+      <ProjectSidebarHeader
+        selectedGeounits={selectedGeounits}
+        isLoading={isLoading}
+        saving={saving}
+      />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
         <Styled.table sx={style.table}>
           <thead>
@@ -198,15 +179,14 @@ const ProjectSidebar = ({
             </Styled.tr>
           </thead>
           <tbody>
-            {project && geojson && staticMetadata && staticDemographics && geoUnitHierarchy && (
+            {project && geojson && staticMetadata && geoUnitHierarchy && (
               <SidebarRows
                 project={project}
                 geojson={geojson}
                 staticMetadata={staticMetadata}
-                staticDemographics={staticDemographics}
                 selectedDistrictId={selectedDistrictId}
                 selectedGeounits={selectedGeounits}
-                geoUnitHierarchy={geoUnitHierarchy}
+                highlightedGeounits={highlightedGeounits}
                 lockedDistricts={lockedDistricts}
                 saving={saving}
               />
@@ -214,76 +194,6 @@ const ProjectSidebar = ({
           </tbody>
         </Styled.table>
       </Box>
-    </Flex>
-  );
-};
-
-const SidebarHeader = ({
-  selectedGeounits,
-  isLoading,
-  saving
-}: {
-  readonly selectedGeounits: GeoUnits;
-  readonly saving: SavingState;
-} & LoadingProps) => {
-  return (
-    <Flex sx={style.header}>
-      <Flex sx={{ variant: "header.left" }}>
-        <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
-          Districts
-        </Heading>
-      </Flex>
-      {isLoading || saving === "saving" ? (
-        <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
-          <Spinner variant="spinner.small" />
-        </Flex>
-      ) : areAnyGeoUnitsSelected(selectedGeounits) ? (
-        <Flex sx={{ variant: "header.right" }}>
-          <Tooltip
-            placement="top-start"
-            content={
-              <span>
-                <strong>Cancel changes</strong> to revert to your previously saved map
-              </span>
-            }
-          >
-            <Button
-              variant="circularSubtle"
-              sx={{ mr: "2" }}
-              onClick={() => {
-                store.dispatch(clearSelectedGeounits(true));
-              }}
-            >
-              Cancel
-            </Button>
-          </Tooltip>
-          <Tooltip
-            placement="top-start"
-            content={
-              <span>
-                <strong>Accept changes</strong> to save your map
-              </span>
-            }
-          >
-            <Button
-              variant="circular"
-              onClick={() => {
-                store.dispatch(updateDistrictsDefinition());
-              }}
-            >
-              <Icon name="check" />
-              Accept
-            </Button>
-          </Tooltip>
-        </Flex>
-      ) : saving === "saved" ? (
-        <Tooltip placement="top-start" content={<span>Your map is saved</span>}>
-          <Flex sx={{ display: "flex", color: "gray.3", alignItems: "center", userSelect: "none" }}>
-            <Icon name="check-circle" size={1.1} />
-            <Text sx={{ fontSize: 1, ml: 1 }}>Saved</Text>
-          </Flex>
-        </Tooltip>
-      ) : null}
     </Flex>
   );
 };
@@ -333,194 +243,141 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
   );
 }
 
-const SidebarRow = ({
-  district,
-  selected,
-  selectedPopulationDifference,
-  demographics,
-  deviation,
-  districtId,
-  isDistrictLocked
-}: {
-  readonly district: DistrictGeoJSON;
-  readonly selected: boolean;
-  readonly selectedPopulationDifference: number;
-  readonly demographics: { readonly [id: string]: number };
-  readonly deviation: number;
-  readonly districtId: number;
-  readonly isDistrictLocked?: boolean;
-}) => {
-  const [isHovered, setHover] = useState(false);
-
-  const showPopulationChange = selectedPopulationDifference !== 0;
-  const textColor = showPopulationChange
-    ? selectedPopulationDifference > 0
-      ? positiveChangeColor
-      : negativeChangeColor
-    : "inherit";
-  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-  const intermediatePopulation = district.properties.population + selectedPopulationDifference;
-  const intermediateDeviation = deviation + selectedPopulationDifference;
-  const populationDisplay = intermediatePopulation.toLocaleString();
-  const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
-    intermediateDeviation
-  ).toLocaleString()}`;
-  const compactnessDisplay =
-    districtId === 0 ? (
-      <span sx={style.blankValue}>{BLANK_VALUE}</span>
-    ) : (
-      getCompactnessDisplay(district.properties.compactness)
-    );
-  const toggleHover = () => setHover(!isHovered);
-  const toggleLocked = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    store.dispatch(toggleDistrictLocked(districtId));
-  };
-  return (
-    <Styled.tr
-      sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
-      onClick={() => {
-        store.dispatch(setSelectedDistrictId(district.id as number));
-      }}
-      onMouseOver={toggleHover}
-      onMouseOut={toggleHover}
-    >
-      <Styled.td sx={style.td}>
-        <Flex sx={{ alignItems: "center" }}>
-          {district.id ? (
-            <Fragment>
-              <div sx={{ ...style.districtColor, ...{ bg: getDistrictColor(district.id) } }}></div>
-              <span>{district.id}</span>
-            </Fragment>
-          ) : (
-            <Fragment>
-              <div sx={{ ...style.districtColor, ...style.unassignedColor }}></div>
-              <span>∅</span>
-            </Fragment>
-          )}
-        </Flex>
-      </Styled.td>
-      <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-        {populationDisplay}
-      </Styled.td>
-      <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-        {deviationDisplay}
-      </Styled.td>
-      <Styled.td sx={style.td}>
-        <Tooltip
-          placement="top-start"
-          content={
-            demographics.population > 0 ? (
-              <DemographicsTooltip demographics={demographics} />
+// Memoizing the SidebarRow provides a large performance enhancement
+const SidebarRow = memo(
+  ({
+    district,
+    selected,
+    selectedPopulationDifference,
+    demographics,
+    deviation,
+    districtId,
+    isDistrictLocked
+  }: {
+    readonly district: DistrictGeoJSON;
+    readonly selected: boolean;
+    readonly selectedPopulationDifference?: number;
+    readonly demographics: { readonly [id: string]: number };
+    readonly deviation: number;
+    readonly districtId: number;
+    readonly isDistrictLocked?: boolean;
+  }) => {
+    const [isHovered, setHover] = useState(false);
+    const selectedDifference = selectedPopulationDifference || 0;
+    const showPopulationChange = selectedDifference !== 0;
+    const textColor = showPopulationChange
+      ? selectedDifference > 0
+        ? positiveChangeColor
+        : negativeChangeColor
+      : "inherit";
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    const intermediatePopulation = district.properties.population + selectedDifference;
+    const intermediateDeviation = deviation + selectedDifference;
+    const populationDisplay = intermediatePopulation.toLocaleString();
+    const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
+      intermediateDeviation
+    ).toLocaleString()}`;
+    const compactnessDisplay =
+      districtId === 0 ? (
+        <span sx={style.blankValue}>{BLANK_VALUE}</span>
+      ) : (
+        getCompactnessDisplay(district.properties.compactness)
+      );
+    const toggleHover = () => setHover(!isHovered);
+    const toggleLocked = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      store.dispatch(toggleDistrictLocked(districtId));
+    };
+    return (
+      <Styled.tr
+        sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
+        onClick={() => {
+          store.dispatch(setSelectedDistrictId(district.id as number));
+        }}
+        onMouseOver={toggleHover}
+        onMouseOut={toggleHover}
+      >
+        <Styled.td sx={style.td}>
+          <Flex sx={{ alignItems: "center" }}>
+            {district.id ? (
+              <Fragment>
+                <div
+                  sx={{ ...style.districtColor, ...{ bg: getDistrictColor(district.id) } }}
+                ></div>
+                <span>{district.id}</span>
+              </Fragment>
             ) : (
-              <em>
-                <strong>Empty district.</strong> Add people to this district to view the race chart
-              </em>
-            )
-          }
-        >
-          <span>
-            <DemographicsChart demographics={demographics} />
-          </span>
-        </Tooltip>
-      </Styled.td>
-      <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
-      <Styled.td>
-        {isDistrictLocked ? (
+              <Fragment>
+                <div sx={{ ...style.districtColor, ...style.unassignedColor }}></div>
+                <span>∅</span>
+              </Fragment>
+            )}
+          </Flex>
+        </Styled.td>
+        <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          {populationDisplay}
+        </Styled.td>
+        <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          {deviationDisplay}
+        </Styled.td>
+        <Styled.td sx={style.td}>
           <Tooltip
+            placement="top-start"
             content={
-              <span>
-                <strong>Locked.</strong> Areas from this district cannot be selected
-              </span>
+              demographics.population > 0 ? (
+                <DemographicsTooltip demographics={demographics} />
+              ) : (
+                <em>
+                  <strong>Empty district.</strong> Add people to this district to view the race
+                  chart
+                </em>
+              )
             }
           >
-            <Button variant="icon" onClick={toggleLocked} sx={style.lockButton}>
-              <Icon name="lock-locked" color="#131f28" size={0.75} />
-            </Button>
+            <span>
+              <DemographicsChart demographics={demographics} />
+            </span>
           </Tooltip>
-        ) : (
-          <Tooltip content="Lock this district">
-            <Button
-              variant="icon"
-              style={{ visibility: isHovered ? "visible" : "hidden" }}
-              onClick={toggleLocked}
-              sx={style.lockButton}
+        </Styled.td>
+        <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
+        <Styled.td>
+          {isDistrictLocked ? (
+            <Tooltip
+              content={
+                <span>
+                  <strong>Locked.</strong> Areas from this district cannot be selected
+                </span>
+              }
             >
-              <Icon name="lock-unlocked" size={0.75} />
-            </Button>
-          </Tooltip>
-        )}
-      </Styled.td>
-    </Styled.tr>
-  );
-};
-
-// Drill into the district definition and collect the base geounits for
-// every district that's part of the selection
-const getSavedDistrictSelectedDemographics = (
-  project: IProject,
-  staticMetadata: IStaticMetadata,
-  staticDemographics: UintArrays,
-  selectedGeounits: GeoUnits,
-  geoUnitHierarchy: GeoUnitHierarchy
-) => {
-  /* eslint-disable */
-  // Note: not using Array.fill to populate these, because the empty array in memory gets shared
-  const mutableDistrictGeounitAccum: number[][] = [];
-  for (let i = 0; i <= project.numberOfDistricts; i = i + 1) {
-    mutableDistrictGeounitAccum[i] = [];
+              <Button variant="icon" onClick={toggleLocked} sx={style.lockButton}>
+                <Icon name="lock-locked" color="#131f28" size={0.75} />
+              </Button>
+            </Tooltip>
+          ) : (
+            <Tooltip content="Lock this district">
+              <Button
+                variant="icon"
+                style={{ visibility: isHovered ? "visible" : "hidden" }}
+                onClick={toggleLocked}
+                sx={style.lockButton}
+              >
+                <Icon name="lock-unlocked" size={0.75} />
+              </Button>
+            </Tooltip>
+          )}
+        </Styled.td>
+      </Styled.tr>
+    );
   }
-  /* eslint-enable */
-
-  // Collect all base geounits found in the selection
-  const accumulateGeounits = (
-    subIndices: GeoUnitIndices,
-    subDefinition: DistrictsDefinition | number,
-    subHierarchy: GeoUnitHierarchy | number
-  ) => {
-    if (typeof subHierarchy === "number" && typeof subDefinition === "number") {
-      // The base case: we made it to the bottom of the trees and need to assign this
-      // base geonunit to the district found in the district definition
-      // eslint-disable-next-line
-      mutableDistrictGeounitAccum[subDefinition].push(subHierarchy);
-      return;
-    } else if (subIndices.length === 0 && typeof subHierarchy !== "number") {
-      // We've exhausted the base indices. This means we ned to grab all the indices found
-      // at this level and accumulate them all
-      subHierarchy.forEach((_, ind) => accumulateGeounits([ind], subDefinition, subHierarchy));
-      return;
-    } else {
-      // Recurse by drilling into all three data structures:
-      // geounit indices, district definition, and geounit hierarchy
-      const currIndex = subIndices[0];
-      const currDefn =
-        typeof subDefinition === "number"
-          ? subDefinition
-          : (subDefinition[currIndex] as DistrictsDefinition);
-      const currHierarchy =
-        typeof subHierarchy === "number" ? subHierarchy : subHierarchy[currIndex];
-      accumulateGeounits(subIndices.slice(1), currDefn, currHierarchy);
-      return;
-    }
-  };
-
-  allGeoUnitIndices(selectedGeounits).forEach(geoUnitIndices => {
-    accumulateGeounits(geoUnitIndices, project.districtsDefinition, geoUnitHierarchy);
-  });
-
-  return mutableDistrictGeounitAccum.map(baseGeounitIdsForDistrict =>
-    getDemographics(baseGeounitIdsForDistrict, staticMetadata, staticDemographics)
-  );
-};
+);
 
 interface SidebarRowsProps {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticDemographics: UintArrays;
   readonly selectedDistrictId: number;
   readonly selectedGeounits: GeoUnits;
-  readonly geoUnitHierarchy: GeoUnitHierarchy;
+  readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
   readonly saving: SavingState;
 }
@@ -529,28 +386,60 @@ const SidebarRows = ({
   project,
   geojson,
   staticMetadata,
-  staticDemographics,
   selectedDistrictId,
   selectedGeounits,
-  geoUnitHierarchy,
+  highlightedGeounits,
   lockedDistricts
 }: SidebarRowsProps) => {
-  // Aggregated demographics for the geounit selection
-  const totalSelectedDemographics = getTotalSelectedDemographics(
-    staticMetadata,
-    geoUnitHierarchy,
-    staticDemographics,
-    selectedGeounits
-  );
+  // Results of the asynchronous demographics calculation. The two calculations have been
+  // combined into a single object here, because we want both updates to the state to happen
+  // at the same time to prevent sidebar value flickering.
+  const [selectedDemographics, setSelectedDemographics] = useState<
+    | { readonly total: DemographicCounts; readonly savedDistrict: readonly DemographicCounts[] }
+    | undefined
+  >(undefined);
 
-  // The demographic composition of the selection for each saved district
-  const savedDistrictSelectedDemographics = getSavedDistrictSelectedDemographics(
-    project,
-    staticMetadata,
-    staticDemographics,
-    selectedGeounits,
-    geoUnitHierarchy
-  );
+  // Asynchronously recalculate demographics on state changes with web workers
+  useEffect(() => {
+    // eslint-disable-next-line
+    let outdated = false;
+
+    async function getData() {
+      // Combine selected and highlighted to show calculations in real time
+      const combinedSelection = mergeGeoUnits(selectedGeounits, highlightedGeounits);
+
+      // Aggregated demographics for the geounit selection
+      const selectedTotals = await getTotalSelectedDemographics(
+        staticMetadata,
+        project.regionConfig.s3URI,
+        combinedSelection
+      );
+      // The demographic composition of the selection for each saved district
+      const districtTotals = await getSavedDistrictSelectedDemographics(
+        project,
+        staticMetadata,
+        combinedSelection
+      );
+
+      // Don't overwrite current results with outdated ones
+      !outdated &&
+        setSelectedDemographics({
+          total: selectedTotals,
+          savedDistrict: districtTotals
+        });
+    }
+
+    // When there aren't any geounits highlighted or selected, there is no need to run the
+    // asynchronous calculation; it can simply be cleared out. This additional logic prevents
+    // the sidebar values from flickering after save.
+    areAnyGeoUnitsSelected(selectedGeounits) || areAnyGeoUnitsSelected(highlightedGeounits)
+      ? void getData()
+      : setSelectedDemographics(undefined);
+
+    return () => {
+      outdated = true;
+    };
+  }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
   // The target population is based on the average population of all districts,
   // not including the unassigned district, so we use the number of districts,
@@ -567,24 +456,29 @@ const SidebarRows = ({
         const districtId = typeof feature.id === "number" ? feature.id : 0;
         const selected = districtId === selectedDistrictId;
         const demographics = feature.properties;
-        const selectedPopulation = savedDistrictSelectedDemographics[districtId].population;
-        const selectedPopulationDifference = selected
-          ? totalSelectedDemographics.population - selectedPopulation
-          : -1 * selectedPopulation;
+        const selectedPopulation = selectedDemographics?.savedDistrict?.[districtId]?.population;
+        const totalSelectedDemographics = selectedDemographics?.total;
+        const selectedPopulationDifference =
+          selectedPopulation !== undefined && totalSelectedDemographics !== undefined && selected
+            ? totalSelectedDemographics.population - selectedPopulation
+            : selectedPopulation !== undefined
+            ? -1 * selectedPopulation
+            : undefined;
+
+        // The population goal for the unassigned district is 0,
+        // so it's deviation is equal to its population
+        const deviation =
+          districtId === 0
+            ? feature.properties.population
+            : feature.properties.population - averagePopulation;
 
         return (
           <SidebarRow
             district={feature}
             selected={selected}
-            selectedPopulationDifference={selectedPopulationDifference}
+            selectedPopulationDifference={selectedPopulationDifference || 0}
             demographics={demographics}
-            deviation={
-              // The population goal for the unassigned district is 0,
-              // so it's deviation is equal to its population
-              districtId === 0
-                ? feature.properties.population
-                : feature.properties.population - averagePopulation
-            }
+            deviation={deviation}
             key={districtId}
             isDistrictLocked={lockedDistricts.has(districtId)}
             districtId={districtId}

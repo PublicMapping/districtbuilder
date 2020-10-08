@@ -17,6 +17,16 @@ async function bootstrap(): Promise<void> {
   );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalFilters(new BadRequestExceptionFilter());
-  await app.listen(3005);
+
+  // Save the output of 'listen' to a variable, which is a Node http.Server
+  const server = await app.listen(3005);
+
+  // Ensure all inactive connections are terminated by the ALB, by setting this
+  // a few seconds higher than the ALB idle timeout
+  server.keepAliveTimeout = 65000; // eslint-disable-line functional/immutable-data
+
+  // Ensure the headersTimeout is set higher than the keepAliveTimeout due to
+  // this nodejs regression bug: https://github.com/nodejs/node/issues/27363
+  server.headersTimeout = 66000; // eslint-disable-line functional/immutable-data
 }
 bootstrap(); // eslint-disable-line @typescript-eslint/no-floating-promises

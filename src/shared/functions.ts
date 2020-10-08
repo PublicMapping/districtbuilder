@@ -34,7 +34,7 @@ export function getAllBaseIndices(
 }
 
 export function getDemographics(
-  baseIndices: number[] | Set<number>, // eslint-disable-line
+  baseIndices: readonly number[] | ReadonlySet<number>,
   staticMetadata: IStaticMetadata,
   staticDemographics: readonly UintArray[]
 ): DemographicCounts {
