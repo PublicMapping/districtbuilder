@@ -127,7 +127,8 @@ const ProjectSidebar = ({
   highlightedGeounits,
   geoUnitHierarchy,
   lockedDistricts,
-  saving
+  saving,
+  isReadOnly
 }: {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -138,6 +139,7 @@ const ProjectSidebar = ({
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
   readonly saving: SavingState;
+  readonly isReadOnly: boolean;
 } & LoadingProps) => {
   return (
     <Flex sx={style.sidebar}>
@@ -189,6 +191,7 @@ const ProjectSidebar = ({
                 highlightedGeounits={highlightedGeounits}
                 lockedDistricts={lockedDistricts}
                 saving={saving}
+                isReadOnly={isReadOnly}
               />
             )}
           </tbody>
@@ -252,7 +255,8 @@ const SidebarRow = memo(
     demographics,
     deviation,
     districtId,
-    isDistrictLocked
+    isDistrictLocked,
+    isReadOnly
   }: {
     readonly district: DistrictGeoJSON;
     readonly selected: boolean;
@@ -261,6 +265,7 @@ const SidebarRow = memo(
     readonly deviation: number;
     readonly districtId: number;
     readonly isDistrictLocked?: boolean;
+    readonly isReadOnly: boolean;
   }) => {
     const [isHovered, setHover] = useState(false);
     const selectedDifference = selectedPopulationDifference || 0;
@@ -353,7 +358,7 @@ const SidebarRow = memo(
                 <Icon name="lock-locked" color="#131f28" size={0.75} />
               </Button>
             </Tooltip>
-          ) : (
+          ) : !isReadOnly ? (
             <Tooltip content="Lock this district">
               <Button
                 variant="icon"
@@ -364,7 +369,7 @@ const SidebarRow = memo(
                 <Icon name="lock-unlocked" size={0.75} />
               </Button>
             </Tooltip>
-          )}
+          ) : null}
         </Styled.td>
       </Styled.tr>
     );
@@ -380,6 +385,7 @@ interface SidebarRowsProps {
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
   readonly saving: SavingState;
+  readonly isReadOnly: boolean;
 }
 
 const SidebarRows = ({
@@ -389,7 +395,8 @@ const SidebarRows = ({
   selectedDistrictId,
   selectedGeounits,
   highlightedGeounits,
-  lockedDistricts
+  lockedDistricts,
+  isReadOnly
 }: SidebarRowsProps) => {
   // Results of the asynchronous demographics calculation. The two calculations have been
   // combined into a single object here, because we want both updates to the state to happen
@@ -482,6 +489,7 @@ const SidebarRows = ({
             key={districtId}
             isDistrictLocked={lockedDistricts.has(districtId)}
             districtId={districtId}
+            isReadOnly={isReadOnly}
           />
         );
       })}

@@ -47,6 +47,7 @@ interface Props {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
+  readonly isReadOnly: boolean;
   readonly label?: string;
   readonly map?: MapboxGL.Map;
   // eslint-disable-next-line
@@ -63,6 +64,7 @@ const DistrictsMap = ({
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
+  isReadOnly,
   label,
   map,
   setMap
@@ -321,7 +323,7 @@ const DistrictsMap = ({
       DefaultSelectionTool.disable(map);
       RectangleSelectionTool.disable(map);
       // Enable appropriate tool
-      if (selectionTool === SelectionTool.Default) {
+      if (!isReadOnly && selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
           map,
           selectedGeolevel.id,
@@ -330,7 +332,7 @@ const DistrictsMap = ({
           lockedDistricts,
           staticGeoLevels
         );
-      } else if (selectionTool === SelectionTool.Rectangle) {
+      } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
         RectangleSelectionTool.enable(
           map,
           selectedGeolevel.id,
@@ -349,7 +351,8 @@ const DistrictsMap = ({
     staticMetadata,
     staticGeoLevels,
     project,
-    lockedDistricts
+    lockedDistricts,
+    isReadOnly
   ]);
 
   return (
