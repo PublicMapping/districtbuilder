@@ -152,21 +152,6 @@ it when necessary (file sizes ~1GB+).
 
     this.renameProps(baseGeoJson, geoLevels);
 
-    if (!flags.inputS3Dir) {
-      this.log("No inputS3Dir provided, no sorting needed");
-    } else {
-      cli.action.start("Pulling down previous GeoJSON for sorting");
-      const prevBaseGeoJson = await this.readGeoJsonFromS3(flags.inputS3Dir, geoLevelIds[0]);
-      cli.action.stop();
-
-      this.log("Sorting GeoJSON based on previous version");
-      const errorMessage = this.sortGeoJsonByPrev(baseGeoJson, prevBaseGeoJson, geoLevelIds);
-      if (errorMessage !== null) {
-        this.log(`Error encountered while sorting GeoJSON: "${errorMessage}"`);
-        return;
-      }
-    }
-
     const topoJsonHierarchy = this.mkTopoJsonHierarchy(
       baseGeoJson,
       geoLevelIds,
@@ -178,6 +163,21 @@ it when necessary (file sizes ~1GB+).
     if (bbox === undefined || bbox.length !== 4) {
       this.log(`Invalid bbox: "${bbox}"`);
       return;
+    }
+
+    if (!flags.inputS3Dir) {
+      this.log("No inputS3Dir provided, no sorting needed");
+    } else {
+      cli.action.start("Pulling down previous TopoJSON for sorting");
+      const prevTopoJson = await this.readTopoJsonFromS3(flags.inputS3Dir);
+      cli.action.stop();
+
+      this.log("Sorting TopoJSON based on previous version");
+      const errorMessage = this.sortTopoJsonByPrev(topoJsonHierarchy, prevTopoJson, geoLevelIds);
+      if (errorMessage !== null) {
+        this.log(`Error encountered while sorting TopoJSON: "${errorMessage}"`);
+        return;
+      }
     }
 
     await this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
@@ -356,28 +356,22 @@ it when necessary (file sizes ~1GB+).
     );
   }
 
-  // Reads a GeoJSON file from S3, given the S3 run directory and the geolevel id
-  async readGeoJsonFromS3(
-    inputS3Dir: string,
-    geoLevelId: string
-  ): Promise<FeatureCollection<Polygon, {}>> {
+  // Reads a TopoJSON file from S3, given the S3 run directory
+  async readTopoJsonFromS3(inputS3Dir: string): Promise<Topology<Objects<{}>>> {
     const uriComponents = inputS3Dir.split("/");
     const bucket = uriComponents[2];
-    const key = `${uriComponents.slice(3).join("/")}${geoLevelId}.geojson`;
-    return new Promise(resolve =>
-      new S3()
-        .getObject({
-          Bucket: bucket,
-          Key: key
-        })
-        .createReadStream()
-        .pipe(parse("features"))
-        .pipe(
-          mapSync((features: any) => {
-            resolve({ type: "FeatureCollection", features });
-          })
-        )
-    );
+    const key = `${uriComponents.slice(3).join("/")}topo.json`;
+    const response: any = await new S3()
+      .getObject({
+        Bucket: bucket,
+        Key: key
+      })
+      .promise();
+
+    // Note: we are not using streaming within the server when reading TopoJSON, so it hasn't been
+    // implemented that way here either. If we ever encounter a TopoJSON file that's large enough
+    // that it needs to be streamed, we'll need to convert both pieces of code appropriately.
+    return JSON.parse(response.Body.toString("utf8"));
   }
 
   // Write TopoJSON file to disk
@@ -711,49 +705,45 @@ it when necessary (file sizes ~1GB+).
       : childGeoms.map((childGeom: any) => childGeom.id);
   }
 
-  // Sorts GeoJSON in the same order as a reference GeoJSON and performs structural checks
-  sortGeoJsonByPrev(
-    newGeoJson: FeatureCollection<Polygon, any>,
-    prevGeoJson: FeatureCollection<Polygon, any>,
+  // Sorts TopoJSON in the same order as a reference TopoJSON and performs structural checks
+  sortTopoJsonByPrev(
+    newTopoJson: Topology<Objects<{}>>,
+    prevTopoJson: Topology<Objects<{}>>,
     geoLevelIds: readonly string[]
   ): string | null {
-    const baseGeoLevelId = geoLevelIds[0];
-    const newFeatures = newGeoJson.features;
-    const prevFeatures = prevGeoJson.features;
-    if (newFeatures.length !== prevFeatures.length) {
-      return `feature count was: ${prevFeatures.length}, and is now: ${newFeatures.length}`;
-    }
+    const baseLevel = geoLevelIds[0];
+    for (const level of geoLevelIds) {
+      this.log(`Sorting geolevel: ${level}`);
+      const newFeatures = (newTopoJson.objects[level] as any).geometries;
+      const prevFeatures = (prevTopoJson.objects[level] as any).geometries;
+      if (newFeatures.length !== prevFeatures.length) {
+        return `feature count was: ${prevFeatures.length}, and is now: ${newFeatures.length}`;
+      }
 
-    // For the previous GeoJSON, create a map of base geounit id => index, so we can sort quickly
-    const prevIndexMap = prevFeatures.reduce(
-      (acc, feature, index) => acc.set(feature.properties[baseGeoLevelId], index),
-      new Map()
-    );
+      // For the previous TopoJSON, create a map of geounit id => index, so we can sort quickly
+      const prevIndexMap = prevFeatures.reduce(
+        (acc: Map<string, number>, feature: any, index: number) =>
+          acc.set(feature.properties[level], index),
+        new Map()
+      );
 
-    // Sort new GeoJSON using previous GeoJSON indices as a reference
-    newFeatures.sort((x, y) =>
-      prevIndexMap.get(x.properties[baseGeoLevelId]) >
-      prevIndexMap.get(y.properties[baseGeoLevelId])
-        ? 1
-        : -1
-    );
+      // Sort new TopoJSON using previous TopoJSON indices as a reference
+      newFeatures.sort((x: any, y: any) =>
+        prevIndexMap.get(x.properties[level]) > prevIndexMap.get(y.properties[level]) ? 1 : -1
+      );
 
-    // Check that all geolevel attributes are the same between new and previous.
-    // Any differences indicate a change in structure, and we can't continue.
-    for (let i = 0; i < newFeatures.length; i++) {
-      const newProperties = newFeatures[i].properties;
-      const prevProperties = prevFeatures[i].properties;
-
-      // Checking the base geolevel here may seem superflous, since it's been sorted by that, but
-      // it'll catch the case where the number of features are the same, but may still be different.
-      // Example: block #998 is removed and replaced with a new block #999 feature.
-      // It's also a good sanity check to ensure sorting was performed correctly.
-      for (const level of geoLevelIds) {
-        const baseId = newProperties[baseGeoLevelId];
-        const newProp = newProperties[level];
-        const prevProp = prevProperties[level];
-        if (newProp !== prevProp) {
-          return `new ${level} is: ${newProp}, was: ${prevProp} for ${baseGeoLevelId}: ${baseId}`;
+      // Check that all geolevel attributes are the same between new and previous.
+      // Any differences indicate a change in structure, and we can't continue.
+      for (let i = 0; i < newFeatures.length; i++) {
+        const newProperties = newFeatures[i].properties;
+        const prevProperties = prevFeatures[i].properties;
+        const baseId = newProperties[baseLevel];
+        for (const geoLevel of geoLevelIds) {
+          const newProp = newProperties[geoLevel];
+          const prevProp = prevProperties[geoLevel];
+          if (newProp !== prevProp) {
+            return `new ${geoLevel} is: ${newProp}, was: ${prevProp} for ${baseLevel}: ${baseId}`;
+          }
         }
       }
     }
