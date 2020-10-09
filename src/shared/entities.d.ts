@@ -1,5 +1,7 @@
 export type UserId = string;
 
+export type PublicUserProperties = "id" | "name";
+
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
@@ -96,7 +98,7 @@ export interface IProject {
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly districtsDefinition: DistrictsDefinition;
-  readonly user: Pick<IUser, "id">;
+  readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
 }
 

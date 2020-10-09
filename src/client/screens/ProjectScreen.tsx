@@ -99,7 +99,7 @@ const ProjectScreen = ({
     <Redirect to={"/login"} />
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
-      <ProjectHeader map={map} project={project} />
+      <ProjectHeader map={map} project={project} isReadOnly={isReadOnly} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         <ProjectSidebar
           project={project}
@@ -112,6 +112,7 @@ const ProjectScreen = ({
           geoUnitHierarchy={geoUnitHierarchy}
           lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
           saving={districtDrawing.saving}
+          isReadOnly={isReadOnly}
         />
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           <MapHeader
@@ -136,15 +137,17 @@ const ProjectScreen = ({
                 selectionTool={districtDrawing.selectionTool}
                 geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
                 lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
+                isReadOnly={isReadOnly}
                 label={label}
                 map={map}
                 setMap={setMap}
               />
-              <AdvancedEditingModal
-                id={project.id}
-                geoLevels={staticMetadata.geoLevelHierarchy}
-                isReadOnly={isReadOnly}
-              />
+              {!isReadOnly && (
+                <AdvancedEditingModal
+                  id={project.id}
+                  geoLevels={staticMetadata.geoLevelHierarchy}
+                />
+              )}
             </React.Fragment>
           ) : null}
         </Flex>

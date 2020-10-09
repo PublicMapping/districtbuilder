@@ -23,7 +23,7 @@ import {
 import { FeatureCollection } from "geojson";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
-import { ProjectId } from "../../../../shared/entities";
+import { ProjectId, PublicUserProperties } from "../../../../shared/entities";
 import { TopologyService } from "../../districts/services/topology.service";
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
@@ -50,7 +50,7 @@ import { RegionConfigsService } from "../../region-configs/services/region-confi
         eager: true
       },
       user: {
-        allow: ["id"],
+        allow: ["id", "name"] as PublicUserProperties[],
         eager: true
       }
     }

@@ -117,7 +117,7 @@ const GeoLevelButton = ({
             className={buttonClassName(geoLevelIndex === index)}
             onClick={() =>
               store.dispatch(
-                !isCurrentLevelBaseGeoLevel || (!isReadOnly && advancedEditingEnabled)
+                !isCurrentLevelBaseGeoLevel || isReadOnly || advancedEditingEnabled
                   ? setGeoLevelIndex(index)
                   : showAdvancedEditingModal(true)
               )
@@ -180,26 +180,28 @@ const MapHeader = ({
   return (
     <Flex sx={style.header}>
       <Flex>
-        <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
-          <Tooltip content="Point-and-click selection">
-            <Button
-              sx={{ ...style.selectionButton }}
-              className={buttonClassName(selectionTool === SelectionTool.Default)}
-              onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
-            >
-              <Icon name="hand-pointer" />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Rectangle selection">
-            <Button
-              sx={{ ...style.selectionButton }}
-              className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
-              onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
-            >
-              <Icon name="draw-square" />
-            </Button>
-          </Tooltip>
-        </Flex>
+        {!isReadOnly && (
+          <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
+            <Tooltip content="Point-and-click selection">
+              <Button
+                sx={{ ...style.selectionButton }}
+                className={buttonClassName(selectionTool === SelectionTool.Default)}
+                onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
+              >
+                <Icon name="hand-pointer" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Rectangle selection">
+              <Button
+                sx={{ ...style.selectionButton }}
+                className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
+                onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
+              >
+                <Icon name="draw-square" />
+              </Button>
+            </Tooltip>
+          </Flex>
+        )}
         <Flex>{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
