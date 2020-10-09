@@ -12,7 +12,12 @@ import {
   LockedDistricts
 } from "../../shared/entities";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
-import { areAnyGeoUnitsSelected, assertNever, mergeGeoUnits } from "../functions";
+import {
+  areAnyGeoUnitsSelected,
+  assertNever,
+  getTargetPopulation,
+  mergeGeoUnits
+} from "../functions";
 import {
   getSavedDistrictSelectedDemographics,
   getTotalSelectedDemographics
@@ -449,14 +454,7 @@ const SidebarRows = ({
     };
   }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
-  // The target population is based on the average population of all districts,
-  // not including the unassigned district, so we use the number of districts,
-  // rather than the district feature count (which includes the unassigned district)
-  const averagePopulation =
-    geojson.features.reduce(
-      (population, feature) => population + feature.properties.population,
-      0
-    ) / project.numberOfDistricts;
+  const averagePopulation = getTargetPopulation(geojson, project);
 
   return (
     <React.Fragment>

@@ -128,7 +128,7 @@ const ProjectScreen = ({
           />
           {project && staticMetadata && staticGeoLevels && geojson ? (
             <React.Fragment>
-              <Tour project={project} />
+              {map && <Tour geojson={geojson} project={project} staticMetadata={staticMetadata} />}
               <Map
                 project={project}
                 geojson={geojson}

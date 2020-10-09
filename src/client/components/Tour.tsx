@@ -1,13 +1,18 @@
 /** @jsx jsx */
 import { Component } from "react";
-import Joyride, { CallBackProps, STATUS, Step, StoreHelpers } from "react-joyride";
+import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
 import { jsx } from "theme-ui";
-import { IProject } from "../../shared/entities";
+import { IProject, IStaticMetadata } from "../../shared/entities";
+import { geoLevelLabel, getTargetPopulation } from "../functions";
 import { ReactComponent as SalamanderIllustration } from "../media/tour-salamander-builder.svg";
+import { DistrictsGeoJSON } from "../types";
 
+/* eslint-disable */
 interface Props {
   readonly run?: boolean;
+  readonly geojson: DistrictsGeoJSON;
   readonly project: IProject;
+  readonly staticMetadata: IStaticMetadata;
 }
 
 interface State {
@@ -16,15 +21,20 @@ interface State {
 }
 
 class Tour extends Component<Props, State> {
-  private helpers?: StoreHelpers;
-
   constructor(props: Props) {
     super(props);
 
     const numberOfDistricts = props.project.numberOfDistricts;
-    const population = "(the population per district for this project)";
+    const population = Number(
+      Math.round(getTargetPopulation(props.geojson, props.project))
+    ).toLocaleString();
     const regionConfig = props.project.regionConfig.name;
-    const availableGeolevels = "(counties, blockgroups, and blocks)";
+    const geoLevels = props.staticMetadata.geoLevelHierarchy
+      .map(geolevel => geoLevelLabel(geolevel.id).toLowerCase())
+      .reverse();
+    const availableGeolevels = `(${geoLevels.slice(0, -1).join(", ")}, and ${
+      geoLevels[geoLevels.length - 1]
+    })`;
 
     this.state = {
       run: true,
@@ -82,7 +92,7 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <p>
-              Your objective: build <strong>{numberOfDistricts} Congressional Districts</strong> for{" "}
+              Your objective: build <strong>{numberOfDistricts} districts</strong> for{" "}
               <strong>{regionConfig}, </strong>
               each with a population of <strong>{population}.</strong> Use DistrictBuilder to group{" "}
               {availableGeolevels} into districts.
@@ -168,7 +178,7 @@ class Tour extends Component<Props, State> {
               </p>
             </div>
           ),
-          placement: "left-start",
+          placement: "top-start",
           disableBeacon: true,
           target: ".mapboxgl-map",
           styles: {
@@ -261,33 +271,22 @@ class Tour extends Component<Props, State> {
     };
   }
 
-  private getHelpers = (helpers: StoreHelpers) => {
-    this.helpers = helpers;
-  };
-
-  private handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, type } = data;
-    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+  private handleJoyrideCallback(data: CallBackProps) {
+    const { status } = data;
+    const finishedStatuses: readonly string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
     if (finishedStatuses.includes(status)) {
       this.setState({ run: false });
     }
-
-    // tslint:disable:no-console
-    console.groupCollapsed(type);
-    console.log(data);
-    console.groupEnd();
-    // tslint:enable:no-console
-  };
+  }
 
   public render() {
     const { run, steps } = this.state;
 
     return (
       <Joyride
-        callback={this.handleJoyrideCallback}
+        callback={data => this.handleJoyrideCallback(data)}
         continuous={true}
-        getHelpers={this.getHelpers}
         run={run}
         scrollToFirstStep={true}
         showProgress={true}
@@ -358,5 +357,6 @@ class Tour extends Component<Props, State> {
     );
   }
 }
+/* eslint-enable */
 
 export default Tour;
