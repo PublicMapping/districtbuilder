@@ -145,6 +145,11 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
       borderTop: "1px solid",
       borderColor: "gray.2"
     },
+    legend: {
+      paddingInlineStart: "0",
+      paddingInlineEnd: "0",
+      marginBottom: "0"
+    },
     fieldset: {
       border: "none",
       marginInlineStart: "0",
@@ -274,7 +279,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
             {data.regionConfig ? (
               <Card sx={{ variant: "card.flat", display: "flex", flexWrap: "wrap" }}>
                 <fieldset sx={style.fieldset}>
-                  <legend sx={{ ...style.cardLabel, ...{ flex: "0 0 100%" } }}>Districts</legend>
+                  <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
+                    Districts
+                  </legend>
                   <Box
                     id="description-districts"
                     as="span"
