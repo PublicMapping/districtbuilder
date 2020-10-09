@@ -223,8 +223,8 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                 }
                 description={
                   <Box as="span" sx={style.cardHint}>
-                    e.g. ‘Arizona House of Representatives’. This will distinguish maps from one
-                    another on the landing page.
+                    e.g. ‘Arizona House of Representatives’. Make it specific to help tell your maps
+                    apart.
                   </Box>
                 }
                 resource={createProjectResource}
