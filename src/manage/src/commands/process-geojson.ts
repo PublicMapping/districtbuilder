@@ -738,6 +738,7 @@ it when necessary (file sizes ~1GB+).
         const newProperties = newFeatures[i].properties;
         const prevProperties = prevFeatures[i].properties;
         const baseId = newProperties[baseLevel];
+
         for (const geoLevel of geoLevelIds) {
           const newProp = newProperties[geoLevel];
           const prevProp = prevProperties[geoLevel];
