@@ -18,7 +18,7 @@ $ npm install -g manage
 $ manage COMMAND
 running command...
 $ manage (-v|--version|version)
-manage/0.1.0 linux-x64 node-v12.13.0
+manage/0.1.0 linux-x64 node-v12.18.4
 $ manage --help [COMMAND]
 USAGE
   $ manage COMMAND
@@ -30,6 +30,7 @@ USAGE
 * [`manage help [COMMAND]`](#manage-help-command)
 * [`manage process-geojson FILE`](#manage-process-geojson-file)
 * [`manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME`](#manage-publish-region-staticdatadir-countrycode-regioncode-regionname)
+* [`manage update-region STATICDATADIR UPDATES3DIR`](#manage-update-region-staticdatadir-updates3dir)
 
 ## `manage help [COMMAND]`
 
@@ -64,13 +65,18 @@ OPTIONS
 
   -l, --levels=levels                  [default: block,blockgroup,county] Comma-separated geolevel hierarchy: smallest
                                        to largest
+                                       To use a different name for the layer ID from the GeoJSON property,
+                                       separate values by ':'
+                                       e.g. -l geoid:block,blockgroupuuid:blockgroup,county
 
   -n, --levelMinZoom=levelMinZoom      [default: 8,0,0] Comma-separated minimum zoom level per geolevel, must match # of
                                        levels
 
   -o, --outputDir=outputDir            [default: ./] Directory to output files
 
-  -s, --simplification=simplification  [default: 0.001] Topojson simplification amount (minWeight)
+  -s, --simplification=simplification  [default: 0.000000025] Topojson simplification amount (minWeight)
+
+  -u, --inputS3Dir=inputS3Dir          S3 directory for the previous run if we will be updating in-place
 
   -x, --levelMaxZoom=levelMaxZoom      [default: g,g,g] Comma-separated maximum zoom level per geolevel, must match # of
                                        levels
@@ -91,7 +97,7 @@ DESCRIPTION
 
 ## `manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME`
 
-describe the command here
+upload processed region files to S3
 
 ```
 USAGE
@@ -105,5 +111,18 @@ ARGUMENTS
 
 OPTIONS
   -b, --bucketName=bucketName  [default: global-districtbuilder-dev-us-east-1] Bucket to upload the files to
+```
+
+## `manage update-region STATICDATADIR UPDATES3DIR`
+
+update processed region files in-place on S3
+
+```
+USAGE
+  $ manage update-region STATICDATADIR UPDATES3DIR
+
+ARGUMENTS
+  STATICDATADIR  Directory of the region's static data (the output of `process-geojson`)
+  UPDATES3DIR    S3 directory to update in-place
 ```
 <!-- commandsstop -->

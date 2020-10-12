@@ -77,6 +77,14 @@ $ ./scripts/manage publish-region data/output-pa US PA Pennsylvania
 
 Once your data is published, you should be able to run the app and create a new project through the UI using that region and begin building districts.
 
+If instead you'd like to use the processed data to update S3 in-place (and not insert a new region into the database), you may instead run the command:
+
+```
+$ ./scripts/manage update-region data/output-pa s3://previous/location/of/the/published/region
+```
+
+Note: when doing this, you will need to restart your server to see the new data, since it's cached on startup
+
 ### Project Organization
 
 In order to allow for code-sharing across the frontend and backend in conjunction with an unejected Create React App (CRA), it was decided that the simplest and least error-prone way forward was to structure the code as such:
