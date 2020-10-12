@@ -124,8 +124,6 @@ const DistrictsMap = ({
     const setLevelVisibility = () =>
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
     const onMapLoad = () => {
-      setMap(map);
-
       generateMapLayers(
         project.regionConfig.s3URI,
         project.regionConfig.regionCode,
@@ -135,6 +133,8 @@ const DistrictsMap = ({
         map,
         geojson
       );
+
+      setMap(map);
 
       map.resize();
     };
