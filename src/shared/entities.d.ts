@@ -10,6 +10,8 @@ export interface IUser {
   readonly hasSeenTour: boolean;
 }
 
+export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
+
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
 
 // eslint-disable-next-line
