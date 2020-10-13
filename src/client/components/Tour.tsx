@@ -2,17 +2,18 @@
 import { Component } from "react";
 import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
 import { jsx } from "theme-ui";
-import { IProject, IStaticMetadata } from "../../shared/entities";
+import { IProject, IStaticMetadata, IUser } from "../../shared/entities";
+import { patchUser } from "../api";
 import { geoLevelLabel, getTargetPopulation } from "../functions";
 import { ReactComponent as SalamanderIllustration } from "../media/tour-salamander-builder.svg";
 import { DistrictsGeoJSON } from "../types";
 
 /* eslint-disable */
 interface Props {
-  readonly run?: boolean;
   readonly geojson: DistrictsGeoJSON;
   readonly project: IProject;
   readonly staticMetadata: IStaticMetadata;
+  readonly user: IUser;
 }
 
 interface State {
@@ -37,7 +38,7 @@ class Tour extends Component<Props, State> {
     }`;
 
     this.state = {
-      run: true,
+      run: !props.user.hasSeenTour,
       steps: [
         {
           title: "Welcome to DistrictBuilder!",
@@ -259,6 +260,7 @@ class Tour extends Component<Props, State> {
 
     if (finishedStatuses.includes(status)) {
       this.setState({ run: false });
+      void patchUser({ hasSeenTour: true });
     }
   }
 
