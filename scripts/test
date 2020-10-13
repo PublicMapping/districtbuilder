@@ -45,6 +45,10 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         ./scripts/yarn client \
             test --watchAll=false
 
+        echo "Executing manage test suite"
+        ./scripts/yarn manage \
+            test --watchAll=false
+
         if [[ -n "${CI}" ]]; then
             GIT_COMMIT="${GIT_COMMIT}" docker-compose \
                 -f docker-compose.yml \
