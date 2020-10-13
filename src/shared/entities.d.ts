@@ -7,6 +7,7 @@ export interface IUser {
   readonly email: string;
   readonly name: string;
   readonly isEmailVerified: boolean;
+  readonly hasSeenTour: boolean;
 }
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
