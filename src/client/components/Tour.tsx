@@ -177,8 +177,9 @@ class Tour extends Component<Props, State> {
               </p>
             </div>
           ),
-          placement: "right",
+          placement: "left-start",
           disableBeacon: true,
+          isFixed: true,
           target: ".mapboxgl-map",
           styles: {
             options: {
