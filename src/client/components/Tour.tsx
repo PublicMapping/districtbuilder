@@ -32,9 +32,9 @@ class Tour extends Component<Props, State> {
     const geoLevels = props.staticMetadata.geoLevelHierarchy
       .map(geolevel => geoLevelLabel(geolevel.id).toLowerCase())
       .reverse();
-    const availableGeolevels = `(${geoLevels.slice(0, -1).join(", ")}, and ${
+    const availableGeolevels = `${geoLevels.slice(0, -1).join(", ")}, and ${
       geoLevels[geoLevels.length - 1]
-    })`;
+    }`;
 
     this.state = {
       run: true,
@@ -64,10 +64,9 @@ class Tour extends Component<Props, State> {
             }
           },
           showProgress: false,
-          placement: "top",
+          placement: "center",
           disableBeacon: true,
-          disableOverlay: true,
-          target: ".mapboxgl-ctrl-bottom-right",
+          target: "body",
           styles: {
             options: {
               width: 300
@@ -178,7 +177,7 @@ class Tour extends Component<Props, State> {
               </p>
             </div>
           ),
-          placement: "top-start",
+          placement: "right",
           disableBeacon: true,
           target: ".mapboxgl-map",
           styles: {
@@ -235,24 +234,6 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <p>
-              When your map is complete, you can get a link to share it with your friends,
-              colleagues, or representatives. If you tweet your map, mention us{" "}
-              <a href="https://twitter.com/districtbuilder">@districtbuilder</a> so we can see what
-              you built!
-            </p>
-          ),
-          placement: "auto",
-          disableBeacon: true,
-          target: ".share-menu",
-          styles: {
-            options: {
-              width: 400
-            }
-          }
-        },
-        {
-          content: (
-            <p>
               You can find additional tutorials and contact us in the <strong>Support</strong> menu.
               Thank you for using DistrictBuilder and fighting for fair and transparent
               redistricting!
@@ -288,7 +269,7 @@ class Tour extends Component<Props, State> {
         callback={data => this.handleJoyrideCallback(data)}
         continuous={true}
         run={run}
-        scrollToFirstStep={true}
+        scrollToFirstStep={false}
         showProgress={true}
         showSkipButton={true}
         spotlightClicks={true}
@@ -320,6 +301,9 @@ class Tour extends Component<Props, State> {
             textColor: "#595959",
             width: 500,
             zIndex: 1000
+          },
+          beacon: {
+            display: "none"
           },
           tooltip: {
             borderRadius: "3px"
