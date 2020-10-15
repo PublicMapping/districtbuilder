@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Microcopy to Create Map and description props to text and select fields [#467](https://github.com/PublicMapping/districtbuilder/pull/467)
 
+- Add product tour [#471](https://github.com/PublicMapping/districtbuilder/pull/471)
 - Update data tooling [#468](https://github.com/PublicMapping/districtbuilder/pull/468)
 
 ### Changed

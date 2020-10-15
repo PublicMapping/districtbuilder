@@ -3,7 +3,7 @@ import MapboxGL from "mapbox-gl";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
-import { Flex, jsx, Spinner } from "theme-ui";
+import { Flex, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
 import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import { DistrictsGeoJSON } from "../types";
@@ -25,6 +25,7 @@ import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
+import Tour from "../components/Tour";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { Resource } from "../resource";
@@ -42,6 +43,18 @@ interface StateProps {
   readonly isReadOnly: boolean;
   readonly user: Resource<IUser>;
 }
+
+const style: ThemeUIStyleObject = {
+  tourStart: {
+    width: "300px",
+    height: "10px",
+    background: "transparent",
+    bottom: "0",
+    right: "10px",
+    pointerEvents: "none",
+    position: "absolute"
+  }
+};
 
 const ProjectScreen = ({
   project,
@@ -127,6 +140,14 @@ const ProjectScreen = ({
           />
           {project && staticMetadata && staticGeoLevels && geojson ? (
             <React.Fragment>
+              {!isReadOnly && "resource" in user && (
+                <Tour
+                  geojson={geojson}
+                  project={project}
+                  staticMetadata={staticMetadata}
+                  user={user.resource}
+                />
+              )}
               <Map
                 project={project}
                 geojson={geojson}
@@ -148,6 +169,7 @@ const ProjectScreen = ({
                   geoLevels={staticMetadata.geoLevelHierarchy}
                 />
               )}
+              <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}
         </Flex>

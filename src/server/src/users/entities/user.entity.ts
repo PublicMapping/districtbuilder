@@ -18,6 +18,9 @@ export class User implements IUser {
   @Column({ default: false })
   isEmailVerified: boolean;
 
+  @Column({ default: false })
+  hasSeenTour: boolean;
+
   // TODO: Is it possible to make this private? I only want to allow
   // modification via setPassword
   @Column()

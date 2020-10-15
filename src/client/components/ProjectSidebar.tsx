@@ -12,7 +12,12 @@ import {
   LockedDistricts
 } from "../../shared/entities";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
-import { areAnyGeoUnitsSelected, assertNever, mergeGeoUnits } from "../functions";
+import {
+  areAnyGeoUnitsSelected,
+  assertNever,
+  getTargetPopulation,
+  mergeGeoUnits
+} from "../functions";
 import {
   getSavedDistrictSelectedDemographics,
   getTotalSelectedDemographics
@@ -142,7 +147,7 @@ const ProjectSidebar = ({
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
   return (
-    <Flex sx={style.sidebar}>
+    <Flex sx={style.sidebar} className="map-sidebar">
       <ProjectSidebarHeader
         selectedGeounits={selectedGeounits}
         isLoading={isLoading}
@@ -164,7 +169,7 @@ const ProjectSidebar = ({
               </Styled.th>
               <Styled.th sx={{ ...style.th, ...style.number }}>
                 <Tooltip content="Population needed to match the ideal number for this district">
-                  <span>Deviation</span>
+                  <span className="deviation-header">Deviation</span>
                 </Tooltip>
               </Styled.th>
               <Styled.th sx={style.th}>
@@ -301,6 +306,7 @@ const SidebarRow = memo(
         }}
         onMouseOver={toggleHover}
         onMouseOut={toggleHover}
+        className={district.id ? null : "unassigned-row"}
       >
         <Styled.td sx={style.td}>
           <Flex sx={{ alignItems: "center" }}>
@@ -448,14 +454,7 @@ const SidebarRows = ({
     };
   }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
-  // The target population is based on the average population of all districts,
-  // not including the unassigned district, so we use the number of districts,
-  // rather than the district feature count (which includes the unassigned district)
-  const averagePopulation =
-    geojson.features.reduce(
-      (population, feature) => population + feature.properties.population,
-      0
-    ) / project.numberOfDistricts;
+  const averagePopulation = getTargetPopulation(geojson, project);
 
   return (
     <React.Fragment>

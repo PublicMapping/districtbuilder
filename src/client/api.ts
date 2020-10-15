@@ -6,7 +6,8 @@ import {
   IRegionConfig,
   IUser,
   JWT,
-  ProjectId
+  ProjectId,
+  UpdateUserData
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -50,6 +51,15 @@ export async function fetchUser(): Promise<IUser> {
       .get("/api/user")
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
+  });
+}
+
+export async function patchUser(userData: Partial<UpdateUserData>): Promise<IUser> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .patch(`/api/user/`, userData)
+      .then(response => resolve(response.data))
+      .catch(() => reject());
   });
 }
 

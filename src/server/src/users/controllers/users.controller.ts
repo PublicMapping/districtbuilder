@@ -3,6 +3,7 @@ import { Crud, CrudAuth, CrudController } from "@nestjsx/crud";
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { User } from "../entities/user.entity";
+import { UpdateUserDataDto } from "../entities/update-user.dto";
 import { UsersService } from "../services/users.service";
 
 @Crud({
@@ -14,6 +15,9 @@ import { UsersService } from "../services/users.service";
   },
   routes: {
     only: ["getOneBase", "updateOneBase"]
+  },
+  dto: {
+    update: UpdateUserDataDto
   },
   params: {
     id: {

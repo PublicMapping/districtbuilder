@@ -64,7 +64,8 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
-      isEmailVerified: user.isEmailVerified
+      isEmailVerified: user.isEmailVerified,
+      hasSeenTour: user.hasSeenTour
     };
     return this.jwtService.sign(payload);
   }
