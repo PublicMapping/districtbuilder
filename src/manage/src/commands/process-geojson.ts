@@ -89,6 +89,12 @@ it when necessary (file sizes ~1GB+).
       char: "u",
       description: "S3 directory for the previous run if we will be updating in-place",
       default: ""
+    }),
+
+    filterPrefix: flags.string({
+      char: "f",
+      description: "Filter to only base geounits containing the specified prefix",
+      default: ""
     })
   };
 
@@ -151,6 +157,14 @@ it when necessary (file sizes ~1GB+).
     }
 
     this.renameProps(baseGeoJson, geoLevels);
+
+    if (flags.filterPrefix) {
+      this.log(`Filtering to only prefixes of: ${flags.filterPrefix}`);
+      baseGeoJson.features = baseGeoJson.features.filter((f: any) =>
+        f.properties[geoLevelIds[0]].startsWith(flags.filterPrefix)
+      );
+      this.log(`Filtered GeoJSON contains ${baseGeoJson.features.length.toString()} features`);
+    }
 
     const topoJsonHierarchy = this.mkTopoJsonHierarchy(
       baseGeoJson,
