@@ -201,7 +201,7 @@ class Tour extends Component<Props, State> {
               </Styled.div>
             </div>
           ),
-          placement: "left-start",
+          placement: "left",
           disableBeacon: true,
           isFixed: true,
           target: ".mapboxgl-map",
@@ -219,9 +219,6 @@ class Tour extends Component<Props, State> {
                 counties you selected will turn green, matching the color of District 1, meaning
                 they have been saved to District 1.
               </p>
-              <Styled.div sx={{ bg: "success.1", color: "success.8", borderRadius: "2", p: 3 }}>
-                <strong>Try it now:</strong> click “Accept”.
-              </Styled.div>
             </div>
           ),
           placement: "right-start",
