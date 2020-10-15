@@ -7,6 +7,7 @@ import { patchUser } from "../api";
 import { geoLevelLabel, getTargetPopulation } from "../functions";
 import { ReactComponent as SalamanderIllustration } from "../media/tour-salamander-builder.svg";
 import { DistrictsGeoJSON } from "../types";
+import { Styled } from "theme-ui";
 
 /* eslint-disable */
 interface Props {
@@ -65,12 +66,16 @@ class Tour extends Component<Props, State> {
             }
           },
           showProgress: false,
-          placement: "center",
+          placement: "top-start",
+          disableOverlay: true,
           disableBeacon: true,
-          target: "body",
+          target: "#tour-start",
           styles: {
             options: {
               width: 300
+            },
+            tooltipContainer: {
+              textAlign: "center"
             }
           }
         },
@@ -86,6 +91,9 @@ class Tour extends Component<Props, State> {
           styles: {
             options: {
               width: 350
+            },
+            tooltipContainer: {
+              textAlign: "center"
             }
           }
         },
@@ -104,13 +112,16 @@ class Tour extends Component<Props, State> {
           styles: {
             options: {
               width: 500
+            },
+            tooltipContainer: {
+              textAlign: "center"
             }
           }
         },
         {
           content:
             "The sidebar lists all your districts and their stats. Each district is represented by a unique color and number.",
-          placement: "auto",
+          placement: "right-start",
           disableBeacon: true,
           target: ".map-sidebar",
           styles: {
@@ -165,17 +176,29 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <div>
-              <img
-                src={require("../media/tour-clicking-counties-sidebar.gif")}
-                width="100%"
-                height="auto"
-                alt="User clicks on two counties in the application and the sidebar updates."
-              />
+              <Styled.div
+                sx={{
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                  borderRadius: "2px",
+                  borderColor: "gray.2",
+                  lineHeight: "0"
+                }}
+              >
+                <img
+                  src={require("../media/tour-clicking-counties-sidebar.gif")}
+                  width="100%"
+                  height="auto"
+                  alt="User clicks on two counties in the application and the sidebar updates."
+                />
+              </Styled.div>
               <p>
-                We’re ready to start building! By default, District 1 is selected in the sidebar.
-                Click on a county on the map to add it to District 1. As you add counties, you can
-                see the population of District 1 increase.
+                We’re ready to start building! By default, District 1 is selected in the sidebar. As
+                you add counties, you can see the population of District 1 increase.
               </p>
+              <Styled.div sx={{ bg: "success.1", color: "success.8", borderRadius: "2", p: 3 }}>
+                <strong>Try it now:</strong> click on a county on the map to add it to District 1.
+              </Styled.div>
             </div>
           ),
           placement: "left-start",
@@ -184,17 +207,22 @@ class Tour extends Component<Props, State> {
           target: ".mapboxgl-map",
           styles: {
             options: {
-              width: 400
+              width: 350
             }
           }
         },
         {
           content: (
-            <p>
-              When you are happy with District 1, click “Accept” to save your changes. The counties
-              you selected will turn green, matching the color of District 1, meaning they have been
-              saved to District 1.
-            </p>
+            <div>
+              <p>
+                When you are happy with District 1, click “Accept” to save your changes. The
+                counties you selected will turn green, matching the color of District 1, meaning
+                they have been saved to District 1.
+              </p>
+              <Styled.div sx={{ bg: "success.1", color: "success.8", borderRadius: "2", p: 3 }}>
+                <strong>Try it now:</strong> click “Accept”.
+              </Styled.div>
+            </div>
           ),
           placement: "right-start",
           disableBeacon: true,
@@ -208,19 +236,34 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <div>
-              <img
-                src={require("../media/tour-counties-blockgroups.gif")}
-                width="auto"
-                height="auto"
-                alt="User selects counties vs. blockgroups."
-              />
+              <Styled.div
+                sx={{
+                  maxWidth: "250px",
+                  mx: "auto",
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                  borderRadius: "2px",
+                  borderColor: "gray.2",
+                  lineHeight: "0"
+                }}
+              >
+                <img
+                  src={require("../media/tour-counties-blockgroups.gif")}
+                  width="100%"
+                  height="auto"
+                  alt="User selects counties vs. blockgroups."
+                />
+              </Styled.div>
               <p>
                 We recommend starting your map with counties because they are the largest census
                 boundary. Try to evenly distribute the population between all districts the best you
-                can. Working with counties is like using a large paint roller – great for covering a
-                lot of ground quickly, but eventually you need a more detailed tool around the
-                edges. Switch to block groups to make finer level changes to your map and get even
-                closer to zero deviation.
+                can.
+              </p>
+              <p>
+                Working with counties is like using a large paint roller – great for covering a lot
+                of ground quickly, but eventually you need a more detailed tool around the edges.
+                Switch to block groups to make finer level changes to your map and get even closer
+                to zero deviation.
               </p>
             </div>
           ),
@@ -310,6 +353,9 @@ class Tour extends Component<Props, State> {
           },
           tooltip: {
             borderRadius: "3px"
+          },
+          tooltipContainer: {
+            textAlign: "left"
           },
           tooltipTitle: {
             fontSize: 21,

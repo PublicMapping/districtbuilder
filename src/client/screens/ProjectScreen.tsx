@@ -3,7 +3,7 @@ import MapboxGL from "mapbox-gl";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
-import { Flex, jsx, Spinner } from "theme-ui";
+import { Flex, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
 import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import { DistrictsGeoJSON } from "../types";
@@ -43,6 +43,18 @@ interface StateProps {
   readonly isReadOnly: boolean;
   readonly user: Resource<IUser>;
 }
+
+const style: ThemeUIStyleObject = {
+  tourStart: {
+    width: "300px",
+    height: "10px",
+    background: "transparent",
+    bottom: "0",
+    right: "10px",
+    pointerEvents: "none",
+    position: "absolute"
+  }
+};
 
 const ProjectScreen = ({
   project,
@@ -128,7 +140,7 @@ const ProjectScreen = ({
           />
           {project && staticMetadata && staticGeoLevels && geojson ? (
             <React.Fragment>
-              {!isReadOnly && map && "resource" in user && (
+              {!isReadOnly && "resource" in user && (
                 <Tour
                   geojson={geojson}
                   project={project}
@@ -157,6 +169,7 @@ const ProjectScreen = ({
                   geoLevels={staticMetadata.geoLevelHierarchy}
                 />
               )}
+              <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}
         </Flex>
