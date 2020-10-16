@@ -31,12 +31,20 @@ class Tour extends Component<Props, State> {
       Math.round(getTargetPopulation(props.geojson, props.project))
     ).toLocaleString();
     const regionConfig = props.project.regionConfig.name;
-    const geoLevels = props.staticMetadata.geoLevelHierarchy
-      .map(geolevel => geoLevelLabel(geolevel.id).toLowerCase())
+    const geoLevelsSingular = props.staticMetadata.geoLevelHierarchy
+      .map(geolevel => geolevel.id)
       .reverse();
-    const availableGeolevels = `${geoLevels.slice(0, -1).join(", ")}, and ${
-      geoLevels[geoLevels.length - 1]
-    }`;
+    const largestGeoLevelSingular = geoLevelsSingular[0];
+    const geoLevelsPlural = geoLevelsSingular.map(label => geoLevelLabel(label).toLowerCase());
+    const largestGeoLevelPlural = geoLevelsPlural[0];
+    const availableGeolevelsText =
+      geoLevelsPlural.length > 2
+        ? `${geoLevelsPlural.slice(0, -1).join(", ")}, and ${
+            geoLevelsPlural[geoLevelsPlural.length - 1]
+          }`
+        : geoLevelsPlural.length == 2
+        ? `${largestGeoLevelPlural} and ${geoLevelsPlural[1]}`
+        : largestGeoLevelPlural;
 
     this.state = {
       run: !props.user.hasSeenTour,
@@ -103,7 +111,7 @@ class Tour extends Component<Props, State> {
               Your objective: build <strong>{numberOfDistricts} districts</strong> for{" "}
               <strong>{regionConfig}, </strong>
               each with a population of <strong>{population}.</strong> Use DistrictBuilder to group{" "}
-              {availableGeolevels} into districts.
+              {availableGeolevelsText} into districts.
             </p>
           ),
           disableBeacon: true,
@@ -189,15 +197,16 @@ class Tour extends Component<Props, State> {
                   src={require("../media/tour-clicking-counties-sidebar.gif")}
                   width="100%"
                   height="auto"
-                  alt="User clicks on two counties in the application and the sidebar updates."
+                  alt="User clicks on two geounits in the application and the sidebar updates."
                 />
               </Styled.div>
               <p>
                 We’re ready to start building! By default, District 1 is selected in the sidebar. As
-                you add counties, you can see the population of District 1 increase.
+                you add {largestGeoLevelPlural}, you can see the population of District 1 increase.
               </p>
               <Styled.div sx={{ bg: "success.1", color: "success.8", borderRadius: "2", p: 3 }}>
-                <strong>Try it now:</strong> click on a county on the map to add it to District 1.
+                <strong>Try it now:</strong> click on a {largestGeoLevelSingular} on the map to add
+                it to District 1.
               </Styled.div>
             </div>
           ),
@@ -215,9 +224,9 @@ class Tour extends Component<Props, State> {
           content: (
             <div>
               <p>
-                When you are happy with District 1, click “Accept” to save your changes. The
-                counties you selected will turn green, matching the color of District 1, meaning
-                they have been saved to District 1.
+                When you are happy with District 1, click “Accept” to save your changes. The{" "}
+                {largestGeoLevelPlural} you selected will turn green, matching the color of District
+                1, meaning they have been saved to District 1.
               </p>
             </div>
           ),
@@ -248,20 +257,29 @@ class Tour extends Component<Props, State> {
                   src={require("../media/tour-counties-blockgroups.gif")}
                   width="100%"
                   height="auto"
-                  alt="User selects counties vs. blockgroups."
+                  alt="User toggles geolevel selection"
                 />
               </Styled.div>
-              <p>
-                We recommend starting your map with counties because they are the largest census
-                boundary. Try to evenly distribute the population between all districts the best you
-                can.
-              </p>
-              <p>
-                Working with counties is like using a large paint roller – great for covering a lot
-                of ground quickly, but eventually you need a more detailed tool around the edges.
-                Switch to block groups to make finer level changes to your map and get even closer
-                to zero deviation.
-              </p>
+              {geoLevelsPlural.length === 1 ? (
+                <p>
+                  The only census boundary available for this map is {largestGeoLevelPlural}. Try to
+                  evenly distribute the population between all districts the best you can.
+                </p>
+              ) : (
+                <p>
+                  We recommend starting your map with {largestGeoLevelPlural} because they are the
+                  largest census boundary available for this map. Try to evenly distribute the
+                  population between all districts the best you can.
+                </p>
+              )}
+              {geoLevelsPlural.length === 1 ? null : (
+                <p>
+                  Working with {largestGeoLevelPlural} is like using a large paint roller – great
+                  for covering a lot of ground quickly, but eventually you need a more detailed tool
+                  around the edges. Switch to {geoLevelsPlural[1]} to make finer level changes to
+                  your map and get even closer to zero deviation.
+                </p>
+              )}
             </div>
           ),
           placement: "auto",
