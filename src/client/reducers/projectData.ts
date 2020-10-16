@@ -78,7 +78,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           ...state,
           projectData: {
             resource: action.payload
-          }
+          },
+          findIndex: undefined
         },
         Cmd.action(clearSelectedGeounits(false))
       );

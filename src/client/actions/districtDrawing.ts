@@ -43,3 +43,6 @@ export const showAdvancedEditingModal = createAction("Show advanced editing warn
 
 export const undo = createAction("Undo project action")<MapboxGL.Map>();
 export const redo = createAction("Redo project action")<MapboxGL.Map>();
+
+export const toggleFind = createAction("Toggle find menu visibility")<boolean>();
+export const setFindIndex = createAction("Set find menu polygon index")<number | undefined>();
