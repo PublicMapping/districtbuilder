@@ -7,7 +7,7 @@ import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
 import { Box, Button, Flex, jsx, Styled, Text, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
-import { undo, redo } from "../actions/districtDrawing";
+import { undo, redo, toggleFind } from "../actions/districtDrawing";
 import { heights } from "../theme";
 import Icon from "../components/Icon";
 import ShareMenu from "../components/ShareMenu";
@@ -15,6 +15,8 @@ import SupportMenu from "../components/SupportMenu";
 import store from "../store";
 import { State } from "../reducers";
 import { UndoHistory } from "../reducers/districtDrawing";
+
+import { style as menuButtonStyle } from "./MenuButton.styles";
 
 const style: ThemeUIStyleObject = {
   undoRedo: {
@@ -46,10 +48,12 @@ const HeaderDivider = () => {
 };
 
 interface StateProps {
+  readonly findMenuOpen: boolean;
   readonly undoHistory: UndoHistory;
 }
 
 const ProjectHeader = ({
+  findMenuOpen,
   map,
   project,
   isReadOnly,
@@ -100,7 +104,7 @@ const ProjectHeader = ({
                 <Icon name="undo" />
               </Button>
               <Button
-                sx={{ ...style.undoRedo, pr: 4 }}
+                sx={{ ...style.undoRedo, mr: 4 }}
                 disabled={undoHistory.future.length === 0}
                 onClick={() => store.dispatch(redo(map))}
               >
@@ -110,6 +114,28 @@ const ProjectHeader = ({
           )}
           <ShareMenu invert={true} />
           <SupportMenu invert={true} />
+          <Box sx={{ position: "relative" }}>
+            <Button
+              sx={{
+                ...{
+                  variant: "buttons.ghost",
+                  fontWeight: "light"
+                },
+                ...menuButtonStyle.menuButton
+              }}
+              onClick={() => store.dispatch(toggleFind(!findMenuOpen))}
+            >
+              <Box
+                sx={{
+                  borderBottom: findMenuOpen ? "solid 1px" : "none",
+                  borderBottomColor: "muted",
+                  mb: findMenuOpen ? "-1px" : "0"
+                }}
+              >
+                <Icon name="search" /> Find
+              </Box>
+            </Button>
+          </Box>
         </React.Fragment>
       ) : (
         <Styled.a
@@ -130,6 +156,7 @@ const ProjectHeader = ({
 
 function mapStateToProps(state: State): StateProps {
   return {
+    findMenuOpen: state.project.findMenuOpen,
     undoHistory: state.project.undoHistory
   };
 }

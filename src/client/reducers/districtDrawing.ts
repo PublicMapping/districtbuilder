@@ -20,7 +20,9 @@ import {
   showAdvancedEditingModal,
   toggleDistrictLocked,
   undo,
-  replaceSelectedGeounits
+  replaceSelectedGeounits,
+  toggleFind,
+  setFindIndex
 } from "../actions/districtDrawing";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
@@ -127,6 +129,8 @@ export interface DistrictDrawingState {
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly showAdvancedEditingModal: boolean;
+  readonly findMenuOpen: boolean;
+  readonly findIndex?: number;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
 }
@@ -136,6 +140,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
   showAdvancedEditingModal: false,
+  findMenuOpen: false,
   saving: "unsaved",
   undoHistory: {
     past: [],
@@ -260,6 +265,17 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         showAdvancedEditingModal: action.payload
+      };
+    case getType(toggleFind):
+      return {
+        ...state,
+        findMenuOpen: action.payload,
+        findIndex: undefined
+      };
+    case getType(setFindIndex):
+      return {
+        ...state,
+        findIndex: action.payload
       };
     case getType(undo): {
       const projectData =

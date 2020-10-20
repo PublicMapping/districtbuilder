@@ -29,13 +29,17 @@ import {
   levelToLabelLayerId,
   levelToLineLayerId,
   onlyUnlockedGeoUnits,
-  getChildGeoUnits
+  getChildGeoUnits,
+  DISTRICTS_OUTLINE_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
+import FindMenu from "./FindMenu";
 import MapMessage from "./MapMessage";
 import MapTooltip from "./MapTooltip";
 import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
+import { State } from "../../reducers";
+import { connect } from "react-redux";
 
 interface Props {
   readonly project: IProject;
@@ -48,6 +52,7 @@ interface Props {
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly isReadOnly: boolean;
+  readonly findMenuOpen: boolean;
   readonly label?: string;
   readonly map?: MapboxGL.Map;
   // eslint-disable-next-line
@@ -65,6 +70,7 @@ const DistrictsMap = ({
   geoLevelIndex,
   lockedDistricts,
   isReadOnly,
+  findMenuOpen,
   label,
   map,
   setMap
@@ -85,6 +91,9 @@ const DistrictsMap = ({
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
+    // @ts-ignore
+    // eslint-disable-next-line
+    feature.properties.outlineColor = id === 0 ? "#F25DFE" : "transparent";
     // @ts-ignore
     // eslint-disable-next-line
     feature.properties.color = getDistrictColor(id);
@@ -200,6 +209,16 @@ const DistrictsMap = ({
       );
     }
   }, [map, label, staticMetadata, selectedGeolevel]);
+
+  // Toggle unassigned highlight when find menu is opened
+  useEffect(() => {
+    map &&
+      map.setLayoutProperty(
+        DISTRICTS_OUTLINE_LAYER_ID,
+        "visibility",
+        findMenuOpen ? "visible" : "none"
+      );
+  }, [map, findMenuOpen]);
 
   useEffect(() => {
     map &&
@@ -359,8 +378,15 @@ const DistrictsMap = ({
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
+      <FindMenu map={map} />
     </Box>
   );
 };
 
-export default DistrictsMap;
+function mapStateToProps(state: State) {
+  return {
+    findMenuOpen: state.project.findMenuOpen
+  };
+}
+
+export default connect(mapStateToProps)(DistrictsMap);

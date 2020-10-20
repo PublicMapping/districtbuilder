@@ -24,6 +24,8 @@ export const GEOLEVELS_SOURCE_ID = "db";
 export const DISTRICTS_SOURCE_ID = "districts";
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
+// Id for districts layer outline, used for Find
+export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
 // Used only to make districts appear in the correct position in the layer stack
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 // Used only to make highlights appear in the correct position in the layer stack
@@ -113,6 +115,21 @@ export function generateMapLayers(
       }
     },
     DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_OUTLINE_LAYER_ID,
+      type: "line",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      paint: {
+        "line-color": { type: "identity", property: "outlineColor" },
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(
