@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updates to project page sharing & read-only mode [#469](https://github.com/PublicMapping/districtbuilder/pull/469)
 - Specify max-old-space-size on server [#470](https://github.com/PublicMapping/districtbuilder/pull/470)
+- Fix formatting of population counts [#474](https://github.com/PublicMapping/districtbuilder/pull/474)
 
 ### Fixed
 

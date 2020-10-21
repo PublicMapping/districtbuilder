@@ -5,7 +5,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --testPathIgnorePatterns=src/server",
+    "test": "react-scripts test --testPathPattern=src/client",
     "eject": "react-scripts eject",
     "compile": "tsc",
     "watch": "tsc --watch",

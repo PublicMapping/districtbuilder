@@ -753,7 +753,7 @@ it when necessary (file sizes ~1GB+).
   }
 }
 
-function abbreviateNumber(value: number) {
+export function abbreviateNumber(value: number) {
   const suffixes = ["", "k", "m", "b", "t"];
   let shortValue = value.toPrecision(1);
   let suffixNum = 0;
@@ -766,6 +766,20 @@ function abbreviateNumber(value: number) {
       shortValue = abbrevNum.toPrecision(3);
     } else {
       shortValue = abbrevNum.toPrecision(2);
+    }
+
+    // Get rid of exponential notation in certain cases. For example:
+    // > (99.5).toPrecision(2)
+    // '1.0e+2'
+    // > Number((99.5).toPrecision(2)).toString()
+    // '100'
+    shortValue = Number(shortValue).toString();
+
+    // Account for case where result would be off due to rounding from `toPrecision` (eg. "1000k")
+    // by moving up to the next thousands place.
+    if (Number(shortValue) === 1000) {
+      shortValue = "1";
+      suffixNum += 1;
     }
   }
 
