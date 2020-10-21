@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Microcopy to Create Map and description props to text and select fields [#467](https://github.com/PublicMapping/districtbuilder/pull/467)
-
 - Add product tour [#471](https://github.com/PublicMapping/districtbuilder/pull/471)
 - Update data tooling [#468](https://github.com/PublicMapping/districtbuilder/pull/468)
 - Find unassigned menu [#476](https://github.com/PublicMapping/districtbuilder/pull/476)
@@ -19,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updates to project page sharing & read-only mode [#469](https://github.com/PublicMapping/districtbuilder/pull/469)
 - Specify max-old-space-size on server [#470](https://github.com/PublicMapping/districtbuilder/pull/470)
 - Fix formatting of population counts [#474](https://github.com/PublicMapping/districtbuilder/pull/474)
+- Make it possible to swap out the RDS DB parameter group [#478](https://github.com/PublicMapping/districtbuilder/pull/478)
 
 ### Fixed
 
