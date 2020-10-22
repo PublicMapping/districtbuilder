@@ -18,6 +18,12 @@ export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
 }
 
+// Determines if we are in a scenario where all geolevels have the same minimum zoom,
+// and thus, the base geolevel doesn't require special handling
+export function isBaseGeoLevelAlwaysVisible(geoLevelHierarchy: GeoLevelHierarchy) {
+  return new Set(geoLevelHierarchy.map(level => level.minZoom)).size === 1;
+}
+
 export function allGeoUnitIndices(geoUnits: GeoUnits) {
   return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.values()));
 }
