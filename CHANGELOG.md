@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add product tour [#471](https://github.com/PublicMapping/districtbuilder/pull/471)
 - Update data tooling [#468](https://github.com/PublicMapping/districtbuilder/pull/468)
 - Find unassigned menu [#476](https://github.com/PublicMapping/districtbuilder/pull/476)
+- Add support for single county region [#479](https://github.com/PublicMapping/districtbuilder/pull/479)
 
 ### Changed
 
