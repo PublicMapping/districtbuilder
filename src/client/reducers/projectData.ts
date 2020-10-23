@@ -14,7 +14,8 @@ import {
   projectDataFetchSuccess,
   staticDataFetchFailure,
   staticDataFetchSuccess,
-  updateDistrictsDefinitionRefetchGeoJsonSuccess
+  updateDistrictsDefinitionRefetchGeoJsonSuccess,
+  setProjectData
 } from "../actions/projectData";
 import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { ProjectState, initialProjectState } from "./project";
@@ -93,6 +94,15 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showActionFailedToast)
       );
+    case getType(setProjectData):
+      return "resource" in state.projectData
+        ? loop(
+            state,
+            Cmd.action(
+              projectFetchSuccess({ ...state.projectData.resource, project: action.payload })
+            )
+          )
+        : state;
     case getType(projectDataFetch):
       return loop(
         {

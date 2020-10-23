@@ -19,6 +19,8 @@ export const staticDataFetchFailure = createAction("Static data fetch failure")<
 
 export const updateDistrictsDefinition = createAction("Update districts definition")();
 
+export const setProjectData = createAction("Set project data w/o refetching geojson")<IProject>();
+
 export const updateDistrictsDefinitionSuccess = createAction("Update districts definition success")<
   IProject
 >();

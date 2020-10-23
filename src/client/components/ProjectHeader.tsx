@@ -5,11 +5,12 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
-import { Box, Button, Flex, jsx, Styled, Text, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
 import { undo, redo, toggleFind } from "../actions/districtDrawing";
 import { heights } from "../theme";
 import Icon from "../components/Icon";
+import ProjectName from "../components/ProjectName";
 import ShareMenu from "../components/ShareMenu";
 import SupportMenu from "../components/SupportMenu";
 import store from "../store";
@@ -76,20 +77,7 @@ const ProjectHeader = ({
         <Logo sx={{ width: "1.75rem" }} />
       </Link>
       <HeaderDivider />
-      <Flex
-        sx={{
-          color: "#fff",
-          alignItems: "center"
-        }}
-      >
-        <Text as="h1" sx={{ variant: "header.title", m: 0 }}>
-          {project && isReadOnly
-            ? `${project.name} by ${project.user.name}`
-            : project
-            ? project.name
-            : "..."}
-        </Text>
-      </Flex>
+      <ProjectName project={project} isReadOnly={isReadOnly} />
     </Flex>
     <Flex sx={{ variant: "header.right" }}>
       {!isReadOnly ? (
