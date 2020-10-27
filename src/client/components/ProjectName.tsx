@@ -1,10 +1,12 @@
 /** @jsx jsx */
 import React, { useEffect, useRef, useState } from "react";
+import { connect } from "react-redux";
 import { Button, Flex, Input, jsx, Text } from "theme-ui";
 import { IProject } from "../../shared/entities";
-import { setProjectData } from "../actions/projectData";
-import { WriteResource } from "../resource";
+import { setProjectNameEditing, updateProjectName } from "../actions/projectData";
+import { State } from "../reducers";
 import store from "../store";
+import { SavingState } from "../types";
 import Icon from "./Icon";
 
 const style = {
@@ -23,63 +25,56 @@ const style = {
   }
 } as const;
 
-export default ({
+const ProjectName = ({
   project,
+  projectNameSaving,
+  saving,
   isReadOnly
 }: {
   readonly project: IProject;
+  readonly saving: SavingState;
+  readonly projectNameSaving: SavingState;
   readonly isReadOnly: boolean;
 }) => {
-  const [resource, setResource] = useState<WriteResource<string, void>>({
-    data: project.name,
-    resource: void 0
-  });
-  const [currentProject, setProject] = useState<IProject | null>(null);
+  const [name, setName] = useState(project.name);
   const inputRef = useRef<HTMLInputElement>(null);
-  const editing = !("resource" in resource);
 
   useEffect(() => {
-    // Reset form whenever project changes
-    !("resource" in resource) &&
-      project !== currentProject &&
-      setResource({ data: project.name, resource: void 0 });
-  }, [project, resource, currentProject]);
+    projectNameSaving === "saved" && setName(project.name);
+  }, [projectNameSaving, project]);
 
   useEffect(() => {
-    editing && inputRef.current && inputRef.current.focus();
-  }, [inputRef, editing]);
+    projectNameSaving === "unsaved" && inputRef.current && inputRef.current.focus();
+  }, [inputRef, projectNameSaving]);
 
   return (
     <Flex sx={style.wrapper}>
-      {editing ? (
+      {projectNameSaving !== "saved" ? (
         <Flex
           as="form"
           onSubmit={e => {
             e.preventDefault();
-            setResource({ ...resource, isPending: true });
-            store.dispatch(setProjectData({ name: resource.data }));
+            store.dispatch(updateProjectName(name));
           }}
         >
           <Input
             sx={style.input}
-            value={resource.data}
-            onChange={e => setResource({ data: e.target.value })}
+            value={name}
+            onChange={e => setName(e.target.value)}
             ref={inputRef}
           />
           <Button
             type="button"
             sx={style.button}
-            onClick={() => {
-              setResource({ data: project.name, resource: void 0 });
-            }}
-            disabled={"isPending" in resource}
+            onClick={() => store.dispatch(setProjectNameEditing(false))}
+            disabled={projectNameSaving === "saving"}
           >
             <Icon name="times-circle" />
           </Button>
           <Button
             sx={style.button}
             type="submit"
-            disabled={!resource.data || "isPending" in resource}
+            disabled={name === "" || projectNameSaving === "saving" || saving === "saving"}
           >
             <Icon name="check" />
           </Button>
@@ -90,14 +85,7 @@ export default ({
             {isReadOnly ? `${project.name} by ${project.user.name}` : project.name}
           </Text>
           {!isReadOnly && (
-            <Button
-              sx={style.button}
-              onClick={() => {
-                setProject(project);
-                setResource({ data: resource.data });
-              }}
-              disabled={!project}
-            >
+            <Button sx={style.button} onClick={() => store.dispatch(setProjectNameEditing(true))}>
               <Icon name="pencil" />
             </Button>
           )}
@@ -106,3 +94,12 @@ export default ({
     </Flex>
   );
 };
+
+function mapStateToProps(state: State) {
+  return {
+    projectNameSaving: state.project.projectNameSaving,
+    saving: state.project.saving
+  };
+}
+
+export default connect(mapStateToProps)(ProjectName);

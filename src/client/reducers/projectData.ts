@@ -15,13 +15,14 @@ import {
   staticDataFetchFailure,
   staticDataFetchSuccess,
   updateDistrictsDefinitionRefetchGeoJsonSuccess,
-  setProjectData,
-  setProjectDataSuccess
+  setProjectNameEditing,
+  updateProjectName,
+  updateProjectNameSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
-import { DistrictsGeoJSON, DynamicProjectData, StaticProjectData } from "../types";
+import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
 import {
@@ -38,6 +39,7 @@ export type ProjectDataState = {
   readonly previousProjectData?: Resource<DynamicProjectData>;
   readonly currentProjectData?: Resource<DynamicProjectData>;
   readonly staticData: Resource<StaticProjectData>;
+  readonly projectNameSaving: SavingState;
 };
 
 export const initialProjectDataState = {
@@ -46,8 +48,9 @@ export const initialProjectDataState = {
   },
   staticData: {
     isPending: false
-  }
-};
+  },
+  projectNameSaving: "saved"
+} as const;
 
 const projectDataReducer: LoopReducer<ProjectState, Action> = (
   state: ProjectState = initialProjectState,
@@ -155,20 +158,26 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showResourceFailedToast)
       );
+    case getType(setProjectNameEditing):
+      return { ...state, projectNameSaving: action.payload ? "unsaved" : "saved" };
     // eslint-disable-next-line
-    case getType(setProjectData): {
+    case getType(updateProjectName): {
       if ("resource" in state.projectData) {
         const projectId = state.projectData.resource.project.id;
         const { geojson } = state.projectData.resource;
         return loop(
           {
             ...state,
-            saving: "saving"
+            projectNameSaving: "saving"
           },
           Cmd.run(
-            () => patchProject(projectId, action.payload).then(project => ({ project, geojson })),
+            () =>
+              patchProject(projectId, { name: action.payload }).then(project => ({
+                project,
+                geojson
+              })),
             {
-              successActionCreator: setProjectDataSuccess,
+              successActionCreator: updateProjectNameSuccess,
               failActionCreator: updateProjectFailed
             }
           )
@@ -177,8 +186,13 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         return state;
       }
     }
-    case getType(setProjectDataSuccess):
-      return { ...state, saving: "saved", projectData: { resource: action.payload } };
+    case getType(updateProjectNameSuccess):
+      return {
+        ...state,
+        projectNameSaving: "saved",
+        saving: "saved",
+        projectData: { resource: action.payload }
+      };
     case getType(updateDistrictsDefinition):
       return "resource" in state.projectData && "resource" in state.staticData
         ? loop(

@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { IProject, ProjectId, UpdateProjectData } from "../../shared/entities";
+import { IProject, ProjectId } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 
 export const projectFetch = createAction("Project fetch")<ProjectId>();
@@ -17,12 +17,12 @@ export const staticDataFetchSuccess = createAction("Static data fetch success")<
 >();
 export const staticDataFetchFailure = createAction("Static data fetch failure")<string>();
 
-export const setProjectData = createAction("Set project data w/o refetching geojson")<
-  Partial<Omit<UpdateProjectData, "districtsDefinition">>
+export const setProjectNameEditing = createAction("Toggle editing project name")<boolean>();
+
+export const updateProjectName = createAction("Update project name")<string>();
+export const updateProjectNameSuccess = createAction("Update project name success")<
+  DynamicProjectData
 >();
-export const setProjectDataSuccess = createAction(
-  "Set project data w/o refetching geojson success"
-)<DynamicProjectData>();
 
 export const updateDistrictsDefinition = createAction("Update districts definition")();
 export const updateDistrictsDefinitionSuccess = createAction("Update districts definition success")<
