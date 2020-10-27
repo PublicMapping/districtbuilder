@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import { areAnyGeoUnitsSelected, geoLevelLabel } from "../functions";
+import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -90,9 +90,11 @@ const GeoLevelButton = ({
 }) => {
   const label = geoLevelLabel(value.id);
   const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
+  const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(geoLevelHierarchy);
   const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
   const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
   const areChangesPending =
+    !isBaseLevelAlwaysVisible &&
     areGeoUnitsSelected &&
     // block level selected, so disable all higher geolevels
     ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
@@ -117,7 +119,10 @@ const GeoLevelButton = ({
             className={buttonClassName(geoLevelIndex === index)}
             onClick={() =>
               store.dispatch(
-                !isCurrentLevelBaseGeoLevel || isReadOnly || advancedEditingEnabled
+                !isCurrentLevelBaseGeoLevel ||
+                  isReadOnly ||
+                  advancedEditingEnabled ||
+                  isBaseLevelAlwaysVisible
                   ? setGeoLevelIndex(index)
                   : showAdvancedEditingModal(true)
               )

@@ -18,7 +18,7 @@ $ npm install -g manage
 $ manage COMMAND
 running command...
 $ manage (-v|--version|version)
-manage/0.1.0 linux-x64 node-v12.18.4
+manage/0.1.0 linux-x64 node-v12.19.0
 $ manage --help [COMMAND]
 USAGE
   $ manage COMMAND
@@ -62,6 +62,8 @@ OPTIONS
 
   -d, --demographics=demographics      [default: population,white,black,asian,hispanic,other] Comma-separated census
                                        demographics to select and aggregate
+
+  -f, --filterPrefix=filterPrefix      Filter to only base geounits containing the specified prefix
 
   -l, --levels=levels                  [default: block,blockgroup,county] Comma-separated geolevel hierarchy: smallest
                                        to largest
