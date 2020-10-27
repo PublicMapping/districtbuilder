@@ -77,7 +77,7 @@ const ProjectHeader = ({
         <Logo sx={{ width: "1.75rem" }} />
       </Link>
       <HeaderDivider />
-      <ProjectName project={project} isReadOnly={isReadOnly} />
+      {project ? <ProjectName project={project} isReadOnly={isReadOnly} /> : "..."}
     </Flex>
     <Flex sx={{ variant: "header.right" }}>
       {!isReadOnly ? (

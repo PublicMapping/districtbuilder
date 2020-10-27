@@ -5,7 +5,7 @@ import { Action } from "../actions";
 import {
   updateDistrictsDefinition,
   updateDistrictsDefinitionSuccess,
-  updateDistrictsDefinitionFailure,
+  updateProjectFailed,
   projectFetch,
   projectFetchSuccess,
   projectFetchFailure,
@@ -15,7 +15,8 @@ import {
   staticDataFetchFailure,
   staticDataFetchSuccess,
   updateDistrictsDefinitionRefetchGeoJsonSuccess,
-  setProjectData
+  setProjectData,
+  setProjectDataSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits } from "../actions/districtDrawing";
 import { ProjectState, initialProjectState } from "./project";
@@ -94,15 +95,6 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showActionFailedToast)
       );
-    case getType(setProjectData):
-      return "resource" in state.projectData
-        ? loop(
-            state,
-            Cmd.action(
-              projectFetchSuccess({ ...state.projectData.resource, project: action.payload })
-            )
-          )
-        : state;
     case getType(projectDataFetch):
       return loop(
         {
@@ -163,6 +155,30 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showResourceFailedToast)
       );
+    // eslint-disable-next-line
+    case getType(setProjectData): {
+      if ("resource" in state.projectData) {
+        const projectId = state.projectData.resource.project.id;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () => patchProject(projectId, action.payload).then(project => ({ project, geojson })),
+            {
+              successActionCreator: setProjectDataSuccess,
+              failActionCreator: updateProjectFailed
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(setProjectDataSuccess):
+      return { ...state, saving: "saved", projectData: { resource: action.payload } };
     case getType(updateDistrictsDefinition):
       return "resource" in state.projectData && "resource" in state.staticData
         ? loop(
@@ -172,7 +188,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             },
             Cmd.run(patchProject, {
               successActionCreator: updateDistrictsDefinitionSuccess,
-              failActionCreator: updateDistrictsDefinitionFailure,
+              failActionCreator: updateProjectFailed,
               args: [
                 state.projectData.resource.project.id,
                 {
@@ -201,7 +217,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           },
           {
             successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
-            failActionCreator: updateDistrictsDefinitionFailure
+            failActionCreator: updateProjectFailed
           }
         )
       );
@@ -221,7 +237,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           : state,
         Cmd.action(projectFetchSuccess(action.payload))
       );
-    case getType(updateDistrictsDefinitionFailure):
+    case getType(updateProjectFailed):
       return loop(
         {
           ...state,
