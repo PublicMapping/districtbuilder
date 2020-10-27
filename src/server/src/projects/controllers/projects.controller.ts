@@ -28,10 +28,12 @@ import { TopologyService } from "../../districts/services/topology.service";
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { User } from "../../users/entities/user.entity";
-import { CreateProjectDto } from "../entities/project.dto";
+import { CreateProjectDto } from "../entities/create-project.dto";
 import { Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
 import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
+import { UpdateProjectDto } from "../entities/update-project.dto";
+import { Errors } from "../../../../shared/types";
 
 @Crud({
   model: {
@@ -57,6 +59,9 @@ import { RegionConfigsService } from "../../region-configs/services/region-confi
   },
   routes: {
     only: ["createOneBase", "getManyBase", "getOneBase", "updateOneBase"]
+  },
+  dto: {
+    update: UpdateProjectDto
   }
 })
 @CrudAuth({
@@ -101,15 +106,22 @@ export class ProjectsController implements CrudController<Project> {
     return this.base.getManyBase(req);
   }
 
-  // Overriden to add JwtAuthGuard
   @Override()
   @UseGuards(JwtAuthGuard)
-  updateOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Project) {
-    if (!this.base.updateOneBase) {
-      this.logger.error("Routes misconfigured. Missing `updateOneBase` route");
-      throw new InternalServerErrorException();
+  async updateOne(
+    @Param("id") id: ProjectId,
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: UpdateProjectDto
+  ) {
+    // @ts-ignore
+    const existingProject = await this.service.findOne({ id });
+    if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
+      throw new BadRequestException({
+        error: "Bad Request",
+        message: { lockedDistricts: [`Length of array does not match "number_of_districts"`] }
+      } as Errors<UpdateProjectDto>);
     }
-    return this.base.updateOneBase(req, dto);
+    return this.service.updateOne(req, dto);
   }
 
   @Override()
@@ -132,7 +144,7 @@ export class ProjectsController implements CrudController<Project> {
         );
       }
 
-      return await this.service.createOne(req, {
+      return this.service.createOne(req, {
         ...dto,
         districtsDefinition: new Array(geoCollection.hierarchy.length).fill(0),
         user: req.parsed.authPersist.userId

@@ -103,6 +103,7 @@ export interface IProject {
   readonly districtsDefinition: DistrictsDefinition;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
+  readonly lockedDistricts: readonly boolean[];
 }
 
 export interface CreateProjectData {
@@ -110,6 +111,11 @@ export interface CreateProjectData {
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
 }
+
+export type UpdateProjectData = Pick<
+  IProject,
+  "name" | "districtsDefinition" | "advancedEditingEnabled" | "lockedDistricts"
+>;
 
 export type ChamberId = string;
 
