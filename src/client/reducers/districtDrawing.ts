@@ -30,6 +30,8 @@ import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entiti
 import { ProjectState, initialProjectState } from "./project";
 import { setFeaturesSelectedFromGeoUnits } from "../components/map";
 
+const UNDO_HISTORY_MAX_LENGTH = 100;
+
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
   geoUnitsToAdd: GeoUnitsForLevel,
@@ -79,7 +81,12 @@ function pushState(state: ProjectState, undoState: UndoableState): ProjectState 
     // Need to clear new project GeoJSON whenever clearing redo states
     currentProjectData: undefined,
     undoHistory: {
-      past: [...state.undoHistory.past, state.undoHistory.present],
+      past: [
+        // We want to limit the undo history to the n most recent items, which is why a negative
+        // index is used
+        ...state.undoHistory.past.slice(UNDO_HISTORY_MAX_LENGTH * -1),
+        state.undoHistory.present
+      ],
       present: undoState,
       future: []
     }
