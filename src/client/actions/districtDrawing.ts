@@ -1,4 +1,3 @@
-import MapboxGL from "mapbox-gl";
 import { createAction } from "typesafe-actions";
 import { DistrictId, GeoUnits } from "../../shared/entities";
 
