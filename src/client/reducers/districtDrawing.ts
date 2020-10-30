@@ -216,7 +216,8 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       });
     case getType(clearSelectedGeounits): {
       const clearedViaCancel = action.payload;
-      return pushState(
+      const func = clearedViaCancel ? pushState : replaceState;
+      return func(
         {
           ...state,
           saving: clearedViaCancel ? "unsaved" : "saved"
