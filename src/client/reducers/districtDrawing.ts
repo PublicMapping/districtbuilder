@@ -280,34 +280,42 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         state.undoHistory.past.length === 1 && state.previousProjectData
           ? { projectData: state.previousProjectData }
           : {};
+      const lastPastState = state.undoHistory.past[state.undoHistory.past.length - 1];
       return state.undoHistory.past.length === 0
         ? state
-        : {
-            ...state,
-            ...projectData,
-            undoHistory: {
-              past: state.undoHistory.past.slice(0, -1),
-              present: state.undoHistory.past[state.undoHistory.past.length - 1],
-              future: [present, ...state.undoHistory.future]
-            }
-          };
+        : loop(
+            {
+              ...state,
+              ...projectData,
+              undoHistory: {
+                past: state.undoHistory.past.slice(0, -1),
+                present: lastPastState,
+                future: [present, ...state.undoHistory.future]
+              }
+            },
+            "effect" in lastPastState ? lastPastState.effect : Cmd.none
+          );
     }
     case getType(redo): {
       const projectData =
         state.undoHistory.past.length === 0 && state.currentProjectData
           ? { projectData: state.currentProjectData }
           : {};
+      const nextFutureState = state.undoHistory.future[0];
       return state.undoHistory.future.length === 0
         ? state
-        : {
-            ...state,
-            ...projectData,
-            undoHistory: {
-              past: [...state.undoHistory.past, present],
-              present: state.undoHistory.future[0],
-              future: state.undoHistory.future.slice(1)
-            }
-          };
+        : loop(
+            {
+              ...state,
+              ...projectData,
+              undoHistory: {
+                past: [...state.undoHistory.past, present],
+                present: nextFutureState,
+                future: state.undoHistory.future.slice(1)
+              }
+            },
+            "effect" in nextFutureState ? nextFutureState.effect : Cmd.none
+          );
     }
     default:
       return state as never;
