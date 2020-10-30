@@ -15,7 +15,7 @@ import {
   UintArrays
 } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
-import { DistrictDrawingState } from "../reducers/districtDrawing";
+import { DistrictDrawingState, getPresentDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -72,12 +72,13 @@ const ProjectScreen = ({
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
+  const presentDrawingState = getPresentDrawingState(districtDrawing.undoHistory);
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
     // Disabling 'functional/no-conditional-statement' without naming it.
     // eslint-disable-next-line
-    if (areAnyGeoUnitsSelected(districtDrawing.undoHistory.present.selectedGeounits)) {
+    if (areAnyGeoUnitsSelected(presentDrawingState.selectedGeounits)) {
       // Old style, used by e.g. Chrome
       // Disabling 'functional/immutable-data' without naming it.
       // eslint-disable-next-line
@@ -120,10 +121,10 @@ const ProjectScreen = ({
           isLoading={isLoading}
           staticMetadata={staticMetadata}
           selectedDistrictId={districtDrawing.selectedDistrictId}
-          selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+          selectedGeounits={presentDrawingState.selectedGeounits}
           highlightedGeounits={districtDrawing.highlightedGeounits}
           geoUnitHierarchy={geoUnitHierarchy}
-          lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
+          lockedDistricts={presentDrawingState.lockedDistricts}
           saving={districtDrawing.saving}
           isReadOnly={isReadOnly}
         />
@@ -133,8 +134,8 @@ const ProjectScreen = ({
             setMapLabel={setMapLabel}
             metadata={staticMetadata}
             selectionTool={districtDrawing.selectionTool}
-            geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
-            selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+            geoLevelIndex={presentDrawingState.geoLevelIndex}
+            selectedGeounits={presentDrawingState.selectedGeounits}
             advancedEditingEnabled={project?.advancedEditingEnabled}
             isReadOnly={isReadOnly}
           />
@@ -153,11 +154,11 @@ const ProjectScreen = ({
                 geojson={geojson}
                 staticMetadata={staticMetadata}
                 staticGeoLevels={staticGeoLevels}
-                selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+                selectedGeounits={presentDrawingState.selectedGeounits}
                 selectedDistrictId={districtDrawing.selectedDistrictId}
                 selectionTool={districtDrawing.selectionTool}
-                geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
-                lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
+                geoLevelIndex={presentDrawingState.geoLevelIndex}
+                lockedDistricts={presentDrawingState.lockedDistricts}
                 isReadOnly={isReadOnly}
                 label={label}
                 map={map}

@@ -5,6 +5,7 @@ import MapboxGL from "mapbox-gl";
 import Icon from "../Icon";
 
 import { State } from "../../reducers";
+import { getPresentDrawingState } from "../../reducers/districtDrawing";
 import { geoLevelLabel } from "../../functions";
 import { IStaticMetadata } from "../../../shared/entities";
 import { destructureResource } from "../../functions";
@@ -76,8 +77,8 @@ const MapMessage = ({
 
 function mapStateToProps(state: State) {
   return {
-    geoLevelIndex: state.project.undoHistory.present.geoLevelIndex,
-    geoLevelVisibility: state.project.undoHistory.present.geoLevelVisibility,
+    geoLevelIndex: getPresentDrawingState(state.project.undoHistory).geoLevelIndex,
+    geoLevelVisibility: getPresentDrawingState(state.project.undoHistory).geoLevelVisibility,
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata")
   };
 }

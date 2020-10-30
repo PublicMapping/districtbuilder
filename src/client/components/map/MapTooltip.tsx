@@ -10,6 +10,7 @@ import { areAnyGeoUnitsSelected, destructureResource, geoLevelLabel } from "../.
 import { getTotalSelectedDemographics } from "../../worker-functions";
 import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
+import { getPresentDrawingState } from "../../reducers/districtDrawing";
 import DemographicsTooltip from "../DemographicsTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 
@@ -235,7 +236,7 @@ const MapTooltip = ({
 
 function mapStateToProps(state: State) {
   return {
-    geoLevelIndex: state.project.undoHistory.present.geoLevelIndex,
+    geoLevelIndex: getPresentDrawingState(state.project.undoHistory).geoLevelIndex,
     highlightedGeounits: state.project.highlightedGeounits,
     project: destructureResource(state.project.projectData, "project"),
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata")

@@ -151,12 +151,16 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   }
 };
 
+export function getPresentDrawingState(undoHistory: UndoHistory): UndoableState {
+  return "state" in undoHistory.present ? undoHistory.present.state : undoHistory.present;
+}
+
 const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
   state: ProjectState = initialProjectState,
   action: Action
 ): ProjectState | Loop<ProjectState, Action> => {
   const { present } = state.undoHistory;
-  const presentState = "state" in present ? present.state : present;
+  const presentState = getPresentDrawingState(state.undoHistory);
   switch (action.type) {
     case getType(resetProjectState):
       return {
