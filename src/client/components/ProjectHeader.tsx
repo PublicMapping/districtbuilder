@@ -87,14 +87,14 @@ const ProjectHeader = ({
               <Button
                 sx={style.undoRedo}
                 disabled={undoHistory.past.length === 0}
-                onClick={() => store.dispatch(undo(map))}
+                onClick={() => store.dispatch(undo())}
               >
                 <Icon name="undo" />
               </Button>
               <Button
                 sx={{ ...style.undoRedo, mr: 4 }}
                 disabled={undoHistory.future.length === 0}
-                onClick={() => store.dispatch(redo(map))}
+                onClick={() => store.dispatch(redo())}
               >
                 <Icon name="redo" />
               </Button>

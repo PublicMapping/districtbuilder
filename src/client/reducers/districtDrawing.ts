@@ -94,28 +94,13 @@ function pushState(state: ProjectState, undoState: UndoableState): ProjectState 
 }
 
 function replaceState(state: ProjectState, undoState: UndoableState) {
-  return { ...state, undoHistory: { ...state.undoHistory, present: undoState } };
-}
-
-function undoOrRedo(
-  map: mapboxgl.Map,
-  state: ProjectState,
-  { past, present, future }: UndoHistory
-) {
-  return loop(
-    {
-      ...state,
-      undoHistory: {
-        past,
-        present,
-        future
-      }
-    },
-    Cmd.run(() => {
-      setFeaturesSelectedFromGeoUnits(map, state.undoHistory.present.selectedGeounits, false);
-      setFeaturesSelectedFromGeoUnits(map, present.selectedGeounits, true);
-    })
-  );
+  return {
+    ...state,
+    undoHistory: {
+      ...state.undoHistory,
+      present: undoState
+    }
+  };
 }
 
 interface UndoableState {
@@ -291,15 +276,15 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           : {};
       return state.undoHistory.past.length === 0
         ? state
-        : undoOrRedo(
-            action.payload,
-            { ...state, ...projectData },
-            {
+        : {
+            ...state,
+            ...projectData,
+            undoHistory: {
               past: state.undoHistory.past.slice(0, -1),
               present: state.undoHistory.past[state.undoHistory.past.length - 1],
               future: [present, ...state.undoHistory.future]
             }
-          );
+          };
     }
     case getType(redo): {
       const projectData =
@@ -308,15 +293,15 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           : {};
       return state.undoHistory.future.length === 0
         ? state
-        : undoOrRedo(
-            action.payload,
-            { ...state, ...projectData },
-            {
+        : {
+            ...state,
+            ...projectData,
+            undoHistory: {
               past: [...state.undoHistory.past, present],
               present: state.undoHistory.future[0],
               future: state.undoHistory.future.slice(1)
             }
-          );
+          };
     }
     default:
       return state as never;
