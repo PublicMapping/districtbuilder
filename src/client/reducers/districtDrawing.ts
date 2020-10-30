@@ -1,4 +1,4 @@
-import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
+import { Cmd, CmdType, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
@@ -28,7 +28,6 @@ import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
-import { setFeaturesSelectedFromGeoUnits } from "../components/map";
 
 const UNDO_HISTORY_MAX_LENGTH = 100;
 
@@ -75,11 +74,9 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
-function pushState(state: ProjectState, undoState: UndoableState): ProjectState {
+function pushState(state: ProjectState, undoState: UndoableStateAndAction): ProjectState {
   return {
     ...state,
-    // Need to clear new project GeoJSON whenever clearing redo states
-    currentProjectData: undefined,
     undoHistory: {
       past: [
         // We want to limit the undo history to the n most recent items, which is why a negative
@@ -93,7 +90,7 @@ function pushState(state: ProjectState, undoState: UndoableState): ProjectState 
   };
 }
 
-function replaceState(state: ProjectState, undoState: UndoableState) {
+function replaceState(state: ProjectState, undoState: UndoableStateAndAction) {
   return {
     ...state,
     undoHistory: {
@@ -110,10 +107,18 @@ interface UndoableState {
   readonly lockedDistricts: LockedDistricts;
 }
 
+type UndoableStateAndAction =
+  | UndoableState
+  | {
+      readonly state: UndoableState;
+      // Accompanying effect for state update when undone/redone (eg. saving districts definition)
+      readonly effect: CmdType<Action>;
+    };
+
 export interface UndoHistory {
-  readonly past: readonly UndoableState[];
-  readonly present: UndoableState;
-  readonly future: readonly UndoableState[];
+  readonly past: readonly UndoableStateAndAction[];
+  readonly present: UndoableStateAndAction;
+  readonly future: readonly UndoableStateAndAction[];
 }
 
 export interface DistrictDrawingState {
@@ -151,6 +156,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
   action: Action
 ): ProjectState | Loop<ProjectState, Action> => {
   const { present } = state.undoHistory;
+  const presentState = "state" in present ? present.state : present;
   switch (action.type) {
     case getType(resetProjectState):
       return {
@@ -185,7 +191,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return pushState(state, {
         ...present,
         selectedGeounits: editGeoUnits(
-          present.selectedGeounits,
+          presentState.selectedGeounits,
           action.payload.add,
           action.payload.remove
         )
@@ -194,7 +200,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return replaceState(state, {
         ...present,
         selectedGeounits: editGeoUnits(
-          present.selectedGeounits,
+          presentState.selectedGeounits,
           action.payload.add,
           action.payload.remove
         )
@@ -213,7 +219,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         },
         {
           ...present,
-          selectedGeounits: clearGeoUnits(present.selectedGeounits)
+          selectedGeounits: clearGeoUnits(presentState.selectedGeounits)
         }
       );
     }
@@ -246,11 +252,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return pushState(state, {
         ...present,
         lockedDistricts: new Set(
-          present.lockedDistricts.has(action.payload)
-            ? [...present.lockedDistricts.values()].filter(
+          presentState.lockedDistricts.has(action.payload)
+            ? [...presentState.lockedDistricts.values()].filter(
                 districtId => districtId !== action.payload
               )
-            : [...present.lockedDistricts.values(), action.payload]
+            : [...presentState.lockedDistricts.values(), action.payload]
         )
       });
     case getType(showAdvancedEditingModal):

@@ -209,7 +209,11 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                   districtsDefinition: assignGeounitsToDistrict(
                     state.projectData.resource.project.districtsDefinition,
                     state.staticData.resource.geoUnitHierarchy,
-                    allGeoUnitIndices(state.undoHistory.present.selectedGeounits),
+                    allGeoUnitIndices(
+                      "state" in state.undoHistory.present
+                        ? state.undoHistory.present.state.selectedGeounits
+                        : state.undoHistory.present.selectedGeounits
+                    ),
                     state.selectedDistrictId
                   )
                 }
@@ -219,9 +223,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         : state;
     case getType(updateDistrictsDefinitionSuccess):
       return loop(
-        {
-          ...state
-        },
+        state,
         Cmd.run(
           () => {
             return fetchProjectGeoJson(action.payload.id).then((geojson: DistrictsGeoJSON) => ({
@@ -235,7 +237,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           }
         )
       );
-    case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess):
+    case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
+      const lastPastState = state.undoHistory.past[state.undoHistory.past.length - 1];
       return loop(
         "resource" in state.projectData
           ? {
@@ -244,13 +247,22 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               currentProjectData: { resource: action.payload },
               undoHistory: {
                 ...state.undoHistory,
-                past: [],
+                past: state.undoHistory.past.length
+                  ? [
+                      ...state.undoHistory.past.slice(0, -1),
+                      {
+                        state: "state" in lastPastState ? lastPastState.state : lastPastState,
+                        effect: Cmd.action(updateDistrictsDefinition())
+                      }
+                    ]
+                  : [],
                 future: []
               }
             }
           : state,
         Cmd.action(projectFetchSuccess(action.payload))
       );
+    }
     case getType(updateProjectFailed):
       return loop(
         {
