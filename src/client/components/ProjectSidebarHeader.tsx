@@ -8,8 +8,7 @@ import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
 
-import { updateDistrictsDefinition } from "../actions/projectData";
-import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { saveDistrictsDefinition, clearSelectedGeounits } from "../actions/districtDrawing";
 import { State } from "../reducers";
 import store from "../store";
 
@@ -81,7 +80,7 @@ const ProjectSidebarHeader = ({
             <Button
               variant="circular"
               onClick={() => {
-                store.dispatch(updateDistrictsDefinition());
+                store.dispatch(saveDistrictsDefinition());
               }}
             >
               <Icon name="check" />

@@ -235,26 +235,12 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         )
       );
     case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
-      const lastPastState = state.undoHistory.past[state.undoHistory.past.length - 1];
       return loop(
         "resource" in state.projectData
           ? {
               ...state,
               previousProjectData: state.projectData,
-              currentProjectData: { resource: action.payload },
-              undoHistory: {
-                ...state.undoHistory,
-                past: state.undoHistory.past.length
-                  ? [
-                      ...state.undoHistory.past.slice(0, -1),
-                      {
-                        state: "state" in lastPastState ? lastPastState.state : lastPastState,
-                        effect: Cmd.action(updateDistrictsDefinition())
-                      }
-                    ]
-                  : [],
-                future: []
-              }
+              currentProjectData: { resource: action.payload }
             }
           : state,
         Cmd.action(projectFetchSuccess(action.payload))

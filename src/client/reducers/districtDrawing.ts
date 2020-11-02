@@ -22,8 +22,10 @@ import {
   undo,
   replaceSelectedGeounits,
   toggleFind,
-  setFindIndex
+  setFindIndex,
+  saveDistrictsDefinition
 } from "../actions/districtDrawing";
+import { updateDistrictsDefinition } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
@@ -322,6 +324,14 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
             "effect" in state.undoHistory.present ? state.undoHistory.present.effect : Cmd.none
           );
     }
+    case getType(saveDistrictsDefinition):
+      return loop(
+        pushState(state, {
+          state: getPresentDrawingState(state.undoHistory),
+          effect: Cmd.action(updateDistrictsDefinition())
+        }),
+        Cmd.action(updateDistrictsDefinition())
+      );
     default:
       return state as never;
   }
