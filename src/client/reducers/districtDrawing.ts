@@ -298,7 +298,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: [present, ...state.undoHistory.future]
               }
             },
-            "effect" in lastPastState ? lastPastState.effect : Cmd.none
+            "effect" in state.undoHistory.present ? state.undoHistory.present.effect : Cmd.none
           );
     }
     case getType(redo): {
@@ -319,7 +319,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: state.undoHistory.future.slice(1)
               }
             },
-            "effect" in nextFutureState ? nextFutureState.effect : Cmd.none
+            "effect" in state.undoHistory.present ? state.undoHistory.present.effect : Cmd.none
           );
     }
     default:
