@@ -20,6 +20,7 @@ import {
   updateProjectNameSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { getPresentDrawingState } from "../reducers/districtDrawing";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
@@ -209,11 +210,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                   districtsDefinition: assignGeounitsToDistrict(
                     state.projectData.resource.project.districtsDefinition,
                     state.staticData.resource.geoUnitHierarchy,
-                    allGeoUnitIndices(
-                      "state" in state.undoHistory.present
-                        ? state.undoHistory.present.state.selectedGeounits
-                        : state.undoHistory.present.selectedGeounits
-                    ),
+                    allGeoUnitIndices(getPresentDrawingState(state.undoHistory).selectedGeounits),
                     state.selectedDistrictId
                   )
                 }
