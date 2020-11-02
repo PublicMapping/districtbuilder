@@ -21,18 +21,21 @@ const style: ThemeUIStyleObject = {
     "& button > svg": {
       marginRight: "0"
     },
-    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)": {
+    "&:not(:last-of-type):not(:first-of-type) > span > button": {
       borderRadius: 0,
-      borderRightWidth: 0
+      borderLeftWidth: 0
     },
     "&:first-of-type > span > button, & > button:first-of-type": {
       borderTopRightRadius: 0,
-      borderBottomRightRadius: 0,
-      borderRightWidth: 0
+      borderBottomRightRadius: 0
     },
     "&:last-of-type > span > button, & > button:last-of-type": {
       borderTopLeftRadius: 0,
-      borderBottomLeftRadius: 0
+      borderBottomLeftRadius: 0,
+      borderLeftWidth: 0
+    },
+    "&:not(:last-of-type):not(:first-of-type) > span > button[disabled], & > button:not(:last-of-type):not(:first-of-type)[disabled]": {
+      borderRightColor: "blue.7"
     }
   },
   header: {
