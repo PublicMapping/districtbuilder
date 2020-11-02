@@ -97,7 +97,18 @@ function replaceState(state: ProjectState, undoState: UndoableStateAndAction) {
     ...state,
     undoHistory: {
       ...state.undoHistory,
-      present: undoState
+      present:
+        "effect" in undoState || "effect" in state.undoHistory.present
+          ? {
+              effect:
+                "effect" in undoState
+                  ? undoState.effect
+                  : "effect" in state.undoHistory.present
+                  ? state.undoHistory.present.effect
+                  : ("impossible" as never),
+              state: "state" in undoState ? undoState.state : undoState
+            }
+          : undoState
     }
   };
 }
