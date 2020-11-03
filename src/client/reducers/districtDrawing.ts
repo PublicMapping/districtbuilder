@@ -76,7 +76,7 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
-function pushState(state: ProjectState, undoState: UndoableStateAndAction): ProjectState {
+function pushState(state: ProjectState, undoState: UndoableStateAndEffect): ProjectState {
   return {
     ...state,
     undoHistory: {
@@ -92,23 +92,12 @@ function pushState(state: ProjectState, undoState: UndoableStateAndAction): Proj
   };
 }
 
-function replaceState(state: ProjectState, undoState: UndoableStateAndAction) {
+function replaceState(state: ProjectState, undoState: UndoableStateAndEffect) {
   return {
     ...state,
     undoHistory: {
       ...state.undoHistory,
-      present:
-        "effect" in undoState || "effect" in state.undoHistory.present
-          ? {
-              effect:
-                "effect" in undoState
-                  ? undoState.effect
-                  : "effect" in state.undoHistory.present
-                  ? state.undoHistory.present.effect
-                  : ("impossible" as never),
-              state: "state" in undoState ? undoState.state : undoState
-            }
-          : undoState
+      present: undoState
     }
   };
 }
@@ -120,18 +109,16 @@ interface UndoableState {
   readonly lockedDistricts: LockedDistricts;
 }
 
-type UndoableStateAndAction =
-  | UndoableState
-  | {
-      readonly state: UndoableState;
-      // Accompanying effect for state update when undone/redone (eg. saving districts definition)
-      readonly effect: CmdType<Action>;
-    };
+interface UndoableStateAndEffect {
+  readonly state: UndoableState;
+  // Accompanying effect for state update when undone/redone (eg. saving districts definition)
+  readonly effect?: CmdType<Action>;
+}
 
 export interface UndoHistory {
-  readonly past: readonly UndoableStateAndAction[];
-  readonly present: UndoableStateAndAction;
-  readonly future: readonly UndoableStateAndAction[];
+  readonly past: readonly UndoableStateAndEffect[];
+  readonly present: UndoableStateAndEffect;
+  readonly future: readonly UndoableStateAndEffect[];
 }
 
 export interface DistrictDrawingState {
@@ -155,10 +142,12 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   undoHistory: {
     past: [],
     present: {
-      selectedGeounits: {},
-      geoLevelIndex: 0,
-      geoLevelVisibility: [],
-      lockedDistricts: new Set()
+      state: {
+        selectedGeounits: {},
+        geoLevelIndex: 0,
+        geoLevelVisibility: [],
+        lockedDistricts: new Set()
+      }
     },
     future: []
   }
@@ -174,6 +163,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
 ): ProjectState | Loop<ProjectState, Action> => {
   const { present } = state.undoHistory;
   const presentState = getPresentDrawingState(state.undoHistory);
+  console.log(action, state);
   switch (action.type) {
     case getType(resetProjectState):
       return {
@@ -206,26 +196,32 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
     // Note the only difference between this and replaceSelectedGeounits is whether we use pushState or replaceState
     case getType(editSelectedGeounits):
       return pushState(state, {
-        ...present,
-        selectedGeounits: editGeoUnits(
-          presentState.selectedGeounits,
-          action.payload.add,
-          action.payload.remove
-        )
+        state: {
+          ...presentState,
+          selectedGeounits: editGeoUnits(
+            presentState.selectedGeounits,
+            action.payload.add,
+            action.payload.remove
+          )
+        }
       });
     case getType(replaceSelectedGeounits):
       return replaceState(state, {
-        ...present,
-        selectedGeounits: editGeoUnits(
-          presentState.selectedGeounits,
-          action.payload.add,
-          action.payload.remove
-        )
+        state: {
+          ...presentState,
+          selectedGeounits: editGeoUnits(
+            presentState.selectedGeounits,
+            action.payload.add,
+            action.payload.remove
+          )
+        }
       });
     case getType(setSelectedGeounits):
       return pushState(state, {
-        ...present,
-        selectedGeounits: action.payload
+        state: {
+          ...presentState,
+          selectedGeounits: action.payload
+        }
       });
     case getType(clearSelectedGeounits): {
       const clearedViaCancel = action.payload;
@@ -237,7 +233,10 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         },
         {
           ...present,
-          selectedGeounits: clearGeoUnits(presentState.selectedGeounits)
+          state: {
+            ...presentState,
+            selectedGeounits: clearGeoUnits(presentState.selectedGeounits)
+          }
         }
       );
     }
@@ -258,24 +257,30 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       };
     case getType(setGeoLevelIndex):
       return replaceState(state, {
-        ...present,
-        geoLevelIndex: action.payload
+        state: {
+          ...presentState,
+          geoLevelIndex: action.payload
+        }
       });
     case getType(setGeoLevelVisibility):
       return replaceState(state, {
-        ...present,
-        geoLevelVisibility: action.payload
+        state: {
+          ...presentState,
+          geoLevelVisibility: action.payload
+        }
       });
     case getType(toggleDistrictLocked):
       return pushState(state, {
-        ...present,
-        lockedDistricts: new Set(
-          presentState.lockedDistricts.has(action.payload)
-            ? [...presentState.lockedDistricts.values()].filter(
-                districtId => districtId !== action.payload
-              )
-            : [...presentState.lockedDistricts.values(), action.payload]
-        )
+        state: {
+          ...presentState,
+          lockedDistricts: new Set(
+            presentState.lockedDistricts.has(action.payload)
+              ? [...presentState.lockedDistricts.values()].filter(
+                  districtId => districtId !== action.payload
+                )
+              : [...presentState.lockedDistricts.values(), action.payload]
+          )
+        }
       });
     case getType(showAdvancedEditingModal):
       return {
@@ -311,7 +316,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: [present, ...state.undoHistory.future]
               }
             },
-            "effect" in state.undoHistory.present ? state.undoHistory.present.effect : Cmd.none
+            lastPastState.effect || Cmd.none
           );
     }
     case getType(redo): {
@@ -332,13 +337,13 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: state.undoHistory.future.slice(1)
               }
             },
-            "effect" in state.undoHistory.present ? state.undoHistory.present.effect : Cmd.none
+            nextFutureState.effect || Cmd.none
           );
     }
     case getType(saveDistrictsDefinition):
       return loop(
         pushState(state, {
-          state: getPresentDrawingState(state.undoHistory),
+          ...present,
           effect: Cmd.action(updateDistrictsDefinition())
         }),
         Cmd.action(updateDistrictsDefinition())
