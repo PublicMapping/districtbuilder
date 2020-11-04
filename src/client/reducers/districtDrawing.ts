@@ -338,8 +338,8 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
     }
     case getType(saveDistrictsDefinition):
       return loop(
-        // Save an effect with the current districts definition (before saving) so that we can
-        // undo/redo saving of the districts definition
+        // Save an effect function which takes the appropriate districts definition so that we can
+        // undo/redo saving of the districts definition with the correct state snapshot.
         pushStateUpdate(state, {
           effect: (state: UndoableState) =>
             Cmd.action(updateDistrictsDefinition(state.districtsDefinition))

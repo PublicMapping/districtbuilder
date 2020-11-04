@@ -222,9 +222,10 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                   args: [
                     state.projectData.resource.project.id,
                     {
-                      // Districts definition may be optionally specified in the action to make this
-                      // action apply to a snapshot of state to allow for undoing/redoings changes
-                      // to districts
+                      // Districts definition may be optionally specified in the action payload and
+                      // is used if available. This is needed to go back/forward in time for a given
+                      // state snapshot -- as opposed to just using the current districts definition
+                      // -- for undo/redo to work correctly.
                       districtsDefinition:
                         action.payload ||
                         assignGeounitsToDistrict(
@@ -236,6 +237,11 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                     }
                   ] as Parameters<typeof patchProject>
                 }),
+                // When updating districts definition after a save, we want to clear the selected
+                // geounits since we're "done". However, when redoing/undoing changes with a
+                // specific districts definition, we want to keep those geounits selected to allow
+                // the user to potentially edit their selection or continuing undoing/redoing their
+                // changes.
                 action.payload
                   ? Cmd.action(setSavingState("saved"))
                   : Cmd.action(clearSelectedGeounits(false))
