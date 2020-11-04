@@ -19,8 +19,9 @@ import {
   updateProjectName,
   updateProjectNameSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
 import { getPresentDrawingState } from "../reducers/districtDrawing";
+import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
@@ -34,6 +35,15 @@ import {
 } from "../functions";
 import { fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
+
+function fetchGeoJsonForProject(project: IProject) {
+  return () => {
+    return fetchProjectGeoJson(project.id).then((geojson: DistrictsGeoJSON) => ({
+      project,
+      geojson
+    }));
+  };
+}
 
 export type ProjectDataState = {
   readonly projectData: Resource<DynamicProjectData>;
@@ -121,6 +131,16 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           projectData: {
             resource: action.payload
           },
+          undoHistory: {
+            ...state.undoHistory,
+            present: {
+              ...state.undoHistory.present,
+              state: {
+                ...state.undoHistory.present.state,
+                districtsDefinition: action.payload.project.districtsDefinition
+              }
+            }
+          },
           staticData: {
             ...state.staticData,
             isPending: true
@@ -201,50 +221,64 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               ...state,
               saving: "saving"
             },
-            Cmd.run(patchProject, {
-              successActionCreator: updateDistrictsDefinitionSuccess,
-              failActionCreator: updateProjectFailed,
-              args: [
-                state.projectData.resource.project.id,
-                {
-                  districtsDefinition: assignGeounitsToDistrict(
-                    state.projectData.resource.project.districtsDefinition,
-                    state.staticData.resource.geoUnitHierarchy,
-                    allGeoUnitIndices(getPresentDrawingState(state.undoHistory).selectedGeounits),
-                    state.selectedDistrictId
-                  )
-                }
-              ] as Parameters<typeof patchProject>
-            })
+            Cmd.list<Action>(
+              [
+                Cmd.run(patchProject, {
+                  successActionCreator: updateDistrictsDefinitionSuccess,
+                  failActionCreator: updateProjectFailed,
+                  args: [
+                    state.projectData.resource.project.id,
+                    {
+                      districtsDefinition:
+                        action.payload ||
+                        assignGeounitsToDistrict(
+                          state.undoHistory.present.state.districtsDefinition,
+                          state.staticData.resource.geoUnitHierarchy,
+                          allGeoUnitIndices(
+                            getPresentDrawingState(state.undoHistory).selectedGeounits
+                          ),
+                          state.selectedDistrictId
+                        )
+                    }
+                  ] as Parameters<typeof patchProject>
+                }),
+                action.payload
+                  ? Cmd.action(setSavingState("saved"))
+                  : Cmd.action(clearSelectedGeounits(false))
+              ],
+              { sequence: true }
+            )
           )
         : state;
     case getType(updateDistrictsDefinitionSuccess):
       return loop(
         state,
-        Cmd.run(
-          () => {
-            return fetchProjectGeoJson(action.payload.id).then((geojson: DistrictsGeoJSON) => ({
-              project: action.payload,
-              geojson
-            }));
-          },
-          {
-            successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
-            failActionCreator: updateProjectFailed
-          }
-        )
+        Cmd.run(fetchGeoJsonForProject(action.payload), {
+          successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
+          failActionCreator: updateProjectFailed
+        })
       );
     case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
-      return loop(
-        "resource" in state.projectData
-          ? {
-              ...state,
-              previousProjectData: state.projectData,
-              currentProjectData: { resource: action.payload }
+      return "resource" in state.projectData
+        ? {
+            ...state,
+            previousProjectData: state.projectData,
+            currentProjectData: { resource: action.payload },
+            projectData: {
+              resource: action.payload
+            },
+            undoHistory: {
+              ...state.undoHistory,
+              present: {
+                ...state.undoHistory.present,
+                state: {
+                  ...state.undoHistory.present.state,
+                  districtsDefinition: action.payload.project.districtsDefinition
+                }
+              }
             }
-          : state,
-        Cmd.action(projectFetchSuccess(action.payload))
-      );
+          }
+        : state;
     }
     case getType(updateProjectFailed):
       return loop(

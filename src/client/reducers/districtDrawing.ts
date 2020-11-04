@@ -23,12 +23,18 @@ import {
   replaceSelectedGeounits,
   toggleFind,
   setFindIndex,
-  saveDistrictsDefinition
+  saveDistrictsDefinition,
+  setSavingState
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
+import {
+  DistrictsDefinition,
+  GeoUnits,
+  GeoUnitsForLevel,
+  LockedDistricts
+} from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 
 const UNDO_HISTORY_MAX_LENGTH = 100;
@@ -107,6 +113,7 @@ interface UndoableState {
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
   readonly lockedDistricts: LockedDistricts;
+  readonly districtsDefinition: DistrictsDefinition;
 }
 
 interface UndoableStateAndEffect {
@@ -146,7 +153,8 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
         selectedGeounits: {},
         geoLevelIndex: 0,
         geoLevelVisibility: [],
-        lockedDistricts: new Set()
+        lockedDistricts: new Set(),
+        districtsDefinition: []
       }
     },
     future: []
@@ -226,20 +234,22 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
     case getType(clearSelectedGeounits): {
       const clearedViaCancel = action.payload;
       const func = clearedViaCancel ? pushState : replaceState;
-      return func(
-        {
-          ...state,
-          saving: clearedViaCancel ? "unsaved" : "saved"
-        },
-        {
+      return loop(
+        func(state, {
           ...present,
           state: {
             ...presentState,
             selectedGeounits: clearGeoUnits(presentState.selectedGeounits)
           }
-        }
+        }),
+        Cmd.action(setSavingState(clearedViaCancel ? "unsaved" : "saved"))
       );
     }
+    case getType(setSavingState):
+      return {
+        ...state,
+        saving: action.payload
+      };
     case getType(setHighlightedGeounits):
       return {
         ...state,
@@ -316,7 +326,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: [present, ...state.undoHistory.future]
               }
             },
-            lastPastState.effect || Cmd.none
+            present.effect || Cmd.none
           );
     }
     case getType(redo): {
@@ -337,16 +347,16 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: state.undoHistory.future.slice(1)
               }
             },
-            nextFutureState.effect || Cmd.none
+            present.effect || Cmd.none
           );
     }
     case getType(saveDistrictsDefinition):
       return loop(
         pushState(state, {
           ...present,
-          effect: Cmd.action(updateDistrictsDefinition())
+          effect: Cmd.action(updateDistrictsDefinition(present.state.districtsDefinition))
         }),
-        Cmd.action(updateDistrictsDefinition())
+        Cmd.action(updateDistrictsDefinition(null))
       );
     default:
       return state as never;
