@@ -47,8 +47,6 @@ function fetchGeoJsonForProject(project: IProject) {
 
 export type ProjectDataState = {
   readonly projectData: Resource<DynamicProjectData>;
-  readonly previousProjectData?: Resource<DynamicProjectData>;
-  readonly currentProjectData?: Resource<DynamicProjectData>;
   readonly staticData: Resource<StaticProjectData>;
   readonly projectNameSaving: SavingState;
 };
@@ -265,8 +263,6 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         ? replaceState(
             {
               ...state,
-              previousProjectData: state.projectData,
-              currentProjectData: { resource: action.payload },
               projectData: {
                 resource: action.payload
               }
