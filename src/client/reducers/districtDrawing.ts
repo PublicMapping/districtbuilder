@@ -90,9 +90,8 @@ function pushStateUpdate(
     ...state,
     undoHistory: {
       past: [
-        // We want to limit the undo history to the n most recent items, which is why a negative
-        // index is used
-        ...state.undoHistory.past.slice(UNDO_HISTORY_MAX_LENGTH * -1),
+        // Limit the undo history to the n most recent items
+        ...state.undoHistory.past.slice((UNDO_HISTORY_MAX_LENGTH - 1) * -1),
         state.undoHistory.present
       ],
       present:
