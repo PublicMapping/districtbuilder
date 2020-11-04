@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Specify max-old-space-size on server [#470](https://github.com/PublicMapping/districtbuilder/pull/470)
 - Fix formatting of population counts [#474](https://github.com/PublicMapping/districtbuilder/pull/474)
 - Make it possible to swap out the RDS DB parameter group [#478](https://github.com/PublicMapping/districtbuilder/pull/478)
+- Allow saving with undo/redo [#498](https://github.com/PublicMapping/districtbuilder/pull/498)
 
 ### Fixed
 
