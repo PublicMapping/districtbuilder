@@ -140,11 +140,10 @@ interface UndoableState {
 // Accompanying effect builder for state update when undone/redone (eg. saving districts definition)
 type Effect = (state: UndoableState) => CmdType<Action>;
 
-type UndoableStateAndEffect = {
+interface UndoableStateAndEffect {
   readonly state: UndoableState;
-} & {
   readonly effect?: Effect;
-};
+}
 
 export interface UndoHistory {
   readonly past: readonly UndoableStateAndEffect[];
