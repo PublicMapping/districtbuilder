@@ -82,9 +82,10 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
-// TODO: Set up guard rails around pushState and replaceState to allow for just updating a single
-// property or adding an effect
-function pushState(state: ProjectState, undoState: UndoableStateAndEffect): ProjectState {
+function pushStateUpdate(
+  state: ProjectState,
+  undoState: Partial<UndoableState> | Pick<UndoableStateAndEffect, "effect">
+): ProjectState {
   return {
     ...state,
     undoHistory: {
@@ -94,18 +95,36 @@ function pushState(state: ProjectState, undoState: UndoableStateAndEffect): Proj
         ...state.undoHistory.past.slice(UNDO_HISTORY_MAX_LENGTH * -1),
         state.undoHistory.present
       ],
-      present: undoState,
+      present:
+        "effect" in undoState
+          ? {
+              ...state.undoHistory.present,
+              ...undoState
+            }
+          : {
+              ...state.undoHistory.present,
+              state: {
+                ...state.undoHistory.present.state,
+                ...undoState
+              }
+            },
       future: []
     }
   };
 }
 
-export function replaceState(state: ProjectState, undoState: UndoableStateAndEffect) {
+export function updateCurrentState(state: ProjectState, undoState: Partial<UndoableState>) {
   return {
     ...state,
     undoHistory: {
       ...state.undoHistory,
-      present: undoState
+      present: {
+        ...state.undoHistory.present,
+        state: {
+          ...state.undoHistory.present.state,
+          ...undoState
+        }
+      }
     }
   };
 }
@@ -118,11 +137,14 @@ interface UndoableState {
   readonly districtsDefinition: DistrictsDefinition;
 }
 
-interface UndoableStateAndEffect {
+// Accompanying effect builder for state update when undone/redone (eg. saving districts definition)
+type Effect = (state: UndoableState) => CmdType<Action>;
+
+type UndoableStateAndEffect = {
   readonly state: UndoableState;
-  // Accompanying effect builder for state update when undone/redone (eg. saving districts definition)
-  readonly effect?: (state: UndoableState) => CmdType<Action>;
-}
+} & {
+  readonly effect?: Effect;
+};
 
 export interface UndoHistory {
   readonly past: readonly UndoableStateAndEffect[];
@@ -163,16 +185,11 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   }
 };
 
-export function getPresentDrawingState(undoHistory: UndoHistory): UndoableState {
-  return "state" in undoHistory.present ? undoHistory.present.state : undoHistory.present;
-}
-
 const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
   state: ProjectState = initialProjectState,
   action: Action
 ): ProjectState | Loop<ProjectState, Action> => {
   const { present } = state.undoHistory;
-  const presentState = getPresentDrawingState(state.undoHistory);
   console.log(action, state);
   switch (action.type) {
     case getType(resetProjectState):
@@ -203,46 +220,33 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           })
         )
       );
-    // Note the only difference between this and replaceSelectedGeounits is whether we use pushState or replaceState
+    // Note the only difference between this and replaceSelectedGeounits is whether we use pushStateUpdate or updateState
     case getType(editSelectedGeounits):
-      return pushState(state, {
-        state: {
-          ...presentState,
-          selectedGeounits: editGeoUnits(
-            presentState.selectedGeounits,
-            action.payload.add,
-            action.payload.remove
-          )
-        }
+      return pushStateUpdate(state, {
+        selectedGeounits: editGeoUnits(
+          present.state.selectedGeounits,
+          action.payload.add,
+          action.payload.remove
+        )
       });
     case getType(replaceSelectedGeounits):
-      return replaceState(state, {
-        state: {
-          ...presentState,
-          selectedGeounits: editGeoUnits(
-            presentState.selectedGeounits,
-            action.payload.add,
-            action.payload.remove
-          )
-        }
+      return updateCurrentState(state, {
+        selectedGeounits: editGeoUnits(
+          present.state.selectedGeounits,
+          action.payload.add,
+          action.payload.remove
+        )
       });
     case getType(setSelectedGeounits):
-      return pushState(state, {
-        state: {
-          ...presentState,
-          selectedGeounits: action.payload
-        }
+      return pushStateUpdate(state, {
+        selectedGeounits: action.payload
       });
     case getType(clearSelectedGeounits): {
       const clearedViaCancel = action.payload;
-      const func = clearedViaCancel ? pushState : replaceState;
+      const func = clearedViaCancel ? pushStateUpdate : updateCurrentState;
       return loop(
         func(state, {
-          ...present,
-          state: {
-            ...presentState,
-            selectedGeounits: clearGeoUnits(presentState.selectedGeounits)
-          }
+          selectedGeounits: clearGeoUnits(present.state.selectedGeounits)
         }),
         Cmd.action(setSavingState(clearedViaCancel ? "unsaved" : "saved"))
       );
@@ -268,31 +272,22 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         selectionTool: action.payload
       };
     case getType(setGeoLevelIndex):
-      return replaceState(state, {
-        state: {
-          ...presentState,
-          geoLevelIndex: action.payload
-        }
+      return updateCurrentState(state, {
+        geoLevelIndex: action.payload
       });
     case getType(setGeoLevelVisibility):
-      return replaceState(state, {
-        state: {
-          ...presentState,
-          geoLevelVisibility: action.payload
-        }
+      return updateCurrentState(state, {
+        geoLevelVisibility: action.payload
       });
     case getType(toggleDistrictLocked):
-      return pushState(state, {
-        state: {
-          ...presentState,
-          lockedDistricts: new Set(
-            presentState.lockedDistricts.has(action.payload)
-              ? [...presentState.lockedDistricts.values()].filter(
-                  districtId => districtId !== action.payload
-                )
-              : [...presentState.lockedDistricts.values(), action.payload]
-          )
-        }
+      return pushStateUpdate(state, {
+        lockedDistricts: new Set(
+          present.state.lockedDistricts.has(action.payload)
+            ? [...present.state.lockedDistricts.values()].filter(
+                districtId => districtId !== action.payload
+              )
+            : [...present.state.lockedDistricts.values(), action.payload]
+        )
       });
     case getType(showAdvancedEditingModal):
       return {
@@ -346,8 +341,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return loop(
         // Save an effect with the current districts definition (before saving) so that we can
         // undo/redo saving of the districts definition
-        pushState(state, {
-          ...present,
+        pushStateUpdate(state, {
           effect: (state: UndoableState) =>
             Cmd.action(updateDistrictsDefinition(state.districtsDefinition))
         }),

@@ -20,7 +20,7 @@ import {
   updateProjectNameSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
-import { getPresentDrawingState, replaceState } from "../reducers/districtDrawing";
+import { updateCurrentState } from "../reducers/districtDrawing";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
@@ -124,7 +124,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(projectDataFetchSuccess):
       return loop(
-        replaceState(
+        updateCurrentState(
           {
             ...state,
             projectData: {
@@ -136,11 +136,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             }
           },
           {
-            ...state.undoHistory.present,
-            state: {
-              ...state.undoHistory.present.state,
-              districtsDefinition: action.payload.project.districtsDefinition
-            }
+            districtsDefinition: action.payload.project.districtsDefinition
           }
         ),
         Cmd.run(fetchAllStaticData, {
@@ -234,9 +230,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                         assignGeounitsToDistrict(
                           state.projectData.resource.project.districtsDefinition,
                           state.staticData.resource.geoUnitHierarchy,
-                          allGeoUnitIndices(
-                            getPresentDrawingState(state.undoHistory).selectedGeounits
-                          ),
+                          allGeoUnitIndices(state.undoHistory.present.state.selectedGeounits),
                           state.selectedDistrictId
                         )
                     }
@@ -260,7 +254,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
       return "resource" in state.projectData
-        ? replaceState(
+        ? updateCurrentState(
             {
               ...state,
               projectData: {
@@ -268,11 +262,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               }
             },
             {
-              ...state.undoHistory.present,
-              state: {
-                ...state.undoHistory.present.state,
-                districtsDefinition: action.payload.project.districtsDefinition
-              }
+              districtsDefinition: action.payload.project.districtsDefinition
             }
           )
         : state;

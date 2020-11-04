@@ -15,7 +15,7 @@ import {
   UintArrays
 } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
-import { DistrictDrawingState, getPresentDrawingState } from "../reducers/districtDrawing";
+import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
@@ -72,7 +72,7 @@ const ProjectScreen = ({
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
-  const presentDrawingState = getPresentDrawingState(districtDrawing.undoHistory);
+  const presentDrawingState = districtDrawing.undoHistory.present.state;
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
