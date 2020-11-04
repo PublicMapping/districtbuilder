@@ -120,8 +120,8 @@ interface UndoableState {
 
 interface UndoableStateAndEffect {
   readonly state: UndoableState;
-  // Accompanying effect for state update when undone/redone (eg. saving districts definition)
-  readonly effect?: CmdType<Action>;
+  // Accompanying effect builder for state update when undone/redone (eg. saving districts definition)
+  readonly effect?: (state: UndoableState) => CmdType<Action>;
 }
 
 export interface UndoHistory {
@@ -323,7 +323,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: [present, ...state.undoHistory.future]
               }
             },
-            present.effect || Cmd.none
+            present.effect ? present.effect(lastPastState.state) : Cmd.none
           );
     }
     case getType(redo): {
@@ -339,7 +339,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
                 future: state.undoHistory.future.slice(1)
               }
             },
-            present.effect || Cmd.none
+            nextFutureState.effect ? nextFutureState.effect(nextFutureState.state) : Cmd.none
           );
     }
     case getType(saveDistrictsDefinition):
@@ -348,7 +348,8 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         // undo/redo saving of the districts definition
         pushState(state, {
           ...present,
-          effect: Cmd.action(updateDistrictsDefinition(present.state.districtsDefinition))
+          effect: (state: UndoableState) =>
+            Cmd.action(updateDistrictsDefinition(state.districtsDefinition))
         }),
         Cmd.action(updateDistrictsDefinition(null))
       );
