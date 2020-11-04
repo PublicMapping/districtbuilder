@@ -20,7 +20,7 @@ import {
   updateProjectNameSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
-import { getPresentDrawingState } from "../reducers/districtDrawing";
+import { getPresentDrawingState, replaceState } from "../reducers/districtDrawing";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
@@ -126,26 +126,24 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(projectDataFetchSuccess):
       return loop(
-        {
-          ...state,
-          projectData: {
-            resource: action.payload
-          },
-          undoHistory: {
-            ...state.undoHistory,
-            present: {
-              ...state.undoHistory.present,
-              state: {
-                ...state.undoHistory.present.state,
-                districtsDefinition: action.payload.project.districtsDefinition
-              }
+        replaceState(
+          {
+            ...state,
+            projectData: {
+              resource: action.payload
+            },
+            staticData: {
+              ...state.staticData,
+              isPending: true
             }
           },
-          staticData: {
-            ...state.staticData,
-            isPending: true
+          {
+            state: {
+              ...state.undoHistory.present.state,
+              districtsDefinition: action.payload.project.districtsDefinition
+            }
           }
-        },
+        ),
         Cmd.run(fetchAllStaticData, {
           successActionCreator: staticDataFetchSuccess,
           failActionCreator: staticDataFetchFailure,
@@ -260,24 +258,22 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
       return "resource" in state.projectData
-        ? {
-            ...state,
-            previousProjectData: state.projectData,
-            currentProjectData: { resource: action.payload },
-            projectData: {
-              resource: action.payload
+        ? replaceState(
+            {
+              ...state,
+              previousProjectData: state.projectData,
+              currentProjectData: { resource: action.payload },
+              projectData: {
+                resource: action.payload
+              }
             },
-            undoHistory: {
-              ...state.undoHistory,
-              present: {
-                ...state.undoHistory.present,
-                state: {
-                  ...state.undoHistory.present.state,
-                  districtsDefinition: action.payload.project.districtsDefinition
-                }
+            {
+              state: {
+                ...state.undoHistory.present.state,
+                districtsDefinition: action.payload.project.districtsDefinition
               }
             }
-          }
+          )
         : state;
     }
     case getType(updateProjectFailed):

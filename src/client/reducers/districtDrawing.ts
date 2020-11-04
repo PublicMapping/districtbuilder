@@ -82,7 +82,7 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
-function pushState(state: ProjectState, undoState: UndoableStateAndEffect): ProjectState {
+export function pushState(state: ProjectState, undoState: UndoableStateAndEffect): ProjectState {
   return {
     ...state,
     undoHistory: {
@@ -98,7 +98,7 @@ function pushState(state: ProjectState, undoState: UndoableStateAndEffect): Proj
   };
 }
 
-function replaceState(state: ProjectState, undoState: UndoableStateAndEffect) {
+export function replaceState(state: ProjectState, undoState: UndoableStateAndEffect) {
   return {
     ...state,
     undoHistory: {
