@@ -311,17 +311,12 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         findIndex: action.payload
       };
     case getType(undo): {
-      const projectData =
-        state.undoHistory.past.length === 1 && state.previousProjectData
-          ? { projectData: state.previousProjectData }
-          : {};
       const lastPastState = state.undoHistory.past[state.undoHistory.past.length - 1];
       return state.undoHistory.past.length === 0
         ? state
         : loop(
             {
               ...state,
-              ...projectData,
               undoHistory: {
                 past: state.undoHistory.past.slice(0, -1),
                 present: lastPastState,
@@ -332,17 +327,12 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           );
     }
     case getType(redo): {
-      const projectData =
-        state.undoHistory.past.length === 0 && state.currentProjectData
-          ? { projectData: state.currentProjectData }
-          : {};
       const nextFutureState = state.undoHistory.future[0];
       return state.undoHistory.future.length === 0
         ? state
         : loop(
             {
               ...state,
-              ...projectData,
               undoHistory: {
                 past: [...state.undoHistory.past, present],
                 present: nextFutureState,
