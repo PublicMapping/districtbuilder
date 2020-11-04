@@ -138,6 +138,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             }
           },
           {
+            ...state.undoHistory.present,
             state: {
               ...state.undoHistory.present.state,
               districtsDefinition: action.payload.project.districtsDefinition
@@ -227,10 +228,13 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                   args: [
                     state.projectData.resource.project.id,
                     {
+                      // Districts definition may be optionally specified in the action to make this
+                      // action apply to a snapshot of state to allow for undoing/redoings changes
+                      // to districts
                       districtsDefinition:
                         action.payload ||
                         assignGeounitsToDistrict(
-                          state.undoHistory.present.state.districtsDefinition,
+                          state.projectData.resource.project.districtsDefinition,
                           state.staticData.resource.geoUnitHierarchy,
                           allGeoUnitIndices(
                             getPresentDrawingState(state.undoHistory).selectedGeounits
@@ -268,6 +272,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               }
             },
             {
+              ...state.undoHistory.present,
               state: {
                 ...state.undoHistory.present.state,
                 districtsDefinition: action.payload.project.districtsDefinition

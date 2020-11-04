@@ -82,7 +82,9 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
-export function pushState(state: ProjectState, undoState: UndoableStateAndEffect): ProjectState {
+// TODO: Set up guard rails around pushState and replaceState to allow for just updating a single
+// property or adding an effect
+function pushState(state: ProjectState, undoState: UndoableStateAndEffect): ProjectState {
   return {
     ...state,
     undoHistory: {
@@ -352,6 +354,8 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
     }
     case getType(saveDistrictsDefinition):
       return loop(
+        // Save an effect with the current districts definition (before saving) so that we can
+        // undo/redo saving of the districts definition
         pushState(state, {
           ...present,
           effect: Cmd.action(updateDistrictsDefinition(present.state.districtsDefinition))
