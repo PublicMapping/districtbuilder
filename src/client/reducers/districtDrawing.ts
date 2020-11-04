@@ -190,7 +190,6 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
   action: Action
 ): ProjectState | Loop<ProjectState, Action> => {
   const { present } = state.undoHistory;
-  console.log(action, state);
   switch (action.type) {
     case getType(resetProjectState):
       return {
