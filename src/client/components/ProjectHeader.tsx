@@ -15,7 +15,7 @@ import ShareMenu from "../components/ShareMenu";
 import SupportMenu from "../components/SupportMenu";
 import store from "../store";
 import { State } from "../reducers";
-import { UndoHistory } from "../reducers/districtDrawing";
+import { UndoHistory } from "../reducers/undoRedo";
 
 import { style as menuButtonStyle } from "./MenuButton.styles";
 

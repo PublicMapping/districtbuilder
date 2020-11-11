@@ -20,7 +20,7 @@ import {
   updateProjectNameSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
-import { updateCurrentState } from "../reducers/districtDrawing";
+import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
