@@ -82,10 +82,7 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
-function pushStateUpdate(
-  state: ProjectState,
-  undoState: Partial<UndoableState> | Pick<UndoableStateAndEffect, "effect">
-): ProjectState {
+function pushStateUpdate(state: ProjectState, undoState: Partial<UndoableState>): ProjectState {
   return {
     ...state,
     undoHistory: {
@@ -94,19 +91,30 @@ function pushStateUpdate(
         ...state.undoHistory.past.slice((UNDO_HISTORY_MAX_LENGTH - 1) * -1),
         state.undoHistory.present
       ],
-      present:
-        "effect" in undoState
-          ? {
-              ...state.undoHistory.present,
-              ...undoState
-            }
-          : {
-              ...state.undoHistory.present,
-              state: {
-                ...state.undoHistory.present.state,
-                ...undoState
-              }
-            },
+      present: {
+        state: {
+          ...state.undoHistory.present.state,
+          ...undoState
+        }
+      },
+      future: []
+    }
+  };
+}
+
+function pushEffect(state: ProjectState, effect: Effect): ProjectState {
+  return {
+    ...state,
+    undoHistory: {
+      past: [
+        // Limit the undo history to the n most recent items
+        ...state.undoHistory.past.slice((UNDO_HISTORY_MAX_LENGTH - 1) * -1),
+        state.undoHistory.present
+      ],
+      present: {
+        ...state.undoHistory.present,
+        effect
+      },
       future: []
     }
   };
@@ -338,10 +346,9 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return loop(
         // Save an effect function which takes the appropriate districts definition so that we can
         // undo/redo saving of the districts definition with the correct state snapshot.
-        pushStateUpdate(state, {
-          effect: (state: UndoableState) =>
-            Cmd.action(updateDistrictsDefinition(state.districtsDefinition))
-        }),
+        pushEffect(state, (state: UndoableState) =>
+          Cmd.action(updateDistrictsDefinition(state.districtsDefinition))
+        ),
         Cmd.action(updateDistrictsDefinition(null))
       );
     default:
