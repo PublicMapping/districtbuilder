@@ -82,15 +82,16 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
+function truncatePastUndoHistory(past: readonly UndoableStateAndEffect[]) {
+  // Limit the undo history to the n most recent items
+  return past.slice((UNDO_HISTORY_MAX_LENGTH - 1) * -1);
+}
+
 function pushStateUpdate(state: ProjectState, undoState: Partial<UndoableState>): ProjectState {
   return {
     ...state,
     undoHistory: {
-      past: [
-        // Limit the undo history to the n most recent items
-        ...state.undoHistory.past.slice((UNDO_HISTORY_MAX_LENGTH - 1) * -1),
-        state.undoHistory.present
-      ],
+      past: [...truncatePastUndoHistory(state.undoHistory.past), state.undoHistory.present],
       present: {
         state: {
           ...state.undoHistory.present.state,
@@ -106,11 +107,7 @@ function pushEffect(state: ProjectState, effect: Effect): ProjectState {
   return {
     ...state,
     undoHistory: {
-      past: [
-        // Limit the undo history to the n most recent items
-        ...state.undoHistory.past.slice((UNDO_HISTORY_MAX_LENGTH - 1) * -1),
-        state.undoHistory.present
-      ],
+      past: [...truncatePastUndoHistory(state.undoHistory.past), state.undoHistory.present],
       present: {
         ...state.undoHistory.present,
         effect
