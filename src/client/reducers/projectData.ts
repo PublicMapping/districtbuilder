@@ -3,8 +3,8 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
-  downloadCsv,
-  downloadCsvFailure,
+  exportCsv,
+  exportCsvFailure,
   projectDataFetch,
   projectDataFetchFailure,
   projectDataFetchSuccess,
@@ -33,7 +33,7 @@ import {
   showActionFailedToast,
   showResourceFailedToast
 } from "../functions";
-import { downloadProjectCsv, fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
+import { exportProjectCsv, fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
 
 export type ProjectDataState = {
@@ -261,15 +261,15 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showActionFailedToast)
       );
-    case getType(downloadCsv):
+    case getType(exportCsv):
       return loop(
         state,
-        Cmd.run(downloadProjectCsv, {
-          failActionCreator: downloadCsvFailure,
-          args: [action.payload] as Parameters<typeof downloadProjectCsv>
+        Cmd.run(exportProjectCsv, {
+          failActionCreator: exportCsvFailure,
+          args: [action.payload] as Parameters<typeof exportProjectCsv>
         })
       );
-    case getType(downloadCsvFailure):
+    case getType(exportCsvFailure):
       return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state as never;

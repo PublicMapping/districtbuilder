@@ -177,7 +177,7 @@ export async function patchProject(
   });
 }
 
-export async function downloadProjectCsv(id: ProjectId): Promise<void> {
+export async function exportProjectCsv(id: ProjectId): Promise<void> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}/export/csv`)

@@ -5,23 +5,23 @@ import Icon from "../components/Icon";
 import { ProjectId } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
-import { downloadCsv } from "../actions/projectData";
+import { exportCsv } from "../actions/projectData";
 
 enum UserMenuKeys {
-  DownloadCsv = "downloadCsv"
+  ExportCsv = "exportCsv"
 }
 
-interface DownloadProps {
+interface ExportProps {
   readonly invert?: boolean;
   readonly projectId: ProjectId;
 }
 
-const DownloadMenu = (props: DownloadProps) => {
+const ExportMenu = (props: ExportProps) => {
   return (
     <Wrapper
       sx={{ position: "relative", pr: 1 }}
       onSelection={(userMenuKey: string) =>
-        userMenuKey === UserMenuKeys.DownloadCsv && store.dispatch(downloadCsv(props.projectId))
+        userMenuKey === UserMenuKeys.ExportCsv && store.dispatch(exportCsv(props.projectId))
       }
     >
       <MenuButton
@@ -31,18 +31,18 @@ const DownloadMenu = (props: DownloadProps) => {
           ...invertStyles(props),
           ...props
         }}
-        className="download-menu"
+        className="export-menu"
       >
-        <Icon name="download" />
-        Download
+        <Icon name="export" />
+        Export
       </MenuButton>
       <Menu sx={style.menu}>
         <ul sx={style.menuList}>
-          <li key={UserMenuKeys.DownloadCsv}>
-            <MenuItem value={UserMenuKeys.DownloadCsv}>
+          <li key={UserMenuKeys.ExportCsv}>
+            <MenuItem value={UserMenuKeys.ExportCsv}>
               <Box sx={style.menuListItem}>
                 <Icon name="csv" sx={style.menuListIcon} />
-                Download CSV
+                Export CSV
               </Box>
             </MenuItem>
           </li>
@@ -52,4 +52,4 @@ const DownloadMenu = (props: DownloadProps) => {
   );
 };
 
-export default DownloadMenu;
+export default ExportMenu;

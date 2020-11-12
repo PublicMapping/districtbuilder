@@ -34,5 +34,5 @@ export const updateDistrictsDefinitionRefetchGeoJsonSuccess = createAction(
 
 export const updateProjectFailed = createAction("Update project failure")();
 
-export const downloadCsv = createAction("Download project CSV")<ProjectId>();
-export const downloadCsvFailure = createAction("Download project CSV failure")<string>();
+export const exportCsv = createAction("Export project CSV")<ProjectId>();
+export const exportCsvFailure = createAction("Export project CSV failure")<string>();
