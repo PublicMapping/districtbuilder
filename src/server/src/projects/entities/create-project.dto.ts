@@ -9,5 +9,6 @@ export class CreateProjectDto implements CreateProjectData {
   @IsInt({ message: "Number of districts must be an integer" })
   @IsPositive({ message: "Number of districts must be a positive number" })
   readonly numberOfDistricts: number;
+  @IsNotEmpty({ message: "Need to supply a region configuration" })
   readonly regionConfig: RegionConfigIdDto;
 }
