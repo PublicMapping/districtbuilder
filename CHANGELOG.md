@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix region config validation error [#500](https://github.com/PublicMapping/districtbuilder/pull/500)
+
 ## [1.1.0] - 2020-10-08
 
 ### Added
