@@ -30,7 +30,8 @@ import {
   levelToLineLayerId,
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
-  DISTRICTS_OUTLINE_LAYER_ID
+  DISTRICTS_OUTLINE_LAYER_ID,
+  setFeaturesSelectedFromGeoUnits
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -244,6 +245,25 @@ const DistrictsMap = ({
       );
     }
   }, [map, staticMetadata, geoLevelIndex]);
+
+  // Keep track of when selected geounits change
+  const prevSelectedGeoUnitsRef = useRef<typeof selectedGeounits | undefined>();
+  useEffect(() => {
+    prevSelectedGeoUnitsRef.current = selectedGeounits; // eslint-disable-line
+  });
+  const prevSelectedGeoUnits = prevSelectedGeoUnitsRef.current;
+
+  // Update map when selected geounits change.
+  // Typically the geounits change as a result of using the selection tools directly -- map is
+  // changed and then that needs to be reflected in state -- but this accounts for undo/redo actions
+  // affecting state which then needs to be reflected in the map.
+  useEffect(() => {
+    // eslint-disable-next-line
+    if (map) {
+      prevSelectedGeoUnits && setFeaturesSelectedFromGeoUnits(map, prevSelectedGeoUnits, false);
+      selectedGeounits && setFeaturesSelectedFromGeoUnits(map, selectedGeounits, true);
+    }
+  }, [map, selectedGeounits, prevSelectedGeoUnits]);
 
   // Keep track of when selected geolevel changes
   const prevGeoLevelIndexRef = useRef<typeof geoLevelIndex | undefined>();

@@ -19,7 +19,9 @@ import {
   updateProjectName,
   updateProjectNameSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
+import { updateCurrentState } from "../reducers/undoRedo";
+import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
@@ -34,10 +36,17 @@ import {
 import { fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
 
+function fetchGeoJsonForProject(project: IProject) {
+  return () => {
+    return fetchProjectGeoJson(project.id).then((geojson: DistrictsGeoJSON) => ({
+      project,
+      geojson
+    }));
+  };
+}
+
 export type ProjectDataState = {
   readonly projectData: Resource<DynamicProjectData>;
-  readonly previousProjectData?: Resource<DynamicProjectData>;
-  readonly currentProjectData?: Resource<DynamicProjectData>;
   readonly staticData: Resource<StaticProjectData>;
   readonly projectNameSaving: SavingState;
 };
@@ -115,16 +124,21 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(projectDataFetchSuccess):
       return loop(
-        {
-          ...state,
-          projectData: {
-            resource: action.payload
+        updateCurrentState(
+          {
+            ...state,
+            projectData: {
+              resource: action.payload
+            },
+            staticData: {
+              ...state.staticData,
+              isPending: true
+            }
           },
-          staticData: {
-            ...state.staticData,
-            isPending: true
+          {
+            districtsDefinition: action.payload.project.districtsDefinition
           }
-        },
+        ),
         Cmd.run(fetchAllStaticData, {
           successActionCreator: staticDataFetchSuccess,
           failActionCreator: staticDataFetchFailure,
@@ -200,57 +214,65 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               ...state,
               saving: "saving"
             },
-            Cmd.run(patchProject, {
-              successActionCreator: updateDistrictsDefinitionSuccess,
-              failActionCreator: updateProjectFailed,
-              args: [
-                state.projectData.resource.project.id,
-                {
-                  districtsDefinition: assignGeounitsToDistrict(
-                    state.projectData.resource.project.districtsDefinition,
-                    state.staticData.resource.geoUnitHierarchy,
-                    allGeoUnitIndices(state.undoHistory.present.selectedGeounits),
-                    state.selectedDistrictId
-                  )
-                }
-              ] as Parameters<typeof patchProject>
-            })
+            Cmd.list<Action>(
+              [
+                Cmd.run(patchProject, {
+                  successActionCreator: updateDistrictsDefinitionSuccess,
+                  failActionCreator: updateProjectFailed,
+                  args: [
+                    state.projectData.resource.project.id,
+                    {
+                      // Districts definition may be optionally specified in the action payload and
+                      // is used if available. This is needed to go back/forward in time for a given
+                      // state snapshot -- as opposed to just using the current districts definition
+                      // -- for undo/redo to work correctly.
+                      districtsDefinition:
+                        action.payload ||
+                        assignGeounitsToDistrict(
+                          state.projectData.resource.project.districtsDefinition,
+                          state.staticData.resource.geoUnitHierarchy,
+                          allGeoUnitIndices(state.undoHistory.present.state.selectedGeounits),
+                          state.selectedDistrictId
+                        )
+                    }
+                  ] as Parameters<typeof patchProject>
+                }),
+                // When updating districts definition after a save, we want to clear the selected
+                // geounits since we're "done". However, when redoing/undoing changes with a
+                // specific districts definition, we want to keep those geounits selected to allow
+                // the user to potentially edit their selection or continuing undoing/redoing their
+                // changes.
+                action.payload
+                  ? Cmd.action(setSavingState("saved"))
+                  : Cmd.action(clearSelectedGeounits(false))
+              ],
+              { sequence: true }
+            )
           )
         : state;
     case getType(updateDistrictsDefinitionSuccess):
       return loop(
-        {
-          ...state
-        },
-        Cmd.run(
-          () => {
-            return fetchProjectGeoJson(action.payload.id).then((geojson: DistrictsGeoJSON) => ({
-              project: action.payload,
-              geojson
-            }));
-          },
-          {
-            successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
-            failActionCreator: updateProjectFailed
-          }
-        )
+        state,
+        Cmd.run(fetchGeoJsonForProject(action.payload), {
+          successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
+          failActionCreator: updateProjectFailed
+        })
       );
-    case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess):
-      return loop(
-        "resource" in state.projectData
-          ? {
+    case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
+      return "resource" in state.projectData
+        ? updateCurrentState(
+            {
               ...state,
-              previousProjectData: state.projectData,
-              currentProjectData: { resource: action.payload },
-              undoHistory: {
-                ...state.undoHistory,
-                past: [],
-                future: []
+              projectData: {
+                resource: action.payload
               }
+            },
+            {
+              districtsDefinition: action.payload.project.districtsDefinition
             }
-          : state,
-        Cmd.action(projectFetchSuccess(action.payload))
-      );
+          )
+        : state;
+    }
     case getType(updateProjectFailed):
       return loop(
         {
