@@ -17,6 +17,7 @@ import {
   CompactnessScore,
   GeoUnitCollection,
   GeoUnitDefinition,
+  HierarchyDefinition,
   IStaticMetadata
 } from "../../../../shared/entities";
 import { getAllBaseIndices, getDemographics } from "../../../../shared/functions";
@@ -111,6 +112,64 @@ function getNode(
   } as GeoUnitHierarchy;
 }
 
+// Groups a topology into a hierarchy of geounits corresponding to a district definition structure.
+// Note: this function, along with getNodeForHierarchy are copy-pasted directly (w/rename) from
+// process-geojson. We will need to fix #179 before we can share such code among projects.
+function groupForHierarchy(topology: Topology, definition: GeoUnitDefinition): HierarchyDefinition {
+  const geounitsByParentId = definition.groups.map((groupName, index) => {
+    const parentCollection = topology.objects[groupName] as GeometryCollection;
+    const mutableMappings: {
+      [geounitId: string]: Array<Polygon | MultiPolygon>;
+    } = Object.fromEntries(
+      parentCollection.geometries.map((geom: GeometryObject<any>) => [
+        geom.properties[groupName],
+        []
+      ])
+    );
+    const childGroupName = definition.groups[index + 1];
+    if (childGroupName) {
+      const childCollection = topology.objects[childGroupName] as GeometryCollection;
+      childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
+        mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+      });
+    }
+    return [groupName, mutableMappings];
+  });
+
+  const firstGroup = definition.groups[0];
+  const toplevelCollection = topology.objects[firstGroup] as GeometryCollection;
+  return toplevelCollection.geometries.map(geom =>
+    getNodeForHierarchy(geom, definition, Object.fromEntries(geounitsByParentId))
+  );
+}
+
+// Helper for recursively collecting geounit hierarchy node information
+function getNodeForHierarchy(
+  geometry: GeometryObject<any>,
+  definition: GeoUnitDefinition,
+  geounitsByParentId: {
+    [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
+  }
+): HierarchyDefinition {
+  const firstGroup = definition.groups[0];
+  const remainingGroups = definition.groups.slice(1);
+  const geomId = geometry.properties[firstGroup];
+  const childGeoms = geounitsByParentId[firstGroup][geomId];
+
+  // Recurse until we get to the base geolevel, at which point we list the base geounit indices
+  // eslint-disable-next-line
+  return remainingGroups.length > 1
+    ? childGeoms.map(childGeom =>
+        getNodeForHierarchy(
+          (childGeom as unknown) as GeometryObject<any>,
+          { ...definition, groups: remainingGroups },
+          geounitsByParentId
+        )
+      )
+    : // eslint-disable-next-line
+      childGeoms.map((childGeom: any) => childGeom.id);
+}
+
 export class GeoUnitTopology {
   public readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
 
@@ -196,5 +255,12 @@ export class GeoUnitTopology {
         }
       }))
     };
+  }
+
+  // Generates the geounit hierarchy corresponding to a district definition structure
+  getGeoUnitHierarchy() {
+    const geoLevelIds = this.staticMetadata.geoLevelHierarchy.map(level => level.id);
+    const definition = { groups: geoLevelIds.slice().reverse() };
+    return groupForHierarchy(this.topology, definition);
   }
 }

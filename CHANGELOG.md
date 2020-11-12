@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Find unassigned menu [#476](https://github.com/PublicMapping/districtbuilder/pull/476)
 - Add support for single county region [#479](https://github.com/PublicMapping/districtbuilder/pull/479)
 - Edit project name [#488](https://github.com/PublicMapping/districtbuilder/pull/488)
+- Allow exporting plan to district index file CSV [#499](https://github.com/PublicMapping/districtbuilder/pull/499)
 
 ### Changed
 

@@ -9,6 +9,7 @@ import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
 import { undo, redo, toggleFind } from "../actions/districtDrawing";
 import { heights } from "../theme";
+import DownloadMenu from "../components/DownloadMenu";
 import Icon from "../components/Icon";
 import ProjectName from "../components/ProjectName";
 import ShareMenu from "../components/ShareMenu";
@@ -102,6 +103,7 @@ const ProjectHeader = ({
           )}
           <ShareMenu invert={true} />
           <SupportMenu invert={true} />
+          {project ? <DownloadMenu invert={true} projectId={project.id} /> : null}
           <Box sx={{ position: "relative" }}>
             <Button
               sx={{

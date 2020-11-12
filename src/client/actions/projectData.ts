@@ -33,3 +33,6 @@ export const updateDistrictsDefinitionRefetchGeoJsonSuccess = createAction(
 )<DynamicProjectData>();
 
 export const updateProjectFailed = createAction("Update project failure")();
+
+export const downloadCsv = createAction("Download project CSV")<ProjectId>();
+export const downloadCsvFailure = createAction("Download project CSV failure")<string>();

@@ -3,19 +3,21 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
-  updateDistrictsDefinition,
-  updateDistrictsDefinitionSuccess,
-  updateProjectFailed,
-  projectFetch,
-  projectFetchSuccess,
-  projectFetchFailure,
+  downloadCsv,
+  downloadCsvFailure,
   projectDataFetch,
   projectDataFetchFailure,
   projectDataFetchSuccess,
+  projectFetch,
+  projectFetchFailure,
+  projectFetchSuccess,
+  setProjectNameEditing,
   staticDataFetchFailure,
   staticDataFetchSuccess,
+  updateDistrictsDefinition,
   updateDistrictsDefinitionRefetchGeoJsonSuccess,
-  setProjectNameEditing,
+  updateDistrictsDefinitionSuccess,
+  updateProjectFailed,
   updateProjectName,
   updateProjectNameSuccess
 } from "../actions/projectData";
@@ -31,7 +33,7 @@ import {
   showActionFailedToast,
   showResourceFailedToast
 } from "../functions";
-import { fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
+import { downloadProjectCsv, fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
 
 export type ProjectDataState = {
@@ -259,6 +261,16 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showActionFailedToast)
       );
+    case getType(downloadCsv):
+      return loop(
+        state,
+        Cmd.run(downloadProjectCsv, {
+          failActionCreator: downloadCsvFailure,
+          args: [action.payload] as Parameters<typeof downloadProjectCsv>
+        })
+      );
+    case getType(downloadCsvFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state as never;
   }
