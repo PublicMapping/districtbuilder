@@ -112,7 +112,7 @@ function getNode(
   } as GeoUnitHierarchy;
 }
 
-// Groups a topology into a hierarchy of geounits corresponding to a district definition structure.
+// Groups a topology into a hierarchy of geounits corresponding to a geo unit definition structure.
 // Note: this function, along with getNodeForHierarchy are copy-pasted directly (w/rename) from
 // process-geojson. We will need to fix #179 before we can share such code among projects.
 function groupForHierarchy(topology: Topology, definition: GeoUnitDefinition): HierarchyDefinition {
@@ -257,7 +257,7 @@ export class GeoUnitTopology {
     };
   }
 
-  // Generates the geounit hierarchy corresponding to a district definition structure
+  // Generates the geounit hierarchy corresponding to a geo unit definition structure
   getGeoUnitHierarchy() {
     const geoLevelIds = this.staticMetadata.geoLevelHierarchy.map(level => level.id);
     const definition = { groups: geoLevelIds.slice().reverse() };
