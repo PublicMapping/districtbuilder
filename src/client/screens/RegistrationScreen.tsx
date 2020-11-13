@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import React, { useState } from "react";
 import { Link, Redirect, useLocation } from "react-router-dom";
-import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Alert, Box, Button, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { Register } from "../../shared/entities";
@@ -18,6 +18,11 @@ const isFormInvalid = (form: Register): boolean =>
 const RegistrationScreen = () => {
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
+  const toParams = new URLSearchParams(to.search);
+  const [showStartProjectAlert, setShowStartProjectAlert] = useState(
+    to.pathname === "/start-project" && toParams.has("name")
+  );
+
   const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
     data: {
       email: "",
@@ -62,6 +67,28 @@ const RegistrationScreen = () => {
               <Heading as="h2" sx={{ mb: 5, textAlign: "left" }}>
                 Create an account
               </Heading>
+              {showStartProjectAlert && (
+                <Alert sx={{ mb: 3 }}>
+                  <Flex>
+                    <Box>
+                      Create an account or{" "}
+                      <Styled.a
+                        as={Link}
+                        sx={{ variant: "links.alert" }}
+                        to={{ pathname: "/login", state: location.state }}
+                      >
+                        log in
+                      </Styled.a>{" "}
+                      to create your &ldquo;{toParams.get("name")}&rdquo; map.
+                    </Box>
+                    <Close
+                      as="a"
+                      onClick={() => setShowStartProjectAlert(false)}
+                      sx={{ ml: "auto", p: 0 }}
+                    />
+                  </Flex>
+                </Alert>
+              )}
               <FormError resource={registrationResource} />
               <Box sx={{ mb: 3 }}>
                 <InputField

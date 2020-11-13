@@ -24,6 +24,11 @@ interface StateProps {
 const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
+  const toParams = new URLSearchParams(to.search);
+  const [showStartProjectAlert, setShowStartProjectAlert] = useState(
+    to.pathname === "/start-project" && toParams.has("name")
+  );
+
   const [loginResource, setLoginResource] = useState<WriteResource<Login, JWT>>({
     data: {
       email: "",
@@ -56,6 +61,28 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
           <Heading as="h2" sx={{ fontSize: 4, mb: 5 }}>
             Log in
           </Heading>
+          {showStartProjectAlert && (
+            <Alert sx={{ mb: 3 }}>
+              <Flex>
+                <Box>
+                  Log in or{" "}
+                  <Styled.a
+                    as={Link}
+                    sx={{ variant: "links.alert" }}
+                    to={{ pathname: "/register", state: location.state }}
+                  >
+                    sign&nbsp;up
+                  </Styled.a>{" "}
+                  for a new account to create your &ldquo;{toParams.get("name")}&rdquo; map.
+                </Box>
+                <Close
+                  as="a"
+                  onClick={() => setShowStartProjectAlert(false)}
+                  sx={{ ml: "auto", p: 0 }}
+                />
+              </Flex>
+            </Alert>
+          )}
           {passwordResetNoticeShown && (
             <Alert>
               Your password has been reset
