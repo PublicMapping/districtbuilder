@@ -267,11 +267,13 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
               >
                 <option>Select...</option>
                 {"resource" in regionConfigs
-                  ? regionConfigs.resource.map(regionConfig => (
-                      <option key={regionConfig.id} value={regionConfig.id}>
-                        {regionConfig.name}
-                      </option>
-                    ))
+                  ? regionConfigs.resource
+                      .filter(regionConfig => !regionConfig.hidden)
+                      .map(regionConfig => (
+                        <option key={regionConfig.id} value={regionConfig.id}>
+                          {regionConfig.name}
+                        </option>
+                      ))
                   : null}
               </SelectField>
             </Card>
