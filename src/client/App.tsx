@@ -16,6 +16,7 @@ import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 import theme from "./theme";
 
 import "./App.css";
+import StartProjectScreen from "./screens/StartProjectScreen";
 
 const PrivateRoute = ({ children, ...props }: RouteProps) => {
   const savedJWT = getJWT();
@@ -51,6 +52,9 @@ const App = () => (
         <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
         <PrivateRoute path="/create-project" exact={true}>
           <CreateProjectScreen />
+        </PrivateRoute>
+        <PrivateRoute path="/start-project" exact={true}>
+          <StartProjectScreen />
         </PrivateRoute>
       </Switch>
     </Router>
