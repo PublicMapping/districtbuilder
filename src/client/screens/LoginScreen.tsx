@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import React, { useState } from "react";
 import { connect } from "react-redux";
-import { Link, Redirect } from "react-router-dom";
+import { Link, Redirect, useLocation } from "react-router-dom";
 import { Alert, Box, Button, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
@@ -15,12 +15,15 @@ import { jwtIsExpired } from "../jwt";
 import { State } from "../reducers";
 import { WriteResource } from "../resource";
 import store from "../store";
+import { AuthLocationState } from "../types";
 
 interface StateProps {
   readonly passwordResetNoticeShown: boolean;
 }
 
 const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
+  const location = useLocation<AuthLocationState>();
+  const to = location.state?.from || { pathname: "/" };
   const [loginResource, setLoginResource] = useState<WriteResource<Login, JWT>>({
     data: {
       email: "",
@@ -30,7 +33,7 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
   const { data } = loginResource;
 
   return "resource" in loginResource && !jwtIsExpired(loginResource.resource) ? (
-    <Redirect to="/" />
+    <Redirect to={to} />
   ) : (
     <CenteredContent>
       <Heading as="h1" sx={{ textAlign: "center" }}>
@@ -96,13 +99,13 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
       </Card>
       <Box sx={{ fontSize: 1, mt: 3, textAlign: "center" }}>
         Need an account?{" "}
-        <Styled.a as={Link} to="/register">
+        <Styled.a as={Link} to={{ pathname: "/register", state: location.state }}>
           Sign up for free
         </Styled.a>
       </Box>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Forgot password?{" "}
-        <Styled.a as={Link} to="/forgot-password">
+        <Styled.a as={Link} to={{ pathname: "/forgot-password", state: location.state }}>
           Password reset
         </Styled.a>
       </Box>

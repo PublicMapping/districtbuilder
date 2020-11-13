@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { useState } from "react";
-import { Link, Redirect } from "react-router-dom";
+import { Link, Redirect, useLocation } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
@@ -10,11 +10,14 @@ import CenteredContent from "../components/CenteredContent";
 import { InputField, PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
+import { AuthLocationState } from "../types";
 
 const isFormInvalid = (form: Register): boolean =>
   Object.values(form).some(value => value.trim() === "");
 
 const RegistrationScreen = () => {
+  const location = useLocation<AuthLocationState>();
+  const to = location.state?.from || { pathname: "/" };
   const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
     data: {
       email: "",
@@ -32,7 +35,7 @@ const RegistrationScreen = () => {
   return (
     <CenteredContent>
       {"resource" in registrationResource ? (
-        <Redirect to="/" />
+        <Redirect to={to} />
       ) : (
         <React.Fragment>
           <Heading as="h1" sx={{ textAlign: "center" }}>
@@ -99,7 +102,11 @@ const RegistrationScreen = () => {
           </Card>
           <Box sx={{ fontSize: 1, textAlign: "center" }}>
             Already have an account?{" "}
-            <Styled.a as={Link} to="/login" sx={{ color: "primary" }}>
+            <Styled.a
+              as={Link}
+              to={{ pathname: "/login", state: location.state }}
+              sx={{ color: "primary" }}
+            >
               Log in
             </Styled.a>
           </Box>

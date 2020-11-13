@@ -1,4 +1,5 @@
 import React from "react";
+import * as H from "history";
 import { BrowserRouter as Router, Redirect, Route, RouteProps, Switch } from "react-router-dom";
 import { ThemeProvider } from "theme-ui";
 
@@ -16,12 +17,21 @@ import theme from "./theme";
 
 import "./App.css";
 
-const PrivateRoute = ({ component, ...props }: RouteProps) => {
+const PrivateRoute = ({ children, ...props }: RouteProps) => {
   const savedJWT = getJWT();
-  return !savedJWT || jwtIsExpired(savedJWT) ? (
-    <Redirect to="/login" />
-  ) : (
-    <Route component={component} {...props} />
+  const notLoggedIn = !savedJWT || jwtIsExpired(savedJWT);
+  return (
+    <Route
+      {...props}
+      render={({ location }: { readonly location: H.Location }) => {
+        console.log(location);
+        return notLoggedIn ? (
+          <Redirect to={{ pathname: "/login", state: { from: location } }} />
+        ) : (
+          children
+        );
+      }}
+    />
   );
 };
 
@@ -30,14 +40,18 @@ const App = () => (
     <Toast />
     <Router>
       <Switch>
-        <PrivateRoute path="/" exact={true} component={HomeScreen} />
+        <PrivateRoute path="/" exact={true}>
+          <HomeScreen />
+        </PrivateRoute>
         <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
         <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
-        <PrivateRoute path="/create-project" exact={true} component={CreateProjectScreen} />
+        <PrivateRoute path="/create-project" exact={true}>
+          <CreateProjectScreen />
+        </PrivateRoute>
       </Switch>
     </Router>
   </ThemeProvider>

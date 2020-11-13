@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
@@ -9,6 +9,7 @@ import CenteredContent from "../components/CenteredContent";
 import { InputField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
+import { AuthLocationState } from "../types";
 
 const isFormInvalid = (form: ForgotPasswordForm): boolean =>
   Object.values(form).some(value => value.trim() === "") || !form.email.includes("@");
@@ -18,6 +19,7 @@ interface ForgotPasswordForm {
 }
 
 const ForgotPasswordScreen = () => {
+  const location = useLocation<AuthLocationState>();
   const [emailResource, setEmailResource] = useState<WriteResource<ForgotPasswordForm, void>>({
     data: {
       email: ""
@@ -64,7 +66,7 @@ const ForgotPasswordScreen = () => {
               <p sx={{ fontSize: 1, lineHeight: "1", mb: "0" }}>Used the wrong email address?</p>
               <Styled.a
                 as={Link}
-                to="/forgot-password"
+                to={{ pathname: "/forgot-password", state: location.state }}
                 onClick={(e: React.MouseEvent<HTMLAnchorElement>): void => {
                   e.preventDefault();
                   setEmailResource({ data: { email: "" } });
@@ -101,13 +103,21 @@ const ForgotPasswordScreen = () => {
       </Card>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Know your password?{" "}
-        <Styled.a as={Link} to="/login" sx={{ color: "primary" }}>
+        <Styled.a
+          as={Link}
+          to={{ pathname: "/login", state: location.state }}
+          sx={{ color: "primary" }}
+        >
           Log in
         </Styled.a>
       </Box>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Need an account?{" "}
-        <Styled.a as={Link} to="/register" sx={{ color: "primary" }}>
+        <Styled.a
+          as={Link}
+          to={{ pathname: "/register", state: location.state }}
+          sx={{ color: "primary" }}
+        >
           Sign up for free
         </Styled.a>
       </Box>
