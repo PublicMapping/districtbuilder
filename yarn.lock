@@ -1883,6 +1883,11 @@
   resolved "https://registry.yarnpkg.com/@types/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#1ee30d79544ca84d68d4b3cdb0af4f205663dd2d"
   integrity sha512-OCutwjDZ4aFS6PB1UZ988C4YgwlBHJd6wCeQqaLdmadZ/7e+w79+hbMUFC1QXDNCmdyoRfAFdm0RypzwR+Qpag==
 
+"@types/file-saver@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@types/file-saver/-/file-saver-2.0.1.tgz#e18eb8b069e442f7b956d313f4fadd3ef887354e"
+  integrity sha512-g1QUuhYVVAamfCifK7oB7G3aIl4BbOyzDOqVyUfEr4tfBKrXfeH+M+Tg7HKCXSrbzxYdhyCP7z9WbKo0R2hBCw==
+
 "@types/geojson@*":
   version "7946.0.7"
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.7.tgz#c8fa532b60a0042219cdf173ca21a975ef0666ad"
@@ -5209,6 +5214,11 @@ file-loader@3.0.1:
   dependencies:
     loader-utils "^1.0.2"
     schema-utils "^1.0.0"
+
+file-saver@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/file-saver/-/file-saver-2.0.1.tgz#7fe2242af1cbc559a29d8176078a8b56d781fa79"
+  integrity sha512-dCB3K7/BvAcUmtmh1DzFdv0eXSVJ9IAFt1mw3XZfAexodNRoE29l3xB2EX4wH2q8m/UTzwzEPq/ArYk98kUkBQ==
 
 file-uri-to-path@1.0.0:
   version "1.0.0"

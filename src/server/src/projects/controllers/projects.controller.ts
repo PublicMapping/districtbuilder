@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Controller,
   Get,
+  Header,
   InternalServerErrorException,
   Logger,
   NotFoundException,
@@ -20,10 +21,13 @@ import {
   ParsedBody,
   ParsedRequest
 } from "@nestjsx/crud";
+import stringify from "csv-stringify/lib/sync";
 import { FeatureCollection } from "geojson";
+import { GeometryCollection } from "topojson-specification";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
-import { ProjectId, PublicUserProperties } from "../../../../shared/entities";
+import { GeoUnitHierarchy, ProjectId, PublicUserProperties } from "../../../../shared/entities";
+import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
 
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
@@ -155,12 +159,8 @@ export class ProjectsController implements CrudController<Project> {
     }
   }
 
-  @UseInterceptors(CrudRequestInterceptor)
-  @Get(":id/export/geojson")
-  async exportGeoJSON(
-    @ParsedRequest() req: CrudRequest,
-    @Param("id") projectId: ProjectId
-  ): Promise<FeatureCollection> {
+  // Helper for obtaining a project for a given project request, throws exception if not found
+  async getProject(req: CrudRequest, projectId: ProjectId): Promise<Project> {
     if (!this.base.getOneBase) {
       this.logger.error("Routes misconfigured. Missing `getOneBase` route");
       throw new InternalServerErrorException();
@@ -169,13 +169,29 @@ export class ProjectsController implements CrudController<Project> {
     if (!project) {
       throw new NotFoundException(`Project ${projectId} not found`);
     }
-    const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
+    return project;
+  }
+
+  // Helper for obtaining a topology for a given S3 URI, throws exception if not found
+  async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
+    const geoCollection = await this.topologyService.get(s3URI);
     if (!geoCollection) {
       throw new NotFoundException(
-        `Topology ${project.regionConfig.s3URI} not found`,
+        `Topology ${s3URI} not found`,
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
     }
+    return geoCollection;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @Get(":id/export/geojson")
+  async exportGeoJSON(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<FeatureCollection> {
+    const project = await this.getProject(req, projectId);
+    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
     const geojson = geoCollection.merge(
       { districts: project.districtsDefinition },
       project.numberOfDistricts
@@ -188,5 +204,57 @@ export class ProjectsController implements CrudController<Project> {
       );
     }
     return geojson;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @Get(":id/export/csv")
+  @Header("Content-Type", "text/csv")
+  async exportCsv(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<string> {
+    const project = await this.getProject(req, projectId);
+    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
+    const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
+    const baseGeoUnitLayer = geoCollection.topology.objects[baseGeoLevel] as GeometryCollection;
+
+    // First column is the base geounit id, second column is the district id
+    const mutableCsvRows: [number, number][] = [];
+
+    // The geounit hierarchy and district definition have the same structure (except the
+    // hierarchy always goes out to the base geounit level). Walk them both at the same time
+    // and collect the information needed for the CSV (base geounit id and district id).
+    const accumulateCsvRows = (
+      defnSubset: number | GeoUnitHierarchy,
+      hierarchySubset: GeoUnitHierarchy
+    ) => {
+      hierarchySubset.forEach((hierarchyNumOrArray, idx) => {
+        const districtOrArray = typeof defnSubset === "number" ? defnSubset : defnSubset[idx];
+        if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
+          // The numbers found in the hierarchy are the base geounit indices of the topology.
+          // Access this item in the topology to find it's base geounit id.
+          const props: any = baseGeoUnitLayer.geometries[hierarchyNumOrArray].properties;
+          mutableCsvRows.push([props[baseGeoLevel], districtOrArray]);
+        } else if (typeof hierarchyNumOrArray !== "number") {
+          // Keep recursing into the hierarchy until we reach the end
+          accumulateCsvRows(districtOrArray, hierarchyNumOrArray);
+        } else {
+          // This shouldn't ever happen, and would suggest a district definition/hierarchy mismatch
+          this.logger.error(
+            "Hierarchy and districts definition mismatch",
+            districtOrArray.toString(),
+            hierarchyNumOrArray.toString()
+          );
+          throw new InternalServerErrorException();
+        }
+      });
+    };
+    accumulateCsvRows(project.districtsDefinition, geoCollection.getGeoUnitHierarchy());
+
+    return stringify(mutableCsvRows, {
+      // Unsure if this CSV file should have headers. Switch the following to true if it should.
+      header: false,
+      columns: ["geoId", "districtId"]
+    });
   }
 }

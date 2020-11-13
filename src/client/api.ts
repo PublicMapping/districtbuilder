@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import { saveAs } from "file-saver";
 
 import {
   CreateProjectData,
@@ -173,5 +174,21 @@ export async function patchProject(
       .patch(`/api/projects/${id}`, projectData)
       .then(response => resolve(response.data))
       .catch(() => reject());
+  });
+}
+
+export async function exportProjectCsv(project: IProject): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/projects/${project.id}/export/csv`)
+      .then(response => {
+        return resolve(
+          saveAs(
+            new Blob([response.data], { type: "text/csv;charset=utf-8" }),
+            `${project.name}.csv`
+          )
+        );
+      })
+      .catch(error => reject(error.message));
   });
 }
