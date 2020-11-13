@@ -2,7 +2,7 @@
 import { jsx, Box } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import Icon from "../components/Icon";
-import { ProjectId } from "../../shared/entities";
+import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
 import { exportCsv } from "../actions/projectData";
@@ -13,7 +13,7 @@ enum UserMenuKeys {
 
 interface ExportProps {
   readonly invert?: boolean;
-  readonly projectId: ProjectId;
+  readonly project: IProject;
 }
 
 const ExportMenu = (props: ExportProps) => {
@@ -21,7 +21,7 @@ const ExportMenu = (props: ExportProps) => {
     <Wrapper
       sx={{ position: "relative", pr: 1 }}
       onSelection={(userMenuKey: string) =>
-        userMenuKey === UserMenuKeys.ExportCsv && store.dispatch(exportCsv(props.projectId))
+        userMenuKey === UserMenuKeys.ExportCsv && store.dispatch(exportCsv(props.project))
       }
     >
       <MenuButton

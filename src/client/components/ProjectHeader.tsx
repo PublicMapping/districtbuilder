@@ -103,7 +103,7 @@ const ProjectHeader = ({
           )}
           <ShareMenu invert={true} />
           <SupportMenu invert={true} />
-          {project ? <ExportMenu invert={true} projectId={project.id} /> : null}
+          {project ? <ExportMenu invert={true} project={project} /> : null}
           <Box sx={{ position: "relative" }}>
             <Button
               sx={{

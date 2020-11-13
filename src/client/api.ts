@@ -177,13 +177,16 @@ export async function patchProject(
   });
 }
 
-export async function exportProjectCsv(id: ProjectId): Promise<void> {
+export async function exportProjectCsv(project: IProject): Promise<void> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get(`/api/projects/${id}/export/csv`)
+      .get(`/api/projects/${project.id}/export/csv`)
       .then(response => {
         return resolve(
-          saveAs(new Blob([response.data], { type: "text/csv;charset=utf-8" }), `${id}.csv`)
+          saveAs(
+            new Blob([response.data], { type: "text/csv;charset=utf-8" }),
+            `${project.name}.csv`
+          )
         );
       })
       .catch(error => reject(error.message));
