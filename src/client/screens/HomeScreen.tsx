@@ -3,7 +3,7 @@ import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubu
 import Avatar from "react-avatar";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import * as H from "history";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
@@ -150,7 +150,8 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const HomeScreen = ({ projects, user, history }: StateProps & RouteComponentProps<"history">) => {
+const HomeScreen = ({ projects, user }: StateProps) => {
+  const history = useHistory();
   const [resendEmail, setResendEmail] = useState<WriteResource<void, void>>({ data: void 0 });
   const isLoggedIn = getJWT() !== null;
   useEffect(() => {

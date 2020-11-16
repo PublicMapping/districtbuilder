@@ -410,6 +410,21 @@ const theme: Theme & StyledSystemTheme = {
       textDecoration: "none",
       px: 3,
       py: 2
+    },
+    alert: {
+      color: "gray.0",
+      fontWeight: "bold",
+      textDecoration: "underline",
+      "&:visited": {
+        color: "gray.0"
+      },
+      "&:active": {
+        color: "gray.0"
+      },
+      "&:focus": {
+        borderRadius: "small",
+        outline: "none"
+      }
     }
   },
   spinner: {
