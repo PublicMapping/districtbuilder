@@ -9,26 +9,22 @@ import { createProject } from "../api";
 import { WriteResource } from "../resource";
 import store from "../store";
 
-const validate = (form: Record<string, string | null>) => {
-  const { numberOfDistricts, regionConfigId, ...submitForm } = form;
-
-  return form.name?.trim() !== "" &&
-    numberOfDistricts !== null &&
-    !Number.isNaN(Number.parseInt(numberOfDistricts)) &&
-    regionConfigId !== null
-    ? ({
-        ...submitForm,
-        numberOfDistricts: Number.parseInt(numberOfDistricts),
+const validate = (form: ProjectForm): ValidForm | InvalidForm => {
+  const { numberOfDistricts, regionConfigId, name } = form;
+  return name && name.trim() !== "" && !Number.isNaN(numberOfDistricts) && regionConfigId !== null
+    ? {
+        name,
+        numberOfDistricts,
         regionConfig: { id: regionConfigId },
         valid: true
-      } as ValidForm)
-    : ({ ...form, valid: false } as InvalidForm);
+      }
+    : { ...form, valid: false };
 };
 
 interface ProjectForm {
-  readonly name: string;
+  readonly name: string | null;
   readonly regionConfigId: RegionConfigId | null;
-  readonly numberOfDistricts: number | null;
+  readonly numberOfDistricts: number;
 }
 
 interface ValidForm {
@@ -59,9 +55,13 @@ export default () => {
     { data: void 0 }
   );
   const params = new URLSearchParams(useLocation().search);
-
   useEffect(() => {
-    const form = validate(Object.fromEntries(params.entries()));
+    const form = validate({
+      name: params.get("name"),
+      regionConfigId: params.get("regionConfigId"),
+      numberOfDistricts: Number.parseInt(params.get("numberOfDistricts") || "")
+    });
+
     setCreateProjectResource(
       form.valid
         ? { data: void 0, isPending: true }

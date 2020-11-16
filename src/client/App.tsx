@@ -25,7 +25,6 @@ const PrivateRoute = ({ children, ...props }: RouteProps) => {
     <Route
       {...props}
       render={({ location }: { readonly location: H.Location }) => {
-        console.log(location);
         return notLoggedIn ? (
           <Redirect to={{ pathname: "/login", state: { from: location } }} />
         ) : (
