@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+
+## [1.2.0] - 2020-11-18
+
+### Added
 - Microcopy to Create Map and description props to text and select fields [#467](https://github.com/PublicMapping/districtbuilder/pull/467)
 - Add product tour [#471](https://github.com/PublicMapping/districtbuilder/pull/471)
 - Update data tooling [#468](https://github.com/PublicMapping/districtbuilder/pull/468)
@@ -70,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...1.0.0
 [0.1.0]: https://github.com/publicmapping/districtbuilder/compare/b9c63f4...0.1.0
