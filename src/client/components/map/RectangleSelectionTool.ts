@@ -17,7 +17,7 @@ import {
   setFeaturesSelectedFromGeoUnits,
   getChildGeoUnits
 } from "./index";
-import { mergeGeoUnits } from "../../functions";
+import { isBaseGeoLevelAlwaysVisible, mergeGeoUnits } from "../../functions";
 
 import {
   DistrictsDefinition,
@@ -52,6 +52,8 @@ const RectangleSelectionTool: ISelectionTool = {
     map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line
 
     const canvas = map.getCanvasContainer();
+
+    const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(staticMetadata.geoLevelHierarchy);
 
     // Variable to hold the starting xy coordinates
     // when `mousedown` occured.
@@ -265,10 +267,16 @@ const RectangleSelectionTool: ISelectionTool = {
         // blockgroup is selected and then the county _containing_ that blockgroup is selected)
         Object.values(geoUnits).forEach(geoUnitsForLevel => {
           geoUnitsForLevel.forEach(geoUnitIndices => {
-            // Ignore bottom two geolevels (base geounits can't have sub-features and base geounits
-            // also can't be selected at the same time as features from one geolevel up)
+            // Ignore bottom geolevel, because it can't have sub-features. And if the base geolevel
+            // is not always visible, we can also ignore one additional geolevel, because these base
+            // geounits can't be selected at the same time as features from one geolevel up).
+            const numLevelsToIgnore = isBaseLevelAlwaysVisible ? 1 : 2;
+
             // eslint-disable-next-line
-            if (geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - 2) {
+            if (
+              geoUnitIndices.length <=
+              staticMetadata.geoLevelHierarchy.length - numLevelsToIgnore
+            ) {
               const { childGeoUnits } = getChildGeoUnits(
                 geoUnitIndices,
                 staticMetadata,

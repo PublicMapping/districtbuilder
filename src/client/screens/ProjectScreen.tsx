@@ -3,7 +3,7 @@ import MapboxGL from "mapbox-gl";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
-import { Flex, jsx, Spinner } from "theme-ui";
+import { Flex, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
 import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import { DistrictsGeoJSON } from "../types";
@@ -25,6 +25,7 @@ import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
+import Tour from "../components/Tour";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { Resource } from "../resource";
@@ -43,6 +44,18 @@ interface StateProps {
   readonly user: Resource<IUser>;
 }
 
+const style: ThemeUIStyleObject = {
+  tourStart: {
+    width: "300px",
+    height: "10px",
+    background: "transparent",
+    bottom: "0",
+    right: "10px",
+    pointerEvents: "none",
+    position: "absolute"
+  }
+};
+
 const ProjectScreen = ({
   project,
   geojson,
@@ -59,12 +72,13 @@ const ProjectScreen = ({
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
+  const presentDrawingState = districtDrawing.undoHistory.present.state;
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
     // Disabling 'functional/no-conditional-statement' without naming it.
     // eslint-disable-next-line
-    if (areAnyGeoUnitsSelected(districtDrawing.undoHistory.present.selectedGeounits)) {
+    if (areAnyGeoUnitsSelected(presentDrawingState.selectedGeounits)) {
       // Old style, used by e.g. Chrome
       // Disabling 'functional/immutable-data' without naming it.
       // eslint-disable-next-line
@@ -99,7 +113,7 @@ const ProjectScreen = ({
     <Redirect to={"/login"} />
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
-      <ProjectHeader map={map} project={project} />
+      <ProjectHeader map={map} project={project} isReadOnly={isReadOnly} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         <ProjectSidebar
           project={project}
@@ -107,11 +121,12 @@ const ProjectScreen = ({
           isLoading={isLoading}
           staticMetadata={staticMetadata}
           selectedDistrictId={districtDrawing.selectedDistrictId}
-          selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+          selectedGeounits={presentDrawingState.selectedGeounits}
           highlightedGeounits={districtDrawing.highlightedGeounits}
           geoUnitHierarchy={geoUnitHierarchy}
-          lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
+          lockedDistricts={presentDrawingState.lockedDistricts}
           saving={districtDrawing.saving}
+          isReadOnly={isReadOnly}
         />
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           <MapHeader
@@ -119,32 +134,43 @@ const ProjectScreen = ({
             setMapLabel={setMapLabel}
             metadata={staticMetadata}
             selectionTool={districtDrawing.selectionTool}
-            geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
-            selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+            geoLevelIndex={presentDrawingState.geoLevelIndex}
+            selectedGeounits={presentDrawingState.selectedGeounits}
             advancedEditingEnabled={project?.advancedEditingEnabled}
             isReadOnly={isReadOnly}
           />
           {project && staticMetadata && staticGeoLevels && geojson ? (
             <React.Fragment>
+              {!isReadOnly && "resource" in user && (
+                <Tour
+                  geojson={geojson}
+                  project={project}
+                  staticMetadata={staticMetadata}
+                  user={user.resource}
+                />
+              )}
               <Map
                 project={project}
                 geojson={geojson}
                 staticMetadata={staticMetadata}
                 staticGeoLevels={staticGeoLevels}
-                selectedGeounits={districtDrawing.undoHistory.present.selectedGeounits}
+                selectedGeounits={presentDrawingState.selectedGeounits}
                 selectedDistrictId={districtDrawing.selectedDistrictId}
                 selectionTool={districtDrawing.selectionTool}
-                geoLevelIndex={districtDrawing.undoHistory.present.geoLevelIndex}
-                lockedDistricts={districtDrawing.undoHistory.present.lockedDistricts}
+                geoLevelIndex={presentDrawingState.geoLevelIndex}
+                lockedDistricts={presentDrawingState.lockedDistricts}
+                isReadOnly={isReadOnly}
                 label={label}
                 map={map}
                 setMap={setMap}
               />
-              <AdvancedEditingModal
-                id={project.id}
-                geoLevels={staticMetadata.geoLevelHierarchy}
-                isReadOnly={isReadOnly}
-              />
+              {!isReadOnly && (
+                <AdvancedEditingModal
+                  id={project.id}
+                  geoLevels={staticMetadata.geoLevelHierarchy}
+                />
+              )}
+              <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}
         </Flex>

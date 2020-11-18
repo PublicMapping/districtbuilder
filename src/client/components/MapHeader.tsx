@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import { areAnyGeoUnitsSelected, geoLevelLabel } from "../functions";
+import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -21,18 +21,21 @@ const style: ThemeUIStyleObject = {
     "& button > svg": {
       marginRight: "0"
     },
-    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)": {
+    "&:not(:last-of-type):not(:first-of-type) > span > button": {
       borderRadius: 0,
-      borderRightWidth: 0
+      borderLeftWidth: 0
     },
     "&:first-of-type > span > button, & > button:first-of-type": {
       borderTopRightRadius: 0,
-      borderBottomRightRadius: 0,
-      borderRightWidth: 0
+      borderBottomRightRadius: 0
     },
     "&:last-of-type > span > button, & > button:last-of-type": {
       borderTopLeftRadius: 0,
-      borderBottomLeftRadius: 0
+      borderBottomLeftRadius: 0,
+      borderLeftWidth: 0
+    },
+    "&:not(:last-of-type):not(:first-of-type) > span > button[disabled], & > button:not(:last-of-type):not(:first-of-type)[disabled]": {
+      borderRightColor: "blue.7"
     }
   },
   header: {
@@ -90,9 +93,11 @@ const GeoLevelButton = ({
 }) => {
   const label = geoLevelLabel(value.id);
   const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
+  const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(geoLevelHierarchy);
   const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
   const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
   const areChangesPending =
+    !isBaseLevelAlwaysVisible &&
     areGeoUnitsSelected &&
     // block level selected, so disable all higher geolevels
     ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
@@ -117,7 +122,10 @@ const GeoLevelButton = ({
             className={buttonClassName(geoLevelIndex === index)}
             onClick={() =>
               store.dispatch(
-                !isCurrentLevelBaseGeoLevel || (!isReadOnly && advancedEditingEnabled)
+                !isCurrentLevelBaseGeoLevel ||
+                  isReadOnly ||
+                  advancedEditingEnabled ||
+                  isBaseLevelAlwaysVisible
                   ? setGeoLevelIndex(index)
                   : showAdvancedEditingModal(true)
               )
@@ -180,27 +188,29 @@ const MapHeader = ({
   return (
     <Flex sx={style.header}>
       <Flex>
-        <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
-          <Tooltip content="Point-and-click selection">
-            <Button
-              sx={{ ...style.selectionButton }}
-              className={buttonClassName(selectionTool === SelectionTool.Default)}
-              onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
-            >
-              <Icon name="hand-pointer" />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Rectangle selection">
-            <Button
-              sx={{ ...style.selectionButton }}
-              className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
-              onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
-            >
-              <Icon name="draw-square" />
-            </Button>
-          </Tooltip>
-        </Flex>
-        <Flex>{geoLevelOptions}</Flex>
+        {!isReadOnly && (
+          <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
+            <Tooltip content="Point-and-click selection">
+              <Button
+                sx={{ ...style.selectionButton }}
+                className={buttonClassName(selectionTool === SelectionTool.Default)}
+                onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
+              >
+                <Icon name="hand-pointer" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Rectangle selection">
+              <Button
+                sx={{ ...style.selectionButton }}
+                className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
+                onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
+              >
+                <Icon name="draw-square" />
+              </Button>
+            </Tooltip>
+          </Flex>
+        )}
+        <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
         <Flex sx={{ alignItems: "baseline" }}>

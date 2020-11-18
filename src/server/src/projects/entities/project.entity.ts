@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
@@ -35,4 +35,12 @@ export class Project implements IProject {
 
   @Column({ default: false })
   advancedEditingEnabled: boolean;
+
+  @Column({
+    type: "boolean",
+    name: "locked_districts",
+    array: true,
+    default: "'{}'"
+  })
+  lockedDistricts: readonly boolean[];
 }

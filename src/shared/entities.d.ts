@@ -1,11 +1,16 @@
 export type UserId = string;
 
+export type PublicUserProperties = "id" | "name";
+
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
   readonly name: string;
   readonly isEmailVerified: boolean;
+  readonly hasSeenTour: boolean;
 }
+
+export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
 
@@ -86,6 +91,7 @@ export interface IRegionConfig {
   readonly chambers: readonly IChamber[];
   readonly s3URI: S3URI;
   readonly version: Date;
+  readonly hidden: boolean;
 }
 
 export type ProjectId = string;
@@ -96,8 +102,9 @@ export interface IProject {
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly districtsDefinition: DistrictsDefinition;
-  readonly user: Pick<IUser, "id">;
+  readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
+  readonly lockedDistricts: readonly boolean[];
 }
 
 export interface CreateProjectData {
@@ -105,6 +112,11 @@ export interface CreateProjectData {
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
 }
+
+export type UpdateProjectData = Pick<
+  IProject,
+  "name" | "districtsDefinition" | "advancedEditingEnabled" | "lockedDistricts"
+>;
 
 export type ChamberId = string;
 

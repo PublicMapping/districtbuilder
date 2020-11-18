@@ -20,13 +20,24 @@ import {
   showAdvancedEditingModal,
   toggleDistrictLocked,
   undo,
-  replaceSelectedGeounits
+  replaceSelectedGeounits,
+  toggleFind,
+  setFindIndex,
+  saveDistrictsDefinition,
+  setSavingState
 } from "../actions/districtDrawing";
+import { updateDistrictsDefinition } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import { GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
+import { GeoUnits, GeoUnitsForLevel } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
-import { setFeaturesSelectedFromGeoUnits } from "../components/map";
+import {
+  pushEffect,
+  pushStateUpdate,
+  UndoHistory,
+  UndoableState,
+  updateCurrentState
+} from "./undoRedo";
 
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
@@ -71,62 +82,13 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
-function pushState(state: ProjectState, undoState: UndoableState): ProjectState {
-  return {
-    ...state,
-    // Need to clear new project GeoJSON whenever clearing redo states
-    currentProjectData: undefined,
-    undoHistory: {
-      past: [...state.undoHistory.past, state.undoHistory.present],
-      present: undoState,
-      future: []
-    }
-  };
-}
-
-function replaceState(state: ProjectState, undoState: UndoableState) {
-  return { ...state, undoHistory: { ...state.undoHistory, present: undoState } };
-}
-
-function undoOrRedo(
-  map: mapboxgl.Map,
-  state: ProjectState,
-  { past, present, future }: UndoHistory
-) {
-  return loop(
-    {
-      ...state,
-      undoHistory: {
-        past,
-        present,
-        future
-      }
-    },
-    Cmd.run(() => {
-      setFeaturesSelectedFromGeoUnits(map, state.undoHistory.present.selectedGeounits, false);
-      setFeaturesSelectedFromGeoUnits(map, present.selectedGeounits, true);
-    })
-  );
-}
-
-interface UndoableState {
-  readonly selectedGeounits: GeoUnits;
-  readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
-  readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
-  readonly lockedDistricts: LockedDistricts;
-}
-
-export interface UndoHistory {
-  readonly past: readonly UndoableState[];
-  readonly present: UndoableState;
-  readonly future: readonly UndoableState[];
-}
-
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly showAdvancedEditingModal: boolean;
+  readonly findMenuOpen: boolean;
+  readonly findIndex?: number;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
 }
@@ -136,14 +98,18 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
   showAdvancedEditingModal: false,
+  findMenuOpen: false,
   saving: "unsaved",
   undoHistory: {
     past: [],
     present: {
-      selectedGeounits: {},
-      geoLevelIndex: 0,
-      geoLevelVisibility: [],
-      lockedDistricts: new Set()
+      state: {
+        selectedGeounits: {},
+        geoLevelIndex: 0,
+        geoLevelVisibility: [],
+        lockedDistricts: new Set(),
+        districtsDefinition: []
+      }
     },
     future: []
   }
@@ -183,43 +149,42 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           })
         )
       );
-    // Note the only difference between this and replaceSelectedGeounits is whether we use pushState or replaceState
+    // Note the only difference between this and replaceSelectedGeounits is whether we use pushStateUpdate or updateState
     case getType(editSelectedGeounits):
-      return pushState(state, {
-        ...present,
+      return pushStateUpdate(state, {
         selectedGeounits: editGeoUnits(
-          present.selectedGeounits,
+          present.state.selectedGeounits,
           action.payload.add,
           action.payload.remove
         )
       });
     case getType(replaceSelectedGeounits):
-      return replaceState(state, {
-        ...present,
+      return updateCurrentState(state, {
         selectedGeounits: editGeoUnits(
-          present.selectedGeounits,
+          present.state.selectedGeounits,
           action.payload.add,
           action.payload.remove
         )
       });
     case getType(setSelectedGeounits):
-      return pushState(state, {
-        ...present,
+      return pushStateUpdate(state, {
         selectedGeounits: action.payload
       });
     case getType(clearSelectedGeounits): {
       const clearedViaCancel = action.payload;
-      return pushState(
-        {
-          ...state,
-          saving: clearedViaCancel ? "unsaved" : "saved"
-        },
-        {
-          ...present,
-          selectedGeounits: clearGeoUnits(present.selectedGeounits)
-        }
+      const func = clearedViaCancel ? pushStateUpdate : updateCurrentState;
+      return loop(
+        func(state, {
+          selectedGeounits: clearGeoUnits(present.state.selectedGeounits)
+        }),
+        Cmd.action(setSavingState(clearedViaCancel ? "unsaved" : "saved"))
       );
     }
+    case getType(setSavingState):
+      return {
+        ...state,
+        saving: action.payload
+      };
     case getType(setHighlightedGeounits):
       return {
         ...state,
@@ -236,24 +201,21 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         selectionTool: action.payload
       };
     case getType(setGeoLevelIndex):
-      return replaceState(state, {
-        ...present,
+      return updateCurrentState(state, {
         geoLevelIndex: action.payload
       });
     case getType(setGeoLevelVisibility):
-      return replaceState(state, {
-        ...present,
+      return updateCurrentState(state, {
         geoLevelVisibility: action.payload
       });
     case getType(toggleDistrictLocked):
-      return pushState(state, {
-        ...present,
+      return pushStateUpdate(state, {
         lockedDistricts: new Set(
-          present.lockedDistricts.has(action.payload)
-            ? [...present.lockedDistricts.values()].filter(
+          present.state.lockedDistricts.has(action.payload)
+            ? [...present.state.lockedDistricts.values()].filter(
                 districtId => districtId !== action.payload
               )
-            : [...present.lockedDistricts.values(), action.payload]
+            : [...present.state.lockedDistricts.values(), action.payload]
         )
       });
     case getType(showAdvancedEditingModal):
@@ -261,40 +223,58 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         showAdvancedEditingModal: action.payload
       };
+    case getType(toggleFind):
+      return {
+        ...state,
+        findMenuOpen: action.payload,
+        findIndex: undefined
+      };
+    case getType(setFindIndex):
+      return {
+        ...state,
+        findIndex: action.payload
+      };
     case getType(undo): {
-      const projectData =
-        state.undoHistory.past.length === 1 && state.previousProjectData
-          ? { projectData: state.previousProjectData }
-          : {};
+      const lastPastState = state.undoHistory.past[state.undoHistory.past.length - 1];
       return state.undoHistory.past.length === 0
         ? state
-        : undoOrRedo(
-            action.payload,
-            { ...state, ...projectData },
+        : loop(
             {
-              past: state.undoHistory.past.slice(0, -1),
-              present: state.undoHistory.past[state.undoHistory.past.length - 1],
-              future: [present, ...state.undoHistory.future]
-            }
+              ...state,
+              undoHistory: {
+                past: state.undoHistory.past.slice(0, -1),
+                present: lastPastState,
+                future: [present, ...state.undoHistory.future]
+              }
+            },
+            present.effect ? present.effect(lastPastState.state) : Cmd.none
           );
     }
     case getType(redo): {
-      const projectData =
-        state.undoHistory.past.length === 0 && state.currentProjectData
-          ? { projectData: state.currentProjectData }
-          : {};
+      const nextFutureState = state.undoHistory.future[0];
       return state.undoHistory.future.length === 0
         ? state
-        : undoOrRedo(
-            action.payload,
-            { ...state, ...projectData },
+        : loop(
             {
-              past: [...state.undoHistory.past, present],
-              present: state.undoHistory.future[0],
-              future: state.undoHistory.future.slice(1)
-            }
+              ...state,
+              undoHistory: {
+                past: [...state.undoHistory.past, present],
+                present: nextFutureState,
+                future: state.undoHistory.future.slice(1)
+              }
+            },
+            nextFutureState.effect ? nextFutureState.effect(nextFutureState.state) : Cmd.none
           );
     }
+    case getType(saveDistrictsDefinition):
+      return loop(
+        // Save an effect function which takes the appropriate districts definition so that we can
+        // undo/redo saving of the districts definition with the correct state snapshot.
+        pushEffect(state, (state: UndoableState) =>
+          Cmd.action(updateDistrictsDefinition(state.districtsDefinition))
+        ),
+        Cmd.action(updateDistrictsDefinition(null))
+      );
     default:
       return state as never;
   }

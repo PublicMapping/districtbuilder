@@ -14,7 +14,7 @@ resource "aws_db_subnet_group" "default" {
 }
 
 resource "aws_db_parameter_group" "default" {
-  name        = var.rds_database_identifier
+  name_prefix = var.rds_database_identifier
   description = "Parameter group for the RDS instances"
   family      = var.rds_parameter_group_family
 
@@ -62,6 +62,10 @@ resource "aws_db_parameter_group" "default" {
     Name        = "dbpgDatabaseServer"
     Project     = var.project
     Environment = var.environment
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 

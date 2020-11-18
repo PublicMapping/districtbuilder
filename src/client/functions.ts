@@ -8,12 +8,20 @@ import {
   GeoUnits,
   GeoUnitIndices,
   GeoUnitHierarchy,
-  NestedArray
+  NestedArray,
+  IProject
 } from "../shared/entities";
 import { Resource } from "./resource";
+import { DistrictsGeoJSON } from "./types";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
+}
+
+// Determines if we are in a scenario where all geolevels have the same minimum zoom,
+// and thus, the base geolevel doesn't require special handling
+export function isBaseGeoLevelAlwaysVisible(geoLevelHierarchy: GeoLevelHierarchy) {
+  return new Set(geoLevelHierarchy.map(level => level.minZoom)).size === 1;
 }
 
 export function allGeoUnitIndices(geoUnits: GeoUnits) {
@@ -93,6 +101,18 @@ export function assignGeounitsToDistrict(
           );
     return newDistrictsDefinition;
   }, districtsDefinitionCopy);
+}
+
+// The target population is based on the average population of all districts,
+// not including the unassigned district, so we use the number of districts,
+// rather than the district feature count (which includes the unassigned district)
+export function getTargetPopulation(geojson: DistrictsGeoJSON, project: IProject) {
+  return (
+    geojson.features.reduce(
+      (population, feature) => population + feature.properties.population,
+      0
+    ) / project.numberOfDistricts
+  );
 }
 
 /*

@@ -1,6 +1,6 @@
-import MapboxGL from "mapbox-gl";
 import { createAction } from "typesafe-actions";
 import { DistrictId, GeoUnits } from "../../shared/entities";
+import { SavingState } from "../types";
 
 export enum SelectionTool {
   Default = "DEFAULT",
@@ -41,5 +41,12 @@ export const showAdvancedEditingModal = createAction("Show advanced editing warn
   boolean
 >();
 
-export const undo = createAction("Undo project action")<MapboxGL.Map>();
-export const redo = createAction("Redo project action")<MapboxGL.Map>();
+export const undo = createAction("Undo project action")();
+export const redo = createAction("Redo project action")();
+
+export const toggleFind = createAction("Toggle find menu visibility")<boolean>();
+export const setFindIndex = createAction("Set find menu polygon index")<number | undefined>();
+
+export const saveDistrictsDefinition = createAction("Save districts definition")();
+
+export const setSavingState = createAction("Set saving state")<SavingState>();

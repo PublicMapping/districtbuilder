@@ -29,13 +29,18 @@ import {
   levelToLabelLayerId,
   levelToLineLayerId,
   onlyUnlockedGeoUnits,
-  getChildGeoUnits
+  getChildGeoUnits,
+  DISTRICTS_OUTLINE_LAYER_ID,
+  setFeaturesSelectedFromGeoUnits
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
+import FindMenu from "./FindMenu";
 import MapMessage from "./MapMessage";
 import MapTooltip from "./MapTooltip";
 import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
+import { State } from "../../reducers";
+import { connect } from "react-redux";
 
 interface Props {
   readonly project: IProject;
@@ -47,6 +52,8 @@ interface Props {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
+  readonly isReadOnly: boolean;
+  readonly findMenuOpen: boolean;
   readonly label?: string;
   readonly map?: MapboxGL.Map;
   // eslint-disable-next-line
@@ -63,6 +70,8 @@ const DistrictsMap = ({
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
+  isReadOnly,
+  findMenuOpen,
   label,
   map,
   setMap
@@ -83,6 +92,9 @@ const DistrictsMap = ({
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
+    // @ts-ignore
+    // eslint-disable-next-line
+    feature.properties.outlineColor = id === 0 ? "#F25DFE" : "transparent";
     // @ts-ignore
     // eslint-disable-next-line
     feature.properties.color = getDistrictColor(id);
@@ -122,8 +134,6 @@ const DistrictsMap = ({
     const setLevelVisibility = () =>
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
     const onMapLoad = () => {
-      setMap(map);
-
       generateMapLayers(
         project.regionConfig.s3URI,
         project.regionConfig.regionCode,
@@ -133,6 +143,8 @@ const DistrictsMap = ({
         map,
         geojson
       );
+
+      setMap(map);
 
       map.resize();
     };
@@ -199,6 +211,16 @@ const DistrictsMap = ({
     }
   }, [map, label, staticMetadata, selectedGeolevel]);
 
+  // Toggle unassigned highlight when find menu is opened
+  useEffect(() => {
+    map &&
+      map.setLayoutProperty(
+        DISTRICTS_OUTLINE_LAYER_ID,
+        "visibility",
+        findMenuOpen ? "visible" : "none"
+      );
+  }, [map, findMenuOpen]);
+
   useEffect(() => {
     map &&
       [...new Array(project.numberOfDistricts + 1).keys()].forEach(districtId =>
@@ -223,6 +245,25 @@ const DistrictsMap = ({
       );
     }
   }, [map, staticMetadata, geoLevelIndex]);
+
+  // Keep track of when selected geounits change
+  const prevSelectedGeoUnitsRef = useRef<typeof selectedGeounits | undefined>();
+  useEffect(() => {
+    prevSelectedGeoUnitsRef.current = selectedGeounits; // eslint-disable-line
+  });
+  const prevSelectedGeoUnits = prevSelectedGeoUnitsRef.current;
+
+  // Update map when selected geounits change.
+  // Typically the geounits change as a result of using the selection tools directly -- map is
+  // changed and then that needs to be reflected in state -- but this accounts for undo/redo actions
+  // affecting state which then needs to be reflected in the map.
+  useEffect(() => {
+    // eslint-disable-next-line
+    if (map) {
+      prevSelectedGeoUnits && setFeaturesSelectedFromGeoUnits(map, prevSelectedGeoUnits, false);
+      selectedGeounits && setFeaturesSelectedFromGeoUnits(map, selectedGeounits, true);
+    }
+  }, [map, selectedGeounits, prevSelectedGeoUnits]);
 
   // Keep track of when selected geolevel changes
   const prevGeoLevelIndexRef = useRef<typeof geoLevelIndex | undefined>();
@@ -321,7 +362,7 @@ const DistrictsMap = ({
       DefaultSelectionTool.disable(map);
       RectangleSelectionTool.disable(map);
       // Enable appropriate tool
-      if (selectionTool === SelectionTool.Default) {
+      if (!isReadOnly && selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
           map,
           selectedGeolevel.id,
@@ -330,7 +371,7 @@ const DistrictsMap = ({
           lockedDistricts,
           staticGeoLevels
         );
-      } else if (selectionTool === SelectionTool.Rectangle) {
+      } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
         RectangleSelectionTool.enable(
           map,
           selectedGeolevel.id,
@@ -349,15 +390,23 @@ const DistrictsMap = ({
     staticMetadata,
     staticGeoLevels,
     project,
-    lockedDistricts
+    lockedDistricts,
+    isReadOnly
   ]);
 
   return (
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
+      <FindMenu map={map} />
     </Box>
   );
 };
 
-export default DistrictsMap;
+function mapStateToProps(state: State) {
+  return {
+    findMenuOpen: state.project.findMenuOpen
+  };
+}
+
+export default connect(mapStateToProps)(DistrictsMap);

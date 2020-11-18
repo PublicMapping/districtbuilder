@@ -8,8 +8,7 @@ import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
 
-import { updateDistrictsDefinition } from "../actions/projectData";
-import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { saveDistrictsDefinition, clearSelectedGeounits } from "../actions/districtDrawing";
 import { State } from "../reducers";
 import store from "../store";
 
@@ -40,7 +39,7 @@ const ProjectSidebarHeader = ({
 } & LoadingProps &
   StateProps) => {
   return (
-    <Flex sx={style.header}>
+    <Flex sx={style.header} className="sidebar-header">
       <Flex sx={{ variant: "header.left" }}>
         <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
           Districts
@@ -50,14 +49,13 @@ const ProjectSidebarHeader = ({
         <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
           <Spinner variant="spinner.small" />
         </Flex>
-      ) : areAnyGeoUnitsSelected(selectedGeounits) ? (
+      ) : isReadOnly ? null : areAnyGeoUnitsSelected(selectedGeounits) ? (
         <Flex sx={{ variant: "header.right" }}>
           <Tooltip
             placement="top-start"
             content={
               <span>
-                <strong>{!isReadOnly ? "Cancel" : "Clear"} changes</strong> to revert to{" "}
-                {!isReadOnly ? "your" : "the"} previously saved map
+                <strong>Cancel changes</strong> to revert to your previously saved map
               </span>
             }
           >
@@ -68,29 +66,27 @@ const ProjectSidebarHeader = ({
                 store.dispatch(clearSelectedGeounits(true));
               }}
             >
-              {!isReadOnly ? "Cancel" : "Clear"}
+              Cancel
             </Button>
           </Tooltip>
-          {!isReadOnly && (
-            <Tooltip
-              placement="top-start"
-              content={
-                <span>
-                  <strong>Accept changes</strong> to save your map
-                </span>
-              }
+          <Tooltip
+            placement="top-start"
+            content={
+              <span>
+                <strong>Accept changes</strong> to save your map
+              </span>
+            }
+          >
+            <Button
+              variant="circular"
+              onClick={() => {
+                store.dispatch(saveDistrictsDefinition());
+              }}
             >
-              <Button
-                variant="circular"
-                onClick={() => {
-                  store.dispatch(updateDistrictsDefinition());
-                }}
-              >
-                <Icon name="check" />
-                Accept
-              </Button>
-            </Tooltip>
-          )}
+              <Icon name="check" />
+              Accept
+            </Button>
+          </Tooltip>
         </Flex>
       ) : saving === "saved" ? (
         <Tooltip placement="top-start" content={<span>Your map is saved</span>}>

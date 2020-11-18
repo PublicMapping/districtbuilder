@@ -12,7 +12,9 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(
     new ValidationPipe({
       exceptionFactory: errors => new BadRequestException(errors),
-      transform: true
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true
     })
   );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));

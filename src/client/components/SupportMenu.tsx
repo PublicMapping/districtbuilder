@@ -20,7 +20,7 @@ interface SupportProps {
 
 const SupportMenu = (props: SupportProps) => {
   return (
-    <Wrapper sx={{ position: "relative" }}>
+    <Wrapper sx={{ position: "relative", pr: 1 }}>
       <MenuButton
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light" },
@@ -28,6 +28,7 @@ const SupportMenu = (props: SupportProps) => {
           ...invertStyles(props),
           ...props
         }}
+        className="support-menu"
       >
         <Icon name="question-circle" />
         Support

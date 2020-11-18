@@ -9,14 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+
 ### Changed
 
+
 ### Fixed
+
+
+
+## [1.2.0] - 2020-11-18
+
+### Added
+- Microcopy to Create Map and description props to text and select fields [#467](https://github.com/PublicMapping/districtbuilder/pull/467)
+- Add product tour [#471](https://github.com/PublicMapping/districtbuilder/pull/471)
+- Update data tooling [#468](https://github.com/PublicMapping/districtbuilder/pull/468)
+- Find unassigned menu [#476](https://github.com/PublicMapping/districtbuilder/pull/476)
+- Add support for single county region [#479](https://github.com/PublicMapping/districtbuilder/pull/479)
+- Edit project name [#488](https://github.com/PublicMapping/districtbuilder/pull/488)
+- Allow exporting plan to district index file CSV [#499](https://github.com/PublicMapping/districtbuilder/pull/499)
+
+### Changed
+
+- Updates to project page sharing & read-only mode [#469](https://github.com/PublicMapping/districtbuilder/pull/469)
+- Specify max-old-space-size on server [#470](https://github.com/PublicMapping/districtbuilder/pull/470)
+- Fix formatting of population counts [#474](https://github.com/PublicMapping/districtbuilder/pull/474)
+- Make it possible to swap out the RDS DB parameter group [#478](https://github.com/PublicMapping/districtbuilder/pull/478)
+- Allow saving with undo/redo [#498](https://github.com/PublicMapping/districtbuilder/pull/498)
+
+### Fixed
+
+- Fix region config validation error [#500](https://github.com/PublicMapping/districtbuilder/pull/500)
 
 ## [1.1.0] - 2020-10-08
 
 ### Added
-
 - Project page sharing & read-only mode [#449](https://github.com/PublicMapping/districtbuilder/pull/449)
 - Set keep-alive timeout higher than ALB idle timeout [#448](https://github.com/PublicMapping/districtbuilder/pull/448)
 - Add basic k6 load test for PA/50 district project [#448](https://github.com/PublicMapping/districtbuilder/pull/448)
@@ -56,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...1.0.0
 [0.1.0]: https://github.com/publicmapping/districtbuilder/compare/b9c63f4...0.1.0

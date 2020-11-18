@@ -2,7 +2,18 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
-import { Box, Button, Card, Flex, Heading, jsx, Label, Radio, ThemeUIStyleObject } from "theme-ui";
+import {
+  Box,
+  Button,
+  Card,
+  Flex,
+  Heading,
+  jsx,
+  Label,
+  Radio,
+  ThemeUIStyleObject,
+  Styled
+} from "theme-ui";
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
@@ -103,6 +114,13 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
       textTransform: "none",
       variant: "text.h4",
       display: "block",
+      mb: 1
+    },
+    cardHint: {
+      display: "block",
+      textTransform: "none",
+      fontWeight: "normal",
+      fontSize: 1,
       mb: 4
     },
     radioHeading: {
@@ -126,6 +144,18 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
       pt: 4,
       borderTop: "1px solid",
       borderColor: "gray.2"
+    },
+    legend: {
+      paddingInlineStart: "0",
+      paddingInlineEnd: "0"
+    },
+    fieldset: {
+      border: "none",
+      marginInlineStart: "0",
+      marginInlineEnd: "0",
+      paddingInlineStart: "0",
+      paddingInlineEnd: "0",
+      paddingBlockEnd: "0"
     }
   };
 
@@ -140,7 +170,17 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
     >
       <Flex sx={style.header}>
         <Box as="h1" sx={{ lineHeight: "0", mr: 3 }}>
-          <Link to="/">
+          <Link
+            to="/"
+            sx={{
+              lineHeight: "0",
+              borderRadius: "small",
+              "&:focus": {
+                outline: "none",
+                boxShadow: "focus"
+              }
+            }}
+          >
             <Logo sx={{ width: "2rem" }} />
           </Link>
         </Box>
@@ -181,6 +221,12 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                     Map name
                   </Box>
                 }
+                description={
+                  <Box as="span" sx={style.cardHint}>
+                    e.g. ‘Arizona House of Representatives’. Make it specific to help tell your maps
+                    apart.
+                  </Box>
+                }
                 resource={createProjectResource}
                 inputProps={{
                   onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -198,6 +244,12 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                     State
                   </Box>
                 }
+                description={
+                  <Box as="span" sx={style.cardHint}>
+                    What state do you want to map? If you don’t see it in the list,{" "}
+                    <Styled.a href="mailto:support@districtbuilder.org">let us know!</Styled.a>
+                  </Box>
+                }
                 resource={createProjectResource}
                 selectProps={{
                   onChange:
@@ -213,94 +265,115 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                       : undefined
                 }}
               >
-                <option>Select region</option>
+                <option>Select...</option>
                 {"resource" in regionConfigs
-                  ? regionConfigs.resource.map(regionConfig => (
-                      <option key={regionConfig.id} value={regionConfig.id}>
-                        {regionConfig.name}
-                      </option>
-                    ))
+                  ? regionConfigs.resource
+                      .filter(regionConfig => !regionConfig.hidden)
+                      .map(regionConfig => (
+                        <option key={regionConfig.id} value={regionConfig.id}>
+                          {regionConfig.name}
+                        </option>
+                      ))
                   : null}
               </SelectField>
             </Card>
             {data.regionConfig ? (
-              <Card sx={{ variant: "card.flat", display: "flex", flexWrap: "wrap" }}>
-                <Label sx={style.cardLabel}>Districts</Label>
-                {data.regionConfig &&
-                  [...data.regionConfig.chambers]
-                    .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
-                    .map(chamber => (
-                      <Label
-                        key={chamber.id}
-                        sx={{
-                          display: "inline-flex",
-                          "@media screen and (min-width: 750px)": {
-                            flex: "0 0 48%",
-                            "&:nth-of-type(even)": {
-                              mr: "2%"
-                            }
-                          }
-                        }}
-                      >
-                        <Radio
-                          name="project-district"
-                          value={chamber.id}
-                          onChange={onDistrictChanged}
-                        />
-                        <Flex
-                          as="span"
-                          sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                        >
-                          <div sx={style.radioHeading}>{chamber.name}</div>
-                          <div sx={style.radioSubHeading}>
-                            {chamber.numberOfDistricts} districts
+              <Card sx={{ variant: "card.flat" }}>
+                <fieldset sx={style.fieldset}>
+                  <Flex sx={{ flexWrap: "wrap" }}>
+                    <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
+                      Districts
+                    </legend>
+                    <Box
+                      id="description-districts"
+                      as="span"
+                      sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                    >
+                      How many districts do you want to map? Choose a federal or state legislative
+                      chamber or define your own.
+                    </Box>
+                    {data.regionConfig &&
+                      [...data.regionConfig.chambers]
+                        .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
+                        .map(chamber => (
+                          <Label
+                            key={chamber.id}
+                            sx={{
+                              display: "inline-flex",
+                              "@media screen and (min-width: 750px)": {
+                                flex: "0 0 48%",
+                                "&:nth-of-type(even)": {
+                                  mr: "2%"
+                                }
+                              }
+                            }}
+                          >
+                            <Radio
+                              name="project-district"
+                              value={chamber.id}
+                              onChange={onDistrictChanged}
+                              aria-describedby="description-districts"
+                            />
+                            <Flex
+                              as="span"
+                              sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                            >
+                              <div sx={style.radioHeading}>{chamber.name}</div>
+                              <div sx={style.radioSubHeading}>
+                                {chamber.numberOfDistricts} districts
+                              </div>
+                            </Flex>
+                          </Label>
+                        ))
+                        .concat(
+                          <div
+                            sx={{
+                              flex: "0 0 50%",
+                              "@media screen and (max-width: 770px)": {
+                                flex: "0 0 100%"
+                              }
+                            }}
+                            key="custom"
+                          >
+                            <Label>
+                              <Radio
+                                name="project-district"
+                                value=""
+                                onChange={onDistrictChanged}
+                              />
+                              <Flex as="span" sx={{ flexDirection: "column" }}>
+                                <div sx={style.radioHeading}>Custom</div>
+                                <div sx={style.radioSubHeading}>
+                                  Define a custom number of districts
+                                </div>
+                              </Flex>
+                            </Label>
                           </div>
-                        </Flex>
-                      </Label>
-                    ))
-                    .concat(
-                      <div
-                        sx={{
-                          flex: "0 0 50%",
-                          "@media screen and (max-width: 770px)": {
-                            flex: "0 0 100%"
-                          }
-                        }}
-                        key="custom"
-                      >
-                        <Label>
-                          <Radio name="project-district" value="" onChange={onDistrictChanged} />
-                          <Flex as="span" sx={{ flexDirection: "column" }}>
-                            <div sx={style.radioHeading}>Custom</div>
-                            <div sx={style.radioSubHeading}>
-                              Define a custom number of districts
-                            </div>
-                          </Flex>
-                        </Label>
-                      </div>
-                    )}
-                {data.isCustom ? (
-                  <Box sx={style.customInputContainer}>
-                    <InputField
-                      field="numberOfDistricts"
-                      label="Number of districts"
-                      resource={createProjectResource}
-                      inputProps={{
-                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                          const value = parseInt(e.currentTarget.value, 10);
-                          const numberOfDistricts = isNaN(value) ? null : value;
-                          setCreateProjectResource({
-                            data: {
-                              ...data,
-                              numberOfDistricts,
-                              isCustom: true
+                        )}
+                    {data.isCustom ? (
+                      <Box sx={style.customInputContainer}>
+                        <InputField
+                          field="numberOfDistricts"
+                          label="Number of districts"
+                          resource={createProjectResource}
+                          inputProps={{
+                            onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                              const value = parseInt(e.currentTarget.value, 10);
+                              const numberOfDistricts = isNaN(value) ? null : value;
+                              setCreateProjectResource({
+                                data: {
+                                  ...data,
+                                  numberOfDistricts,
+                                  isCustom: true
+                                }
+                              });
                             }
-                          });
-                        }
-                      }}
-                    />
-                  </Box>
-                ) : null}
+                          }}
+                        />
+                      </Box>
+                    ) : null}
+                  </Flex>
+                </fieldset>
               </Card>
             ) : (
               undefined

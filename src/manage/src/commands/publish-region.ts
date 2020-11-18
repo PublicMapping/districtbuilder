@@ -10,7 +10,7 @@ import { RegionConfig } from "../../../server/src/region-configs/entities/region
 import { connectionOptions } from "../lib/dbUtils";
 
 export default class PublishRegion extends Command {
-  static description = "describe the command here";
+  static description = "upload processed region files to S3";
 
   static flags = {
     bucketName: flags.string({

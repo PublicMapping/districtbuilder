@@ -23,6 +23,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     else
         docker-compose \
             run --rm server \
-            "migration:${1} ${*:2}"
+            "migration:${1}" "${*:2}"
     fi
 fi

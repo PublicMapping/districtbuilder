@@ -3,23 +3,30 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 import {
-  updateDistrictsDefinition,
-  updateDistrictsDefinitionSuccess,
-  updateDistrictsDefinitionFailure,
-  projectFetch,
-  projectFetchSuccess,
-  projectFetchFailure,
+  exportCsv,
+  exportCsvFailure,
   projectDataFetch,
   projectDataFetchFailure,
   projectDataFetchSuccess,
+  projectFetch,
+  projectFetchFailure,
+  projectFetchSuccess,
+  setProjectNameEditing,
   staticDataFetchFailure,
   staticDataFetchSuccess,
-  updateDistrictsDefinitionRefetchGeoJsonSuccess
+  updateDistrictsDefinition,
+  updateDistrictsDefinitionRefetchGeoJsonSuccess,
+  updateDistrictsDefinitionSuccess,
+  updateProjectFailed,
+  updateProjectName,
+  updateProjectNameSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits } from "../actions/districtDrawing";
+import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
+import { updateCurrentState } from "../reducers/undoRedo";
+import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
-import { DistrictsGeoJSON, DynamicProjectData, StaticProjectData } from "../types";
+import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
 import {
@@ -28,14 +35,22 @@ import {
   showActionFailedToast,
   showResourceFailedToast
 } from "../functions";
-import { fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
+import { exportProjectCsv, fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
 import { fetchAllStaticData } from "../s3";
+
+function fetchGeoJsonForProject(project: IProject) {
+  return () => {
+    return fetchProjectGeoJson(project.id).then((geojson: DistrictsGeoJSON) => ({
+      project,
+      geojson
+    }));
+  };
+}
 
 export type ProjectDataState = {
   readonly projectData: Resource<DynamicProjectData>;
-  readonly previousProjectData?: Resource<DynamicProjectData>;
-  readonly currentProjectData?: Resource<DynamicProjectData>;
   readonly staticData: Resource<StaticProjectData>;
+  readonly projectNameSaving: SavingState;
 };
 
 export const initialProjectDataState = {
@@ -44,8 +59,9 @@ export const initialProjectDataState = {
   },
   staticData: {
     isPending: false
-  }
-};
+  },
+  projectNameSaving: "saved"
+} as const;
 
 const projectDataReducer: LoopReducer<ProjectState, Action> = (
   state: ProjectState = initialProjectState,
@@ -78,7 +94,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           ...state,
           projectData: {
             resource: action.payload
-          }
+          },
+          findIndex: undefined
         },
         Cmd.action(clearSelectedGeounits(false))
       );
@@ -109,16 +126,21 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(projectDataFetchSuccess):
       return loop(
-        {
-          ...state,
-          projectData: {
-            resource: action.payload
+        updateCurrentState(
+          {
+            ...state,
+            projectData: {
+              resource: action.payload
+            },
+            staticData: {
+              ...state.staticData,
+              isPending: true
+            }
           },
-          staticData: {
-            ...state.staticData,
-            isPending: true
+          {
+            districtsDefinition: action.payload.project.districtsDefinition
           }
-        },
+        ),
         Cmd.run(fetchAllStaticData, {
           successActionCreator: staticDataFetchSuccess,
           failActionCreator: staticDataFetchFailure,
@@ -152,6 +174,41 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showResourceFailedToast)
       );
+    case getType(setProjectNameEditing):
+      return { ...state, projectNameSaving: action.payload ? "unsaved" : "saved" };
+    // eslint-disable-next-line
+    case getType(updateProjectName): {
+      if ("resource" in state.projectData) {
+        const projectId = state.projectData.resource.project.id;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            projectNameSaving: "saving"
+          },
+          Cmd.run(
+            () =>
+              patchProject(projectId, { name: action.payload }).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: updateProjectNameSuccess,
+              failActionCreator: updateProjectFailed
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(updateProjectNameSuccess):
+      return {
+        ...state,
+        projectNameSaving: "saved",
+        saving: "saved",
+        projectData: { resource: action.payload }
+      };
     case getType(updateDistrictsDefinition):
       return "resource" in state.projectData && "resource" in state.staticData
         ? loop(
@@ -159,58 +216,66 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               ...state,
               saving: "saving"
             },
-            Cmd.run(patchProject, {
-              successActionCreator: updateDistrictsDefinitionSuccess,
-              failActionCreator: updateDistrictsDefinitionFailure,
-              args: [
-                state.projectData.resource.project.id,
-                {
-                  districtsDefinition: assignGeounitsToDistrict(
-                    state.projectData.resource.project.districtsDefinition,
-                    state.staticData.resource.geoUnitHierarchy,
-                    allGeoUnitIndices(state.undoHistory.present.selectedGeounits),
-                    state.selectedDistrictId
-                  )
-                }
-              ] as Parameters<typeof patchProject>
-            })
+            Cmd.list<Action>(
+              [
+                Cmd.run(patchProject, {
+                  successActionCreator: updateDistrictsDefinitionSuccess,
+                  failActionCreator: updateProjectFailed,
+                  args: [
+                    state.projectData.resource.project.id,
+                    {
+                      // Districts definition may be optionally specified in the action payload and
+                      // is used if available. This is needed to go back/forward in time for a given
+                      // state snapshot -- as opposed to just using the current districts definition
+                      // -- for undo/redo to work correctly.
+                      districtsDefinition:
+                        action.payload ||
+                        assignGeounitsToDistrict(
+                          state.projectData.resource.project.districtsDefinition,
+                          state.staticData.resource.geoUnitHierarchy,
+                          allGeoUnitIndices(state.undoHistory.present.state.selectedGeounits),
+                          state.selectedDistrictId
+                        )
+                    }
+                  ] as Parameters<typeof patchProject>
+                }),
+                // When updating districts definition after a save, we want to clear the selected
+                // geounits since we're "done". However, when redoing/undoing changes with a
+                // specific districts definition, we want to keep those geounits selected to allow
+                // the user to potentially edit their selection or continuing undoing/redoing their
+                // changes.
+                action.payload
+                  ? Cmd.action(setSavingState("saved"))
+                  : Cmd.action(clearSelectedGeounits(false))
+              ],
+              { sequence: true }
+            )
           )
         : state;
     case getType(updateDistrictsDefinitionSuccess):
       return loop(
-        {
-          ...state
-        },
-        Cmd.run(
-          () => {
-            return fetchProjectGeoJson(action.payload.id).then((geojson: DistrictsGeoJSON) => ({
-              project: action.payload,
-              geojson
-            }));
-          },
-          {
-            successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
-            failActionCreator: updateDistrictsDefinitionFailure
-          }
-        )
+        state,
+        Cmd.run(fetchGeoJsonForProject(action.payload), {
+          successActionCreator: updateDistrictsDefinitionRefetchGeoJsonSuccess,
+          failActionCreator: updateProjectFailed
+        })
       );
-    case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess):
-      return loop(
-        "resource" in state.projectData
-          ? {
+    case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
+      return "resource" in state.projectData
+        ? updateCurrentState(
+            {
               ...state,
-              previousProjectData: state.projectData,
-              currentProjectData: { resource: action.payload },
-              undoHistory: {
-                ...state.undoHistory,
-                past: [],
-                future: []
+              projectData: {
+                resource: action.payload
               }
+            },
+            {
+              districtsDefinition: action.payload.project.districtsDefinition
             }
-          : state,
-        Cmd.action(projectFetchSuccess(action.payload))
-      );
-    case getType(updateDistrictsDefinitionFailure):
+          )
+        : state;
+    }
+    case getType(updateProjectFailed):
       return loop(
         {
           ...state,
@@ -218,6 +283,16 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showActionFailedToast)
       );
+    case getType(exportCsv):
+      return loop(
+        state,
+        Cmd.run(exportProjectCsv, {
+          failActionCreator: exportCsvFailure,
+          args: [action.payload] as Parameters<typeof exportProjectCsv>
+        })
+      );
+    case getType(exportCsvFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state as never;
   }
