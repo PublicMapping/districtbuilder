@@ -252,9 +252,8 @@ export class ProjectsController implements CrudController<Project> {
     accumulateCsvRows(project.districtsDefinition, geoCollection.getGeoUnitHierarchy());
 
     return stringify(mutableCsvRows, {
-      // Unsure if this CSV file should have headers. Switch the following to true if it should.
-      header: false,
-      columns: ["geoId", "districtId"]
+      header: true,
+      columns: [`${baseGeoLevel.toUpperCase()}ID`, "DISTRICT"]
     });
   }
 }
