@@ -5,6 +5,8 @@ import { Action } from "../actions";
 import {
   exportCsv,
   exportCsvFailure,
+  exportShp,
+  exportShpFailure,
   projectDataFetch,
   projectDataFetchFailure,
   projectDataFetchSuccess,
@@ -35,7 +37,13 @@ import {
   showActionFailedToast,
   showResourceFailedToast
 } from "../functions";
-import { exportProjectCsv, fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
+import {
+  exportProjectCsv,
+  exportProjectShp,
+  fetchProjectData,
+  fetchProjectGeoJson,
+  patchProject
+} from "../api";
 import { fetchAllStaticData } from "../s3";
 
 function fetchGeoJsonForProject(project: IProject) {
@@ -292,6 +300,16 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(exportCsvFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
+    case getType(exportShp):
+      return loop(
+        state,
+        Cmd.run(exportProjectShp, {
+          failActionCreator: exportShpFailure,
+          args: [action.payload] as Parameters<typeof exportProjectCsv>
+        })
+      );
+    case getType(exportShpFailure):
       return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state as never;

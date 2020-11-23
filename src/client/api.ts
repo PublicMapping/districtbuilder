@@ -192,3 +192,16 @@ export async function exportProjectCsv(project: IProject): Promise<void> {
       .catch(error => reject(error.message));
   });
 }
+
+export async function exportProjectShp(project: IProject): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/projects/${project.id}/export/shp`, { responseType: "blob" })
+      .then(response => {
+        return resolve(
+          saveAs(new Blob([response.data], { type: "application/zip" }), `${project.name}.zip`)
+        );
+      })
+      .catch(error => reject(error.message));
+  });
+}
