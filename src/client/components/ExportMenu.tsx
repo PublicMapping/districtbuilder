@@ -5,10 +5,11 @@ import Icon from "../components/Icon";
 import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
-import { exportCsv } from "../actions/projectData";
+import { exportCsv, exportShp } from "../actions/projectData";
 
 enum UserMenuKeys {
-  ExportCsv = "exportCsv"
+  ExportCsv = "csv",
+  ExportShapefile = "shp"
 }
 
 interface ExportProps {
@@ -20,9 +21,10 @@ const ExportMenu = (props: ExportProps) => {
   return (
     <Wrapper
       sx={{ position: "relative", pr: 1 }}
-      onSelection={(userMenuKey: string) =>
-        userMenuKey === UserMenuKeys.ExportCsv && store.dispatch(exportCsv(props.project))
-      }
+      onSelection={(userMenuKey: string) => {
+        const action = userMenuKey === UserMenuKeys.ExportCsv ? exportCsv : exportShp;
+        store.dispatch(action(props.project));
+      }}
     >
       <MenuButton
         sx={{
@@ -39,11 +41,11 @@ const ExportMenu = (props: ExportProps) => {
       <Menu sx={style.menu}>
         <ul sx={style.menuList}>
           <li key={UserMenuKeys.ExportCsv}>
+            <MenuItem value={UserMenuKeys.ExportShapefile}>
+              <Box sx={style.menuListItem}>Export Shapefile</Box>
+            </MenuItem>
             <MenuItem value={UserMenuKeys.ExportCsv}>
-              <Box sx={style.menuListItem}>
-                <Icon name="csv" sx={style.menuListIcon} />
-                Export CSV
-              </Box>
+              <Box sx={style.menuListItem}>Export CSV</Box>
             </MenuItem>
           </li>
         </ul>

@@ -7,6 +7,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Res,
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
@@ -22,7 +23,9 @@ import {
   ParsedRequest
 } from "@nestjsx/crud";
 import stringify from "csv-stringify/lib/sync";
+import { Response } from "express";
 import { FeatureCollection } from "geojson";
+import { convert } from "geojson2shp";
 import { GeometryCollection } from "topojson-specification";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
@@ -204,6 +207,40 @@ export class ProjectsController implements CrudController<Project> {
       );
     }
     return geojson;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @Get(":id/export/shp")
+  async exportShapefile(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId,
+    @Res() response: Response
+  ): Promise<void> {
+    const project = await this.getProject(req, projectId);
+    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
+    const geojson = geoCollection.merge(
+      { districts: project.districtsDefinition },
+      project.numberOfDistricts
+    );
+    if (geojson === null) {
+      this.logger.error(`Invalid districts definition for project ${projectId}`);
+      throw new BadRequestException(
+        "District definition is invalid",
+        MakeDistrictsErrors.INVALID_DEFINITION
+      );
+    }
+    const formattedGeojson = {
+      ...geojson,
+      features: geojson.features.map(feature => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          // The feature ID doesn't seem to make its way over as part of 'convert' natively
+          id: feature.id
+        }
+      }))
+    };
+    await convert(formattedGeojson, response, { layer: "districts" });
   }
 
   @UseInterceptors(CrudRequestInterceptor)
