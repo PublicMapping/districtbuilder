@@ -486,7 +486,7 @@ const SidebarRows = ({
             demographics={demographics}
             deviation={deviation}
             key={districtId}
-            isDistrictLocked={lockedDistricts.has(districtId)}
+            isDistrictLocked={lockedDistricts[districtId]}
             districtId={districtId}
             isReadOnly={isReadOnly}
           />

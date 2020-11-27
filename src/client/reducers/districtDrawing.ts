@@ -26,10 +26,10 @@ import {
   saveDistrictsDefinition,
   setSavingState
 } from "../actions/districtDrawing";
-import { updateDistrictsDefinition } from "../actions/projectData";
+import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import { GeoUnits, GeoUnitsForLevel } from "../../shared/entities";
+import { DistrictId, GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import {
   pushEffect,
@@ -82,6 +82,13 @@ function clearGeoUnits(geoUnits: GeoUnits): GeoUnits {
   }, {});
 }
 
+function toggleLock(id: DistrictId, locks: LockedDistricts): LockedDistricts {
+  return locks
+    .slice(0, id)
+    .concat(!locks[id])
+    .concat(...locks.slice(id + 1));
+}
+
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
   readonly highlightedGeounits: GeoUnits;
@@ -107,7 +114,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
         selectedGeounits: {},
         geoLevelIndex: 0,
         geoLevelVisibility: [],
-        lockedDistricts: new Set(),
+        lockedDistricts: [],
         districtsDefinition: []
       }
     },
@@ -209,15 +216,18 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         geoLevelVisibility: action.payload
       });
     case getType(toggleDistrictLocked):
-      return pushStateUpdate(state, {
-        lockedDistricts: new Set(
-          present.state.lockedDistricts.has(action.payload)
-            ? [...present.state.lockedDistricts.values()].filter(
-                districtId => districtId !== action.payload
-              )
-            : [...present.state.lockedDistricts.values(), action.payload]
+      return loop(
+        // Save an effect function which takes the district locks so that we can
+        // undo/redo saving of the locks with the correct state snapshot.
+        pushEffect(state, (state: UndoableState) => {
+          return Cmd.action(updateDistrictLocks(state.lockedDistricts));
+        }),
+        Cmd.action(
+          updateDistrictLocks(
+            toggleLock(action.payload, state.undoHistory.present.state.lockedDistricts)
+          )
         )
-      });
+      );
     case getType(showAdvancedEditingModal):
       return {
         ...state,

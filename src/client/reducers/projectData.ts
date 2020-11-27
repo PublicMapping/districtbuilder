@@ -16,6 +16,9 @@ import {
   setProjectNameEditing,
   staticDataFetchFailure,
   staticDataFetchSuccess,
+  updateDistrictLocks,
+  updateDistrictLocksFailure,
+  updateDistrictLocksSuccess,
   updateDistrictsDefinition,
   updateDistrictsDefinitionRefetchGeoJsonSuccess,
   updateDistrictsDefinitionSuccess,
@@ -146,7 +149,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             }
           },
           {
-            districtsDefinition: action.payload.project.districtsDefinition
+            districtsDefinition: action.payload.project.districtsDefinition,
+            lockedDistricts: action.payload.project.lockedDistricts
           }
         ),
         Cmd.run(fetchAllStaticData, {
@@ -284,6 +288,54 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         : state;
     }
     case getType(updateProjectFailed):
+      return loop(
+        {
+          ...state,
+          saving: "failed"
+        },
+        Cmd.run(showActionFailedToast)
+      );
+    // eslint-disable-next-line
+    case getType(updateDistrictLocks): {
+      // eslint-disable-next-line
+      if ("resource" in state.projectData) {
+        const { id } = state.projectData.resource.project;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () =>
+              patchProject(id, { lockedDistricts: action.payload }).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: updateDistrictLocksSuccess,
+              failActionCreator: updateDistrictLocksFailure
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(updateDistrictLocksSuccess):
+      return updateCurrentState(
+        {
+          ...state,
+          saving: "saved",
+          projectData: {
+            resource: action.payload
+          }
+        },
+        {
+          lockedDistricts: action.payload.project.lockedDistricts
+        }
+      );
+    case getType(updateDistrictLocksFailure):
       return loop(
         {
           ...state,

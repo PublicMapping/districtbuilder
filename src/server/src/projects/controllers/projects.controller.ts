@@ -154,6 +154,7 @@ export class ProjectsController implements CrudController<Project> {
       return this.service.createOne(req, {
         ...dto,
         districtsDefinition: new Array(geoCollection.hierarchy.length).fill(0),
+        lockedDistricts: new Array(geoCollection.hierarchy.length).fill(false),
         user: req.parsed.authPersist.userId
       });
     } catch (error) {
