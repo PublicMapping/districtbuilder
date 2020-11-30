@@ -155,7 +155,7 @@ export type CompactnessScore = number | null | "non-contiguous";
 
 export type DistrictId = number;
 
-export type LockedDistricts = ReadonlySet<DistrictId>;
+export type LockedDistricts = readonly boolean[];
 
 export interface DemographicCounts {
   // key is demographic group (eg. population, white, black, etc)
