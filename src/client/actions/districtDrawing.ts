@@ -41,6 +41,10 @@ export const showAdvancedEditingModal = createAction("Show advanced editing warn
   boolean
 >();
 
+export const showAuthModal = createAction("Show auth modal")<boolean>();
+
+export const showCopyMapModal = createAction("Show copy map modal")<boolean>();
+
 export const undo = createAction("Undo project action")();
 export const redo = createAction("Redo project action")();
 

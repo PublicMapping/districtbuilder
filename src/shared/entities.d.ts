@@ -111,6 +111,7 @@ export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
+  readonly districtsDefinition?: DistrictsDefinition;
 }
 
 export type UpdateProjectData = Pick<

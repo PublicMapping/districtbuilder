@@ -20,7 +20,9 @@ import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
 import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
+import AuthModal from "../components/AuthModal";
 import CenteredContent from "../components/CenteredContent";
+import CopyMapModal from "../components/CopyMapModal";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
@@ -170,6 +172,8 @@ const ProjectScreen = ({
                   geoLevels={staticMetadata.geoLevelHierarchy}
                 />
               )}
+              <AuthModal id={project.id} />
+              <CopyMapModal project={project} />
               <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}

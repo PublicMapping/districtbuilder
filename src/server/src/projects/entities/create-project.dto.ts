@@ -1,6 +1,6 @@
-import { IsInt, IsNotEmpty, IsPositive } from "class-validator";
+import { Allow, IsInt, IsNotEmpty, IsPositive } from "class-validator";
 
-import { CreateProjectData } from "../../../../shared/entities";
+import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
 import { RegionConfigIdDto } from "../../region-configs/entities/region-config-id.dto";
 
 export class CreateProjectDto implements CreateProjectData {
@@ -11,4 +11,6 @@ export class CreateProjectDto implements CreateProjectData {
   readonly numberOfDistricts: number;
   @IsNotEmpty({ message: "Need to supply a region configuration" })
   readonly regionConfig: RegionConfigIdDto;
+  @Allow()
+  readonly districtsDefinition: DistrictsDefinition;
 }

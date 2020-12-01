@@ -153,7 +153,9 @@ export class ProjectsController implements CrudController<Project> {
 
       return this.service.createOne(req, {
         ...dto,
-        districtsDefinition: new Array(geoCollection.hierarchy.length).fill(0),
+        // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
+        districtsDefinition:
+          dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0),
         lockedDistricts: new Array(dto.numberOfDistricts).fill(false),
         user: req.parsed.authPersist.userId
       });

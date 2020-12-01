@@ -9,6 +9,7 @@ import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
 import { undo, redo, toggleFind } from "../actions/districtDrawing";
 import { heights } from "../theme";
+import CopyMapButton from "../components/CopyMapButton";
 import ExportMenu from "../components/ExportMenu";
 import Icon from "../components/Icon";
 import ProjectName from "../components/ProjectName";
@@ -102,6 +103,7 @@ const ProjectHeader = ({
             </React.Fragment>
           )}
           <ShareMenu invert={true} />
+          {project ? <CopyMapButton invert={true} project={project} /> : null}
           <SupportMenu invert={true} />
           {project ? <ExportMenu invert={true} project={project} /> : null}
           <Box sx={{ position: "relative" }}>
