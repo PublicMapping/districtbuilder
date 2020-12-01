@@ -1,15 +1,16 @@
 /** @jsx jsx */
+import React, { useState } from "react";
+import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+
 import { Register } from "../../shared/entities";
 import { registerUser } from "../api";
 import { InputField, PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
-
-import React, { useState } from "react";
-import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
-
+import { userFetch } from "../actions/user";
 import { assertNever } from "../functions";
 import { IProject } from "../../shared/entities";
+import store from "../store";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -33,7 +34,7 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-export const RegisterContent = () => {
+export const RegisterContent = ({ children }: { readonly children: React.ReactNode }) => {
   const isFormInvalid = (form: Register): boolean =>
     Object.values(form).some(value => value.trim() === "");
 
@@ -64,15 +65,16 @@ export const RegisterContent = () => {
             registrationResource.data.email,
             registrationResource.data.password
           )
-            .then(() => setRegistrationResource({ data, resource: void 0 }))
+            .then(() => {
+              setRegistrationResource({ data, resource: void 0 });
+              store.dispatch(userFetch());
+            })
             .catch(errors => {
               setRegistrationResource({ data, errors });
             });
         }}
       >
-        <Heading id="modal-header" as="h2" sx={{ mb: 5, textAlign: "left" }}>
-          Create an account
-        </Heading>
+        {children}
         <FormError resource={registrationResource} />
         <Box sx={{ mb: 3 }}>
           <InputField
@@ -175,7 +177,11 @@ export const AuthModalContent = ({ project }: { readonly project: IProject }) =>
 
   const registerContent = (
     <React.Fragment>
-      <RegisterContent />
+      <RegisterContent>
+        <Heading id="modal-header" as="h2" sx={{ mb: 5, textAlign: "left" }}>
+          Create an account
+        </Heading>
+      </RegisterContent>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Already have an account?{" "}
         <span sx={style.link} onClick={() => setModalIntent("login")}>

@@ -5,8 +5,7 @@ import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
-import { getJWT } from "../jwt";
-import { IProject } from "../../shared/entities";
+import { IProject, IUser } from "../../shared/entities";
 import { showCopyMapModal } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { createProject } from "../api";
@@ -38,15 +37,17 @@ const style: ThemeUIStyleObject = {
 
 const CopyMapModal = ({
   project,
+  user,
   showModal
 }: {
   readonly project: IProject;
+  readonly user: Resource<IUser>;
   readonly showModal: boolean;
 }) => {
   const hideModal = () => store.dispatch(showCopyMapModal(false));
   const [createProjectResource, setCreateProjectResource] = useState<Resource<IProject>>();
   const attributedName = `Copy of ${project.name} by ${project.user.name}`;
-  const needsAuth = getJWT() === null;
+  const isLoggedIn = "resource" in user;
 
   return createProjectResource && "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
@@ -59,7 +60,7 @@ const CopyMapModal = ({
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
       <Box sx={style.modal}>
-        {needsAuth ? (
+        {!isLoggedIn ? (
           <AuthModalContent project={project} />
         ) : (
           <React.Fragment>
@@ -97,18 +98,18 @@ const CopyMapModal = ({
                 This will create a copy of <strong>{attributedName}</strong> in your account. You
                 will be able to make changes to the copied version.
               </Box>
-            </Flex>
-            <Flex sx={style.footer}>
-              <Button sx={style.footerButton} type="submit">
-                Yes, copy to my account
-              </Button>
-              <Button
-                id="cancel-copy-map-modal"
-                onClick={hideModal}
-                sx={{ ...style.footerButton, variant: "buttons.secondary" }}
-              >
-                Cancel
-              </Button>
+              <Flex sx={style.footer}>
+                <Button sx={style.footerButton} type="submit">
+                  Yes, copy to my account
+                </Button>
+                <Button
+                  id="cancel-copy-map-modal"
+                  onClick={hideModal}
+                  sx={{ ...style.footerButton, variant: "buttons.secondary" }}
+                >
+                  Cancel
+                </Button>
+              </Flex>
             </Flex>
           </React.Fragment>
         )}
@@ -119,7 +120,8 @@ const CopyMapModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showCopyMapModal
+    showModal: state.project.showCopyMapModal,
+    user: state.user
   };
 }
 
