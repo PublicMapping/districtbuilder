@@ -5,23 +5,25 @@ import { Link, Redirect, useLocation } from "react-router-dom";
 import { Alert, Box, Button, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
-import { JWT, Login } from "../../shared/entities";
+import { Login, IUser, JWT } from "../../shared/entities";
 import { showPasswordResetNotice } from "../actions/auth";
+import { userFetch } from "../actions/user";
 import { authenticateUser } from "../api";
 import CenteredContent from "../components/CenteredContent";
 import { InputField } from "../components/Field";
 import FormError from "../components/FormError";
-import { jwtIsExpired } from "../jwt";
 import { State } from "../reducers";
-import { WriteResource } from "../resource";
+import { Resource, WriteResource } from "../resource";
 import store from "../store";
 import { AuthLocationState } from "../types";
 
 interface StateProps {
   readonly passwordResetNoticeShown: boolean;
+  readonly user: Resource<IUser>;
 }
 
-const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
+const LoginScreen = ({ passwordResetNoticeShown, user }: StateProps) => {
+  const isLoggedIn = "resource" in user;
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
   const toParams = new URLSearchParams(to.search);
@@ -37,7 +39,7 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
   });
   const { data } = loginResource;
 
-  return "resource" in loginResource && !jwtIsExpired(loginResource.resource) ? (
+  return isLoggedIn ? (
     <Redirect to={to} />
   ) : (
     <CenteredContent>
@@ -52,7 +54,10 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
             e.preventDefault();
             setLoginResource({ data, isPending: true });
             authenticateUser(data.email, data.password)
-              .then(jwt => setLoginResource({ data, resource: jwt }))
+              .then(jwt => {
+                setLoginResource({ data, resource: jwt });
+                store.dispatch(userFetch());
+              })
               .catch(errors => {
                 setLoginResource({ data, errors });
               });
@@ -142,7 +147,8 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    passwordResetNoticeShown: state.auth.passwordResetNoticeShown
+    passwordResetNoticeShown: state.auth.passwordResetNoticeShown,
+    user: state.user
   };
 }
 

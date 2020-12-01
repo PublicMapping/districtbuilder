@@ -12,7 +12,11 @@ import { State } from "../reducers";
 import { AuthLocationState } from "../types";
 import { Resource } from "../resource";
 
-const RegistrationScreen = ({ user }: { readonly user: Resource<IUser> }) => {
+interface StateProps {
+  readonly user: Resource<IUser>;
+}
+
+const RegistrationScreen = ({ user }: StateProps) => {
   const isLoggedIn = "resource" in user;
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
