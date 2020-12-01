@@ -11,34 +11,34 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { assertNever } from "../functions";
 import { IProject } from "../../shared/entities";
 
-const style: ThemeUIStyleObject = {
-  footer: {
-    flex: "auto",
-    textAlign: "center",
-    fontVariant: "tabular-nums",
-    py: 2,
-    mt: 2,
-    fontSize: 1
-  },
-  footerButton: {
-    width: "100%"
-  },
-  header: {
-    padding: "16px 12px",
-    margin: "-12px -12px 24px"
-  },
-  link: {
-    cursor: "pointer",
-    color: "blue.5"
-  }
-};
+export const AuthModalFragment = ({ project }: { readonly project: IProject }) => {
+  const style: ThemeUIStyleObject = {
+    footer: {
+      flex: "auto",
+      textAlign: "center",
+      fontVariant: "tabular-nums",
+      py: 2,
+      mt: 2,
+      fontSize: 1
+    },
+    footerButton: {
+      width: "100%"
+    },
+    header: {
+      padding: "16px 12px",
+      margin: "-12px -12px 24px"
+    },
+    link: {
+      cursor: "pointer",
+      color: "blue.5"
+    }
+  };
 
-type ModalIntent = "initial" | "register" | "login";
+  type ModalIntent = "initial" | "register" | "login";
 
-const isFormInvalid = (form: Register): boolean =>
-  Object.values(form).some(value => value.trim() === "");
+  const isFormInvalid = (form: Register): boolean =>
+    Object.values(form).some(value => value.trim() === "");
 
-const AuthModalFragment = ({ project }: { readonly project: IProject }) => {
   const [modalIntent, setModalIntent] = useState<ModalIntent>("initial");
 
   const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
@@ -204,5 +204,3 @@ const AuthModalFragment = ({ project }: { readonly project: IProject }) => {
     ? loginContent
     : assertNever(modalIntent);
 };
-
-export default AuthModalFragment;

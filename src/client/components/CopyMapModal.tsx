@@ -13,7 +13,7 @@ import { createProject } from "../api";
 import { showActionFailedToast } from "../functions";
 import { State } from "../reducers";
 import store from "../store";
-import AuthModalFragment from "./AuthFragments";
+import { AuthModalFragment } from "./AuthFragments";
 import { Resource } from "../resource";
 
 const style: ThemeUIStyleObject = {
