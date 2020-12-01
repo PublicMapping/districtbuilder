@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { toast } from "react-toastify";
 
-import { Register } from "../../shared/entities";
-import { registerUser } from "../api";
+import { Login, JWT, Register } from "../../shared/entities";
+import { authenticateUser, registerUser } from "../api";
 import { InputField, PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
@@ -35,6 +35,66 @@ const style: ThemeUIStyleObject = {
   }
 };
 
+export const LoginContent = ({ children }: { readonly children: React.ReactNode }) => {
+  const [loginResource, setLoginResource] = useState<WriteResource<Login, JWT>>({
+    data: {
+      email: "",
+      password: ""
+    }
+  });
+  const { data } = loginResource;
+
+  return (
+    <Flex
+      as="form"
+      sx={{ flexDirection: "column" }}
+      onSubmit={(e: React.FormEvent) => {
+        e.preventDefault();
+        setLoginResource({ data, isPending: true });
+        authenticateUser(data.email, data.password)
+          .then(jwt => {
+            setLoginResource({ data, resource: jwt });
+            store.dispatch(userFetch());
+          })
+          .catch(errors => {
+            setLoginResource({ data, errors });
+          });
+      }}
+    >
+      {children}
+      <FormError resource={loginResource} />
+      <Box sx={{ mb: 3 }}>
+        <InputField
+          field="email"
+          label="Email"
+          resource={loginResource}
+          inputProps={{
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+              setLoginResource({
+                data: { ...data, email: e.currentTarget.value }
+              })
+          }}
+        />
+      </Box>
+      <Box sx={{ mb: 4 }}>
+        <InputField
+          field="password"
+          label="Password"
+          resource={loginResource}
+          inputProps={{
+            type: "password",
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+              setLoginResource({
+                data: { ...data, password: e.currentTarget.value }
+              })
+          }}
+        />
+      </Box>
+      <Button type="submit">Log in</Button>
+    </Flex>
+  );
+};
+
 export const RegisterContent = ({ children }: { readonly children: React.ReactNode }) => {
   const isFormInvalid = (form: Register): boolean =>
     Object.values(form).some(value => value.trim() === "");
@@ -54,67 +114,65 @@ export const RegisterContent = ({ children }: { readonly children: React.ReactNo
     });
 
   return (
-    <React.Fragment>
-      <Flex
-        as="form"
-        sx={{ flexDirection: "column" }}
-        onSubmit={(e: React.FormEvent) => {
-          e.preventDefault();
-          setRegistrationResource({ data, isPending: true });
-          registerUser(
-            registrationResource.data.name,
-            registrationResource.data.email,
-            registrationResource.data.password
-          )
-            .then(() => {
-              setRegistrationResource({ data, resource: void 0 });
-              store.dispatch(userFetch());
-              toast.success("Successfully registered");
-            })
-            .catch(errors => {
-              setRegistrationResource({ data, errors });
-            });
-        }}
+    <Flex
+      as="form"
+      sx={{ flexDirection: "column" }}
+      onSubmit={(e: React.FormEvent) => {
+        e.preventDefault();
+        setRegistrationResource({ data, isPending: true });
+        registerUser(
+          registrationResource.data.name,
+          registrationResource.data.email,
+          registrationResource.data.password
+        )
+          .then(() => {
+            setRegistrationResource({ data, resource: void 0 });
+            store.dispatch(userFetch());
+            toast.success("Successfully registered");
+          })
+          .catch(errors => {
+            setRegistrationResource({ data, errors });
+          });
+      }}
+    >
+      {children}
+      <FormError resource={registrationResource} />
+      <Box sx={{ mb: 3 }}>
+        <InputField
+          field="name"
+          label="Name"
+          resource={registrationResource}
+          inputProps={{ onChange: setForm("name") }}
+        />
+      </Box>
+      <Box sx={{ mb: 3 }}>
+        <InputField
+          field="email"
+          label="Email"
+          resource={registrationResource}
+          inputProps={{ onChange: setForm("email") }}
+        />
+      </Box>
+      <Box sx={{ mb: 3 }}>
+        <PasswordField
+          field="password"
+          userAttributes={[data.email, data.name]}
+          password={data.password}
+          label="Password"
+          resource={registrationResource}
+          inputProps={{ onChange: setForm("password") }}
+        />
+      </Box>
+      <Button
+        type="submit"
+        disabled={
+          ("isPending" in registrationResource && registrationResource.isPending) ||
+          isFormInvalid(data)
+        }
       >
-        {children}
-        <FormError resource={registrationResource} />
-        <Box sx={{ mb: 3 }}>
-          <InputField
-            field="name"
-            label="Name"
-            resource={registrationResource}
-            inputProps={{ onChange: setForm("name") }}
-          />
-        </Box>
-        <Box sx={{ mb: 3 }}>
-          <InputField
-            field="email"
-            label="Email"
-            resource={registrationResource}
-            inputProps={{ onChange: setForm("email") }}
-          />
-        </Box>
-        <Box sx={{ mb: 3 }}>
-          <PasswordField
-            field="password"
-            userAttributes={[data.email, data.name]}
-            password={data.password}
-            label="Password"
-            resource={registrationResource}
-            inputProps={{ onChange: setForm("password") }}
-          />
-        </Box>
-        <Button
-          type="submit"
-          disabled={
-            ("isPending" in registrationResource && registrationResource.isPending) ||
-            isFormInvalid(data)
-          }
-        >
-          Let’s go!
-        </Button>
-      </Flex>
-    </React.Fragment>
+        Let’s go!
+      </Button>
+    </Flex>
   );
 };
 
@@ -162,17 +220,16 @@ export const AuthModalContent = ({ project }: { readonly project: IProject }) =>
 
   const loginContent = (
     <React.Fragment>
-      <Box sx={style.header}>
-        <Heading
-          as="h3"
-          sx={{ marginBottom: "0", fontWeight: "medium", display: "flex", alignItems: "center" }}
-          id="modal-header"
-        >
-          Login
+      <LoginContent>
+        <Heading id="modal-header" as="h2" sx={{ mb: 5, textAlign: "left" }}>
+          Log in
         </Heading>
-      </Box>
-      <Box>
-        <p>TODO: add login content</p>
+      </LoginContent>
+      <Box sx={{ fontSize: 1, textAlign: "center" }}>
+        Need an account?{" "}
+        <span sx={style.link} onClick={() => setModalIntent("register")}>
+          Sign up for free
+        </span>
       </Box>
     </React.Fragment>
   );
