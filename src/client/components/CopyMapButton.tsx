@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { Button, jsx } from "theme-ui";
 import { Wrapper } from "react-aria-menubutton";
-import Icon from "../components/Icon";
 import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
@@ -26,10 +25,10 @@ const CopyMapButton = (props: CopyMapButtonProps) => {
         className="copyMap-menu"
         onClick={() => {
           store.dispatch(showCopyMapModal(true));
+          //store.dispatch(showAuthModal(true));
         }}
       >
-        <Icon name="copy" />
-        Copy Map
+        Copy this map
       </Button>
     </Wrapper>
   );
