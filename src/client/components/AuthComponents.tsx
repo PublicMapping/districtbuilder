@@ -11,7 +11,7 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { assertNever } from "../functions";
 import { IProject } from "../../shared/entities";
 
-export const AuthModalFragment = ({ project }: { readonly project: IProject }) => {
+export const AuthModalContent = ({ project }: { readonly project: IProject }) => {
   const style: ThemeUIStyleObject = {
     footer: {
       flex: "auto",

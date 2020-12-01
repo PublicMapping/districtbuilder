@@ -13,7 +13,7 @@ import { createProject } from "../api";
 import { showActionFailedToast } from "../functions";
 import { State } from "../reducers";
 import store from "../store";
-import { AuthModalFragment } from "./AuthComponents";
+import { AuthModalContent } from "./AuthComponents";
 import { Resource } from "../resource";
 
 const style: ThemeUIStyleObject = {
@@ -60,7 +60,7 @@ const CopyMapModal = ({
     >
       <Box sx={style.modal}>
         {needsAuth ? (
-          <AuthModalFragment project={project} />
+          <AuthModalContent project={project} />
         ) : (
           <React.Fragment>
             <Box sx={style.header}>
