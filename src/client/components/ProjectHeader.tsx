@@ -102,7 +102,7 @@ const ProjectHeader = ({
               </Button>
             </React.Fragment>
           )}
-          {project ? <CopyMapButton invert={true} project={project} /> : null}
+          <CopyMapButton invert={true} />
           <ShareMenu invert={true} />
           <SupportMenu invert={true} />
           {project ? <ExportMenu invert={true} project={project} /> : null}
@@ -131,7 +131,7 @@ const ProjectHeader = ({
         </React.Fragment>
       ) : (
         <React.Fragment>
-          {project ? <CopyMapButton invert={true} project={project} /> : null}
+          <CopyMapButton invert={true} />
         </React.Fragment>
       )}
     </Flex>

@@ -172,7 +172,7 @@ const ProjectScreen = ({
                   geoLevels={staticMetadata.geoLevelHierarchy}
                 />
               )}
-              <AuthModal id={project.id} />
+              <AuthModal project={project} />
               <CopyMapModal project={project} />
               <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>

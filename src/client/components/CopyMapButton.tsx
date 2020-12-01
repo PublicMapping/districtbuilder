@@ -1,15 +1,13 @@
 /** @jsx jsx */
 import { Button, jsx } from "theme-ui";
 import { Wrapper } from "react-aria-menubutton";
-import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
-//import { showAuthModal } from "../actions/districtDrawing";
-import { showCopyMapModal } from "../actions/districtDrawing";
+import { showAuthModal } from "../actions/districtDrawing";
+//import { showCopyMapModal } from "../actions/districtDrawing";
 
 interface CopyMapButtonProps {
   readonly invert?: boolean;
-  readonly project: IProject;
 }
 
 const CopyMapButton = (props: CopyMapButtonProps) => {
@@ -24,8 +22,8 @@ const CopyMapButton = (props: CopyMapButtonProps) => {
         }}
         className="copyMap-menu"
         onClick={() => {
-          store.dispatch(showCopyMapModal(true));
-          //store.dispatch(showAuthModal(true));
+          //store.dispatch(showCopyMapModal(true));
+          store.dispatch(showAuthModal(true));
         }}
       >
         Copy this map
