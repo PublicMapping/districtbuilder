@@ -46,7 +46,7 @@ const CopyMapModal = ({
 }) => {
   const hideModal = () => store.dispatch(showCopyMapModal(false));
   const [createProjectResource, setCreateProjectResource] = useState<Resource<IProject>>();
-  const attributedName = `Copy of ${project.name} by ${project.user.name}`;
+  const attributedName = `${project.name} by ${project.user.name}`;
   const isLoggedIn = "resource" in user;
 
   return createProjectResource && "resource" in createProjectResource ? (
@@ -83,7 +83,7 @@ const CopyMapModal = ({
               sx={{ flexDirection: "column" }}
               onSubmit={(e: React.FormEvent) => {
                 e.preventDefault();
-                createProject({ ...project, name: attributedName })
+                createProject({ ...project, name: `Copy of ${attributedName}` })
                   .then((project: IProject) => {
                     setCreateProjectResource({ resource: project });
 
