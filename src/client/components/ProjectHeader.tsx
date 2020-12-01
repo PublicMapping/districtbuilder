@@ -130,17 +130,20 @@ const ProjectHeader = ({
           </Box>
         </React.Fragment>
       ) : (
-        <Styled.a
-          as={Link}
-          to="/"
-          sx={{
-            color: "muted",
-            fontWeight: "normal",
-            "&:active": { color: "muted" }
-          }}
-        >
-          Made with DistrictBuilder
-        </Styled.a>
+        <React.Fragment>
+          {project ? <CopyMapButton invert={true} project={project} /> : null}
+          <Styled.a
+            as={Link}
+            to="/"
+            sx={{
+              color: "muted",
+              fontWeight: "normal",
+              "&:active": { color: "muted" }
+            }}
+          >
+            Made with DistrictBuilder
+          </Styled.a>
+        </React.Fragment>
       )}
     </Flex>
   </Flex>
