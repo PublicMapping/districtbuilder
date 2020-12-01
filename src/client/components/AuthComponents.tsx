@@ -11,35 +11,31 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { assertNever } from "../functions";
 import { IProject } from "../../shared/entities";
 
-export const AuthModalContent = ({ project }: { readonly project: IProject }) => {
-  const style: ThemeUIStyleObject = {
-    footer: {
-      flex: "auto",
-      textAlign: "center",
-      fontVariant: "tabular-nums",
-      py: 2,
-      mt: 2,
-      fontSize: 1
-    },
-    footerButton: {
-      width: "100%"
-    },
-    header: {
-      padding: "16px 12px",
-      margin: "-12px -12px 24px"
-    },
-    link: {
-      cursor: "pointer",
-      color: "blue.5"
-    }
-  };
+const style: ThemeUIStyleObject = {
+  footer: {
+    flex: "auto",
+    textAlign: "center",
+    fontVariant: "tabular-nums",
+    py: 2,
+    mt: 2,
+    fontSize: 1
+  },
+  footerButton: {
+    width: "100%"
+  },
+  header: {
+    padding: "16px 12px",
+    margin: "-12px -12px 24px"
+  },
+  link: {
+    cursor: "pointer",
+    color: "blue.5"
+  }
+};
 
-  type ModalIntent = "initial" | "register" | "login";
-
+export const RegisterContent = () => {
   const isFormInvalid = (form: Register): boolean =>
     Object.values(form).some(value => value.trim() === "");
-
-  const [modalIntent, setModalIntent] = useState<ModalIntent>("initial");
 
   const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
     data: {
@@ -55,56 +51,7 @@ export const AuthModalContent = ({ project }: { readonly project: IProject }) =>
       data: { ...data, [field]: e.currentTarget.value }
     });
 
-  const initialContent = (
-    <React.Fragment>
-      <Box sx={style.header}>
-        <Heading
-          as="h3"
-          sx={{ marginBottom: "0", fontWeight: "medium", display: "flex", alignItems: "center" }}
-          id="modal-header"
-        >
-          {project.user.name} builds maps with DistrictBuilder
-        </Heading>
-      </Box>
-      <Box>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-          ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-          ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        </p>
-        <ul>
-          <li>100% free to use, forever</li>
-          <li>Makes district drawing easy</li>
-          <li>Another selling point to convince user that this is good</li>
-        </ul>
-      </Box>
-      <Flex sx={style.footer}>
-        <Button
-          sx={style.footerButton}
-          onClick={() => {
-            console.log("create account clicked");
-            setModalIntent("register");
-          }}
-        >
-          Create a free account
-        </Button>
-      </Flex>
-      <p sx={style.footer}>
-        Already have an account?{" "}
-        <span
-          sx={style.link}
-          onClick={() => {
-            console.log("log in clicked");
-            setModalIntent("login");
-          }}
-        >
-          Log in
-        </span>
-      </p>
-    </React.Fragment>
-  );
-
-  const registerContent = (
+  return (
     <React.Fragment>
       <Flex
         as="form"
@@ -163,19 +110,49 @@ export const AuthModalContent = ({ project }: { readonly project: IProject }) =>
           Let’s go!
         </Button>
       </Flex>
+    </React.Fragment>
+  );
+};
 
-      <Box sx={{ fontSize: 1, textAlign: "center" }}>
-        Already have an account?{" "}
-        <span
-          sx={style.link}
-          onClick={() => {
-            console.log("log in clicked");
-            setModalIntent("login");
-          }}
+export const AuthModalContent = ({ project }: { readonly project: IProject }) => {
+  type ModalIntent = "initial" | "register" | "login";
+
+  const [modalIntent, setModalIntent] = useState<ModalIntent>("initial");
+
+  const initialContent = (
+    <React.Fragment>
+      <Box sx={style.header}>
+        <Heading
+          as="h3"
+          sx={{ marginBottom: "0", fontWeight: "medium", display: "flex", alignItems: "center" }}
+          id="modal-header"
         >
+          {project.user.name} builds maps with DistrictBuilder
+        </Heading>
+      </Box>
+      <Box>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+          ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+          ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        </p>
+        <ul>
+          <li>100% free to use, forever</li>
+          <li>Makes district drawing easy</li>
+          <li>Another selling point to convince user that this is good</li>
+        </ul>
+      </Box>
+      <Flex sx={style.footer}>
+        <Button sx={style.footerButton} onClick={() => setModalIntent("register")}>
+          Create a free account
+        </Button>
+      </Flex>
+      <p sx={style.footer}>
+        Already have an account?{" "}
+        <span sx={style.link} onClick={() => setModalIntent("login")}>
           Log in
         </span>
-      </Box>
+      </p>
     </React.Fragment>
   );
 
@@ -192,6 +169,18 @@ export const AuthModalContent = ({ project }: { readonly project: IProject }) =>
       </Box>
       <Box>
         <p>TODO: add login content</p>
+      </Box>
+    </React.Fragment>
+  );
+
+  const registerContent = (
+    <React.Fragment>
+      <RegisterContent />
+      <Box sx={{ fontSize: 1, textAlign: "center" }}>
+        Already have an account?{" "}
+        <span sx={style.link} onClick={() => setModalIntent("login")}>
+          Log in
+        </span>
       </Box>
     </React.Fragment>
   );
