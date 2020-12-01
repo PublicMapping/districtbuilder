@@ -18,7 +18,6 @@ import {
   setSelectionTool,
   setSelectedGeounits,
   showAdvancedEditingModal,
-  showAuthModal,
   showCopyMapModal,
   toggleDistrictLocked,
   undo,
@@ -96,7 +95,6 @@ export interface DistrictDrawingState {
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly showAdvancedEditingModal: boolean;
-  readonly showAuthModal: boolean;
   readonly showCopyMapModal: boolean;
   readonly findMenuOpen: boolean;
   readonly findIndex?: number;
@@ -109,7 +107,6 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
   showAdvancedEditingModal: false,
-  showAuthModal: false,
   showCopyMapModal: false,
   findMenuOpen: false,
   saving: "unsaved",
@@ -238,11 +235,6 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         showAdvancedEditingModal: action.payload
-      };
-    case getType(showAuthModal):
-      return {
-        ...state,
-        showAuthModal: action.payload
       };
     case getType(showCopyMapModal):
       return {
