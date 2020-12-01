@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import React, { useState } from "react";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { toast } from "react-toastify";
 
 import { Register } from "../../shared/entities";
 import { registerUser } from "../api";
@@ -68,6 +69,7 @@ export const RegisterContent = ({ children }: { readonly children: React.ReactNo
             .then(() => {
               setRegistrationResource({ data, resource: void 0 });
               store.dispatch(userFetch());
+              toast.success("Successfully registered");
             })
             .catch(errors => {
               setRegistrationResource({ data, errors });
