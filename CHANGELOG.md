@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added Shapefile export [#516](https://github.com/PublicMapping/districtbuilder/pull/516)
+- Allow copying maps [#526](https://github.com/PublicMapping/districtbuilder/pull/526)
 
 ### Changed
 

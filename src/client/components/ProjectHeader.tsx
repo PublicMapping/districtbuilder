@@ -5,10 +5,11 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
-import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, jsx, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
 import { undo, redo, toggleFind } from "../actions/districtDrawing";
 import { heights } from "../theme";
+import CopyMapButton from "../components/CopyMapButton";
 import ExportMenu from "../components/ExportMenu";
 import Icon from "../components/Icon";
 import ProjectName from "../components/ProjectName";
@@ -101,6 +102,7 @@ const ProjectHeader = ({
               </Button>
             </React.Fragment>
           )}
+          <CopyMapButton invert={true} />
           <ShareMenu invert={true} />
           <SupportMenu invert={true} />
           {project ? <ExportMenu invert={true} project={project} /> : null}
@@ -128,17 +130,9 @@ const ProjectHeader = ({
           </Box>
         </React.Fragment>
       ) : (
-        <Styled.a
-          as={Link}
-          to="/"
-          sx={{
-            color: "muted",
-            fontWeight: "normal",
-            "&:active": { color: "muted" }
-          }}
-        >
-          Made with DistrictBuilder
-        </Styled.a>
+        <React.Fragment>
+          <CopyMapButton invert={true} />
+        </React.Fragment>
       )}
     </Flex>
   </Flex>

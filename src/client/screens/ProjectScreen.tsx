@@ -21,6 +21,7 @@ import { userFetch } from "../actions/user";
 import "../App.css";
 import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
 import CenteredContent from "../components/CenteredContent";
+import CopyMapModal from "../components/CopyMapModal";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
@@ -170,6 +171,7 @@ const ProjectScreen = ({
                   geoLevels={staticMetadata.geoLevelHierarchy}
                 />
               )}
+              <CopyMapModal project={project} />
               <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}

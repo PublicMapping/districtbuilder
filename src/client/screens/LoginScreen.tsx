@@ -1,27 +1,26 @@
 /** @jsx jsx */
-import React, { useState } from "react";
+import { useState } from "react";
 import { connect } from "react-redux";
 import { Link, Redirect, useLocation } from "react-router-dom";
-import { Alert, Box, Button, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Alert, Box, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
-import { JWT, Login } from "../../shared/entities";
+import { IUser } from "../../shared/entities";
 import { showPasswordResetNotice } from "../actions/auth";
-import { authenticateUser } from "../api";
+import { LoginContent } from "../components/AuthComponents";
 import CenteredContent from "../components/CenteredContent";
-import { InputField } from "../components/Field";
-import FormError from "../components/FormError";
-import { jwtIsExpired } from "../jwt";
 import { State } from "../reducers";
-import { WriteResource } from "../resource";
+import { Resource } from "../resource";
 import store from "../store";
 import { AuthLocationState } from "../types";
 
 interface StateProps {
   readonly passwordResetNoticeShown: boolean;
+  readonly user: Resource<IUser>;
 }
 
-const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
+const LoginScreen = ({ passwordResetNoticeShown, user }: StateProps) => {
+  const isLoggedIn = "resource" in user;
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
   const toParams = new URLSearchParams(to.search);
@@ -29,15 +28,7 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
     to.pathname === "/start-project" && toParams.has("name")
   );
 
-  const [loginResource, setLoginResource] = useState<WriteResource<Login, JWT>>({
-    data: {
-      email: "",
-      password: ""
-    }
-  });
-  const { data } = loginResource;
-
-  return "resource" in loginResource && !jwtIsExpired(loginResource.resource) ? (
+  return isLoggedIn ? (
     <Redirect to={to} />
   ) : (
     <CenteredContent>
@@ -45,19 +36,7 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
         <Logo sx={{ maxWidth: "15rem" }} />
       </Heading>
       <Card sx={{ variant: "card.floating" }}>
-        <Flex
-          as="form"
-          sx={{ flexDirection: "column" }}
-          onSubmit={(e: React.FormEvent) => {
-            e.preventDefault();
-            setLoginResource({ data, isPending: true });
-            authenticateUser(data.email, data.password)
-              .then(jwt => setLoginResource({ data, resource: jwt }))
-              .catch(errors => {
-                setLoginResource({ data, errors });
-              });
-          }}
-        >
+        <LoginContent>
           <Heading as="h2" sx={{ fontSize: 4, mb: 5 }}>
             Log in
           </Heading>
@@ -93,36 +72,7 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
               />
             </Alert>
           )}
-          <FormError resource={loginResource} />
-          <Box sx={{ mb: 3 }}>
-            <InputField
-              field="email"
-              label="Email"
-              resource={loginResource}
-              inputProps={{
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                  setLoginResource({
-                    data: { ...data, email: e.currentTarget.value }
-                  })
-              }}
-            />
-          </Box>
-          <Box sx={{ mb: 4 }}>
-            <InputField
-              field="password"
-              label="Password"
-              resource={loginResource}
-              inputProps={{
-                type: "password",
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                  setLoginResource({
-                    data: { ...data, password: e.currentTarget.value }
-                  })
-              }}
-            />
-          </Box>
-          <Button type="submit">Log in</Button>
-        </Flex>
+        </LoginContent>
       </Card>
       <Box sx={{ fontSize: 1, mt: 3, textAlign: "center" }}>
         Need an account?{" "}
@@ -142,7 +92,8 @@ const LoginScreen = ({ passwordResetNoticeShown }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    passwordResetNoticeShown: state.auth.passwordResetNoticeShown
+    passwordResetNoticeShown: state.auth.passwordResetNoticeShown,
+    user: state.user
   };
 }
 
