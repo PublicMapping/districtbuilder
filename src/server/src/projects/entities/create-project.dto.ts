@@ -1,4 +1,12 @@
-import { Allow, IsInt, IsNotEmpty, IsPositive } from "class-validator";
+import {
+  Allow,
+  ArrayNotEmpty,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive
+} from "class-validator";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
 import { RegionConfigIdDto } from "../../region-configs/entities/region-config-id.dto";
