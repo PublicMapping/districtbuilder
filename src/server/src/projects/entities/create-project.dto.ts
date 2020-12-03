@@ -11,6 +11,8 @@ export class CreateProjectDto implements CreateProjectData {
   readonly numberOfDistricts: number;
   @IsNotEmpty({ message: "Need to supply a region configuration" })
   readonly regionConfig: RegionConfigIdDto;
-  @Allow()
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsOptional()
   readonly districtsDefinition: DistrictsDefinition;
 }
