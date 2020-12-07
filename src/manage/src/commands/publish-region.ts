@@ -47,7 +47,11 @@ export default class PublishRegion extends Command {
     const { args, flags } = this.parse(PublishRegion);
     const versionDt = new Date();
     const keyPrefix = `regions/${args.countryCode}/${args.regionCode}/${versionDt.toISOString()}`;
-    const filePaths = await readDir(args.staticDataDir);
+
+    // Filter out intermediate data files that are no longer needed
+    const filePaths = (await readDir(args.staticDataDir)).filter(fileName => {
+      return [".geojson", ".mbtiles"].every(ext => !fileName.endsWith(ext));
+    });
 
     if (filePaths.length === 0) {
       this.log("no files found for publishing, exiting");

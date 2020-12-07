@@ -30,6 +30,6 @@ export class RegionConfig implements IRegionConfig {
   @Column({ type: "timestamp with time zone", default: () => "NOW()" })
   version: Date;
 
-  @Column({ default: false })
+  @Column({ type: "boolean", default: false })
   hidden: boolean;
 }
