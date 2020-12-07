@@ -164,7 +164,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
       {"resource" in user && !user.resource.isEmailVerified && (
         <Alert sx={{ borderRadius: "0" }}>
           <Box>
-            Please confirm your email in the next 14 days.{" "}
+            Please confirm your email.{" "}
             <Box sx={{ display: "inline-block", p: 1 }}>
               {"resource" in resendEmail ? (
                 <span sx={{ fontWeight: "body" }}>
