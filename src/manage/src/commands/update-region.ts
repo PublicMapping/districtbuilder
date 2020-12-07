@@ -25,7 +25,11 @@ export default class UpdateRegion extends Command {
   async run(): Promise<void> {
     const { args } = this.parse(UpdateRegion);
 
-    const filePaths = await readDir(args.staticDataDir);
+    // Filter out intermediate data files that are no longer needed
+    const filePaths = (await readDir(args.staticDataDir)).filter(fileName => {
+      return [".geojson", ".mbtiles"].every(ext => !fileName.endsWith(ext));
+    });
+
     if (filePaths.length === 0) {
       this.log("no files found for updating, exiting");
       return;
