@@ -24,8 +24,10 @@ import {
   replaceSelectedGeounits,
   toggleFind,
   setFindIndex,
+  setFindType,
   saveDistrictsDefinition,
-  setSavingState
+  setSavingState,
+  FindTool
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -98,6 +100,7 @@ export interface DistrictDrawingState {
   readonly showCopyMapModal: boolean;
   readonly findMenuOpen: boolean;
   readonly findIndex?: number;
+  readonly findTool: FindTool;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
 }
@@ -109,6 +112,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
   findMenuOpen: false,
+  findTool: FindTool.Unassigned,
   saving: "unsaved",
   undoHistory: {
     past: [],
@@ -251,6 +255,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         findIndex: action.payload
+      };
+    case getType(setFindType):
+      return {
+        ...state,
+        findTool: action.payload
       };
     case getType(undo): {
       const lastPastState = state.undoHistory.past[state.undoHistory.past.length - 1];
