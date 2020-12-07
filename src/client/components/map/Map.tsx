@@ -88,7 +88,9 @@ const DistrictsMap = ({
 
   // While a geolevel has tiles up to the maxZoom level, we want the enable the user to zoom in
   // beyond that zoom level. Using lower zoom tiles at higher zoom levels is called overzoom.
-  const overZoom = maxZoom + 4;
+  // The ability to zoom this far in isn't needed in the typical use-case (+4 is fine for that),
+  // but it's needed in order to allow the user to fix very tiny unassigned slivers that may arise.
+  const overZoom = maxZoom + 8;
 
   // Add a color property to the geojson, so it can be used for styling
   geojson.features.forEach((feature, id) => {
