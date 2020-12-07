@@ -67,7 +67,12 @@ const FindMenu = ({
 
   useEffect(() => {
     // eslint-disable-next-line
-    if (map && unassigned && findIndex !== undefined) {
+    if (
+      map &&
+      unassigned &&
+      findIndex !== undefined &&
+      unassigned.geometry.coordinates.length > findIndex
+    ) {
       // eslint-disable-next-line
       const bounds = bbox(polygon(unassigned.geometry.coordinates[findIndex])) as [
         number,
@@ -85,7 +90,7 @@ const FindMenu = ({
       &nbsp; Unassigned
       <Box sx={style.numFound}>
         {unassigned
-          ? findIndex !== undefined
+          ? findIndex !== undefined && numUnassigned
             ? `${findIndex + 1} / ${numUnassigned}`
             : `${numUnassigned} found`
           : "—"}
