@@ -279,7 +279,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               ...state,
               projectData: {
                 resource: action.payload
-              }
+              },
+              findIndex: undefined
             },
             {
               districtsDefinition: action.payload.project.districtsDefinition

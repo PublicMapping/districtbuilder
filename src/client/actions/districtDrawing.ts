@@ -7,6 +7,11 @@ export enum SelectionTool {
   Rectangle = "RECTANGLE"
 }
 
+export enum FindTool {
+  Unassigned = "UNASSIGNED",
+  NonContiguous = "NON_CONTIGUOUS"
+}
+
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
 
 export const addSelectedGeounits = createAction("Add selected geounits")<GeoUnits>();
@@ -47,6 +52,7 @@ export const undo = createAction("Undo project action")();
 export const redo = createAction("Redo project action")();
 
 export const toggleFind = createAction("Toggle find menu visibility")<boolean>();
+export const setFindType = createAction("Set find menu search type")<FindTool>();
 export const setFindIndex = createAction("Set find menu polygon index")<number | undefined>();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();
