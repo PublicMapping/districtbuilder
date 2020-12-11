@@ -33,7 +33,7 @@ import { GeoUnitHierarchy, ProjectId, PublicUserProperties } from "../../../../s
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
 
-import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { User } from "../../users/entities/user.entity";
 import { CreateProjectDto } from "../entities/create-project.dto";
 import { Project } from "../entities/project.entity";
@@ -101,6 +101,21 @@ export class ProjectsController implements CrudController<Project> {
     public topologyService: TopologyService,
     private readonly regionConfigService: RegionConfigsService
   ) {}
+
+  // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
+  @Override()
+  @UseGuards(OptionalJwtAuthGuard)
+  async getOne(@ParsedRequest() req: CrudRequest): Promise<Project> {
+    if (!this.base.getOneBase) {
+      this.logger.error("Routes misconfigured. Missing `getOneBase` route");
+      throw new InternalServerErrorException();
+    }
+    return this.base
+      .getOneBase(req)
+      .then(project =>
+        project.user.id === req.parsed.authPersist.userId ? project : project.getReadOnlyView()
+      );
+  }
 
   // Overriden to add JwtAuthGuard
   @Override()
