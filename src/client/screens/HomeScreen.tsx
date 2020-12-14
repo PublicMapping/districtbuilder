@@ -4,6 +4,7 @@ import Avatar from "react-avatar";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
+import TimeAgo from "timeago-react";
 import * as H from "history";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
@@ -284,6 +285,15 @@ const HomeScreen = ({ projects, user }: StateProps) => {
                     ({project.regionConfig.name}, {project.numberOfDistricts} districts)
                   </p>
                 </Link>
+                <div
+                  sx={{
+                    fontWeight: "light",
+                    color: "gray.5",
+                    paddingLeft: "5px"
+                  }}
+                >
+                  Last updated <TimeAgo datetime={project.updatedDt} />
+                </div>
                 <Divider />
               </React.Fragment>
             ))
