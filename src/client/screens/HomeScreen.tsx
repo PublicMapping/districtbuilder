@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
 import TimeAgo from "timeago-react";
 import * as H from "history";
+import ProjectListFlyout from "../components/ProjectListFlyout";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
 import {
@@ -285,6 +286,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
                     ({project.regionConfig.name}, {project.numberOfDistricts} districts)
                   </p>
                 </Link>
+                <ProjectListFlyout project={project} />
                 <div
                   sx={{
                     fontWeight: "light",
