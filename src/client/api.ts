@@ -144,7 +144,7 @@ export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJS
 export async function fetchProjects(): Promise<readonly IProject[]> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get("/api/projects")
+      .get("/api/projects?sort=updatedDt,DESC")
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });

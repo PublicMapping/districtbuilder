@@ -101,6 +101,7 @@ export interface IProject {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
+  readonly updatedDt: Date;
   readonly districtsDefinition: DistrictsDefinition;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;

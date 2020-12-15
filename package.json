@@ -45,6 +45,7 @@
     "redux-devtools-extension": "^2.13.8",
     "redux-loop": "5.0.1",
     "theme-ui": "0.4.0-rc.1",
+    "timeago-react": "3.0.1",
     "ts.data.json": "0.3.0",
     "typesafe-actions": "5.1.0",
     "typescript": "3.7.5",
