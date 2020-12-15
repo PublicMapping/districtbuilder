@@ -75,7 +75,7 @@ import { Errors } from "../../../../shared/types";
   filter: (req: any) => {
     // Filter to user's projects for all update requests and for full project
     // list. Unauthenticated access is allowed for individual projects
-    if (req.method !== "GET" || req.url === "/api/projects") {
+    if (req.method !== "GET" || req.route.path === "/api/projects") {
       const user = req.user as User;
       return {
         user_id: user ? user.id : undefined
