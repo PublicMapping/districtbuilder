@@ -194,6 +194,22 @@ export async function exportProjectCsv(project: IProject): Promise<void> {
   });
 }
 
+export async function exportProjectGeoJson(project: IProject): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/projects/${project.id}/export/geojson`)
+      .then(response => {
+        return resolve(
+          saveAs(
+            new Blob([JSON.stringify(response.data)], { type: "application/json" }),
+            `${project.name}.geojson`
+          )
+        );
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
 export async function exportProjectShp(project: IProject): Promise<void> {
   return new Promise((resolve, reject) => {
     apiAxios

@@ -5,6 +5,8 @@ import { Action } from "../actions";
 import {
   exportCsv,
   exportCsvFailure,
+  exportGeoJson,
+  exportGeoJsonFailure,
   exportShp,
   exportShpFailure,
   projectDataFetch,
@@ -42,6 +44,7 @@ import {
 } from "../functions";
 import {
   exportProjectCsv,
+  exportProjectGeoJson,
   exportProjectShp,
   fetchProjectData,
   fetchProjectGeoJson,
@@ -353,6 +356,16 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(exportCsvFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
+    case getType(exportGeoJson):
+      return loop(
+        state,
+        Cmd.run(exportProjectGeoJson, {
+          failActionCreator: exportGeoJsonFailure,
+          args: [action.payload] as Parameters<typeof exportProjectGeoJson>
+        })
+      );
+    case getType(exportGeoJsonFailure):
       return loop(state, Cmd.run(showActionFailedToast));
     case getType(exportShp):
       return loop(

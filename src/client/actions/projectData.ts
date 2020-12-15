@@ -45,5 +45,8 @@ export const updateProjectFailed = createAction("Update project failure")();
 export const exportCsv = createAction("Export project CSV")<IProject>();
 export const exportCsvFailure = createAction("Export project CSV failure")<string>();
 
+export const exportGeoJson = createAction("Export project GeoJSON")<IProject>();
+export const exportGeoJsonFailure = createAction("Export project GeoJSON failure")<string>();
+
 export const exportShp = createAction("Export project Shapefile")<IProject>();
 export const exportShpFailure = createAction("Export project Shapefile failure")<string>();

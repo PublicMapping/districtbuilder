@@ -5,11 +5,12 @@ import Icon from "../components/Icon";
 import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
-import { exportCsv, exportShp } from "../actions/projectData";
+import { exportCsv, exportGeoJson, exportShp } from "../actions/projectData";
 
 enum UserMenuKeys {
   ExportCsv = "csv",
-  ExportShapefile = "shp"
+  ExportShapefile = "shp",
+  ExportGeoJson = "geojson"
 }
 
 interface ExportProps {
@@ -22,7 +23,12 @@ const ExportMenu = (props: ExportProps) => {
     <Wrapper
       sx={{ position: "relative", pr: 1 }}
       onSelection={(userMenuKey: string) => {
-        const action = userMenuKey === UserMenuKeys.ExportCsv ? exportCsv : exportShp;
+        const action =
+          userMenuKey === UserMenuKeys.ExportCsv
+            ? exportCsv
+            : userMenuKey === UserMenuKeys.ExportShapefile
+            ? exportShp
+            : exportGeoJson;
         store.dispatch(action(props.project));
       }}
     >
@@ -46,6 +52,9 @@ const ExportMenu = (props: ExportProps) => {
             </MenuItem>
             <MenuItem value={UserMenuKeys.ExportCsv}>
               <Box sx={style.menuListItem}>Export CSV</Box>
+            </MenuItem>
+            <MenuItem value={UserMenuKeys.ExportGeoJson}>
+              <Box sx={style.menuListItem}>Export GeoJSON</Box>
             </MenuItem>
           </li>
         </ul>
