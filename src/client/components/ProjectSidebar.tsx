@@ -352,7 +352,7 @@ const SidebarRow = memo(
         </Styled.td>
         <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
         <Styled.td>
-          {isDistrictLocked ? (
+          {isReadOnly ? null : isDistrictLocked ? (
             <Tooltip
               content={
                 <span>
@@ -364,7 +364,7 @@ const SidebarRow = memo(
                 <Icon name="lock-locked" color="#131f28" size={0.75} />
               </Button>
             </Tooltip>
-          ) : !isReadOnly ? (
+          ) : (
             <Tooltip content="Lock this district">
               <Button
                 variant="icon"
@@ -375,7 +375,7 @@ const SidebarRow = memo(
                 <Icon name="lock-unlocked" size={0.75} />
               </Button>
             </Tooltip>
-          ) : null}
+          )}
         </Styled.td>
       </Styled.tr>
     );
