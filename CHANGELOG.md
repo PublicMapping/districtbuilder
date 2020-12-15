@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduce problem with hidden base geounits [#528](https://github.com/PublicMapping/districtbuilder/pull/528)
 - Find non-contiguous [#531](https://github.com/PublicMapping/districtbuilder/pull/531)
 - Add last updated date to map list [#541](https://github.com/PublicMapping/districtbuilder/pull/541)
+- Allow exporting map GeoJSON [#543](https://github.com/PublicMapping/districtbuilder/pull/543)
 
 ### Changed
 
