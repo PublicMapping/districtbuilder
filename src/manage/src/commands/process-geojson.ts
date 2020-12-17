@@ -80,8 +80,8 @@ it when necessary (file sizes ~1GB+).
     }),
 
     quantization: flags.string({
-      char: "s",
-      description: "Topojson quantization transform",
+      char: "q",
+      description: "Topojson quantization transform, 0 to skip",
       default: "1e5"
     }),
 
@@ -206,7 +206,7 @@ it when necessary (file sizes ~1GB+).
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
 
-    this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevelIds);
+    await this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevelIds);
 
     const geoLevelHierarchyInfo = this.writeVectorTiles(
       flags.outputDir,
@@ -276,8 +276,12 @@ it when necessary (file sizes ~1GB+).
     this.log(`Simplifying ${baseGeoLevel} geounits with minWeight: ${simplification}`);
     const simplified = simplify(preSimplifiedBaseTopoJson, simplification);
 
-    this.log(`Quantizing ${baseGeoLevel} geounits with transform: ${quantization}`);
-    const topo = quantize(simplified, quantization);
+    if (quantization === 0) {
+      this.log(`Skipping quantization`);
+    } else {
+      this.log(`Quantizing ${baseGeoLevel} geounits with transform: ${quantization}`);
+    }
+    const topo = quantization === 0 ? simplified : quantize(simplified, quantization);
 
     for (const [prevIndex, geoLevel] of geoLevelIds.slice(1).entries()) {
       const currIndex = prevIndex + 1;
@@ -544,12 +548,18 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     topology: Topology<Objects<{}>>,
     geoLevels: readonly string[]
-  ): void {
-    geoLevels.forEach(geoLevel => {
+  ): Promise<unknown[]> {
+    const promises = geoLevels.map(geoLevel => {
       this.log(`Converting topojson to geojson for ${geoLevel}`);
       const geojson = topo2feature(topology, topology.objects[geoLevel]);
-      writeFileSync(join(dir, `${geoLevel}.geojson`), JSON.stringify(geojson));
+      const path = join(dir, `${geoLevel}.geojson`);
+      const output = createWriteStream(path, { encoding: "utf8" });
+      return new Promise(resolve =>
+        new JsonStreamStringify(geojson).pipe(output).on("finish", () => resolve())
+      );
     });
+    this.log("Streaming geojson to disk");
+    return Promise.all(promises);
   }
 
   // Convert GeoJSON on disk to Vector Tiles

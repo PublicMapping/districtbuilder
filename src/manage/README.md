@@ -79,7 +79,7 @@ OPTIONS
 
   -o, --outputDir=outputDir            [default: ./] Directory to output files
 
-  -s, --quantization=quantization      [default: 1e5] Topojson quantization transform
+  -q, --quantization=quantization      [default: 1e5] Topojson quantization transform, 0 to skip
 
   -s, --simplification=simplification  [default: 0.0000000025] Topojson simplification amount (minWeight)
 
