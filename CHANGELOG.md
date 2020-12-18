@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Don't show district lock status on read-only maps [#538](https://github.com/PublicMapping/districtbuilder/pull/538)
+- Fix topology health check to report inability to load region configs as an error [#546](https://github.com/PublicMapping/districtbuilder/pull/546)
 
 ## [1.2.0] - 2020-11-18
 
