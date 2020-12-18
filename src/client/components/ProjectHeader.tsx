@@ -102,7 +102,6 @@ const ProjectHeader = ({
               </Button>
             </React.Fragment>
           )}
-          <CopyMapButton invert={true} />
           <ShareMenu invert={true} />
           <SupportMenu invert={true} />
           {project ? <ExportMenu invert={true} project={project} /> : null}

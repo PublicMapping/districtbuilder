@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Remove "Copy this map" button from owned maps [#545](https://github.com/PublicMapping/districtbuilder/pull/545)
+
 ### Fixed
 
 - Don't show district lock status on read-only maps [#538](https://github.com/PublicMapping/districtbuilder/pull/538)
