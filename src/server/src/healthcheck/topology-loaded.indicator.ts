@@ -11,6 +11,11 @@ export default class TopologyLoadedIndicator extends HealthIndicator {
 
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
     const layers = this.topologyService.layers();
+    if (layers === undefined) {
+      const result = this.getStatus(key, false, {});
+      throw new HealthCheckError("Topology layers not intialized", result);
+    }
+
     const layerEntries = (await Promise.all(
       Object.entries(layers).map(([layerId, topology]) => {
         return new Promise((resolve, reject) => {

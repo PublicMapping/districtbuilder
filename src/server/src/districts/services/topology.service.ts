@@ -21,7 +21,7 @@ interface Layers {
 
 @Injectable()
 export class TopologyService {
-  private _layers: Layers = {};
+  private _layers?: Layers = undefined;
   private readonly logger = new Logger(TopologyService.name);
   private s3 = new S3();
 
@@ -39,11 +39,14 @@ export class TopologyService {
     });
   }
 
-  public layers(): Readonly<Layers> {
-    return Object.freeze(this._layers);
+  public layers(): Readonly<Layers> | undefined {
+    return this._layers && Object.freeze(this._layers);
   }
 
   public async get(s3URI: S3URI): Promise<GeoUnitTopology | void> {
+    if (!this._layers) {
+      return;
+    }
     if (!(s3URI in this._layers)) {
       // If we encounter a new layer (i.e. one added after the service has started),
       // then store the results in the `_layers` object.
