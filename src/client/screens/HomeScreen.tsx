@@ -134,6 +134,7 @@ const style: ThemeUIStyleObject = {
     display: "flex",
     alignItems: "baseline",
     borderRadius: "med",
+    marginRight: "auto",
     px: 1,
     "&:hover:not([disabled])": {
       bg: "rgba(256,256,256,0.2)",
@@ -275,28 +276,37 @@ const HomeScreen = ({ projects, user }: StateProps) => {
           projects.resource.length ? (
             projects.resource.map(project => (
               <React.Fragment key={project.id}>
-                <Link to={`/projects/${project.id}`} sx={style.projectRow}>
-                  <Heading
-                    as="h2"
-                    sx={{ fontFamily: "heading", variant: "text.h5", fontWeight: "light", mr: 3 }}
+                <Box>
+                  <Flex sx={{ position: "relative" }}>
+                    <Link to={`/projects/${project.id}`} sx={style.projectRow}>
+                      <Heading
+                        as="h2"
+                        sx={{
+                          fontFamily: "heading",
+                          variant: "text.h5",
+                          fontWeight: "light",
+                          mr: 3
+                        }}
+                      >
+                        {project.name}
+                      </Heading>
+                      <p sx={{ fontSize: 2, color: "gray.7" }}>
+                        ({project.regionConfig.name}, {project.numberOfDistricts} districts)
+                      </p>
+                    </Link>
+                    <ProjectListFlyout project={project} />
+                  </Flex>
+                  <div
+                    sx={{
+                      fontWeight: "light",
+                      color: "gray.5",
+                      paddingLeft: "5px"
+                    }}
                   >
-                    {project.name}
-                  </Heading>
-                  <p sx={{ fontSize: 2, color: "gray.7" }}>
-                    ({project.regionConfig.name}, {project.numberOfDistricts} districts)
-                  </p>
-                </Link>
-                <ProjectListFlyout project={project} />
-                <div
-                  sx={{
-                    fontWeight: "light",
-                    color: "gray.5",
-                    paddingLeft: "5px"
-                  }}
-                >
-                  Last updated <TimeAgo datetime={project.updatedDt} />
-                </div>
-                <Divider />
+                    Last updated <TimeAgo datetime={project.updatedDt} />
+                  </div>
+                  <Divider />
+                </Box>
               </React.Fragment>
             ))
           ) : (

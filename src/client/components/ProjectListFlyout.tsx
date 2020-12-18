@@ -46,7 +46,7 @@ const ProjectListFlyout = (props: FlyoutProps) => {
       >
         ...
       </MenuButton>
-      <Menu sx={{ ...style.menu, ...{ position: "relative" } }}>
+      <Menu sx={{ ...style.menu }}>
         <ul sx={style.menuList}>
           <li key={UserMenuKeys.ExportCsv}>
             <MenuItem value={UserMenuKeys.ExportShapefile}>
