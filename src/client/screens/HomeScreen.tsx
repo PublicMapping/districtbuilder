@@ -157,6 +157,9 @@ const HomeScreen = ({ projects, user }: StateProps) => {
   const history = useHistory();
   const [resendEmail, setResendEmail] = useState<WriteResource<void, void>>({ data: void 0 });
   const isLoggedIn = getJWT() !== null;
+  const projectList =
+    "resource" in projects ? projects.resource.filter(project => !project.archived) : [];
+
   useEffect(() => {
     isLoggedIn && store.dispatch(projectsFetch());
     isLoggedIn && store.dispatch(userFetch());
@@ -256,7 +259,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
         as="main"
         sx={{ width: "100%", maxWidth: "large", my: 6, mx: "auto", flexDirection: "column", px: 4 }}
       >
-        {"resource" in projects && projects.resource.length > 0 && (
+        {projectList.length > 0 && (
           <Flex sx={{ justifyContent: "space-between", mb: 3 }}>
             <Heading as="h1" sx={{ variant: "text.h3" }}>
               Maps
@@ -273,8 +276,8 @@ const HomeScreen = ({ projects, user }: StateProps) => {
         )}
 
         {"resource" in projects ? (
-          projects.resource.length ? (
-            projects.resource.map(project => (
+          projectList.length > 0 ? (
+            projectList.map(project => (
               <React.Fragment key={project.id}>
                 <Box>
                   <Flex sx={{ position: "relative" }}>
