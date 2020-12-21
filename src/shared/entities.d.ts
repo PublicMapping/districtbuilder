@@ -106,6 +106,7 @@ export interface IProject {
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
   readonly lockedDistricts: readonly boolean[];
+  readonly archived: boolean;
 }
 
 export interface CreateProjectData {
@@ -117,7 +118,7 @@ export interface CreateProjectData {
 
 export type UpdateProjectData = Pick<
   IProject,
-  "name" | "districtsDefinition" | "advancedEditingEnabled" | "lockedDistricts"
+  "name" | "districtsDefinition" | "advancedEditingEnabled" | "lockedDistricts" | "archived"
 >;
 
 export type ChamberId = string;
