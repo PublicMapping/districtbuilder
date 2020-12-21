@@ -2,17 +2,30 @@ import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { projectsFetch, projectsFetchFailure, projectsFetchSuccess } from "../actions/projects";
+import {
+  projectArchive,
+  projectArchiveSuccess,
+  projectArchiveFailure,
+  projectsFetch,
+  projectsFetchFailure,
+  projectsFetchSuccess,
+  setDeleteProject
+} from "../actions/projects";
 
 import { IProject } from "../../shared/entities";
-import { fetchProjects } from "../api";
+import { fetchProjects, patchProject } from "../api";
 import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
 
-export type ProjectsState = Resource<readonly IProject[]>;
+export interface ProjectsState {
+  readonly projects: Resource<readonly IProject[]>;
+  readonly deleteProject?: IProject;
+  readonly archiveProjectPending: boolean;
+}
 
 export const initialState = {
-  isPending: false
+  projects: { isPending: false },
+  archiveProjectPending: false
 };
 
 const projectsReducer: LoopReducer<ProjectsState, Action> = (
@@ -23,7 +36,8 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
     case getType(projectsFetch):
       return loop(
         {
-          isPending: true
+          ...state,
+          projects: { isPending: true }
         },
         Cmd.run(fetchProjects, {
           successActionCreator: projectsFetchSuccess,
@@ -33,15 +47,45 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
       );
     case getType(projectsFetchSuccess):
       return {
-        resource: action.payload
+        ...state,
+        projects: { resource: action.payload }
       };
     case getType(projectsFetchFailure):
       return loop(
         {
-          errorMessage: action.payload
+          ...state,
+          projects: { errorMessage: action.payload }
         },
         Cmd.run(showResourceFailedToast)
       );
+    case getType(setDeleteProject):
+      return {
+        ...state,
+        deleteProject: action.payload
+      };
+    case getType(projectArchive):
+      return loop(
+        { ...state, archiveProjectPending: true },
+        Cmd.run(patchProject, {
+          successActionCreator: projectArchiveSuccess,
+          failActionCreator: projectArchiveFailure,
+          args: [action.payload, { archived: true }] as Parameters<typeof patchProject>
+        })
+      );
+    case getType(projectArchiveSuccess):
+      return "resource" in state.projects
+        ? {
+            deleteProject: undefined,
+            archiveProjectPending: false,
+            projects: {
+              resource: state.projects.resource.map(project =>
+                project.id !== action.payload.id ? project : action.payload
+              )
+            }
+          }
+        : state;
+    case getType(projectArchiveFailure):
+      return loop({ ...state, archiveProjectPending: false }, Cmd.run(showResourceFailedToast));
     default:
       return state;
   }

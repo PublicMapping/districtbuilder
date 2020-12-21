@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@redux-beacon/google-tag-manager": "1.0.1",
+    "@theme-ui/color": "0.4.0-rc.1",
     "@tippyjs/react": "^4.1.0",
     "@turf/bbox": "^6.0.1",
     "@turf/helpers": "^6.1.4",

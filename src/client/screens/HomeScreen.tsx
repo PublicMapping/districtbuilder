@@ -30,13 +30,14 @@ import { userFetch } from "../actions/user";
 import { resendConfirmationEmail } from "../api";
 import { clearJWT, getJWT } from "../jwt";
 import { State } from "../reducers";
-import { ProjectsState } from "../reducers/projects";
 import { UserState } from "../reducers/user";
-import { WriteResource } from "../resource";
+import { Resource, WriteResource } from "../resource";
 import store from "../store";
+import { IProject } from "../../shared/entities";
+import DeleteProjectModal from "../components/DeleteProjectModal";
 
 interface StateProps {
-  readonly projects: ProjectsState;
+  readonly projects: Resource<readonly IProject[]>;
   readonly user: UserState;
 }
 
@@ -167,6 +168,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
 
   return (
     <Flex sx={{ flexDirection: "column" }}>
+      <DeleteProjectModal />
       {"resource" in user && !user.resource.isEmailVerified && (
         <Alert sx={{ borderRadius: "0" }}>
           <Box>
@@ -365,7 +367,7 @@ const handleSelection = (history: H.History) => (key: string | number) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    projects: state.projects,
+    projects: state.projects.projects,
     user: state.user
   };
 }
