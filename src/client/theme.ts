@@ -1,4 +1,5 @@
 import { Theme as StyledSystemTheme } from "@styled-system/css";
+import { darken } from "@theme-ui/color";
 import { Theme } from "theme-ui";
 
 export const heights = {
@@ -200,6 +201,18 @@ const theme: Theme & StyledSystemTheme = {
         },
         "&:active": {
           bg: "gray.7"
+        }
+      }
+    },
+    danger: {
+      ...appButtonStyles,
+      ...{
+        bg: "error",
+        "&:hover:not([disabled]):not(:active)": {
+          bg: darken("error", 0.2)
+        },
+        "&:active": {
+          bg: darken("error", 0.3)
         }
       }
     },

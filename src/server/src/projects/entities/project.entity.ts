@@ -59,6 +59,9 @@ export class Project implements IProject {
   })
   lockedDistricts: readonly boolean[];
 
+  @Column({ type: "boolean", default: false })
+  archived: boolean;
+
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {
     return { ...this, lockedDistricts: new Array(this.numberOfDistricts).fill(false) };

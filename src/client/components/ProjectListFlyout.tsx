@@ -5,8 +5,10 @@ import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
 import { exportCsv, exportGeoJson, exportShp } from "../actions/projectData";
+import { setDeleteProject } from "../actions/projects";
 
 enum UserMenuKeys {
+  Delete = "delete",
   ExportCsv = "csv",
   ExportShapefile = "shp",
   ExportGeoJson = "geojson"
@@ -18,16 +20,17 @@ interface FlyoutProps {
 }
 
 // Flyout ("..." button) for each project on the project list page.
-// Currently the actions are all related to exporting, and this component
-// is therefore very similar to the ExportMenu component, but there will
-// eventually be other types of actions (e.g. archiving, duplicating),
-// that will cause divergence, so it has intentionally not been unified.
+// Very similar to the ExportMenu component, but there are other types
+// of actions (e.g. archiving), so it has intentionally
+// not been unified.
 const ProjectListFlyout = (props: FlyoutProps) => {
   return (
     <Wrapper
       onSelection={(userMenuKey: string) => {
         const action =
-          userMenuKey === UserMenuKeys.ExportCsv
+          userMenuKey === UserMenuKeys.Delete
+            ? setDeleteProject
+            : userMenuKey === UserMenuKeys.ExportCsv
             ? exportCsv
             : userMenuKey === UserMenuKeys.ExportShapefile
             ? exportShp
@@ -57,6 +60,9 @@ const ProjectListFlyout = (props: FlyoutProps) => {
             </MenuItem>
             <MenuItem value={UserMenuKeys.ExportGeoJson}>
               <Box sx={style.menuListItem}>Export GeoJSON</Box>
+            </MenuItem>
+            <MenuItem value={UserMenuKeys.Delete}>
+              <Box sx={style.menuListItem}>Delete Map</Box>
             </MenuItem>
           </li>
         </ul>

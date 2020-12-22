@@ -8,6 +8,7 @@ import {
   IUser,
   JWT,
   ProjectId,
+  UpdateProjectData,
   UpdateUserData
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
@@ -168,7 +169,7 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
 
 export async function patchProject(
   id: ProjectId,
-  projectData: Partial<IProject>
+  projectData: Partial<UpdateProjectData>
 ): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
