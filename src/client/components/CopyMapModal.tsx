@@ -17,19 +17,22 @@ import { Resource } from "../resource";
 
 const style: ThemeUIStyleObject = {
   footer: {
-    display: "block",
+    display: "flex",
+    flexDirection: "column",
+    marginTop: 5,
     fontSize: 1
   },
-  footerButton: {
-    width: "100%"
-  },
   header: {
-    padding: "16px 12px",
-    margin: "-12px -12px 24px"
+    mb: 5
+  },
+  heading: {
+    fontFamily: "heading",
+    fontWeight: "light",
+    fontSize: 4
   },
   modal: {
     bg: "muted",
-    p: 3,
+    p: 5,
     width: "small",
     maxWidth: "90vw"
   }
@@ -53,9 +56,9 @@ const CopyMapModal = ({
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
   ) : showModal ? (
     <AriaModal
-      titleId="modal-header"
+      titleId="copy-map-modal-header"
       onExit={hideModal}
-      initialFocus="#modal-header"
+      initialFocus="#yes-copy-map"
       getApplicationNode={() => document.getElementById("root") as Element}
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
@@ -65,16 +68,7 @@ const CopyMapModal = ({
         ) : (
           <React.Fragment>
             <Box sx={style.header}>
-              <Heading
-                as="h3"
-                sx={{
-                  marginBottom: "0",
-                  fontWeight: "medium",
-                  display: "flex",
-                  alignItems: "center"
-                }}
-                id="modal-header"
-              >
+              <Heading as="h1" sx={style.heading} id="copy-map-modal-header">
                 Copy this map?
               </Heading>
             </Box>
@@ -99,13 +93,13 @@ const CopyMapModal = ({
                 will be able to make changes to the copied version.
               </Box>
               <Flex sx={style.footer}>
-                <Button sx={style.footerButton} type="submit">
+                <Button id="yes-copy-map" sx={{ marginBottom: 3 }} type="submit">
                   Yes, copy to my account
                 </Button>
                 <Button
                   id="cancel-copy-map-modal"
                   onClick={hideModal}
-                  sx={{ ...style.footerButton, variant: "buttons.secondary" }}
+                  sx={{ variant: "buttons.linkStyle", margin: "0 auto" }}
                 >
                   Cancel
                 </Button>
