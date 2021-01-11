@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Update Create a Map's helper text for the State input [#552](https://github.com/PublicMapping/districtbuilder/pull/552)
+
 ### Added
 
 - Added Shapefile export [#516](https://github.com/PublicMapping/districtbuilder/pull/516)
