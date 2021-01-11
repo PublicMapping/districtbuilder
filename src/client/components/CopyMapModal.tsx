@@ -19,8 +19,7 @@ const style: ThemeUIStyleObject = {
   footer: {
     display: "flex",
     flexDirection: "column",
-    marginTop: 5,
-    fontSize: 1
+    marginTop: 5
   },
   header: {
     mb: 5
@@ -34,7 +33,8 @@ const style: ThemeUIStyleObject = {
     bg: "muted",
     p: 5,
     width: "small",
-    maxWidth: "90vw"
+    maxWidth: "90vw",
+    overflow: "hidden"
   }
 };
 
@@ -58,7 +58,7 @@ const CopyMapModal = ({
     <AriaModal
       titleId="copy-map-modal-header"
       onExit={hideModal}
-      initialFocus="#yes-copy-map"
+      initialFocus="#primary-action"
       getApplicationNode={() => document.getElementById("root") as Element}
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
@@ -93,7 +93,7 @@ const CopyMapModal = ({
                 will be able to make changes to the copied version.
               </Box>
               <Flex sx={style.footer}>
-                <Button id="yes-copy-map" sx={{ marginBottom: 3 }} type="submit">
+                <Button id="primary-action" sx={{ marginBottom: 3 }} type="submit">
                   Yes, copy to my account
                 </Button>
                 <Button
