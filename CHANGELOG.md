@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Style modal dialogs related to "Copy map" feature [#553](https://github.com/PublicMapping/districtbuilder/pull/553)
+
 ### Added
 
 - Added Shapefile export [#516](https://github.com/PublicMapping/districtbuilder/pull/516)
