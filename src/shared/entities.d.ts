@@ -34,7 +34,12 @@ export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;
 }
 
-export type DistrictProperties = { readonly [name: string]: number };
+export type DistrictProperties = {
+  readonly contiguity: "contiguous" | "non-contiguous" | "";
+  readonly compactness: number;
+} & {
+  readonly [name: string]: number;
+};
 
 export interface IStaticFile {
   readonly id: string;
@@ -154,7 +159,7 @@ export interface MutableGeoUnits {
   [geoLevelId: string]: Map<FeatureId, GeoUnitIndices>;
 }
 
-export type CompactnessScore = number | null | "non-contiguous";
+export type Contiguity = "" | "contiguous" | "non-contiguous";
 
 export type DistrictId = number;
 

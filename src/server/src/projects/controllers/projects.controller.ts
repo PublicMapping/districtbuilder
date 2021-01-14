@@ -26,6 +26,7 @@ import stringify from "csv-stringify/lib/sync";
 import { Response } from "express";
 import { FeatureCollection } from "geojson";
 import { convert } from "geojson2shp";
+import * as _ from "lodash";
 import { GeometryCollection } from "topojson-specification";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
