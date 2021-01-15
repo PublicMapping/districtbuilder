@@ -10,6 +10,7 @@ import Icon from "../Icon";
 import { State } from "../../reducers";
 import { DistrictsGeoJSON } from "../../types";
 import { FindTool, setFindIndex, setFindType, toggleFind } from "../../actions/districtDrawing";
+import { getFindCoords } from "../../reducers/projectData";
 import store from "../../store";
 import { destructureResource } from "../../functions";
 import { ChangeEvent, useEffect } from "react";
@@ -64,19 +65,8 @@ const FindMenu = ({
   readonly geojson?: DistrictsGeoJSON;
   readonly map?: MapboxGL.Map;
 }) => {
-  const findCoords =
-    geojson &&
-    (findTool === FindTool.Unassigned
-      ? geojson.features[0].geometry.coordinates
-      : geojson.features
-          .slice(1)
-          .map(multipolygon => multipolygon.geometry.coordinates)
-          .filter(coords => coords.length >= 2)
-          .flat());
-  const areAllUnassigned =
-    geojson &&
-    geojson.features.slice(1).every(district => district.geometry.coordinates.length === 0);
-  const num = findTool === FindTool.Unassigned && areAllUnassigned ? 0 : findCoords?.length;
+  const findCoords = getFindCoords(findTool, geojson);
+  const num = findCoords?.length || 0;
 
   useEffect(() => {
     // eslint-disable-next-line
