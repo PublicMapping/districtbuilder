@@ -31,6 +31,7 @@ import { GeometryCollection } from "topojson-specification";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
 import { GeoUnitHierarchy, ProjectId, PublicUserProperties } from "../../../../shared/entities";
+import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
 
@@ -75,11 +76,29 @@ import { Errors } from "../../../../shared/types";
 @CrudAuth({
   filter: (req: any) => {
     // Filter to user's projects for all update requests and for full project
-    // list. Unauthenticated access is allowed for individual projects
+    // list.
+    const user = req.user as User;
     if (req.method !== "GET" || req.route.path === "/api/projects") {
-      const user = req.user as User;
       return {
         user_id: user ? user.id : undefined
+      };
+    } else {
+      // Unauthenticated access is allowed for individual projects if they are
+      // visible or published, and not archived
+      const visibleFilter = user
+        ? [
+            { user_id: user.id },
+            { visibility: ProjectVisibility.Published },
+            { visibility: ProjectVisibility.Visible }
+          ]
+        : [{ visibility: ProjectVisibility.Published }, { visibility: ProjectVisibility.Visible }];
+      return {
+        $and: [
+          {
+            $or: visibleFilter
+          },
+          { archived: false }
+        ]
       };
     }
   },
@@ -207,6 +226,7 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/geojson")
   async exportGeoJSON(
     @ParsedRequest() req: CrudRequest,
@@ -229,6 +249,7 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/shp")
   async exportShapefile(
     @ParsedRequest() req: CrudRequest,
@@ -263,6 +284,7 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/csv")
   @Header("Content-Type", "text/csv")
   async exportCsv(
