@@ -28,7 +28,7 @@ import {
   updateProjectName,
   updateProjectNameSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
+import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
@@ -59,6 +59,21 @@ function fetchGeoJsonForProject(project: IProject) {
       geojson
     }));
   };
+}
+
+export function getFindCoords(findTool: FindTool, geojson?: DistrictsGeoJSON) {
+  const areAllUnassigned =
+    geojson &&
+    geojson.features.slice(1).every(district => district.geometry.coordinates.length === 0);
+  return geojson && !areAllUnassigned
+    ? findTool === FindTool.Unassigned
+      ? geojson.features[0].geometry.coordinates
+      : geojson.features
+          .slice(1)
+          .map(multipolygon => multipolygon.geometry.coordinates)
+          .filter(coords => coords.length >= 2)
+          .flat()
+    : undefined;
 }
 
 export type ProjectDataState = {
@@ -276,6 +291,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
+      const findCoords = getFindCoords(state.findTool, action.payload.geojson);
+
       return "resource" in state.projectData
         ? updateCurrentState(
             {
@@ -283,7 +300,10 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
               projectData: {
                 resource: action.payload
               },
-              findIndex: undefined
+              findIndex:
+                state.findIndex !== undefined && findCoords && findCoords.length !== 0
+                  ? Math.min(state.findIndex, findCoords.length - 1)
+                  : undefined
             },
             {
               districtsDefinition: action.payload.project.districtsDefinition
