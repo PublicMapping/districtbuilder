@@ -8,6 +8,7 @@ import {
   UpdateDateColumn
 } from "typeorm";
 
+import { ProjectVisibility } from "../../../../shared/constants";
 import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
@@ -58,6 +59,9 @@ export class Project implements IProject {
     default: "'{}'"
   })
   lockedDistricts: readonly boolean[];
+
+  @Column({ type: "enum", enum: ProjectVisibility, default: ProjectVisibility.Private })
+  visibility: ProjectVisibility;
 
   @Column({ type: "boolean", default: false })
   archived: boolean;
