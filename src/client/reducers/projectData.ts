@@ -26,7 +26,9 @@ import {
   updateDistrictsDefinitionSuccess,
   updateProjectFailed,
   updateProjectName,
-  updateProjectNameSuccess
+  updateProjectNameSuccess,
+  updateProjectVisibility,
+  updateProjectVisibilitySuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
@@ -236,6 +238,38 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         projectNameSaving: "saved",
+        saving: "saved",
+        projectData: { resource: action.payload }
+      };
+    // eslint-disable-next-line
+    case getType(updateProjectVisibility): {
+      if ("resource" in state.projectData) {
+        const projectId = state.projectData.resource.project.id;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () =>
+              patchProject(projectId, { visibility: action.payload }).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: updateProjectVisibilitySuccess,
+              failActionCreator: updateProjectFailed
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(updateProjectVisibilitySuccess):
+      return {
+        ...state,
         saving: "saved",
         projectData: { resource: action.payload }
       };
