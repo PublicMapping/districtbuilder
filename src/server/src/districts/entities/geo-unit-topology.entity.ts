@@ -14,7 +14,7 @@ import polygonToLine from "@turf/polygon-to-line";
 
 import {
   UintArrays,
-  CompactnessScore,
+  Contiguity,
   GeoUnitCollection,
   GeoUnitDefinition,
   HierarchyDefinition,
@@ -33,26 +33,26 @@ interface GeoUnitHierarchy {
  *
  * See https://fisherzachary.github.io/public/r-output.html#polsby-popper
  */
-function calcPolsbyPopper(feature: Feature): CompactnessScore {
+function calcPolsbyPopper(feature: Feature): [number, Contiguity] {
   if (
     feature.geometry &&
     feature.geometry.type === "MultiPolygon" &&
     feature.geometry.coordinates.length === 0
   ) {
-    return null;
+    return [0, ""];
   }
   if (
     feature.geometry &&
     feature.geometry.type === "MultiPolygon" &&
     feature.geometry.coordinates.length > 1
   ) {
-    return "non-contiguous";
+    return [0, "non-contiguous"];
   }
   const districtArea: number = area(feature);
   // @ts-ignore
   const outline = polygonToLine(feature);
   const districtPerimeter: number = length(outline, { units: "meters" });
-  return (4 * Math.PI * districtArea) / districtPerimeter ** 2;
+  return [(4 * Math.PI * districtArea) / districtPerimeter ** 2, "contiguous"];
 }
 
 // Creates a list of trees for the nested geometries of the geounits
@@ -247,13 +247,18 @@ export class GeoUnitTopology {
     });
     return {
       ...featureCollection,
-      features: featureCollection.features.map(feature => ({
-        ...feature,
-        properties: {
-          ...feature.properties,
-          compactness: calcPolsbyPopper(feature)
-        }
-      }))
+      features: featureCollection.features.map(feature => {
+        const [compactness, contiguity] = calcPolsbyPopper(feature);
+
+        return {
+          ...feature,
+          properties: {
+            ...feature.properties,
+            compactness,
+            contiguity
+          }
+        };
+      })
     };
   }
 
