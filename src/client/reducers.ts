@@ -17,26 +17,26 @@ import projectReducer, { ProjectState, initialProjectState } from "./reducers/pr
 
 export interface State {
   readonly auth: AuthState;
-  readonly user: UserState;
-  readonly regionConfig: RegionConfigState;
-  readonly projects: ProjectsState;
   readonly project: ProjectState;
+  readonly projects: ProjectsState;
+  readonly regionConfig: RegionConfigState;
+  readonly user: UserState;
 }
 
 export const initialState: State = {
   auth: initialAuthState,
-  user: initialUserState,
-  regionConfig: initialRegionConfigState,
+  project: initialProjectState,
   projects: initialProjectsState,
-  project: initialProjectState
+  regionConfig: initialRegionConfigState,
+  user: initialUserState
 };
 
 const allReducers = combineReducers({
   auth: authReducer,
-  user: userReducer,
-  regionConfig: regionConfigReducer,
+  project: projectReducer,
   projects: projectsReducer,
-  project: projectReducer
+  regionConfig: regionConfigReducer,
+  user: userReducer
 });
 
 export default (state = initialState, action: Action) => {
