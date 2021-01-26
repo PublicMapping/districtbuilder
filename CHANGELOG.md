@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## [1.3.0] - 2021-01-26
+
 - Update Create a Map's helper text for the State input [#552](https://github.com/PublicMapping/districtbuilder/pull/552)
 - Style modal dialogs related to "Copy map" feature [#553](https://github.com/PublicMapping/districtbuilder/pull/553)
 
@@ -97,7 +109,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...HEAD
+[1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...1.0.0
