@@ -4,6 +4,10 @@ import { getType } from "typesafe-actions";
 import { Action } from "./actions";
 import { resetState } from "./actions/root";
 import authReducer, { AuthState, initialState as initialAuthState } from "./reducers/auth";
+import organizationReducer, {
+  OrganizationState,
+  initialState as initialOrganizationState
+} from "./reducers/organization";
 import projectsReducer, {
   initialState as initialProjectsState,
   ProjectsState
@@ -19,12 +23,14 @@ export interface State {
   readonly auth: AuthState;
   readonly project: ProjectState;
   readonly projects: ProjectsState;
+  readonly organization: OrganizationState;
   readonly regionConfig: RegionConfigState;
   readonly user: UserState;
 }
 
 export const initialState: State = {
   auth: initialAuthState,
+  organization: initialOrganizationState,
   project: initialProjectState,
   projects: initialProjectsState,
   regionConfig: initialRegionConfigState,
@@ -33,6 +39,7 @@ export const initialState: State = {
 
 const allReducers = combineReducers({
   auth: authReducer,
+  organization: organizationReducer,
   project: projectReducer,
   projects: projectsReducer,
   regionConfig: regionConfigReducer,
