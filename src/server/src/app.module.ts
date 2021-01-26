@@ -11,6 +11,7 @@ import * as StreamTransport from "nodemailer/lib/stream-transport";
 import { DEBUG } from "./common/constants";
 import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
+import { OrganizationsModule } from "./organizations/organizations.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { RollbarModule } from "./rollbar/rollbar.module";
@@ -61,9 +62,10 @@ if (DEBUG) {
     RollbarModule,
     AuthModule,
     HealthCheckModule,
-    UsersModule,
+    OrganizationsModule,
+    ProjectsModule,
     RegionConfigsModule,
-    ProjectsModule
+    UsersModule
   ]
 })
 export class AppModule {}
