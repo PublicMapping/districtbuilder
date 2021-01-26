@@ -10,7 +10,7 @@ import JsonStreamStringify from "json-stream-stringify";
 import groupBy from "lodash/groupBy";
 import mapValues from "lodash/mapValues";
 import { join } from "path";
-import { feature as topo2feature, mergeArcs } from "topojson-client";
+import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
@@ -76,7 +76,13 @@ it when necessary (file sizes ~1GB+).
     simplification: flags.string({
       char: "s",
       description: "Topojson simplification amount (minWeight)",
-      default: "0.000000025"
+      default: "0.0000000025"
+    }),
+
+    quantization: flags.string({
+      char: "q",
+      description: "Topojson quantization transform, 0 to skip",
+      default: "1e5"
     }),
 
     outputDir: flags.string({
@@ -123,6 +129,7 @@ it when necessary (file sizes ~1GB+).
     const maxZooms = flags.levelMaxZoom.split(",");
     const demographics = flags.demographics.split(",");
     const simplification = parseFloat(flags.simplification);
+    const quantization = parseFloat(flags.quantization);
 
     if (geoLevels.length !== minZooms.length || geoLevels.length !== maxZooms.length) {
       this.log("'levels' 'levelMinZoom' and 'levelMaxZoom' must all have the same length, exiting");
@@ -170,7 +177,8 @@ it when necessary (file sizes ~1GB+).
       baseGeoJson,
       geoLevelIds,
       demographics,
-      simplification
+      simplification,
+      quantization
     );
 
     const bbox = topoJsonHierarchy.bbox;
@@ -198,7 +206,7 @@ it when necessary (file sizes ~1GB+).
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
 
-    this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevelIds);
+    await this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevelIds);
 
     const geoLevelHierarchyInfo = this.writeVectorTiles(
       flags.outputDir,
@@ -252,7 +260,8 @@ it when necessary (file sizes ~1GB+).
     baseGeoJson: FeatureCollection<Polygon, any>,
     geoLevelIds: readonly string[],
     demographics: readonly string[],
-    simplification: number
+    simplification: number,
+    quantization: number
   ): Topology<Objects<{}>> {
     const baseGeoLevel = geoLevelIds[0];
     this.log(`Converting to topojson with base geolevel: ${baseGeoLevel}`);
@@ -265,7 +274,14 @@ it when necessary (file sizes ~1GB+).
     );
 
     this.log(`Simplifying ${baseGeoLevel} geounits with minWeight: ${simplification}`);
-    const topo = simplify(preSimplifiedBaseTopoJson, simplification);
+    const simplified = simplify(preSimplifiedBaseTopoJson, simplification);
+
+    if (quantization === 0) {
+      this.log(`Skipping quantization`);
+    } else {
+      this.log(`Quantizing ${baseGeoLevel} geounits with transform: ${quantization}`);
+    }
+    const topo = quantization === 0 ? simplified : quantize(simplified, quantization);
 
     for (const [prevIndex, geoLevel] of geoLevelIds.slice(1).entries()) {
       const currIndex = prevIndex + 1;
@@ -532,12 +548,18 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     topology: Topology<Objects<{}>>,
     geoLevels: readonly string[]
-  ): void {
-    geoLevels.forEach(geoLevel => {
+  ): Promise<unknown[]> {
+    const promises = geoLevels.map(geoLevel => {
       this.log(`Converting topojson to geojson for ${geoLevel}`);
       const geojson = topo2feature(topology, topology.objects[geoLevel]);
-      writeFileSync(join(dir, `${geoLevel}.geojson`), JSON.stringify(geojson));
+      const path = join(dir, `${geoLevel}.geojson`);
+      const output = createWriteStream(path, { encoding: "utf8" });
+      return new Promise(resolve =>
+        new JsonStreamStringify(geojson).pipe(output).on("finish", () => resolve())
+      );
     });
+    this.log("Streaming geojson to disk");
+    return Promise.all(promises);
   }
 
   // Convert GeoJSON on disk to Vector Tiles

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ### Added
 
 
@@ -16,10 +17,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 
+## [1.3.0] - 2021-01-26
+
+- Update Create a Map's helper text for the State input [#552](https://github.com/PublicMapping/districtbuilder/pull/552)
+- Style modal dialogs related to "Copy map" feature [#553](https://github.com/PublicMapping/districtbuilder/pull/553)
+
+### Added
+
+- Added Shapefile export [#516](https://github.com/PublicMapping/districtbuilder/pull/516) & [#556](https://github.com/PublicMapping/districtbuilder/pull/556)
+- Allow copying maps [#526](https://github.com/PublicMapping/districtbuilder/pull/526)
+- Reduce problem with hidden base geounits [#528](https://github.com/PublicMapping/districtbuilder/pull/528)
+- Find non-contiguous [#531](https://github.com/PublicMapping/districtbuilder/pull/531)
+- Add last updated date to map list [#541](https://github.com/PublicMapping/districtbuilder/pull/541)
+- Allow exporting map GeoJSON [#543](https://github.com/PublicMapping/districtbuilder/pull/543)
+- Delete/archive map option [#547](https://github.com/PublicMapping/districtbuilder/pull/547)
+
+### Changed
+
+- Remove "Copy this map" button from owned maps [#545](https://github.com/PublicMapping/districtbuilder/pull/545)
+
+### Fixed
+
+- Don't show district lock status on read-only maps [#538](https://github.com/PublicMapping/districtbuilder/pull/538)
+- Fix topology health check to report inability to load region configs as an error [#546](https://github.com/PublicMapping/districtbuilder/pull/546)
+- Keep position in find menu after accepting changes [#557](https://github.com/PublicMapping/districtbuilder/pull/557)
 
 ## [1.2.0] - 2020-11-18
 
 ### Added
+
 - Microcopy to Create Map and description props to text and select fields [#467](https://github.com/PublicMapping/districtbuilder/pull/467)
 - Add product tour [#471](https://github.com/PublicMapping/districtbuilder/pull/471)
 - Update data tooling [#468](https://github.com/PublicMapping/districtbuilder/pull/468)
@@ -43,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2020-10-08
 
 ### Added
+
 - Project page sharing & read-only mode [#449](https://github.com/PublicMapping/districtbuilder/pull/449)
 - Set keep-alive timeout higher than ALB idle timeout [#448](https://github.com/PublicMapping/districtbuilder/pull/448)
 - Add basic k6 load test for PA/50 district project [#448](https://github.com/PublicMapping/districtbuilder/pull/448)
@@ -82,7 +109,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...HEAD
+[1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...1.0.0

@@ -247,7 +247,13 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                 description={
                   <Box as="span" sx={style.cardHint}>
                     What state do you want to map? If you don’t see it in the list,{" "}
-                    <Styled.a href="mailto:support@districtbuilder.org">let us know!</Styled.a>
+                    <Styled.a
+                      href="https://districtbuilder.us1.list-manage.com/subscribe?u=61da999c9897859f1c1fff262&id=70fdf1ae35"
+                      target="_blank"
+                    >
+                      sign up for our mailing list
+                    </Styled.a>{" "}
+                    to know when new states are available!
                   </Box>
                 }
                 resource={createProjectResource}

@@ -1,30 +1,36 @@
 /** @jsx jsx */
 import { jsx, Box } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
-import Icon from "../components/Icon";
 import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
 import { exportCsv, exportGeoJson, exportShp } from "../actions/projectData";
+import { setDeleteProject } from "../actions/projects";
 
 enum UserMenuKeys {
+  Delete = "delete",
   ExportCsv = "csv",
   ExportShapefile = "shp",
   ExportGeoJson = "geojson"
 }
 
-interface ExportProps {
+interface FlyoutProps {
   readonly invert?: boolean;
   readonly project: IProject;
 }
 
-const ExportMenu = (props: ExportProps) => {
+// Flyout ("..." button) for each project on the project list page.
+// Very similar to the ExportMenu component, but there are other types
+// of actions (e.g. archiving), so it has intentionally
+// not been unified.
+const ProjectListFlyout = (props: FlyoutProps) => {
   return (
     <Wrapper
-      sx={{ position: "relative", pr: 1 }}
       onSelection={(userMenuKey: string) => {
         const action =
-          userMenuKey === UserMenuKeys.ExportCsv
+          userMenuKey === UserMenuKeys.Delete
+            ? setDeleteProject
+            : userMenuKey === UserMenuKeys.ExportCsv
             ? exportCsv
             : userMenuKey === UserMenuKeys.ExportShapefile
             ? exportShp
@@ -39,12 +45,11 @@ const ExportMenu = (props: ExportProps) => {
           ...invertStyles(props),
           ...props
         }}
-        className="export-menu"
+        className="project-list-flyout-menu"
       >
-        <Icon name="export" />
-        Export
+        ...
       </MenuButton>
-      <Menu sx={style.menu}>
+      <Menu sx={{ ...style.menu }}>
         <ul sx={style.menuList}>
           <li key={UserMenuKeys.ExportCsv}>
             <MenuItem value={UserMenuKeys.ExportShapefile}>
@@ -56,6 +61,9 @@ const ExportMenu = (props: ExportProps) => {
             <MenuItem value={UserMenuKeys.ExportGeoJson}>
               <Box sx={style.menuListItem}>Export GeoJSON</Box>
             </MenuItem>
+            <MenuItem value={UserMenuKeys.Delete}>
+              <Box sx={style.menuListItem}>Delete Map</Box>
+            </MenuItem>
           </li>
         </ul>
       </Menu>
@@ -63,4 +71,4 @@ const ExportMenu = (props: ExportProps) => {
   );
 };
 
-export default ExportMenu;
+export default ProjectListFlyout;

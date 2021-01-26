@@ -1,21 +1,23 @@
 /** @jsx jsx */
 import React, { useState } from "react";
 import { Link, Redirect, useLocation } from "react-router-dom";
-import { Alert, Box, Button, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
+import { connect } from "react-redux";
+import { Alert, Box, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
-import { Register } from "../../shared/entities";
-import { registerUser } from "../api";
+import { RegisterContent } from "../components/AuthComponents";
 import CenteredContent from "../components/CenteredContent";
-import { InputField, PasswordField } from "../components/Field";
-import FormError from "../components/FormError";
-import { WriteResource } from "../resource";
+import { IUser } from "../../shared/entities";
+import { State } from "../reducers";
 import { AuthLocationState } from "../types";
+import { Resource } from "../resource";
 
-const isFormInvalid = (form: Register): boolean =>
-  Object.values(form).some(value => value.trim() === "");
+interface StateProps {
+  readonly user: Resource<IUser>;
+}
 
-const RegistrationScreen = () => {
+const RegistrationScreen = ({ user }: StateProps) => {
+  const isLoggedIn = "resource" in user;
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
   const toParams = new URLSearchParams(to.search);
@@ -23,23 +25,9 @@ const RegistrationScreen = () => {
     to.pathname === "/start-project" && toParams.has("name")
   );
 
-  const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
-    data: {
-      email: "",
-      password: "",
-      name: ""
-    }
-  });
-  const { data } = registrationResource;
-
-  const setForm = (field: keyof Register) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setRegistrationResource({
-      data: { ...data, [field]: e.currentTarget.value }
-    });
-
   return (
     <CenteredContent>
-      {"resource" in registrationResource ? (
+      {isLoggedIn ? (
         <Redirect to={to} />
       ) : (
         <React.Fragment>
@@ -47,23 +35,7 @@ const RegistrationScreen = () => {
             <Logo sx={{ maxWidth: "15rem" }} />
           </Heading>
           <Card sx={{ variant: "card.floating" }}>
-            <Flex
-              as="form"
-              sx={{ flexDirection: "column" }}
-              onSubmit={(e: React.FormEvent) => {
-                e.preventDefault();
-                setRegistrationResource({ data, isPending: true });
-                registerUser(
-                  registrationResource.data.name,
-                  registrationResource.data.email,
-                  registrationResource.data.password
-                )
-                  .then(() => setRegistrationResource({ data, resource: void 0 }))
-                  .catch(errors => {
-                    setRegistrationResource({ data, errors });
-                  });
-              }}
-            >
+            <RegisterContent>
               <Heading as="h2" sx={{ mb: 5, textAlign: "left" }}>
                 Create an account
               </Heading>
@@ -89,43 +61,7 @@ const RegistrationScreen = () => {
                   </Flex>
                 </Alert>
               )}
-              <FormError resource={registrationResource} />
-              <Box sx={{ mb: 3 }}>
-                <InputField
-                  field="name"
-                  label="Name"
-                  resource={registrationResource}
-                  inputProps={{ onChange: setForm("name") }}
-                />
-              </Box>
-              <Box sx={{ mb: 3 }}>
-                <InputField
-                  field="email"
-                  label="Email"
-                  resource={registrationResource}
-                  inputProps={{ onChange: setForm("email") }}
-                />
-              </Box>
-              <Box sx={{ mb: 3 }}>
-                <PasswordField
-                  field="password"
-                  userAttributes={[data.email, data.name]}
-                  password={data.password}
-                  label="Password"
-                  resource={registrationResource}
-                  inputProps={{ onChange: setForm("password") }}
-                />
-              </Box>
-              <Button
-                type="submit"
-                disabled={
-                  ("isPending" in registrationResource && registrationResource.isPending) ||
-                  isFormInvalid(data)
-                }
-              >
-                Let’s go!
-              </Button>
-            </Flex>
+            </RegisterContent>
           </Card>
           <Box sx={{ fontSize: 1, textAlign: "center" }}>
             Already have an account?{" "}
@@ -143,4 +79,10 @@ const RegistrationScreen = () => {
   );
 };
 
-export default RegistrationScreen;
+function mapStateToProps(state: State) {
+  return {
+    user: state.user
+  };
+}
+
+export default connect(mapStateToProps)(RegistrationScreen);

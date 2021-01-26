@@ -7,6 +7,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Res,
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
@@ -22,7 +23,10 @@ import {
   ParsedRequest
 } from "@nestjsx/crud";
 import stringify from "csv-stringify/lib/sync";
+import { Response } from "express";
 import { FeatureCollection } from "geojson";
+import { convert } from "geojson2shp";
+import * as _ from "lodash";
 import { GeometryCollection } from "topojson-specification";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
@@ -30,7 +34,7 @@ import { GeoUnitHierarchy, ProjectId, PublicUserProperties } from "../../../../s
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
 
-import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { User } from "../../users/entities/user.entity";
 import { CreateProjectDto } from "../entities/create-project.dto";
 import { Project } from "../entities/project.entity";
@@ -72,7 +76,7 @@ import { Errors } from "../../../../shared/types";
   filter: (req: any) => {
     // Filter to user's projects for all update requests and for full project
     // list. Unauthenticated access is allowed for individual projects
-    if (req.method !== "GET" || req.url === "/api/projects") {
+    if (req.method !== "GET" || req.route.path === "/api/projects") {
       const user = req.user as User;
       return {
         user_id: user ? user.id : undefined
@@ -98,6 +102,21 @@ export class ProjectsController implements CrudController<Project> {
     public topologyService: TopologyService,
     private readonly regionConfigService: RegionConfigsService
   ) {}
+
+  // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
+  @Override()
+  @UseGuards(OptionalJwtAuthGuard)
+  async getOne(@ParsedRequest() req: CrudRequest): Promise<Project> {
+    if (!this.base.getOneBase) {
+      this.logger.error("Routes misconfigured. Missing `getOneBase` route");
+      throw new InternalServerErrorException();
+    }
+    return this.base
+      .getOneBase(req)
+      .then(project =>
+        project.user.id === req.parsed.authPersist.userId ? project : project.getReadOnlyView()
+      );
+  }
 
   // Overriden to add JwtAuthGuard
   @Override()
@@ -150,7 +169,10 @@ export class ProjectsController implements CrudController<Project> {
 
       return this.service.createOne(req, {
         ...dto,
-        districtsDefinition: new Array(geoCollection.hierarchy.length).fill(0),
+        // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
+        districtsDefinition:
+          dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0),
+        lockedDistricts: new Array(dto.numberOfDistricts).fill(false),
         user: req.parsed.authPersist.userId
       });
     } catch (error) {
@@ -204,6 +226,40 @@ export class ProjectsController implements CrudController<Project> {
       );
     }
     return geojson;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @Get(":id/export/shp")
+  async exportShapefile(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId,
+    @Res() response: Response
+  ): Promise<void> {
+    const project = await this.getProject(req, projectId);
+    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
+    const geojson = geoCollection.merge(
+      { districts: project.districtsDefinition },
+      project.numberOfDistricts
+    );
+    if (geojson === null) {
+      this.logger.error(`Invalid districts definition for project ${projectId}`);
+      throw new BadRequestException(
+        "District definition is invalid",
+        MakeDistrictsErrors.INVALID_DEFINITION
+      );
+    }
+    const formattedGeojson = {
+      ...geojson,
+      features: geojson.features.map(feature => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          // The feature ID doesn't seem to make its way over as part of 'convert' natively
+          id: feature.id
+        }
+      }))
+    };
+    await convert(formattedGeojson, response, { layer: "districts" });
   }
 
   @UseInterceptors(CrudRequestInterceptor)

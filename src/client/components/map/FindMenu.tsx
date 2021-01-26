@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import MapboxGL from "mapbox-gl";
 import { connect } from "react-redux";
-import { Box, Button, Flex, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import bbox from "@turf/bbox";
 import { polygon } from "@turf/helpers";
 
@@ -9,17 +9,18 @@ import Icon from "../Icon";
 
 import { State } from "../../reducers";
 import { DistrictsGeoJSON } from "../../types";
-import { setFindIndex, toggleFind } from "../../actions/districtDrawing";
+import { FindTool, setFindIndex, setFindType, toggleFind } from "../../actions/districtDrawing";
+import { getFindCoords } from "../../reducers/projectData";
 import store from "../../store";
 import { destructureResource } from "../../functions";
-import { useEffect } from "react";
+import { ChangeEvent, useEffect } from "react";
 
 const style: ThemeUIStyleObject = {
   menu: {
     position: "absolute",
     top: "-1px",
     left: 2,
-    width: "300px",
+    width: "350px",
     backgroundColor: "muted",
     border: "1px solid",
     borderTop: "none",
@@ -29,6 +30,9 @@ const style: ThemeUIStyleObject = {
     fontSize: 1,
     alignItems: "center",
     p: 2
+  },
+  select: {
+    minWidth: "132px"
   },
   numFound: {
     flex: "auto",
@@ -51,55 +55,62 @@ const style: ThemeUIStyleObject = {
 const FindMenu = ({
   findMenuOpen,
   findIndex,
+  findTool,
   geojson,
   map
 }: {
   readonly findMenuOpen: boolean;
   readonly findIndex?: number;
+  readonly findTool: FindTool;
   readonly geojson?: DistrictsGeoJSON;
   readonly map?: MapboxGL.Map;
 }) => {
-  const unassigned = geojson && geojson.features[0];
-  const allUnassigned =
-    geojson &&
-    geojson.features.slice(1).every(district => district.geometry.coordinates.length === 0);
-  const numUnassigned = allUnassigned ? 0 : unassigned?.geometry.coordinates.length;
+  const findCoords = getFindCoords(findTool, geojson);
+  const num = findCoords?.length || 0;
 
   useEffect(() => {
     // eslint-disable-next-line
-    if (map && unassigned && findIndex !== undefined) {
+    if (map && findCoords && findIndex !== undefined && findCoords.length > findIndex) {
       // eslint-disable-next-line
-      const bounds = bbox(polygon(unassigned.geometry.coordinates[findIndex])) as [
-        number,
-        number,
-        number,
-        number
-      ];
+      const bounds = bbox(polygon(findCoords[findIndex])) as [number, number, number, number];
       map.fitBounds(bounds, { padding: 50 });
     }
-  }, [map, unassigned, findIndex]);
+  }, [map, findCoords, findIndex]);
 
   return findMenuOpen ? (
     <Flex sx={style.menu}>
       <b>Find</b>
-      &nbsp; Unassigned
+      &nbsp;{" "}
+      <Select
+        sx={style.select}
+        value={findTool}
+        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+          store.dispatch(
+            setFindType(
+              e.target.value === FindTool.Unassigned ? FindTool.Unassigned : FindTool.NonContiguous
+            )
+          );
+          store.dispatch(setFindIndex(undefined));
+        }}
+      >
+        <option value={FindTool.Unassigned}>Unassigned</option>
+        <option value={FindTool.NonContiguous}>Non-contiguous</option>
+      </Select>
       <Box sx={style.numFound}>
-        {unassigned
+        {findCoords
           ? findIndex !== undefined
-            ? `${findIndex + 1} / ${numUnassigned}`
-            : `${numUnassigned} found`
+            ? `${findIndex + 1} / ${num}`
+            : `${num} found`
           : "—"}
       </Box>
       <Box sx={{ px: 1 }}>
         <Button
           sx={style.button}
-          disabled={numUnassigned === undefined || numUnassigned === 0}
+          disabled={num === undefined || num === 0}
           onClick={() =>
-            numUnassigned !== undefined &&
+            num !== undefined &&
             store.dispatch(
-              setFindIndex(
-                findIndex === undefined || findIndex === 0 ? numUnassigned - 1 : findIndex - 1
-              )
+              setFindIndex(findIndex === undefined || findIndex === 0 ? num - 1 : findIndex - 1)
             )
           }
         >
@@ -107,12 +118,10 @@ const FindMenu = ({
         </Button>
         <Button
           sx={style.button}
-          disabled={numUnassigned === undefined || numUnassigned === 0}
+          disabled={num === undefined || num === 0}
           onClick={() =>
-            numUnassigned !== undefined &&
-            store.dispatch(
-              setFindIndex(findIndex === undefined ? 0 : (findIndex + 1) % numUnassigned)
-            )
+            num !== undefined &&
+            store.dispatch(setFindIndex(findIndex === undefined ? 0 : (findIndex + 1) % num))
           }
         >
           <Icon name="chevron-right" />
@@ -131,6 +140,7 @@ function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
     findIndex: state.project.findIndex,
+    findTool: state.project.findTool,
     geojson: destructureResource(state.project.projectData, "geojson")
   };
 }

@@ -8,7 +8,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import {
   setGeoLevelVisibility,
   SelectionTool,
-  replaceSelectedGeounits
+  replaceSelectedGeounits,
+  FindTool
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -54,6 +55,7 @@ interface Props {
   readonly lockedDistricts: LockedDistricts;
   readonly isReadOnly: boolean;
   readonly findMenuOpen: boolean;
+  readonly findTool: FindTool;
   readonly label?: string;
   readonly map?: MapboxGL.Map;
   // eslint-disable-next-line
@@ -72,6 +74,7 @@ const DistrictsMap = ({
   lockedDistricts,
   isReadOnly,
   findMenuOpen,
+  findTool,
   label,
   map,
   setMap
@@ -88,17 +91,9 @@ const DistrictsMap = ({
 
   // While a geolevel has tiles up to the maxZoom level, we want the enable the user to zoom in
   // beyond that zoom level. Using lower zoom tiles at higher zoom levels is called overzoom.
-  const overZoom = maxZoom + 4;
-
-  // Add a color property to the geojson, so it can be used for styling
-  geojson.features.forEach((feature, id) => {
-    // @ts-ignore
-    // eslint-disable-next-line
-    feature.properties.outlineColor = id === 0 ? "#F25DFE" : "transparent";
-    // @ts-ignore
-    // eslint-disable-next-line
-    feature.properties.color = getDistrictColor(id);
-  });
+  // The ability to zoom this far in isn't needed in the typical use-case (+4 is fine for that),
+  // but it's needed in order to allow the user to fix very tiny unassigned slivers that may arise.
+  const overZoom = maxZoom + 8;
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -162,11 +157,27 @@ const DistrictsMap = ({
     // eslint-disable-next-line
   }, [mapRef]);
 
-  // Update districts source when geojson is fetched
+  // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
+    // Add a color property to the geojson, so it can be used for styling
+    geojson.features.forEach((feature, id) => {
+      // @ts-ignore
+      // eslint-disable-next-line
+      feature.properties.outlineColor =
+        (findTool === FindTool.Unassigned && id === 0) ||
+        (findTool === FindTool.NonContiguous &&
+          id !== 0 &&
+          feature.geometry.coordinates.length >= 2)
+          ? "#F25DFE"
+          : "transparent";
+      // @ts-ignore
+      // eslint-disable-next-line
+      feature.properties.color = getDistrictColor(id);
+    });
+
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson]);
+  }, [map, geojson, findTool]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -225,7 +236,7 @@ const DistrictsMap = ({
     map &&
       [...new Array(project.numberOfDistricts + 1).keys()].forEach(districtId =>
         map.setFeatureState(featureStateDistricts(districtId), {
-          locked: lockedDistricts.has(districtId)
+          locked: lockedDistricts[districtId]
         })
       );
   }, [map, project, lockedDistricts]);
@@ -405,7 +416,8 @@ const DistrictsMap = ({
 
 function mapStateToProps(state: State) {
   return {
-    findMenuOpen: state.project.findMenuOpen
+    findMenuOpen: state.project.findMenuOpen,
+    findTool: state.project.findTool
   };
 }
 

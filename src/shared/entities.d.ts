@@ -34,7 +34,12 @@ export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;
 }
 
-export type DistrictProperties = { readonly [name: string]: number };
+export type DistrictProperties = {
+  readonly contiguity: "contiguous" | "non-contiguous" | "";
+  readonly compactness: number;
+} & {
+  readonly [name: string]: number;
+};
 
 export interface IStaticFile {
   readonly id: string;
@@ -101,21 +106,24 @@ export interface IProject {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
+  readonly updatedDt: Date;
   readonly districtsDefinition: DistrictsDefinition;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
   readonly lockedDistricts: readonly boolean[];
+  readonly archived: boolean;
 }
 
 export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
+  readonly districtsDefinition?: DistrictsDefinition;
 }
 
 export type UpdateProjectData = Pick<
   IProject,
-  "name" | "districtsDefinition" | "advancedEditingEnabled" | "lockedDistricts"
+  "name" | "districtsDefinition" | "advancedEditingEnabled" | "lockedDistricts" | "archived"
 >;
 
 export type ChamberId = string;
@@ -151,11 +159,11 @@ export interface MutableGeoUnits {
   [geoLevelId: string]: Map<FeatureId, GeoUnitIndices>;
 }
 
-export type CompactnessScore = number | null | "non-contiguous";
+export type Contiguity = "" | "contiguous" | "non-contiguous";
 
 export type DistrictId = number;
 
-export type LockedDistricts = ReadonlySet<DistrictId>;
+export type LockedDistricts = readonly boolean[];
 
 export interface DemographicCounts {
   // key is demographic group (eg. population, white, black, etc)

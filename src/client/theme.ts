@@ -1,4 +1,5 @@
 import { Theme as StyledSystemTheme } from "@styled-system/css";
+import { darken } from "@theme-ui/color";
 import { Theme } from "theme-ui";
 
 export const heights = {
@@ -203,6 +204,18 @@ const theme: Theme & StyledSystemTheme = {
         }
       }
     },
+    danger: {
+      ...appButtonStyles,
+      ...{
+        bg: "error",
+        "&:hover:not([disabled]):not(:active)": {
+          bg: darken("error", 0.2)
+        },
+        "&:active": {
+          bg: darken("error", 0.3)
+        }
+      }
+    },
     ghost: {
       ...appButtonStyles,
       ...{
@@ -253,6 +266,35 @@ const theme: Theme & StyledSystemTheme = {
         },
         "&:active": {
           bg: "rgba(256,256,256,0.3)"
+        }
+      }
+    },
+    linkStyle: {
+      ...appButtonStyles,
+      ...{
+        bg: "transparent",
+        color: "blue.6",
+        fontWeight: "bold",
+        padding: 0,
+        "&:hover:not([disabled]):not(:active)": {
+          textDecoration: "underline",
+          color: "blue.7",
+          bg: "transparent"
+        },
+        "&[disabled]": {
+          bg: "transparent",
+          color: "gray.8",
+          opacity: 0.25,
+          cursor: "not-allowed"
+        },
+        "&:active": {
+          bg: "rgba(256,256,256,0.3)",
+          color: "blue.8"
+        },
+        "&:focus": {
+          borderRadius: "small",
+          boxShadow: "focus",
+          outline: "none"
         }
       }
     },

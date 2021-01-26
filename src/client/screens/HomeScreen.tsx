@@ -4,7 +4,9 @@ import Avatar from "react-avatar";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
+import TimeAgo from "timeago-react";
 import * as H from "history";
+import ProjectListFlyout from "../components/ProjectListFlyout";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
 import {
@@ -28,13 +30,14 @@ import { userFetch } from "../actions/user";
 import { resendConfirmationEmail } from "../api";
 import { clearJWT, getJWT } from "../jwt";
 import { State } from "../reducers";
-import { ProjectsState } from "../reducers/projects";
 import { UserState } from "../reducers/user";
-import { WriteResource } from "../resource";
+import { Resource, WriteResource } from "../resource";
 import store from "../store";
+import { IProject } from "../../shared/entities";
+import DeleteProjectModal from "../components/DeleteProjectModal";
 
 interface StateProps {
-  readonly projects: ProjectsState;
+  readonly projects: Resource<readonly IProject[]>;
   readonly user: UserState;
 }
 
@@ -132,6 +135,7 @@ const style: ThemeUIStyleObject = {
     display: "flex",
     alignItems: "baseline",
     borderRadius: "med",
+    marginRight: "auto",
     px: 1,
     "&:hover:not([disabled])": {
       bg: "rgba(256,256,256,0.2)",
@@ -154,6 +158,9 @@ const HomeScreen = ({ projects, user }: StateProps) => {
   const history = useHistory();
   const [resendEmail, setResendEmail] = useState<WriteResource<void, void>>({ data: void 0 });
   const isLoggedIn = getJWT() !== null;
+  const projectList =
+    "resource" in projects ? projects.resource.filter(project => !project.archived) : [];
+
   useEffect(() => {
     isLoggedIn && store.dispatch(projectsFetch());
     isLoggedIn && store.dispatch(userFetch());
@@ -161,10 +168,11 @@ const HomeScreen = ({ projects, user }: StateProps) => {
 
   return (
     <Flex sx={{ flexDirection: "column" }}>
+      <DeleteProjectModal />
       {"resource" in user && !user.resource.isEmailVerified && (
         <Alert sx={{ borderRadius: "0" }}>
           <Box>
-            Please confirm your email in the next 14 days.{" "}
+            Please confirm your email.{" "}
             <Box sx={{ display: "inline-block", p: 1 }}>
               {"resource" in resendEmail ? (
                 <span sx={{ fontWeight: "body" }}>
@@ -253,7 +261,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
         as="main"
         sx={{ width: "100%", maxWidth: "large", my: 6, mx: "auto", flexDirection: "column", px: 4 }}
       >
-        {"resource" in projects && projects.resource.length > 0 && (
+        {projectList.length > 0 && (
           <Flex sx={{ justifyContent: "space-between", mb: 3 }}>
             <Heading as="h1" sx={{ variant: "text.h3" }}>
               Maps
@@ -270,21 +278,40 @@ const HomeScreen = ({ projects, user }: StateProps) => {
         )}
 
         {"resource" in projects ? (
-          projects.resource.length ? (
-            projects.resource.map(project => (
+          projectList.length > 0 ? (
+            projectList.map(project => (
               <React.Fragment key={project.id}>
-                <Link to={`/projects/${project.id}`} sx={style.projectRow}>
-                  <Heading
-                    as="h2"
-                    sx={{ fontFamily: "heading", variant: "text.h5", fontWeight: "light", mr: 3 }}
+                <Box>
+                  <Flex sx={{ position: "relative" }}>
+                    <Link to={`/projects/${project.id}`} sx={style.projectRow}>
+                      <Heading
+                        as="h2"
+                        sx={{
+                          fontFamily: "heading",
+                          variant: "text.h5",
+                          fontWeight: "light",
+                          mr: 3
+                        }}
+                      >
+                        {project.name}
+                      </Heading>
+                      <p sx={{ fontSize: 2, color: "gray.7" }}>
+                        ({project.regionConfig.name}, {project.numberOfDistricts} districts)
+                      </p>
+                    </Link>
+                    <ProjectListFlyout project={project} />
+                  </Flex>
+                  <div
+                    sx={{
+                      fontWeight: "light",
+                      color: "gray.5",
+                      paddingLeft: "5px"
+                    }}
                   >
-                    {project.name}
-                  </Heading>
-                  <p sx={{ fontSize: 2, color: "gray.7" }}>
-                    ({project.regionConfig.name}, {project.numberOfDistricts} districts)
-                  </p>
-                </Link>
-                <Divider />
+                    Last updated <TimeAgo datetime={project.updatedDt} />
+                  </div>
+                  <Divider />
+                </Box>
               </React.Fragment>
             ))
           ) : (
@@ -340,7 +367,7 @@ const handleSelection = (history: H.History) => (key: string | number) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    projects: state.projects,
+    projects: state.projects.projects,
     user: state.user
   };
 }

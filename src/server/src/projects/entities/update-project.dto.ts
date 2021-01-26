@@ -17,4 +17,7 @@ export class UpdateProjectDto implements UpdateProjectData {
   @IsBoolean()
   @IsOptional()
   readonly advancedEditingEnabled: boolean;
+  @IsBoolean()
+  @IsOptional()
+  readonly archived: boolean;
 }

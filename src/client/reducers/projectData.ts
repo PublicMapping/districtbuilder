@@ -5,6 +5,10 @@ import { Action } from "../actions";
 import {
   exportCsv,
   exportCsvFailure,
+  exportGeoJson,
+  exportGeoJsonFailure,
+  exportShp,
+  exportShpFailure,
   projectDataFetch,
   projectDataFetchFailure,
   projectDataFetchSuccess,
@@ -14,6 +18,9 @@ import {
   setProjectNameEditing,
   staticDataFetchFailure,
   staticDataFetchSuccess,
+  updateDistrictLocks,
+  updateDistrictLocksFailure,
+  updateDistrictLocksSuccess,
   updateDistrictsDefinition,
   updateDistrictsDefinitionRefetchGeoJsonSuccess,
   updateDistrictsDefinitionSuccess,
@@ -21,7 +28,7 @@ import {
   updateProjectName,
   updateProjectNameSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits, setSavingState } from "../actions/districtDrawing";
+import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
@@ -35,7 +42,14 @@ import {
   showActionFailedToast,
   showResourceFailedToast
 } from "../functions";
-import { exportProjectCsv, fetchProjectData, fetchProjectGeoJson, patchProject } from "../api";
+import {
+  exportProjectCsv,
+  exportProjectGeoJson,
+  exportProjectShp,
+  fetchProjectData,
+  fetchProjectGeoJson,
+  patchProject
+} from "../api";
 import { fetchAllStaticData } from "../s3";
 
 function fetchGeoJsonForProject(project: IProject) {
@@ -45,6 +59,21 @@ function fetchGeoJsonForProject(project: IProject) {
       geojson
     }));
   };
+}
+
+export function getFindCoords(findTool: FindTool, geojson?: DistrictsGeoJSON) {
+  const areAllUnassigned =
+    geojson &&
+    geojson.features.slice(1).every(district => district.geometry.coordinates.length === 0);
+  return geojson && !areAllUnassigned
+    ? findTool === FindTool.Unassigned
+      ? geojson.features[0].geometry.coordinates
+      : geojson.features
+          .slice(1)
+          .map(multipolygon => multipolygon.geometry.coordinates)
+          .filter(coords => coords.length >= 2)
+          .flat()
+    : undefined;
 }
 
 export type ProjectDataState = {
@@ -138,7 +167,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
             }
           },
           {
-            districtsDefinition: action.payload.project.districtsDefinition
+            districtsDefinition: action.payload.project.districtsDefinition,
+            lockedDistricts: action.payload.project.lockedDistricts
           }
         ),
         Cmd.run(fetchAllStaticData, {
@@ -261,13 +291,19 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(updateDistrictsDefinitionRefetchGeoJsonSuccess): {
+      const findCoords = getFindCoords(state.findTool, action.payload.geojson);
+
       return "resource" in state.projectData
         ? updateCurrentState(
             {
               ...state,
               projectData: {
                 resource: action.payload
-              }
+              },
+              findIndex:
+                state.findIndex !== undefined && findCoords && findCoords.length !== 0
+                  ? Math.min(state.findIndex, findCoords.length - 1)
+                  : undefined
             },
             {
               districtsDefinition: action.payload.project.districtsDefinition
@@ -276,6 +312,54 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         : state;
     }
     case getType(updateProjectFailed):
+      return loop(
+        {
+          ...state,
+          saving: "failed"
+        },
+        Cmd.run(showActionFailedToast)
+      );
+    // eslint-disable-next-line
+    case getType(updateDistrictLocks): {
+      // eslint-disable-next-line
+      if ("resource" in state.projectData) {
+        const { id } = state.projectData.resource.project;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () =>
+              patchProject(id, { lockedDistricts: action.payload }).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: updateDistrictLocksSuccess,
+              failActionCreator: updateDistrictLocksFailure
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(updateDistrictLocksSuccess):
+      return updateCurrentState(
+        {
+          ...state,
+          saving: "saved",
+          projectData: {
+            resource: action.payload
+          }
+        },
+        {
+          lockedDistricts: action.payload.project.lockedDistricts
+        }
+      );
+    case getType(updateDistrictLocksFailure):
       return loop(
         {
           ...state,
@@ -292,6 +376,26 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         })
       );
     case getType(exportCsvFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
+    case getType(exportGeoJson):
+      return loop(
+        state,
+        Cmd.run(exportProjectGeoJson, {
+          failActionCreator: exportGeoJsonFailure,
+          args: [action.payload] as Parameters<typeof exportProjectGeoJson>
+        })
+      );
+    case getType(exportGeoJsonFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
+    case getType(exportShp):
+      return loop(
+        state,
+        Cmd.run(exportProjectShp, {
+          failActionCreator: exportShpFailure,
+          args: [action.payload] as Parameters<typeof exportProjectCsv>
+        })
+      );
+    case getType(exportShpFailure):
       return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state as never;

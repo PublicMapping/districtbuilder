@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { DistrictsDefinition, IProject, ProjectId } from "../../shared/entities";
+import { DistrictsDefinition, IProject, LockedDistricts, ProjectId } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 
 export const projectFetch = createAction("Project fetch")<ProjectId>();
@@ -34,7 +34,19 @@ export const updateDistrictsDefinitionRefetchGeoJsonSuccess = createAction(
   "Update districts definition refetch geojson success"
 )<DynamicProjectData>();
 
+export const updateDistrictLocks = createAction("Update district locks")<LockedDistricts>();
+export const updateDistrictLocksSuccess = createAction("Update district locks success")<
+  DynamicProjectData
+>();
+export const updateDistrictLocksFailure = createAction("Update district locks failure")<string>();
+
 export const updateProjectFailed = createAction("Update project failure")();
 
 export const exportCsv = createAction("Export project CSV")<IProject>();
 export const exportCsvFailure = createAction("Export project CSV failure")<string>();
+
+export const exportGeoJson = createAction("Export project GeoJSON")<IProject>();
+export const exportGeoJsonFailure = createAction("Export project GeoJSON failure")<string>();
+
+export const exportShp = createAction("Export project Shapefile")<IProject>();
+export const exportShpFailure = createAction("Export project Shapefile failure")<string>();

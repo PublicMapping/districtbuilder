@@ -21,7 +21,7 @@ services:
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
       - NODE_ENV=Development
-      - NODE_OPTIONS=--max-old-space-size=14336
+      - NODE_OPTIONS=--max-old-space-size=16384
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - JWT_SECRET=insecure
@@ -64,7 +64,7 @@ services:
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
-      - NODE_OPTIONS=--max-old-space-size=14336
+      - NODE_OPTIONS=--max-old-space-size=16384
     build:
       context: ./src/manage
       dockerfile: Dockerfile

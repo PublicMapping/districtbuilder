@@ -3,8 +3,8 @@ import React, { memo, useEffect, useState, Fragment } from "react";
 import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
-  CompactnessScore,
   DemographicCounts,
+  DistrictProperties,
   GeoUnitHierarchy,
   GeoUnits,
   IProject,
@@ -208,8 +208,8 @@ const ProjectSidebar = ({
 
 const BLANK_VALUE = "–";
 
-function getCompactnessDisplay(compactness: CompactnessScore) {
-  return compactness === null ? (
+function getCompactnessDisplay(properties: DistrictProperties) {
+  return properties.contiguity === "" ? (
     <Tooltip
       placement="top-start"
       content={
@@ -220,19 +220,7 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
     >
       <span sx={{ color: "gray.2" }}>{BLANK_VALUE}</span>
     </Tooltip>
-  ) : typeof compactness === "number" ? (
-    <Tooltip
-      placement="top-start"
-      content={
-        <span>
-          <strong>{Math.floor(compactness * 100)}% compactness.</strong> Calculated using the
-          Polsby-Popper measurement
-        </span>
-      }
-    >
-      <span>{`${Math.floor(compactness * 100)}%`}</span>
-    </Tooltip>
-  ) : compactness === "non-contiguous" ? (
+  ) : properties.contiguity === "non-contiguous" ? (
     <Tooltip
       placement="top-start"
       content={
@@ -246,8 +234,20 @@ function getCompactnessDisplay(compactness: CompactnessScore) {
         <Icon name="alert-triangle" color="#f06543" size={0.95} />
       </span>
     </Tooltip>
+  ) : properties.contiguity === "contiguous" ? (
+    <Tooltip
+      placement="top-start"
+      content={
+        <span>
+          <strong>{Math.floor(properties.compactness * 100)}% compactness.</strong> Calculated using
+          the Polsby-Popper measurement
+        </span>
+      }
+    >
+      <span>{`${Math.floor(properties.compactness * 100)}%`}</span>
+    </Tooltip>
   ) : (
-    assertNever(compactness)
+    assertNever(properties.contiguity)
   );
 }
 
@@ -291,7 +291,7 @@ const SidebarRow = memo(
       districtId === 0 ? (
         <span sx={style.blankValue}>{BLANK_VALUE}</span>
       ) : (
-        getCompactnessDisplay(district.properties.compactness)
+        getCompactnessDisplay(district.properties)
       );
     const toggleHover = () => setHover(!isHovered);
     const toggleLocked = (e: React.MouseEvent) => {
@@ -352,7 +352,7 @@ const SidebarRow = memo(
         </Styled.td>
         <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
         <Styled.td>
-          {isDistrictLocked ? (
+          {isReadOnly ? null : isDistrictLocked ? (
             <Tooltip
               content={
                 <span>
@@ -364,7 +364,7 @@ const SidebarRow = memo(
                 <Icon name="lock-locked" color="#131f28" size={0.75} />
               </Button>
             </Tooltip>
-          ) : !isReadOnly ? (
+          ) : (
             <Tooltip content="Lock this district">
               <Button
                 variant="icon"
@@ -375,7 +375,7 @@ const SidebarRow = memo(
                 <Icon name="lock-unlocked" size={0.75} />
               </Button>
             </Tooltip>
-          ) : null}
+          )}
         </Styled.td>
       </Styled.tr>
     );
@@ -486,7 +486,7 @@ const SidebarRows = ({
             demographics={demographics}
             deviation={deviation}
             key={districtId}
-            isDistrictLocked={lockedDistricts.has(districtId)}
+            isDistrictLocked={lockedDistricts[districtId]}
             districtId={districtId}
             isReadOnly={isReadOnly}
           />

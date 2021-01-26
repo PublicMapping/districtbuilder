@@ -1,4 +1,12 @@
-import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Check,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn
+} from "typeorm";
 
 import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
@@ -33,6 +41,13 @@ export class Project implements IProject {
   @Column({ type: "timestamp with time zone", name: "created_dt", default: () => "NOW()" })
   createdDt: Date;
 
+  @UpdateDateColumn({
+    type: "timestamp with time zone",
+    name: "updated_dt",
+    default: () => "NOW()"
+  })
+  updatedDt: Date;
+
   @Column({ default: false })
   advancedEditingEnabled: boolean;
 
@@ -43,4 +58,12 @@ export class Project implements IProject {
     default: "'{}'"
   })
   lockedDistricts: readonly boolean[];
+
+  @Column({ type: "boolean", default: false })
+  archived: boolean;
+
+  // Strips out data that we don't want to have available in the read-only view in the UI
+  getReadOnlyView(): Project {
+    return { ...this, lockedDistricts: new Array(this.numberOfDistricts).fill(false) };
+  }
 }

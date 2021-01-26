@@ -11,6 +11,11 @@ export default class TopologyLoadedIndicator extends HealthIndicator {
 
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
     const layers = this.topologyService.layers();
+    if (layers === undefined) {
+      const result = this.getStatus(key, false, {});
+      throw new HealthCheckError("Topology layers not intialized", result);
+    }
+
     const layerEntries = (await Promise.all(
       Object.entries(layers).map(([layerId, topology]) => {
         return new Promise((resolve, reject) => {
@@ -22,9 +27,14 @@ export default class TopologyLoadedIndicator extends HealthIndicator {
         });
       })
     )) as [string, boolean][];
-    const layerStatus = Object.fromEntries(layerEntries);
-    const isHealthy = Object.values(layerStatus).every(status => status);
-    const result = this.getStatus(key, isHealthy, layerStatus);
+
+    const isHealthy = layerEntries.every(([_, status]) => status);
+    const pendingLayers = layerEntries.filter(([_, status]) => !status).map(([layer, _]) => layer);
+    const result = this.getStatus(key, isHealthy, {
+      total: layerEntries.length,
+      complete: layerEntries.length - pendingLayers.length,
+      pendingLayers
+    });
 
     if (isHealthy) {
       return result;
