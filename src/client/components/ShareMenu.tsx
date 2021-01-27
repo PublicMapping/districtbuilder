@@ -66,7 +66,15 @@ const ShareMenu = ({ invert, project }: ShareProps) => {
         }}
         className="share-menu"
       >
-        <Icon name="share" />
+        <Icon
+          name={
+            project?.visibility === ProjectVisibility.Visible
+              ? "link"
+              : project?.visibility === ProjectVisibility.Published
+              ? "eye"
+              : "lock-locked"
+          }
+        />
         Share
       </MenuButton>
       <Menu
