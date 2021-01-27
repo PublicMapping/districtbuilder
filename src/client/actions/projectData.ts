@@ -1,4 +1,5 @@
 import { createAction } from "typesafe-actions";
+import { ProjectVisibility } from "../../shared/constants";
 import { DistrictsDefinition, IProject, LockedDistricts, ProjectId } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 
@@ -21,6 +22,13 @@ export const setProjectNameEditing = createAction("Toggle editing project name")
 
 export const updateProjectName = createAction("Update project name")<string>();
 export const updateProjectNameSuccess = createAction("Update project name success")<
+  DynamicProjectData
+>();
+
+export const updateProjectVisibility = createAction("Update project visibility")<
+  ProjectVisibility
+>();
+export const updateProjectVisibilitySuccess = createAction("Update project visibility success")<
   DynamicProjectData
 >();
 

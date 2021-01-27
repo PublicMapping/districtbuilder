@@ -32,3 +32,9 @@ export enum ResetPasswordResponse {
 export enum VerifyEmailErrors {
   NOT_FOUND = "NOT_FOUND"
 }
+
+export enum ProjectVisibility {
+  Private = "PRIVATE",
+  Visible = "VISIBLE",
+  Published = "PUBLISHED"
+}

@@ -1,3 +1,5 @@
+import { ProjectVisibility } from "./constants";
+
 export type UserId = string;
 
 export type PublicUserProperties = "id" | "name";
@@ -111,6 +113,7 @@ export interface IProject {
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
   readonly lockedDistricts: readonly boolean[];
+  readonly visibility: ProjectVisibility;
   readonly archived: boolean;
 }
 
@@ -123,7 +126,12 @@ export interface CreateProjectData {
 
 export type UpdateProjectData = Pick<
   IProject,
-  "name" | "districtsDefinition" | "advancedEditingEnabled" | "lockedDistricts" | "archived"
+  | "name"
+  | "districtsDefinition"
+  | "advancedEditingEnabled"
+  | "lockedDistricts"
+  | "visibility"
+  | "archived"
 >;
 
 export type ChamberId = string;

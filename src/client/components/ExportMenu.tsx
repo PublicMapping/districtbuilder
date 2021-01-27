@@ -46,13 +46,17 @@ const ExportMenu = (props: ExportProps) => {
       </MenuButton>
       <Menu sx={style.menu}>
         <ul sx={style.menuList}>
-          <li key={UserMenuKeys.ExportCsv}>
+          <li key={UserMenuKeys.ExportShapefile}>
             <MenuItem value={UserMenuKeys.ExportShapefile}>
               <Box sx={style.menuListItem}>Export Shapefile</Box>
             </MenuItem>
+          </li>
+          <li key={UserMenuKeys.ExportCsv}>
             <MenuItem value={UserMenuKeys.ExportCsv}>
               <Box sx={style.menuListItem}>Export CSV</Box>
             </MenuItem>
+          </li>
+          <li key={UserMenuKeys.ExportGeoJson}>
             <MenuItem value={UserMenuKeys.ExportGeoJson}>
               <Box sx={style.menuListItem}>Export GeoJSON</Box>
             </MenuItem>

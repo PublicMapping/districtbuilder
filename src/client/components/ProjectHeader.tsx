@@ -102,7 +102,7 @@ const ProjectHeader = ({
               </Button>
             </React.Fragment>
           )}
-          <ShareMenu invert={true} />
+          <ShareMenu invert={true} project={project} />
           <SupportMenu invert={true} />
           {project ? <ExportMenu invert={true} project={project} /> : null}
           <Box sx={{ position: "relative" }}>

@@ -1,5 +1,6 @@
-import { ArrayNotEmpty, IsArray, IsBoolean, IsNotEmpty, IsOptional } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional } from "class-validator";
 
+import { ProjectVisibility } from "../../../../shared/constants";
 import { DistrictsDefinition, UpdateProjectData } from "../../../../shared/entities";
 
 export class UpdateProjectDto implements UpdateProjectData {
@@ -17,6 +18,9 @@ export class UpdateProjectDto implements UpdateProjectData {
   @IsBoolean()
   @IsOptional()
   readonly advancedEditingEnabled: boolean;
+  @IsEnum(ProjectVisibility)
+  @IsOptional()
+  readonly visibility: ProjectVisibility;
   @IsBoolean()
   @IsOptional()
   readonly archived: boolean;
