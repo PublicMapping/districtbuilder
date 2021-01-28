@@ -3,10 +3,12 @@ import { saveAs } from "file-saver";
 
 import {
   CreateProjectData,
+  IOrganization,
   IProject,
   IRegionConfig,
   IUser,
   JWT,
+  OrganizationSlug,
   ProjectId,
   UpdateProjectData,
   UpdateUserData
@@ -220,6 +222,15 @@ export async function exportProjectShp(project: IProject): Promise<void> {
           saveAs(new Blob([response.data], { type: "application/zip" }), `${project.name}.zip`)
         );
       })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrganization> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/organization/${slug}`)
+      .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });
 }

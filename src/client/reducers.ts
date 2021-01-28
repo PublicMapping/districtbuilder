@@ -4,6 +4,10 @@ import { getType } from "typesafe-actions";
 import { Action } from "./actions";
 import { resetState } from "./actions/root";
 import authReducer, { AuthState, initialState as initialAuthState } from "./reducers/auth";
+import organizationReducer, {
+  OrganizationState,
+  initialState as initialOrganizationState
+} from "./reducers/organization";
 import projectsReducer, {
   initialState as initialProjectsState,
   ProjectsState
@@ -17,26 +21,29 @@ import projectReducer, { ProjectState, initialProjectState } from "./reducers/pr
 
 export interface State {
   readonly auth: AuthState;
-  readonly user: UserState;
-  readonly regionConfig: RegionConfigState;
-  readonly projects: ProjectsState;
   readonly project: ProjectState;
+  readonly projects: ProjectsState;
+  readonly organization: OrganizationState;
+  readonly regionConfig: RegionConfigState;
+  readonly user: UserState;
 }
 
 export const initialState: State = {
   auth: initialAuthState,
-  user: initialUserState,
-  regionConfig: initialRegionConfigState,
+  organization: initialOrganizationState,
+  project: initialProjectState,
   projects: initialProjectsState,
-  project: initialProjectState
+  regionConfig: initialRegionConfigState,
+  user: initialUserState
 };
 
 const allReducers = combineReducers({
   auth: authReducer,
-  user: userReducer,
-  regionConfig: regionConfigReducer,
+  organization: organizationReducer,
+  project: projectReducer,
   projects: projectsReducer,
-  project: projectReducer
+  regionConfig: regionConfigReducer,
+  user: userReducer
 });
 
 export default (state = initialState, action: Action) => {

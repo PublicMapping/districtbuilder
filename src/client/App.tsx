@@ -10,6 +10,7 @@ import CreateProjectScreen from "./screens/CreateProjectScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
+import OrganizationScreen from "./screens/OrganizationScreen";
 import ProjectScreen from "./screens/ProjectScreen";
 import RegistrationScreen from "./screens/RegistrationScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
@@ -43,6 +44,7 @@ const App = () => (
         <PrivateRoute path="/" exact={true}>
           <HomeScreen />
         </PrivateRoute>
+        <Route path="/o/:organizationSlug" exact={true} component={OrganizationScreen} />
         <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />

@@ -14,6 +14,14 @@ export interface IUser {
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
 
+export type OrganizationSlug = string;
+
+export interface IOrganization {
+  readonly id: string;
+  readonly slug: OrganizationSlug;
+  readonly name: string;
+}
+
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
 
 // eslint-disable-next-line
