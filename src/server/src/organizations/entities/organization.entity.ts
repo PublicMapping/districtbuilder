@@ -1,5 +1,3 @@
-import bcrypt from "bcrypt";
-import { Exclude } from "class-transformer";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 import { IOrganization } from "../../../../shared/entities";
@@ -14,4 +12,19 @@ export class Organization implements IOrganization {
 
   @Column()
   name: string;
+
+  @Column({ default: "" })
+  description: string;
+
+  @Column({ default: "" })
+  logoUrl: string;
+
+  @Column({ default: "" })
+  linkUrl: string;
+
+  @Column({ default: "" })
+  municipality: string;
+
+  @Column({ default: "" })
+  region: string;
 }

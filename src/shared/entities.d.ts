@@ -20,6 +20,11 @@ export interface IOrganization {
   readonly id: string;
   readonly slug: OrganizationSlug;
   readonly name: string;
+  readonly description: string;
+  readonly logoUrl: string;
+  readonly linkUrl: string;
+  readonly municipality: string;
+  readonly region: string;
 }
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];
