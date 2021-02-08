@@ -85,6 +85,11 @@ $ ./scripts/manage update-region data/output-pa s3://previous/location/of/the/pu
 
 Note: when doing this, you will need to restart your server to see the new data, since it's cached on startup
 
+### Creating a Development User
+
+User credentials for an account for usage in development can be created thru the signup process on the frontend application.
+
+
 ### Project Organization
 
 In order to allow for code-sharing across the frontend and backend in conjunction with an unejected Create React App (CRA), it was decided that the simplest and least error-prone way forward was to structure the code as such:

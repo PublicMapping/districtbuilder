@@ -23,6 +23,7 @@
     "@types/jwt-decode": "2.2.1",
     "axios": "0.21.1",
     "file-saver": "2.0.1",
+    "internal-ip": "^4.3.0",
     "json-stable-stringify": "^1.0.1",
     "jwt-decode": "2.2.0",
     "lodash": "^4.17.19",
