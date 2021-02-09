@@ -56,7 +56,7 @@ export class Project implements IProject {
     type: "boolean",
     name: "locked_districts",
     array: true,
-    default: "'{}'"
+    default: () => "'{}'"
   })
   lockedDistricts: readonly boolean[];
 
