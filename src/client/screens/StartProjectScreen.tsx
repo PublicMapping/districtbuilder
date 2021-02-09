@@ -3,18 +3,19 @@ import { useEffect, useState } from "react";
 import { Redirect, useLocation } from "react-router-dom";
 import { Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
-import { IProject, RegionConfigId } from "../../shared/entities";
+import { IProject, RegionConfigId, ChamberId } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { createProject } from "../api";
 import { WriteResource } from "../resource";
 import store from "../store";
 
 const validate = (form: ProjectForm): ValidForm | InvalidForm => {
-  const { numberOfDistricts, regionConfigId, name } = form;
+  const { numberOfDistricts, regionConfigId, chamberId, name } = form;
   return name && name.trim() !== "" && !Number.isNaN(numberOfDistricts) && regionConfigId !== null
     ? {
         name,
         numberOfDistricts,
+        chamber: chamberId ? { id: chamberId } : null,
         regionConfig: { id: regionConfigId },
         valid: true
       }
@@ -23,12 +24,14 @@ const validate = (form: ProjectForm): ValidForm | InvalidForm => {
 
 interface ProjectForm {
   readonly name: string | null;
+  readonly chamberId: ChamberId | null;
   readonly regionConfigId: RegionConfigId | null;
   readonly numberOfDistricts: number;
 }
 
 interface ValidForm {
   readonly name: string;
+  readonly chamber: { readonly id: ChamberId } | null;
   readonly regionConfig: { readonly id: RegionConfigId };
   readonly numberOfDistricts: number;
   readonly valid: true;
@@ -58,6 +61,7 @@ export default () => {
   useEffect(() => {
     const form = validate({
       name: params.get("name"),
+      chamberId: params.get("chamberId") || null,
       regionConfigId: params.get("regionConfigId"),
       numberOfDistricts: Number.parseInt(params.get("numberOfDistricts") || "")
     });

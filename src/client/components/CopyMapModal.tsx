@@ -77,7 +77,11 @@ const CopyMapModal = ({
               sx={{ flexDirection: "column" }}
               onSubmit={(e: React.FormEvent) => {
                 e.preventDefault();
-                createProject({ ...project, name: `Copy of ${attributedName}` })
+                createProject({
+                  ...project,
+                  name: `Copy of ${attributedName}`,
+                  chamber: project.chamber || null
+                })
                   .then((project: IProject) => {
                     setCreateProjectResource({ resource: project });
 

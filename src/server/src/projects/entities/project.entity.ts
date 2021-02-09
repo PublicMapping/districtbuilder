@@ -11,6 +11,7 @@ import {
 import { ProjectVisibility } from "../../../../shared/constants";
 import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
+import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
 
 @Entity()
@@ -24,6 +25,10 @@ export class Project implements IProject {
   @ManyToOne(() => RegionConfig, { nullable: false })
   @JoinColumn({ name: "region_config_id" })
   regionConfig: RegionConfig;
+
+  @ManyToOne(() => Chamber, { nullable: true })
+  @JoinColumn({ name: "chamber_id" })
+  chamber: Chamber;
 
   @Column({ name: "number_of_districts" })
   numberOfDistricts: number;

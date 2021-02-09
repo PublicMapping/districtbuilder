@@ -17,7 +17,7 @@ import {
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
-import { IProject, IRegionConfig } from "../../shared/entities";
+import { IProject, IRegionConfig, IChamber } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { createProject } from "../api";
 import { InputField, SelectField } from "../components/Field";
@@ -38,6 +38,7 @@ const validate = (form: ProjectForm) =>
 
 interface ProjectForm {
   readonly name: string;
+  readonly chamber: IChamber | null;
   readonly regionConfig: IRegionConfig | null;
   readonly numberOfDistricts: number | null;
   readonly isCustom: boolean;
@@ -46,6 +47,7 @@ interface ProjectForm {
 interface ValidForm {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
+  readonly chamber: IChamber | null;
   readonly numberOfDistricts: number;
   readonly isCustom: boolean;
   readonly valid: true;
@@ -65,6 +67,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
     data: {
       name: "",
       regionConfig: null,
+      chamber: null,
       numberOfDistricts: null,
       isCustom: false
     }
@@ -82,9 +85,10 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
         ...(chamber
           ? {
               numberOfDistricts: chamber.numberOfDistricts,
+              chamber: chamber || null,
               isCustom: false
             }
-          : { numberOfDistricts: null, isCustom: true })
+          : { numberOfDistricts: null, isCustom: true, chamber: null })
       }
     });
   };
@@ -203,6 +207,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                 setCreateProjectResource({ data, isPending: true });
                 createProject({
                   ...validatedForm,
+                  chamber: validatedForm.chamber,
                   numberOfDistricts: validatedForm.numberOfDistricts
                 })
                   .then((project: IProject) =>
