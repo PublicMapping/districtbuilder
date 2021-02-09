@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Organization detail screen [#562](https://github.com/PublicMapping/districtbuilder/pull/562)
 
 ### Changed
+- Geounit label made more generic to support Dane County wards [#573](https://github.com/PublicMapping/districtbuilder/pull/573)
 
 
 ### Fixed
