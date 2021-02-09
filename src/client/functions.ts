@@ -127,16 +127,10 @@ export function assertNever(x: never): never {
 
 export const geoLevelLabel = (id: string): string => {
   switch (id) {
-    case "block":
-      return "Blocks";
-    case "tract":
-      return "Tracts";
-    case "blockgroup":
-      return "Blockgroups";
     case "county":
       return "Counties";
     default:
-      return id;
+      return id[0].toUpperCase() + id.slice(1) + "s";
   }
 };
 
