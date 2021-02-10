@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
+
+function usage() {
+    echo -n \
+        "Usage: $(basename "$0")
+Load region configs for development purposes.
+
+This avoids having to process GeoJSON locally and publish it to S3.
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    else
+        # Bring up PostgreSQL and NestJS in a way that respects
+        # configured service health checks.
+        docker-compose \
+            -f docker-compose.yml \
+            up -d database server
+
+        docker-compose \
+            exec database psql -U districtbuilder districtbuilder -c "
+              INSERT INTO region_config
+              VALUES (
+                DEFAULT,
+                'Michigan',
+                'US',
+                'MI',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/MI/2020-09-08T20:15:12.635Z/',
+                DEFAULT,
+                DEFAULT
+              ), (
+                DEFAULT,
+                'Dane County',
+                'US',
+                'WI',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-02-08T15:19:22.145Z/',
+                DEFAULT,
+                DEFAULT
+              ), (
+                 DEFAULT,
+                'Pennsylvania',
+                'US',
+                'PA',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/PA/2021-02-08T18:07:18.957Z/',
+                DEFAULT,
+                DEFAULT
+             )
+              ON CONFLICT DO NOTHING;
+            "
+    fi
+fi
