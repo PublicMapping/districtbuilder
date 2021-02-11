@@ -20,6 +20,7 @@ src/cli/lib
 
 # macOS
 .DS_Store
+.vscode
 
 # Manage build
 src/manage/lib
@@ -31,3 +32,4 @@ src/manage/lib
 *.tfstate
 *.tfstate.backup
 *.tfvars
+.idea/

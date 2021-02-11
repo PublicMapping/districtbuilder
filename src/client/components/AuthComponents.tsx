@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Box, Button, Flex, Heading, Text, jsx, ThemeUIStyleObject } from "theme-ui";
 import { toast } from "react-toastify";
 
-import { Login, JWT, Register } from "../../shared/entities";
+import { Login, JWT, Register, IOrganization } from "../../shared/entities";
 import { authenticateUser, registerUser } from "../api";
 import { InputField, PasswordField } from "../components/Field";
 import FormError from "../components/FormError";
@@ -244,7 +244,13 @@ export const RegisterContent = ({ children }: { readonly children: React.ReactNo
   );
 };
 
-export const AuthModalContent = ({ project }: { readonly project: IProject }) => {
+export const AuthModalContent = ({
+  project,
+  organization
+}: {
+  readonly project?: IProject;
+  readonly organization?: IOrganization | undefined;
+}) => {
   type ModalIntent = "initial" | "register" | "login";
 
   const [modalIntent, setModalIntent] = useState<ModalIntent>("initial");
@@ -253,7 +259,8 @@ export const AuthModalContent = ({ project }: { readonly project: IProject }) =>
     <React.Fragment>
       <Box sx={{ ...style.header, ...style.headerFancy }}>
         <Heading as="h1" sx={style.heading} id="modal-header">
-          {project.user.name} builds maps with DistrictBuilder
+          {project ? project.user.name : organization ? organization.name : ""} builds maps with
+          DistrictBuilder
         </Heading>
         <Text>
           DistrictBuilder is a <strong>free</strong> and <strong>open</strong> redistricting tool
