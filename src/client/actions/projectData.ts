@@ -50,6 +50,12 @@ export const updateDistrictLocksFailure = createAction("Update district locks fa
 
 export const updateProjectFailed = createAction("Update project failure")();
 
+export const duplicateProject = createAction("Duplicate project")<IProject>();
+export const duplicateProjectSuccess = createAction("Duplicate project success")<
+  DynamicProjectData
+>();
+export const duplicateProjectFailure = createAction("Duplicate project failure")<string>();
+
 export const exportCsv = createAction("Export project CSV")<IProject>();
 export const exportCsvFailure = createAction("Export project CSV failure")<string>();
 
