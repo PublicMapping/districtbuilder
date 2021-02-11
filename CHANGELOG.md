@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Share menu now controls map visibility (private/public/shared w link) [#560](https://github.com/PublicMapping/districtbuilder/pull/560)
 - Organization detail screen [#562](https://github.com/PublicMapping/districtbuilder/pull/562)
+- Duplicate a map from home screen [#572] (https://github.com/PublicMapping/districtbuilder/pull/572)
 - Add script to load region configs [#575](https://github.com/PublicMapping/districtbuilder/pull/575)
 
 ### Changed
