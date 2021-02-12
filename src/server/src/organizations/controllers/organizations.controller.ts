@@ -25,6 +25,13 @@ export class AddUserToOrg {
   routes: {
     only: ["getOneBase"]
   },
+  query: {
+    join: {
+      projectTemplates: {
+        eager: true
+      }
+    }
+  },
   params: {
     slug: {
       field: "slug",
@@ -42,6 +49,7 @@ export class AddUserToOrg {
   }
 })
 @Controller("api/organization")
+// @ts-ignore
 export class OrganizationsController implements CrudController<Organization> {
   constructor(public service: OrganizationsService, private readonly usersService: UsersService) {}
 
@@ -74,11 +82,9 @@ export class OrganizationsController implements CrudController<Organization> {
 
     const user = await this.getUser(addUser.userId);
 
-    const userInOrg =
-      org.users &&
-      org.users.find(u => {
-        return u.id === user.id;
-      });
+    const userInOrg = org.users.find(u => {
+      return u.id === user.id;
+    });
 
     if (!userInOrg) {
       // eslint-disable-next-line

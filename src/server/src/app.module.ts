@@ -13,6 +13,7 @@ import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { OrganizationsModule } from "./organizations/organizations.module";
 import { ProjectsModule } from "./projects/projects.module";
+import { ProjectTemplatesModule } from "./project-templates/project-templates.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { RollbarModule } from "./rollbar/rollbar.module";
 import { UsersModule } from "./users/users.module";
@@ -64,6 +65,7 @@ if (DEBUG) {
     HealthCheckModule,
     OrganizationsModule,
     ProjectsModule,
+    ProjectTemplatesModule,
     RegionConfigsModule,
     UsersModule
   ]

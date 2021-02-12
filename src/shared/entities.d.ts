@@ -119,22 +119,25 @@ export interface IRegionConfig {
   readonly hidden: boolean;
 }
 
-export type ProjectId = string;
-
-export interface IProject {
-  readonly id: ProjectId;
+interface ProjectTemplateFields {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
-  readonly updatedDt: Date;
   readonly chamber: IChamber;
   readonly districtsDefinition: DistrictsDefinition;
+}
+
+export type ProjectId = string;
+
+export type IProject = ProjectTemplateFields & {
+  readonly id: ProjectId;
+  readonly updatedDt: Date;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
   readonly lockedDistricts: readonly boolean[];
   readonly visibility: ProjectVisibility;
   readonly archived: boolean;
-}
+};
 
 export interface CreateProjectData {
   readonly name: string;
@@ -153,6 +156,15 @@ export type UpdateProjectData = Pick<
   | "visibility"
   | "archived"
 >;
+
+export type ProjectTemplateId = string;
+
+export type IProjectTemplate = ProjectTemplateFields & {
+  readonly id: ProjectTemplateId;
+  readonly organization: IOrganization;
+  readonly description: string;
+  readonly details: string;
+};
 
 export type ChamberId = string;
 
