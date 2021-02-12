@@ -1,28 +1,17 @@
-import {
-  Controller,
-  UseGuards,
-  UseInterceptors,
-  Param,
-  Post,
-  Logger,
-  InternalServerErrorException,
-  NotFoundException,
-  Body
-} from "@nestjs/common";
-import { Crud, CrudAuth, CrudController } from "@nestjsx/crud";
+import { Controller, UseGuards, Param, Post, NotFoundException, Body } from "@nestjs/common";
+import { Crud, CrudController } from "@nestjsx/crud";
 import { IsNotEmpty } from "class-validator";
 
+import { OrganizationSlug, PublicUserProperties, UserId } from "../../../../shared/entities";
+import { JoinOrganizationErrors } from "../../../../shared/constants";
+
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { User } from "../../users/entities/user.entity";
+import { UsersService } from "../../users/services/users.service";
+
 import { Organization } from "../entities/organization.entity";
 import { OrganizationUserDto } from "../entities/organizationUser.dto";
-import { User } from "../../users/entities/user.entity";
-
-import { OrganizationSlug, UserId } from "../../../../shared/entities";
-
 import { OrganizationsService } from "../services/organizations.service";
-import { UsersService } from "../../users/services/users.service";
-import { PublicUserProperties } from "../../../../shared/entities";
-import { JoinOrganizationErrors } from "../../../../shared/constants";
 
 export class AddUserToOrg {
   @IsNotEmpty({ message: "Please enter a name for your project" })
