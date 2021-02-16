@@ -14,7 +14,7 @@ export class ProjectTemplate implements IProjectTemplate {
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
 
-  @Column()
+  @Column({ type: "character varying" })
   name: string;
 
   @ManyToOne(() => RegionConfig, { nullable: false })
@@ -25,7 +25,7 @@ export class ProjectTemplate implements IProjectTemplate {
   @JoinColumn({ name: "chamber_id" })
   chamber: Chamber;
 
-  @Column({ name: "number_of_districts" })
+  @Column({ name: "number_of_districts", type: "integer" })
   numberOfDistricts: number;
 
   @Column({
@@ -35,9 +35,9 @@ export class ProjectTemplate implements IProjectTemplate {
   })
   districtsDefinition: DistrictsDefinition;
 
-  @Column()
+  @Column({ type: "character varying" })
   description: string;
 
-  @Column()
+  @Column({ type: "character varying" })
   details: string;
 }

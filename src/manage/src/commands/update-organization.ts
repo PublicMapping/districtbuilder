@@ -5,7 +5,17 @@ import yaml from "js-yaml";
 import { createConnection } from "typeorm";
 
 import { Organization } from "../../../server/src/organizations/entities/organization.entity";
+import { ProjectTemplate } from "../../../server/src/project-templates/entities/project-template.entity";
 import { connectionOptions } from "../lib/dbUtils";
+
+interface TemplateConfig {
+  readonly id: string;
+  readonly name: string;
+  readonly regionConfig: string;
+  readonly numberOfDistricts: string;
+  readonly description?: string;
+  readonly details?: string;
+}
 
 interface OrganizationConfig {
   readonly name: string;
@@ -15,6 +25,7 @@ interface OrganizationConfig {
   readonly linkUrl?: string;
   readonly municipality?: string;
   readonly region?: string;
+  readonly projectTemplates?: readonly TemplateConfig[];
 }
 
 export default class UpdateOrganization extends Command {
@@ -43,10 +54,11 @@ export default class UpdateOrganization extends Command {
     this.log("Saving organization to database");
 
     const connection = await createConnection(connectionOptions);
-    const repo = connection.getRepository(Organization);
+    const orgRepo = connection.getRepository(Organization);
+    const templateRepo = connection.getRepository(ProjectTemplate);
 
     /* tslint:disable:no-object-mutation */
-    const result = await repo.findOne({ slug: organizationDetails.slug });
+    const result = await orgRepo.findOne({ slug: organizationDetails.slug });
     const organization = result || new Organization();
     organization.slug = organizationDetails.slug;
     organization.name = organizationDetails.name;
@@ -55,8 +67,26 @@ export default class UpdateOrganization extends Command {
     organization.linkUrl = organizationDetails.linkUrl || "";
     organization.municipality = organizationDetails.municipality || "";
     organization.region = organizationDetails.region || "";
+    // @ts-ignore
+    await orgRepo.save(organization);
+
+    for (const config of organizationDetails.projectTemplates || []) {
+      const id = config.id;
+      const result = await templateRepo.findOne({ id });
+      const template = result || new ProjectTemplate();
+      template.organization = organization;
+      template.id = id;
+      template.name = config.name;
+      // @ts-ignore
+      template.regionConfig = { id: config.regionConfig };
+      template.numberOfDistricts = Number(config.numberOfDistricts);
+      template.description = config.description || "";
+      template.details = config.details || "";
+      // @ts-ignore
+      await templateRepo.save(template);
+    }
     /* tslint:enable */
-    await repo.save(organization);
+
     this.log("Organization saved to database");
   }
 }
