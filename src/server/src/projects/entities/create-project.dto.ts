@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsPositive
 } from "class-validator";
+import { ChamberIdDto } from "src/chambers/entities/chamber-id.dto";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
 import { RegionConfigIdDto } from "../../region-configs/entities/region-config-id.dto";
@@ -23,4 +24,6 @@ export class CreateProjectDto implements CreateProjectData {
   @ArrayNotEmpty()
   @IsOptional()
   readonly districtsDefinition: DistrictsDefinition;
+  @IsOptional()
+  readonly chamber: ChamberIdDto;
 }

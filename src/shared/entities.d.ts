@@ -122,6 +122,7 @@ export interface IProject {
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly updatedDt: Date;
+  readonly chamber: IChamber;
   readonly districtsDefinition: DistrictsDefinition;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly advancedEditingEnabled: boolean;
@@ -133,6 +134,7 @@ export interface IProject {
 export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
+  readonly chamber: Pick<IChamber, "id"> | null;
   readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly districtsDefinition?: DistrictsDefinition;
 }
