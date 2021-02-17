@@ -38,6 +38,7 @@ module.exports = {
           "allowTernary": true,
         }
       ],
+      "no-console": ["error"],
       "react/display-name": "off",
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
@@ -49,12 +50,7 @@ module.exports = {
       "@typescript-eslint/restrict-template-expressions": "off",
       "functional/functional-parameters": "off",
       "functional/prefer-type-literal": "off",
-      "functional/no-conditional-statement": [
-        "error",
-        {
-          "allowReturningBranches": "ifExhaustive"
-        }
-      ],
+      "functional/no-conditional-statement": ["off"],
       "functional/no-expression-statement": "off",
       "functional/no-return-void": "off",
     }

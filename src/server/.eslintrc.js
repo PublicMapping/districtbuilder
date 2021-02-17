@@ -33,6 +33,7 @@ module.exports = {
           "allowTernary": true,
         }
       ],
+      "no-console": [ "error" ],
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
@@ -52,5 +53,6 @@ module.exports = {
       "functional/prefer-readonly-type": "off",
       "functional/no-let": "off",
       "functional/no-loop-statement": "error",
+      "functional/no-conditional-statement": ["off"],
     }
   };
