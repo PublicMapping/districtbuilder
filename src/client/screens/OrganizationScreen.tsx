@@ -20,6 +20,7 @@ import JoinOrganizationModal from "../components/JoinOrganizationModal";
 import Tooltip from "../components/Tooltip";
 import { IProject, IOrganization, IUser } from "../../shared/entities";
 import { createProject } from "../api";
+import PageNotFoundScreen from "./PageNotFoundScreen";
 
 interface StateProps {
   readonly organization: OrganizationState;
@@ -240,6 +241,8 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
               </Box>
             )}
           </Box>
+        ) : "statusCode" in organization && organization.statusCode === 404 ? (
+          <PageNotFoundScreen model={"organization"} />
         ) : (
           <Box>Loading...</Box>
         )}

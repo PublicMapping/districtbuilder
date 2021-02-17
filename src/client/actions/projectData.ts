@@ -2,16 +2,19 @@ import { createAction } from "typesafe-actions";
 import { ProjectVisibility } from "../../shared/constants";
 import { DistrictsDefinition, IProject, LockedDistricts, ProjectId } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
+import { ResourceFailure } from "../resource";
 
 export const projectFetch = createAction("Project fetch")<ProjectId>();
 export const projectFetchSuccess = createAction("Project fetch success")<DynamicProjectData>();
-export const projectFetchFailure = createAction("Project fetch failure")<string>();
+export const projectFetchFailure = createAction("Project fetch failure")<ResourceFailure>();
 
 export const projectDataFetch = createAction("Project data fetch")<ProjectId>();
 export const projectDataFetchSuccess = createAction("Project data fetch success")<
   DynamicProjectData
 >();
-export const projectDataFetchFailure = createAction("Project data fetch failure")<string>();
+export const projectDataFetchFailure = createAction("Project data fetch failure")<
+  ResourceFailure
+>();
 
 export const staticDataFetchSuccess = createAction("Static data fetch success")<
   StaticProjectData
