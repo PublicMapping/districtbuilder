@@ -29,6 +29,9 @@ export class AddUserToOrg {
     join: {
       projectTemplates: {
         eager: true
+      },
+      "projectTemplates.regionConfig": {
+        eager: true
       }
     }
   },

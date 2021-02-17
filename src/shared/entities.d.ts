@@ -26,6 +26,7 @@ export interface IOrganization {
   readonly municipality: string;
   readonly region: string;
   readonly users: readonly IUser[];
+  readonly projectTemplates: readonly IProjectTemplate[];
 }
 
 export interface AddUser {
