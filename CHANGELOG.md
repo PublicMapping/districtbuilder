@@ -13,10 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Organization detail screen [#562](https://github.com/PublicMapping/districtbuilder/pull/562)
 - Duplicate a map from home screen [#572](https://github.com/PublicMapping/districtbuilder/pull/572)
 - Add script to load region configs [#575](https://github.com/PublicMapping/districtbuilder/pull/575)
-- Store chamber reference on projece entity [#576](https://github.com/PublicMapping/districtbuilder/pull/576)
+- Store chamber reference on project entity [#576](https://github.com/PublicMapping/districtbuilder/pull/576)
 
 ### Changed
 - Geounit label made more generic to support Dane County wards [#573](https://github.com/PublicMapping/districtbuilder/pull/573)
+- Update ESLint rules to prohibit console.log, allow conditional statements [#580](https://github.com/PublicMapping/districtbuilder/pull/580)
+
 
 
 ### Fixed
