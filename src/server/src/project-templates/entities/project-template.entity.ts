@@ -23,7 +23,7 @@ export class ProjectTemplate implements IProjectTemplate {
 
   @ManyToOne(() => Chamber, { nullable: true })
   @JoinColumn({ name: "chamber_id" })
-  chamber: Chamber;
+  chamber?: Chamber;
 
   @Column({ name: "number_of_districts", type: "integer" })
   numberOfDistricts: number;

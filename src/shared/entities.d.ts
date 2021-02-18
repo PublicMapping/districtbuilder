@@ -124,7 +124,7 @@ interface ProjectTemplateFields {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
-  readonly chamber: IChamber;
+  readonly chamber?: IChamber;
   readonly districtsDefinition: DistrictsDefinition;
 }
 
@@ -134,6 +134,7 @@ export type IProject = ProjectTemplateFields & {
   readonly id: ProjectId;
   readonly updatedDt: Date;
   readonly user: Pick<IUser, PublicUserProperties>;
+  readonly projectTemplate?: IProjectTemplate;
   readonly advancedEditingEnabled: boolean;
   readonly lockedDistricts: readonly boolean[];
   readonly visibility: ProjectVisibility;
@@ -143,9 +144,10 @@ export type IProject = ProjectTemplateFields & {
 export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
-  readonly chamber: Pick<IChamber, "id"> | null;
   readonly regionConfig: Pick<IRegionConfig, "id">;
+  readonly chamber?: Pick<IChamber, "id">;
   readonly districtsDefinition?: DistrictsDefinition;
+  readonly projectTemplate?: Pick<IProjectTemplate, "id">;
 }
 
 export type UpdateProjectData = Pick<

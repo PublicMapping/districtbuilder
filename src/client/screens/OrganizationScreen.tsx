@@ -147,7 +147,7 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                     </Box>
                   )}
                   <Box as="span" sx={style.item}>
-                    <Icon name="tools" /> {organization.resource.users.length} builders
+                    <Icon name="tools" /> {organization.resource.users?.length || 0} builders
                   </Box>
                 </Box>
                 {organization.resource.description && (
@@ -196,9 +196,22 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                       <Text>{template.description}</Text>
                       <Button
                         onClick={() => {
-                          void createProject(template).then((project: IProject) =>
-                            history.push(`/projects/${project.id}`)
-                          );
+                          const {
+                            id,
+                            name,
+                            regionConfig,
+                            numberOfDistricts,
+                            districtsDefinition,
+                            chamber
+                          } = template;
+                          void createProject({
+                            name,
+                            regionConfig,
+                            numberOfDistricts,
+                            districtsDefinition,
+                            chamber,
+                            projectTemplate: { id }
+                          }).then((project: IProject) => history.push(`/projects/${project.id}`));
                         }}
                       >
                         Use this template

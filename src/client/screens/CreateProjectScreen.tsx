@@ -47,7 +47,7 @@ interface ProjectForm {
 interface ValidForm {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
-  readonly chamber: IChamber | null;
+  readonly chamber?: IChamber;
   readonly numberOfDistricts: number;
   readonly isCustom: boolean;
   readonly valid: true;
@@ -207,7 +207,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
                 setCreateProjectResource({ data, isPending: true });
                 createProject({
                   ...validatedForm,
-                  chamber: validatedForm.chamber,
+                  chamber: validatedForm.chamber || undefined,
                   numberOfDistricts: validatedForm.numberOfDistricts
                 })
                   .then((project: IProject) =>

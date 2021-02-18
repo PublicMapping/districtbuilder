@@ -25,16 +25,6 @@ export class AddUserToOrg {
   routes: {
     only: ["getOneBase"]
   },
-  query: {
-    join: {
-      projectTemplates: {
-        eager: true
-      },
-      "projectTemplates.regionConfig": {
-        eager: true
-      }
-    }
-  },
   params: {
     slug: {
       field: "slug",
@@ -44,6 +34,12 @@ export class AddUserToOrg {
   },
   query: {
     join: {
+      projectTemplates: {
+        eager: true
+      },
+      "projectTemplates.regionConfig": {
+        eager: true
+      },
       users: {
         allow: ["id", "name"] as PublicUserProperties[],
         eager: true
