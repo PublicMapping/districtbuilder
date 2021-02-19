@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable } from "typeorm";
 
 import { IOrganization } from "../../../../shared/entities";
+import { User } from "../../users/entities/user.entity";
 
 @Entity()
 export class Organization implements IOrganization {
@@ -27,4 +28,14 @@ export class Organization implements IOrganization {
 
   @Column({ type: "character varying", default: "" })
   region: string;
+
+  @ManyToMany(
+    () => User,
+    user => user.organizations,
+    {
+      eager: true
+    }
+  )
+  @JoinTable()
+  users: User[];
 }

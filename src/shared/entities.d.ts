@@ -25,6 +25,11 @@ export interface IOrganization {
   readonly linkUrl: string;
   readonly municipality: string;
   readonly region: string;
+  readonly users: readonly IUser[];
+}
+
+export interface AddUser {
+  readonly userId: UserId;
 }
 
 export type GeoUnitCollection = number | readonly GeoUnitCollection[];

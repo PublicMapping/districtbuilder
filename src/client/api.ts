@@ -11,7 +11,8 @@ import {
   OrganizationSlug,
   ProjectId,
   UpdateProjectData,
-  UpdateUserData
+  UpdateUserData,
+  UserId
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -239,5 +240,35 @@ export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrgani
       .get(`/api/organization/${slug}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error.message));
+  });
+}
+
+export async function addUserToOrganization(
+  slug: OrganizationSlug,
+  user: UserId
+): Promise<IOrganization> {
+  const userAdd = { userId: user };
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/organization/${slug}/join`, userAdd)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
+export async function removeUserFromOrganization(
+  slug: OrganizationSlug,
+  user: UserId
+): Promise<IOrganization> {
+  const userRemove = { userId: user };
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/organization/${slug}/leave`, userRemove)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
   });
 }

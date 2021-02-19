@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import { Exclude } from "class-transformer";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, ManyToMany } from "typeorm";
 import { IUser } from "../../../../shared/entities";
 import { BCRYPT_SALT_ROUNDS } from "../../common/constants";
-
+import { Organization } from "../../organizations/entities/organization.entity";
 @Entity()
 export class User implements IUser {
   @PrimaryGeneratedColumn("uuid")
@@ -20,6 +20,12 @@ export class User implements IUser {
 
   @Column({ default: false })
   hasSeenTour: boolean;
+
+  @ManyToMany(
+    type => Organization,
+    organization => organization.users
+  )
+  organizations: Organization[];
 
   // TODO: Is it possible to make this private? I only want to allow
   // modification via setPassword

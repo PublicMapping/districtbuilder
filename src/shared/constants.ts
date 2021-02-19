@@ -13,6 +13,11 @@ export enum MakeDistrictsErrors {
   INVALID_DEFINITION = "INVALID_DEFINITION"
 }
 
+export enum JoinOrganizationErrors {
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  ORGANIZATION_NOT_FOUND = "ORGANIZATION_NOT_FOUND"
+}
+
 export enum RegisterResponse {
   SUCCESS = "SUCCESS",
   DUPLICATE = "DUPLICATE",
