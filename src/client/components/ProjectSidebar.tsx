@@ -266,7 +266,7 @@ const SidebarRow = memo(
     readonly district: DistrictGeoJSON;
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
-    readonly demographics: { readonly [id: string]: number };
+    readonly demographics: DemographicCounts;
     readonly deviation: number;
     readonly districtId: number;
     readonly isDistrictLocked?: boolean;
@@ -280,8 +280,7 @@ const SidebarRow = memo(
         ? positiveChangeColor
         : negativeChangeColor
       : "inherit";
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    const intermediatePopulation = district.properties.population + selectedDifference;
+    const intermediatePopulation = demographics.population + selectedDifference;
     const intermediateDeviation = deviation + selectedDifference;
     const populationDisplay = intermediatePopulation.toLocaleString();
     const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
@@ -461,7 +460,6 @@ const SidebarRows = ({
       {geojson.features.map(feature => {
         const districtId = typeof feature.id === "number" ? feature.id : 0;
         const selected = districtId === selectedDistrictId;
-        const demographics = feature.properties;
         const selectedPopulation = selectedDemographics?.savedDistrict?.[districtId]?.population;
         const totalSelectedDemographics = selectedDemographics?.total;
         const selectedPopulationDifference =
@@ -475,15 +473,15 @@ const SidebarRows = ({
         // so it's deviation is equal to its population
         const deviation =
           districtId === 0
-            ? feature.properties.population
-            : feature.properties.population - averagePopulation;
+            ? feature.properties.demographics.population
+            : feature.properties.demographics.population - averagePopulation;
 
         return (
           <SidebarRow
             district={feature}
             selected={selected}
             selectedPopulationDifference={selectedPopulationDifference || 0}
-            demographics={demographics}
+            demographics={feature.properties.demographics}
             deviation={deviation}
             key={districtId}
             isDistrictLocked={lockedDistricts[districtId]}

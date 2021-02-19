@@ -291,6 +291,9 @@ export class ProjectsController implements CrudController<Project> {
         ...feature,
         properties: {
           ...feature.properties,
+          // Flatten nested demographics object so it is maintained when converting
+          demographics: undefined,
+          ...feature.properties.demographics,
           // The feature ID doesn't seem to make its way over as part of 'convert' natively
           id: feature.id
         }

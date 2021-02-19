@@ -253,7 +253,7 @@ export class GeoUnitTopology {
         return {
           ...feature,
           properties: {
-            ...feature.properties,
+            demographics: feature.properties,
             compactness,
             contiguity
           }
