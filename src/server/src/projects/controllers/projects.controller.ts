@@ -30,7 +30,12 @@ import * as _ from "lodash";
 import { GeometryCollection } from "topojson-specification";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
-import { GeoUnitHierarchy, ProjectId, PublicUserProperties } from "../../../../shared/entities";
+import {
+  GeoUnitHierarchy,
+  IProjectTemplate,
+  ProjectId,
+  PublicUserProperties
+} from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
@@ -57,6 +62,17 @@ import { Errors } from "../../../../shared/types";
   },
   query: {
     join: {
+      projectTemplate: {
+        exclude: ["districtsDefinition"],
+        eager: true
+      },
+      "projectTemplate.organization": {
+        eager: true
+      },
+      "projectTemplate.regionConfig": {
+        alias: "template_region_config",
+        eager: true
+      },
       regionConfig: {
         eager: true
       },

@@ -15,7 +15,7 @@ const validate = (form: ProjectForm): ValidForm | InvalidForm => {
     ? {
         name,
         numberOfDistricts,
-        chamber: chamberId ? { id: chamberId } : null,
+        chamber: chamberId ? { id: chamberId } : undefined,
         regionConfig: { id: regionConfigId },
         valid: true
       }
@@ -31,7 +31,7 @@ interface ProjectForm {
 
 interface ValidForm {
   readonly name: string;
-  readonly chamber: { readonly id: ChamberId } | null;
+  readonly chamber?: { readonly id: ChamberId };
   readonly regionConfig: { readonly id: RegionConfigId };
   readonly numberOfDistricts: number;
   readonly valid: true;

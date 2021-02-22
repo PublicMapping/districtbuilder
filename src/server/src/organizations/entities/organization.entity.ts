@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable } from "typeorm";
+import { Column, Entity, JoinTable, OneToMany, PrimaryGeneratedColumn, ManyToMany } from "typeorm";
 
 import { IOrganization } from "../../../../shared/entities";
 import { User } from "../../users/entities/user.entity";
+import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 @Entity()
 export class Organization implements IOrganization {
@@ -38,4 +39,10 @@ export class Organization implements IOrganization {
   )
   @JoinTable()
   users: User[];
+
+  @OneToMany(
+    () => ProjectTemplate,
+    template => template.organization
+  )
+  projectTemplates: ProjectTemplate[];
 }

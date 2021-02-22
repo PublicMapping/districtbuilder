@@ -80,7 +80,7 @@ const CopyMapModal = ({
                 createProject({
                   ...project,
                   name: `Copy of ${attributedName}`,
-                  chamber: project.chamber || null
+                  chamber: project.chamber || undefined
                 })
                   .then((project: IProject) => {
                     setCreateProjectResource({ resource: project });

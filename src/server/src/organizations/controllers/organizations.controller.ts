@@ -1,28 +1,17 @@
-import {
-  Controller,
-  UseGuards,
-  UseInterceptors,
-  Param,
-  Post,
-  Logger,
-  InternalServerErrorException,
-  NotFoundException,
-  Body
-} from "@nestjs/common";
-import { Crud, CrudAuth, CrudController } from "@nestjsx/crud";
+import { Controller, UseGuards, Param, Post, NotFoundException, Body } from "@nestjs/common";
+import { Crud, CrudController } from "@nestjsx/crud";
 import { IsNotEmpty } from "class-validator";
 
+import { OrganizationSlug, PublicUserProperties, UserId } from "../../../../shared/entities";
+import { JoinOrganizationErrors } from "../../../../shared/constants";
+
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { User } from "../../users/entities/user.entity";
+import { UsersService } from "../../users/services/users.service";
+
 import { Organization } from "../entities/organization.entity";
 import { OrganizationUserDto } from "../entities/organizationUser.dto";
-import { User } from "../../users/entities/user.entity";
-
-import { OrganizationSlug, UserId } from "../../../../shared/entities";
-
 import { OrganizationsService } from "../services/organizations.service";
-import { UsersService } from "../../users/services/users.service";
-import { PublicUserProperties } from "../../../../shared/entities";
-import { JoinOrganizationErrors } from "../../../../shared/constants";
 
 export class AddUserToOrg {
   @IsNotEmpty({ message: "Please enter a name for your project" })
@@ -45,6 +34,12 @@ export class AddUserToOrg {
   },
   query: {
     join: {
+      projectTemplates: {
+        eager: true
+      },
+      "projectTemplates.regionConfig": {
+        eager: true
+      },
       users: {
         allow: ["id", "name"] as PublicUserProperties[],
         eager: true
@@ -53,6 +48,7 @@ export class AddUserToOrg {
   }
 })
 @Controller("api/organization")
+// @ts-ignore
 export class OrganizationsController implements CrudController<Organization> {
   constructor(public service: OrganizationsService, private readonly usersService: UsersService) {}
 
@@ -85,11 +81,9 @@ export class OrganizationsController implements CrudController<Organization> {
 
     const user = await this.getUser(addUser.userId);
 
-    const userInOrg =
-      org.users &&
-      org.users.find(u => {
-        return u.id === user.id;
-      });
+    const userInOrg = org.users.find(u => {
+      return u.id === user.id;
+    });
 
     if (!userInOrg) {
       // eslint-disable-next-line

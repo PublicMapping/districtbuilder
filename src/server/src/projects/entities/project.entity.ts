@@ -13,6 +13,7 @@ import { DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
+import { ProjectTemplate } from "src/project-templates/entities/project-template.entity";
 
 @Entity()
 export class Project implements IProject {
@@ -28,7 +29,11 @@ export class Project implements IProject {
 
   @ManyToOne(() => Chamber, { nullable: true })
   @JoinColumn({ name: "chamber_id" })
-  chamber: Chamber;
+  chamber?: Chamber;
+
+  @ManyToOne(() => ProjectTemplate, { nullable: true, onDelete: "SET NULL" })
+  @JoinColumn({ name: "project_template_id" })
+  projectTemplate?: ProjectTemplate;
 
   @Column({ name: "number_of_districts" })
   numberOfDistricts: number;

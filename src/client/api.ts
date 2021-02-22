@@ -118,7 +118,8 @@ export async function createProject({
   numberOfDistricts,
   chamber,
   regionConfig,
-  districtsDefinition
+  districtsDefinition,
+  projectTemplate
 }: CreateProjectData): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
@@ -127,7 +128,8 @@ export async function createProject({
         numberOfDistricts,
         regionConfig,
         districtsDefinition,
-        chamber
+        chamber,
+        projectTemplate
       })
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));

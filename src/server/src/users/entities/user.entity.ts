@@ -9,16 +9,16 @@ export class User implements IUser {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: "character varying" })
   email: string;
 
-  @Column()
+  @Column({ type: "character varying" })
   name: string;
 
-  @Column({ default: false })
+  @Column({ default: false, type: "boolean" })
   isEmailVerified: boolean;
 
-  @Column({ default: false })
+  @Column({ default: false, type: "boolean" })
   hasSeenTour: boolean;
 
   @ManyToMany(
@@ -29,7 +29,7 @@ export class User implements IUser {
 
   // TODO: Is it possible to make this private? I only want to allow
   // modification via setPassword
-  @Column()
+  @Column({ type: "character varying" })
   @Exclude()
   passwordHash: string;
 

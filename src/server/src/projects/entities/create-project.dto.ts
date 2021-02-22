@@ -10,6 +10,7 @@ import {
 import { ChamberIdDto } from "src/chambers/entities/chamber-id.dto";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
+import { ProjectTemplateIdDto } from "../../project-templates/entities/project-template-id.dto";
 import { RegionConfigIdDto } from "../../region-configs/entities/region-config-id.dto";
 
 export class CreateProjectDto implements CreateProjectData {
@@ -26,4 +27,6 @@ export class CreateProjectDto implements CreateProjectData {
   readonly districtsDefinition: DistrictsDefinition;
   @IsOptional()
   readonly chamber: ChamberIdDto;
+  @IsOptional()
+  readonly projectTemplate: ProjectTemplateIdDto;
 }
