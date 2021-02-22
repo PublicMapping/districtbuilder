@@ -19,6 +19,7 @@ export class UsersService extends TypeOrmCrudService<User> {
   }
 
   save(user: User): Promise<User> {
+    // @ts-ignore
     return this.repo.save(user);
   }
 }
