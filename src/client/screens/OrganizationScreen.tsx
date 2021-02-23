@@ -4,7 +4,6 @@ import { connect } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
 import { Box, Button, Flex, Heading, Image, Link, jsx, Text } from "theme-ui";
 
-import { showCopyMapModal } from "../actions/districtDrawing";
 import { organizationFetch } from "../actions/organization";
 import { joinOrganization, leaveOrganization } from "../actions/organizationJoin";
 import { userFetch } from "../actions/user";
@@ -15,8 +14,10 @@ import { ProjectState } from "../reducers/project";
 import { UserState } from "../reducers/user";
 import store from "../store";
 import SiteHeader from "../components/SiteHeader";
-import JoinOrganizationModal from "../components/JoinOrganizationModal";
 import Icon from "../components/Icon";
+import { showCopyMapModal } from "../actions/districtDrawing";
+import JoinOrganizationModal from "../components/JoinOrganizationModal";
+import Tooltip from "../components/Tooltip";
 import { IProject, IOrganization, IUser } from "../../shared/entities";
 import { createProject } from "../api";
 
@@ -79,6 +80,8 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
     "resource" in organization &&
     organization.resource &&
     checkIfUserInOrg(organization.resource, user.resource);
+
+  const userIsVerified = "resource" in user && user.resource && user.resource.isEmailVerified;
 
   useEffect(() => {
     "resource" in user &&
@@ -150,9 +153,6 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                     <Icon name="tools" /> {organization.resource.users?.length || 0} builders
                   </Box>
                 </Box>
-                {organization.resource.description && (
-                  <Box>{organization.resource.description}</Box>
-                )}
               </Box>
               <Flex sx={{ flexDirection: "column", flex: "none" }}>
                 <Button disabled={true} sx={style.join}>
@@ -168,12 +168,30 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                 <Button sx={style.join}>Leave organization</Button>
               </Flex>
             ) : "resource" in user && user.resource ? (
-              <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={joinOrg}>
-                <Button sx={style.join}>Join organization</Button>
-                <Box sx={style.joinText}>
-                  Join to start making district maps with this organization
-                </Box>
-              </Flex>
+              userIsVerified ? (
+                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={joinOrg}>
+                  <Button sx={style.join} disabled={!userIsVerified}>
+                    Join organization
+                  </Button>
+                  <Box sx={style.joinText}>
+                    Join to start making district maps with this organization
+                  </Box>
+                </Flex>
+              ) : (
+                <Tooltip
+                  key={1}
+                  content={<div>You must confirm your email before joining an organization</div>}
+                >
+                  <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={joinOrg}>
+                    <Button sx={style.join} disabled={!userIsVerified}>
+                      Join organization
+                    </Button>
+                    <Box sx={style.joinText}>
+                      Join to start making district maps with this organization
+                    </Box>
+                  </Flex>
+                </Tooltip>
+              )
             ) : (
               <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
                 <Button sx={style.join}>Join organization</Button>
