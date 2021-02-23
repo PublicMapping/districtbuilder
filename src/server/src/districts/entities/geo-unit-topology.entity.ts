@@ -1,4 +1,4 @@
-import { Feature, FeatureCollection } from "geojson";
+import { Feature, MultiPolygon as GeoJSONMultiPolygon } from "geojson";
 import * as topojson from "topojson-client";
 import {
   GeometryCollection,
@@ -22,6 +22,7 @@ import {
 } from "../../../../shared/entities";
 import { getAllBaseIndices, getDemographics } from "../../../../shared/functions";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
+import { DistrictsGeoJSON } from "src/projects/entities/project.entity";
 
 interface GeoUnitHierarchy {
   geom: Polygon | MultiPolygon;
@@ -187,7 +188,7 @@ export class GeoUnitTopology {
    * Performs a merger of the specified districts into a GeoJSON collection,
    * or returns null if the district definition is invalid
    */
-  merge(definition: DistrictsDefinitionDto, numberOfDistricts: number): FeatureCollection | null {
+  merge(definition: DistrictsDefinitionDto, numberOfDistricts: number): DistrictsGeoJSON | null {
     // mutableDistrictGeoms contains the individual geometries prior to being merged
     // indexed by district id then by geolevel index
     const mutableDistrictGeoms: Array<Array<Array<MultiPolygon | Polygon>>> = Array.from(
@@ -249,9 +250,11 @@ export class GeoUnitTopology {
       ...featureCollection,
       features: featureCollection.features.map(feature => {
         const [compactness, contiguity] = calcPolsbyPopper(feature);
+        const geometry = feature.geometry as GeoJSONMultiPolygon;
 
         return {
           ...feature,
+          geometry,
           properties: {
             demographics: feature.properties,
             compactness,
