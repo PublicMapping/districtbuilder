@@ -4,12 +4,15 @@ export type UserId = string;
 
 export type PublicUserProperties = "id" | "name";
 
+export type OrganizationNest = Pick<IOrganization, "slug" | "id">;
+
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
   readonly name: string;
   readonly isEmailVerified: boolean;
   readonly hasSeenTour: boolean;
+  readonly organizations: readonly OrganizationNest[];
 }
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;

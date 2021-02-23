@@ -11,7 +11,13 @@ import { UsersService } from "../services/users.service";
     type: User
   },
   query: {
-    exclude: ["passwordHash"]
+    exclude: ["passwordHash"],
+    join: {
+      organizations: {
+        allow: ["slug"],
+        eager: true
+      }
+    }
   },
   routes: {
     only: ["getOneBase", "updateOneBase"]

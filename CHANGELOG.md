@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add script to load region configs [#575](https://github.com/PublicMapping/districtbuilder/pull/575)
 - Store chamber reference on project entity [#576](https://github.com/PublicMapping/districtbuilder/pull/576)
 - Allow users to join and leave an organization [#226](https://github.com/PublicMapping/districtbuilder/pull/578)
+- Require users to confirm before joining an organization [#593](https://github.com/PublicMapping/districtbuilder/pull/593)
 
 ### Changed
 
