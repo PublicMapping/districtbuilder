@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
 import { Box, Button, Flex, Heading, Image, Link, jsx, Text } from "theme-ui";
@@ -18,7 +18,13 @@ import Icon from "../components/Icon";
 import { showCopyMapModal } from "../actions/districtDrawing";
 import JoinOrganizationModal from "../components/JoinOrganizationModal";
 import Tooltip from "../components/Tooltip";
-import { IProject, IOrganization, IUser, IProjectTemplate } from "../../shared/entities";
+import {
+  IProject,
+  IOrganization,
+  IUser,
+  IProjectTemplate,
+  CreateProjectData
+} from "../../shared/entities";
 import { createProject } from "../api";
 
 interface StateProps {
@@ -72,6 +78,7 @@ const style = {
 
 const OrganizationScreen = ({ organization, project, user }: StateProps) => {
   const { organizationSlug } = useParams();
+  const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
   const history = useHistory();
   const isLoggedIn = getJWT() !== null;
   const userInOrg =
@@ -117,18 +124,24 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
     return userExists.length > 0;
   }
 
-  function createProjectFromTemplate(template: IProjectTemplate) {
+  function createProjectFromTemplate() {
+    projectTemplate &&
+      void createProject(projectTemplate).then((project: IProject) =>
+        history.push(`/projects/${project.id}`)
+      );
+  }
+
+  function setupProjectFromTemplate(template: IProjectTemplate) {
     const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
-    userInOrg
-      ? void createProject({
-          name,
-          regionConfig,
-          numberOfDistricts,
-          districtsDefinition,
-          chamber,
-          projectTemplate: { id }
-        }).then((project: IProject) => history.push(`/projects/${project.id}`))
-      : store.dispatch(showCopyMapModal(true));
+    setProjectTemplate({
+      name,
+      regionConfig,
+      numberOfDistricts,
+      districtsDefinition,
+      chamber,
+      projectTemplate: { id }
+    });
+    userInOrg ? createProjectFromTemplate() : store.dispatch(showCopyMapModal(true));
   }
 
   return (
@@ -225,7 +238,7 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                         {template.regionConfig.name} · {template.numberOfDistricts}
                       </Text>
                       <Text>{template.description}</Text>
-                      <Button onClick={() => createProjectFromTemplate(template)}>
+                      <Button onClick={() => setupProjectFromTemplate(template)}>
                         Use this template
                       </Button>
                     </Flex>
@@ -239,7 +252,10 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
         )}
       </Flex>
       {"resource" in organization && organization.resource && (
-        <JoinOrganizationModal organization={organization.resource} />
+        <JoinOrganizationModal
+          organization={organization.resource}
+          projectTemplate={projectTemplate}
+        />
       )}
     </Flex>
   );

@@ -3,12 +3,14 @@ import React from "react";
 import { connect } from "react-redux";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
-import { IOrganization, IUser } from "../../shared/entities";
+import { CreateProjectData, IOrganization, IUser, IProject } from "../../shared/entities";
+import { useHistory } from "react-router-dom";
 import { State } from "../reducers";
 import store from "../store";
 import { Resource } from "../resource";
 import { joinOrganization } from "../actions/organizationJoin";
 import { showCopyMapModal } from "../actions/districtDrawing";
+import { createProject } from "../api";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -35,12 +37,15 @@ const style: ThemeUIStyleObject = {
 
 const ConfirmJoinOrganization = ({
   organization,
-  user
+  user,
+  projectTemplate
 }: {
   readonly organization: IOrganization;
   readonly user: Resource<IUser>;
+  readonly projectTemplate?: CreateProjectData;
 }) => {
   const hideModal = () => store.dispatch(showCopyMapModal(false));
+  const history = useHistory();
 
   function joinOrg() {
     "resource" in user &&
@@ -49,6 +54,15 @@ const ConfirmJoinOrganization = ({
         joinOrganization({ organization: organization.slug, user: user.resource.id })
       ) &&
       store.dispatch(showCopyMapModal(false));
+
+    projectTemplate && createProjectFromTemplate();
+  }
+
+  function createProjectFromTemplate() {
+    projectTemplate &&
+      void createProject(projectTemplate).then((project: IProject) =>
+        history.push(`/projects/${project.id}`)
+      );
   }
 
   return (

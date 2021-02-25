@@ -11,6 +11,7 @@ import store from "../store";
 import { AuthModalContent } from "./AuthComponents";
 import ConfirmJoinOrganization from "./ConfirmJoinOrganization";
 import { Resource } from "../resource";
+import { CreateProjectData } from "../../shared/entities";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -38,11 +39,13 @@ const style: ThemeUIStyleObject = {
 const JoinOrganizationModal = ({
   organization,
   user,
-  showModal
+  showModal,
+  projectTemplate
 }: {
   readonly organization: IOrganization;
   readonly showModal: boolean;
   readonly user: Resource<IUser>;
+  readonly projectTemplate?: CreateProjectData;
 }) => {
   const hideModal = () => store.dispatch(showCopyMapModal(false));
 
@@ -56,7 +59,7 @@ const JoinOrganizationModal = ({
     >
       <Box sx={style.modal}>
         {"resource" in user ? (
-          <ConfirmJoinOrganization organization={organization} />
+          <ConfirmJoinOrganization organization={organization} projectTemplate={projectTemplate} />
         ) : (
           <AuthModalContent organization={organization} />
         )}
