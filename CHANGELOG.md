@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Geounit label made more generic to support Dane County wards [#573](https://github.com/PublicMapping/districtbuilder/pull/573)
 - Update ESLint rules to prohibit console.log, allow conditional statements [#580](https://github.com/PublicMapping/districtbuilder/pull/580)
 - Prevent unverified users from joining an organization or using a template [#591](https://github.com/PublicMapping/districtbuilder/pull/591)
+- Project districts geojson is now cached in the project table when updated [#594](https://github.com/PublicMapping/districtbuilder/pull/594)
 
 ### Fixed
 

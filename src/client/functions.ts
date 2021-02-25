@@ -109,7 +109,7 @@ export function assignGeounitsToDistrict(
 export function getTargetPopulation(geojson: DistrictsGeoJSON, project: IProject) {
   return (
     geojson.features.reduce(
-      (population, feature) => population + feature.properties.population,
+      (population, feature) => population + feature.properties.demographics.population,
       0
     ) / project.numberOfDistricts
   );

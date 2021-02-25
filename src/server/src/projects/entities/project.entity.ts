@@ -1,5 +1,5 @@
+import { FeatureCollection, MultiPolygon } from "geojson";
 import {
-  Check,
   Column,
   Entity,
   JoinColumn,
@@ -9,11 +9,14 @@ import {
 } from "typeorm";
 
 import { ProjectVisibility } from "../../../../shared/constants";
-import { DistrictsDefinition, IProject } from "../../../../shared/entities";
+import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
 import { ProjectTemplate } from "src/project-templates/entities/project-template.entity";
+
+// TODO #179: Move to shared/entities
+export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
 
 @Entity()
 export class Project implements IProject {
@@ -44,6 +47,13 @@ export class Project implements IProject {
     nullable: true
   })
   districtsDefinition: DistrictsDefinition;
+
+  @Column({
+    type: "jsonb",
+    name: "districts",
+    nullable: true
+  })
+  districts: DistrictsGeoJSON;
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: "user_id" })

@@ -55,11 +55,16 @@ export interface IDistrictsDefinition {
   readonly districts: DistrictsDefinition;
 }
 
+export interface DemographicCounts {
+  // key is demographic group (eg. population, white, black, etc)
+  // value is the number of people in that group
+  readonly [id: string]: number;
+}
+
 export type DistrictProperties = {
   readonly contiguity: "contiguous" | "non-contiguous" | "";
   readonly compactness: number;
-} & {
-  readonly [name: string]: number;
+  readonly demographics: DemographicCounts;
 };
 
 export interface IStaticFile {
@@ -207,12 +212,6 @@ export type Contiguity = "" | "contiguous" | "non-contiguous";
 export type DistrictId = number;
 
 export type LockedDistricts = readonly boolean[];
-
-export interface DemographicCounts {
-  // key is demographic group (eg. population, white, black, etc)
-  // value is the number of people in that group
-  [id: string]: number; // eslint-disable-line
-}
 
 export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 export type UintArrays = ReadonlyArray<UintArray>;

@@ -31,8 +31,8 @@ import { GeometryCollection } from "topojson-specification";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
 import {
+  DistrictsDefinition,
   GeoUnitHierarchy,
-  IProjectTemplate,
   ProjectId,
   PublicUserProperties
 } from "../../../../shared/entities";
@@ -41,9 +41,10 @@ import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.enti
 import { TopologyService } from "../../districts/services/topology.service";
 
 import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 import { CreateProjectDto } from "../entities/create-project.dto";
-import { Project } from "../entities/project.entity";
+import { DistrictsGeoJSON, Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
 import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
@@ -172,14 +173,31 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedBody() dto: UpdateProjectDto
   ) {
     // @ts-ignore
-    const existingProject = await this.service.findOne({ id });
+    const existingProject = await this.service.findOne({ id }, { relations: ["regionConfig"] });
     if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
         message: { lockedDistricts: [`Length of array does not match "number_of_districts"`] }
       } as Errors<UpdateProjectDto>);
     }
-    return this.service.updateOne(req, dto);
+
+    // Update districts GeoJSON if the definition has changed or there is no cached value yet
+    const data =
+      existingProject &&
+      dto.districtsDefinition &&
+      (!existingProject.districts ||
+        !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
+        ? {
+            ...dto,
+            districts: await this.getGeojson({
+              regionConfig: existingProject.regionConfig,
+              numberOfDistricts: existingProject.numberOfDistricts,
+              districtsDefinition: dto.districtsDefinition
+            })
+          }
+        : dto;
+
+    return this.service.updateOne(req, data);
   }
 
   @Override()
@@ -202,12 +220,21 @@ export class ProjectsController implements CrudController<Project> {
         );
       }
 
+      // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
+      const districtsDefinition =
+        dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
+      const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
+      const districts = await this.getGeojson({
+        numberOfDistricts: dto.numberOfDistricts,
+        districtsDefinition,
+        regionConfig
+      });
+
       return this.service.createOne(req, {
         ...dto,
-        // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
-        districtsDefinition:
-          dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0),
-        lockedDistricts: new Array(dto.numberOfDistricts).fill(false),
+        districtsDefinition,
+        districts,
+        lockedDistricts,
         user: req.parsed.authPersist.userId
       });
     } catch (error) {
@@ -241,21 +268,19 @@ export class ProjectsController implements CrudController<Project> {
     return geoCollection;
   }
 
-  @UseInterceptors(CrudRequestInterceptor)
-  @UseGuards(OptionalJwtAuthGuard)
-  @Get(":id/export/geojson")
-  async exportGeoJSON(
-    @ParsedRequest() req: CrudRequest,
-    @Param("id") projectId: ProjectId
-  ): Promise<FeatureCollection> {
-    const project = await this.getProject(req, projectId);
-    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
-    const geojson = geoCollection.merge(
-      { districts: project.districtsDefinition },
-      project.numberOfDistricts
-    );
+  async getGeojson({
+    districtsDefinition,
+    numberOfDistricts,
+    regionConfig
+  }: {
+    readonly districtsDefinition: DistrictsDefinition;
+    readonly numberOfDistricts: number;
+    readonly regionConfig: RegionConfig;
+  }): Promise<DistrictsGeoJSON> {
+    const geoCollection = await this.getGeoUnitTopology(regionConfig.s3URI);
+    const geojson = geoCollection.merge({ districts: districtsDefinition }, numberOfDistricts);
     if (geojson === null) {
-      this.logger.error(`Invalid districts definition for project ${projectId}`);
+      this.logger.error(`Invalid districts definition for project`);
       throw new BadRequestException(
         "District definition is invalid",
         MakeDistrictsErrors.INVALID_DEFINITION
@@ -266,31 +291,40 @@ export class ProjectsController implements CrudController<Project> {
 
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
+  @Get(":id/export/geojson")
+  async exportGeoJSON(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<DistrictsGeoJSON> {
+    const project = await this.getProject(req, projectId);
+    if (!project.districtsDefinition) {
+      throw new BadRequestException(
+        "District definition is invalid",
+        MakeDistrictsErrors.INVALID_DEFINITION
+      );
+    }
+
+    return project.districts || (await this.getGeojson({ ...project }));
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/shp")
   async exportShapefile(
     @ParsedRequest() req: CrudRequest,
     @Param("id") projectId: ProjectId,
     @Res() response: Response
   ): Promise<void> {
-    const project = await this.getProject(req, projectId);
-    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
-    const geojson = geoCollection.merge(
-      { districts: project.districtsDefinition },
-      project.numberOfDistricts
-    );
-    if (geojson === null) {
-      this.logger.error(`Invalid districts definition for project ${projectId}`);
-      throw new BadRequestException(
-        "District definition is invalid",
-        MakeDistrictsErrors.INVALID_DEFINITION
-      );
-    }
+    const geojson = await this.exportGeoJSON(req, projectId);
     const formattedGeojson = {
       ...geojson,
       features: geojson.features.map(feature => ({
         ...feature,
         properties: {
           ...feature.properties,
+          // Flatten nested demographics object so it is maintained when converting
+          demographics: undefined,
+          ...feature.properties.demographics,
           // The feature ID doesn't seem to make its way over as part of 'convert' natively
           id: feature.id
         }
