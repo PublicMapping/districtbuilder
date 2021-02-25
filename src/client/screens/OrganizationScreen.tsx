@@ -1,11 +1,11 @@
 /** @jsx jsx */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
 import { Box, Button, Flex, Heading, Image, Link, jsx, Text } from "theme-ui";
 
 import { organizationFetch } from "../actions/organization";
-import { joinOrganization, leaveOrganization } from "../actions/organizationJoin";
+import { leaveOrganization } from "../actions/organizationJoin";
 import { userFetch } from "../actions/user";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
@@ -18,7 +18,13 @@ import Icon from "../components/Icon";
 import { showCopyMapModal } from "../actions/districtDrawing";
 import JoinOrganizationModal from "../components/JoinOrganizationModal";
 import Tooltip from "../components/Tooltip";
-import { IProject, IOrganization, IUser } from "../../shared/entities";
+import {
+  IProject,
+  IOrganization,
+  IUser,
+  IProjectTemplate,
+  CreateProjectData
+} from "../../shared/entities";
 import { createProject } from "../api";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 
@@ -73,6 +79,7 @@ const style = {
 
 const OrganizationScreen = ({ organization, project, user }: StateProps) => {
   const { organizationSlug } = useParams();
+  const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
   const history = useHistory();
   const isLoggedIn = getJWT() !== null;
   const userInOrg =
@@ -81,11 +88,13 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
     "resource" in organization &&
     organization.resource &&
     checkIfUserInOrg(organization.resource, user.resource);
+  const userLoggedIn = "resource" in user && user.resource;
 
   const userIsVerified = "resource" in user && user.resource && user.resource.isEmailVerified;
 
   useEffect(() => {
-    "resource" in user &&
+    !userLoggedIn &&
+      "resource" in user &&
       user.resource &&
       project.showCopyMapModal &&
       store.dispatch(showCopyMapModal(false));
@@ -98,12 +107,6 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
   useEffect(() => {
     store.dispatch(organizationFetch(organizationSlug));
   }, [organizationSlug]);
-
-  function joinOrg() {
-    "resource" in user &&
-      user.resource &&
-      store.dispatch(joinOrganization({ organization: organizationSlug, user: user.resource.id }));
-  }
 
   function signupAndJoinOrg() {
     store.dispatch(showCopyMapModal(true));
@@ -120,6 +123,26 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
       return u.id === user.id;
     });
     return userExists.length > 0;
+  }
+
+  function createProjectFromTemplate() {
+    projectTemplate &&
+      void createProject(projectTemplate).then((project: IProject) =>
+        history.push(`/projects/${project.id}`)
+      );
+  }
+
+  function setupProjectFromTemplate(template: IProjectTemplate) {
+    const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
+    setProjectTemplate({
+      name,
+      regionConfig,
+      numberOfDistricts,
+      districtsDefinition,
+      chamber,
+      projectTemplate: { id }
+    });
+    userInOrg ? createProjectFromTemplate() : store.dispatch(showCopyMapModal(true));
   }
 
   return (
@@ -154,6 +177,9 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                     <Icon name="tools" /> {organization.resource.users?.length || 0} builders
                   </Box>
                 </Box>
+                {organization.resource.description && (
+                  <Box>{organization.resource.description}</Box>
+                )}
               </Box>
               <Flex sx={{ flexDirection: "column", flex: "none" }}>
                 <Button disabled={true} sx={style.join}>
@@ -170,7 +196,7 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
               </Flex>
             ) : "resource" in user && user.resource ? (
               userIsVerified ? (
-                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={joinOrg}>
+                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
                   <Button sx={style.join} disabled={!userIsVerified}>
                     Join organization
                   </Button>
@@ -183,7 +209,7 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                   key={1}
                   content={<div>You must confirm your email before joining an organization</div>}
                 >
-                  <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={joinOrg}>
+                  <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
                     <Button sx={style.join} disabled={!userIsVerified}>
                       Join organization
                     </Button>
@@ -213,26 +239,7 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                         {template.regionConfig.name} · {template.numberOfDistricts}
                       </Text>
                       <Text>{template.description}</Text>
-                      <Button
-                        onClick={() => {
-                          const {
-                            id,
-                            name,
-                            regionConfig,
-                            numberOfDistricts,
-                            districtsDefinition,
-                            chamber
-                          } = template;
-                          void createProject({
-                            name,
-                            regionConfig,
-                            numberOfDistricts,
-                            districtsDefinition,
-                            chamber,
-                            projectTemplate: { id }
-                          }).then((project: IProject) => history.push(`/projects/${project.id}`));
-                        }}
-                      >
+                      <Button onClick={() => setupProjectFromTemplate(template)}>
                         Use this template
                       </Button>
                     </Flex>
@@ -248,7 +255,10 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
         )}
       </Flex>
       {"resource" in organization && organization.resource && (
-        <JoinOrganizationModal organization={organization.resource} />
+        <JoinOrganizationModal
+          organization={organization.resource}
+          projectTemplate={projectTemplate}
+        />
       )}
     </Flex>
   );

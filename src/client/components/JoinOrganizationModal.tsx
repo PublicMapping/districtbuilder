@@ -1,13 +1,17 @@
 /** @jsx jsx */
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
+
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
 
-import { IOrganization } from "../../shared/entities";
+import { IOrganization, IUser } from "../../shared/entities";
 import { showCopyMapModal } from "../actions/districtDrawing";
 import { State } from "../reducers";
 import store from "../store";
 import { AuthModalContent } from "./AuthComponents";
+import ConfirmJoinOrganization from "./ConfirmJoinOrganization";
+import { Resource } from "../resource";
+import { CreateProjectData } from "../../shared/entities";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -34,10 +38,14 @@ const style: ThemeUIStyleObject = {
 
 const JoinOrganizationModal = ({
   organization,
-  showModal
+  user,
+  showModal,
+  projectTemplate
 }: {
   readonly organization: IOrganization;
   readonly showModal: boolean;
+  readonly user: Resource<IUser>;
+  readonly projectTemplate?: CreateProjectData;
 }) => {
   const hideModal = () => store.dispatch(showCopyMapModal(false));
 
@@ -49,7 +57,13 @@ const JoinOrganizationModal = ({
       getApplicationNode={() => document.getElementById("root") as Element}
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
-      <Box sx={style.modal}>{<AuthModalContent organization={organization} />}</Box>
+      <Box sx={style.modal}>
+        {"resource" in user ? (
+          <ConfirmJoinOrganization organization={organization} projectTemplate={projectTemplate} />
+        ) : (
+          <AuthModalContent organization={organization} />
+        )}
+      </Box>
     </AriaModal>
   ) : null;
 };

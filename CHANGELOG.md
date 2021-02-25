@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Store chamber reference on project entity [#576](https://github.com/PublicMapping/districtbuilder/pull/576)
 - Display error page for 404 errors [#582](https://github.com/PublicMapping/districtbuilder/pull/582)
 - Allow users to join and leave an organization [#226](https://github.com/PublicMapping/districtbuilder/pull/578)
+- Require users to confirm before joining an organization [#593](https://github.com/PublicMapping/districtbuilder/pull/593)
 
 ### Changed
 
