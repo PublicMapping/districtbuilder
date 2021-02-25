@@ -32,12 +32,15 @@ import { State } from "../reducers";
 import { Resource } from "../resource";
 import store from "../store";
 import { useBeforeunload } from "react-beforeunload";
+import PageNotFoundScreen from "./PageNotFoundScreen";
+import SiteHeader from "../components/SiteHeader";
 
 interface StateProps {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
   readonly staticGeoLevels: UintArrays;
+  readonly projectNotFound?: boolean;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
@@ -62,6 +65,7 @@ const ProjectScreen = ({
   geojson,
   staticMetadata,
   staticGeoLevels,
+  projectNotFound,
   geoUnitHierarchy,
   districtDrawing,
   isLoading,
@@ -112,6 +116,11 @@ const ProjectScreen = ({
     </CenteredContent>
   ) : "errorMessage" in user ? (
     <Redirect to={"/login"} />
+  ) : projectNotFound ? (
+    <Flex sx={{ height: "100%", flexDirection: "column" }}>
+      <SiteHeader user={user} />
+      <PageNotFoundScreen model={"project"} />
+    </Flex>
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
       <ProjectHeader map={map} project={project} isReadOnly={isReadOnly} />
@@ -193,6 +202,10 @@ function mapStateToProps(state: State): StateProps {
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||
       ("isPending" in state.project.staticData && state.project.staticData.isPending),
+    projectNotFound: !!(
+      ("statusCode" in state.project.projectData && state.project.projectData.statusCode === 400) ||
+      ("statusCode" in state.project.staticData && state.project.staticData.statusCode === 400)
+    ),
     isReadOnly:
       !("resource" in state.user) ||
       (project !== undefined && state.user.resource.id !== project.user.id),

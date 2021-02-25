@@ -139,9 +139,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return loop(
         {
           ...state,
-          projectData: {
-            errorMessage: action.payload
-          }
+          projectData: action.payload
         },
         Cmd.run(showActionFailedToast)
       );
@@ -188,9 +186,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return loop(
         {
           ...state,
-          projectData: {
-            errorMessage: action.payload
-          }
+          projectData: action.payload
         },
         Cmd.run(showResourceFailedToast)
       );

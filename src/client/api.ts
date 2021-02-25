@@ -141,7 +141,9 @@ async function fetchProject(id: ProjectId): Promise<IProject> {
     apiAxios
       .get(`/api/projects/${id}`)
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error =>
+        reject({ errorMessage: error.response.message, statusCode: error.response.status })
+      );
   });
 }
 
@@ -150,7 +152,7 @@ export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJS
     apiAxios
       .get(`/api/projects/${id}/export/geojson`)
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 
@@ -159,7 +161,7 @@ export async function fetchProjects(): Promise<readonly IProject[]> {
     apiAxios
       .get("/api/projects?sort=updatedDt,DESC")
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 
@@ -241,7 +243,9 @@ export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrgani
     apiAxios
       .get(`/api/organization/${slug}`)
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error => {
+        reject(error.response.data);
+      });
   });
 }
 

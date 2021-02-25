@@ -42,7 +42,7 @@ const organizationReducer: LoopReducer<OrganizationState, Action> = (
     case getType(organizationFetchFailure):
       return loop(
         {
-          errorMessage: action.payload
+          ...action.payload
         },
         Cmd.run(showResourceFailedToast)
       );
