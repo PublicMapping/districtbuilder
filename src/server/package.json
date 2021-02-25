@@ -9,7 +9,7 @@
     "check-format": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "nest start --debug 0.0.0.0:9229 --watch",
     "start:prod": "node dist/server/src/main",
     "lint": "eslint 'src/**/*.{ts,tsx,json}'",
     "fix": "eslint 'src/**/*.{ts,tsx,json}' --fix",

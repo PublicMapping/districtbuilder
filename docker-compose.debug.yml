@@ -1,0 +1,11 @@
+version: "2.4"
+services:
+  server:
+    ports:
+      - 3005:3005
+      - 9229:9229
+    command: start:debug
+
+  client:
+    ports:
+      - 3003:3003
