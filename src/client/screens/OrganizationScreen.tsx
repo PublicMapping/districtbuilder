@@ -181,34 +181,12 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                   <Box>{organization.resource.description}</Box>
                 )}
               </Box>
-              <Flex sx={{ flexDirection: "column", flex: "none" }}>
-                <Button disabled={true} sx={style.join}>
-                  Join organization
-                </Button>
-                <Box sx={style.joinText}>
-                  Join to start making district maps with this organization
-                </Box>
-              </Flex>
-            </Flex>
-            {userInOrg ? (
-              <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={leaveOrg}>
-                <Button sx={style.join}>Leave organization</Button>
-              </Flex>
-            ) : "resource" in user && user.resource ? (
-              userIsVerified ? (
-                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
-                  <Button sx={style.join} disabled={!userIsVerified}>
-                    Join organization
-                  </Button>
-                  <Box sx={style.joinText}>
-                    Join to start making district maps with this organization
-                  </Box>
+              {userInOrg ? (
+                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={leaveOrg}>
+                  <Button sx={style.join}>Leave organization</Button>
                 </Flex>
-              ) : (
-                <Tooltip
-                  key={1}
-                  content={<div>You must confirm your email before joining an organization</div>}
-                >
+              ) : "resource" in user && user.resource ? (
+                userIsVerified ? (
                   <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
                     <Button sx={style.join} disabled={!userIsVerified}>
                       Join organization
@@ -217,16 +195,30 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                       Join to start making district maps with this organization
                     </Box>
                   </Flex>
-                </Tooltip>
-              )
-            ) : (
-              <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
-                <Button sx={style.join}>Join organization</Button>
-                <Box sx={style.joinText}>
-                  Register for an account to start making district maps with this organization
-                </Box>
-              </Flex>
-            )}
+                ) : (
+                  <Tooltip
+                    key={1}
+                    content={<div>You must confirm your email before joining an organization</div>}
+                  >
+                    <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
+                      <Button sx={style.join} disabled={!userIsVerified}>
+                        Join organization
+                      </Button>
+                      <Box sx={style.joinText}>
+                        Join to start making district maps with this organization
+                      </Box>
+                    </Flex>
+                  </Tooltip>
+                )
+              ) : (
+                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
+                  <Button sx={style.join}>Join organization</Button>
+                  <Box sx={style.joinText}>
+                    Register for an account to start making district maps with this organization
+                  </Box>
+                </Flex>
+              )}
+            </Flex>
             {organization.resource.projectTemplates.length > 0 && (
               <Box sx={style.templates}>
                 <Heading>Templates</Heading>
