@@ -13,7 +13,7 @@ import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../s
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
-import { ProjectTemplate } from "src/project-templates/entities/project-template.entity";
+import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 // TODO #179: Move to shared/entities
 export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;

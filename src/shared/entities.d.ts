@@ -6,6 +6,8 @@ export type PublicUserProperties = "id" | "name";
 
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name">;
 
+export type PubilicProjectProperties = "id" | "name";
+
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
@@ -149,6 +151,10 @@ export type IProject = ProjectTemplateFields & {
   readonly archived: boolean;
 };
 
+export type ProjectNest = Pick<IProject, "user" | "id" | "updatedDt" | "numberOfDistricts" | "chamber">;
+
+
+
 export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
@@ -175,6 +181,10 @@ export type IProjectTemplate = ProjectTemplateFields & {
   readonly organization: IOrganization;
   readonly description: string;
   readonly details: string;
+};
+
+export type IProjectTemplateWithProjects = IProjectTemplate & {
+  readonly projects: readonly ProjectNest[];
 };
 
 export type ChamberId = string;

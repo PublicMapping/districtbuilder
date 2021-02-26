@@ -1,12 +1,13 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-import { DistrictsDefinition, IProjectTemplate } from "../../../../shared/entities";
+import { DistrictsDefinition, IProjectTemplateWithProjects } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
+import { Project } from "../../projects/entities/project.entity"
 
 @Entity()
-export class ProjectTemplate implements IProjectTemplate {
+export class ProjectTemplate implements IProjectTemplateWithProjects {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
@@ -24,6 +25,9 @@ export class ProjectTemplate implements IProjectTemplate {
   @ManyToOne(() => Chamber, { nullable: true })
   @JoinColumn({ name: "chamber_id" })
   chamber?: Chamber;
+
+  @OneToMany(type => Project, project => project.projectTemplate)
+  projects: Project[];
 
   @Column({ name: "number_of_districts", type: "integer" })
   numberOfDistricts: number;

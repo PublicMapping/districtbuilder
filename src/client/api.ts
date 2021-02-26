@@ -5,6 +5,7 @@ import {
   CreateProjectData,
   IOrganization,
   IProject,
+  IProjectTemplate,
   IRegionConfig,
   IUser,
   JWT,
@@ -245,6 +246,20 @@ export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrgani
       .then(response => resolve(response.data))
       .catch(error => {
         reject({ errorMessage: error.response.data, statusCode: error.response.status });
+      });
+  });
+}
+
+export async function fetchOrganizationProjects(slug: OrganizationSlug): Promise<IProjectTemplate[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/${slug}`)
+      .then(response => {
+        console.log(response.data)
+        resolve(response.data)
+      })
+      .catch(error => {
+        reject(error.response.data);
       });
   });
 }
