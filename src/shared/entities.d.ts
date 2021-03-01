@@ -146,6 +146,7 @@ export type IProject = ProjectTemplateFields & {
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly projectTemplate?: IProjectTemplate;
   readonly advancedEditingEnabled: boolean;
+  readonly isFeatured: boolean;
   readonly lockedDistricts: readonly boolean[];
   readonly visibility: ProjectVisibility;
   readonly archived: boolean;
