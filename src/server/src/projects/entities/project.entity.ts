@@ -23,7 +23,7 @@ export class Project implements IProject {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ type: "character varying" })
   name: string;
 
   @ManyToOne(() => RegionConfig, { nullable: false })
@@ -38,7 +38,7 @@ export class Project implements IProject {
   @JoinColumn({ name: "project_template_id" })
   projectTemplate?: ProjectTemplate;
 
-  @Column({ name: "number_of_districts" })
+  @Column({ name: "number_of_districts", type: "integer" })
   numberOfDistricts: number;
 
   @Column({
@@ -55,7 +55,7 @@ export class Project implements IProject {
   })
   districts: DistrictsGeoJSON;
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: false, eager: true })
   @JoinColumn({ name: "user_id" })
   user: User;
 
@@ -69,7 +69,7 @@ export class Project implements IProject {
   })
   updatedDt: Date;
 
-  @Column({ default: false })
+  @Column({ type: "boolean", default: false })
   advancedEditingEnabled: boolean;
 
   @Column({

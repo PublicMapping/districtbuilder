@@ -4,7 +4,7 @@ import { DistrictsDefinition, IProjectTemplateWithProjects } from "../../../../s
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
-import { Project } from "../../projects/entities/project.entity"
+import { Project } from "../../projects/entities/project.entity";
 
 @Entity()
 export class ProjectTemplate implements IProjectTemplateWithProjects {
@@ -18,7 +18,11 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
   @Column({ type: "character varying" })
   name: string;
 
-  @ManyToOne(() => RegionConfig, { nullable: false })
+  @ManyToOne(
+    () => RegionConfig,
+    regionConfig => regionConfig.projectTemplates,
+    { nullable: false }
+  )
   @JoinColumn({ name: "region_config_id" })
   regionConfig: RegionConfig;
 
@@ -26,7 +30,10 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
   @JoinColumn({ name: "chamber_id" })
   chamber?: Chamber;
 
-  @OneToMany(type => Project, project => project.projectTemplate)
+  @OneToMany(
+    type => Project,
+    project => project.projectTemplate
+  )
   projects: Project[];
 
   @Column({ name: "number_of_districts", type: "integer" })

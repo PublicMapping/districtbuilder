@@ -3,9 +3,12 @@ import { IArg } from "@oclif/parser/lib/args";
 import { readFileSync } from "fs";
 import yaml from "js-yaml";
 import { createConnection } from "typeorm";
+import { UserId } from "../../../shared/entities";
 
 import { Organization } from "../../../server/src/organizations/entities/organization.entity";
 import { ProjectTemplate } from "../../../server/src/project-templates/entities/project-template.entity";
+import { User } from "../../../server/src/users/entities/user.entity";
+
 import { connectionOptions } from "../lib/dbUtils";
 
 interface TemplateConfig {
@@ -21,6 +24,7 @@ interface OrganizationConfig {
   readonly name: string;
   readonly slug: string;
   readonly description?: string;
+  readonly admin: UserId;
   readonly logoUrl?: string;
   readonly linkUrl?: string;
   readonly municipality?: string;
@@ -56,9 +60,13 @@ export default class UpdateOrganization extends Command {
     const connection = await createConnection(connectionOptions);
     const orgRepo = connection.getRepository(Organization);
     const templateRepo = connection.getRepository(ProjectTemplate);
+    const userRepo = connection.getRepository(User);
 
     /* tslint:disable:no-object-mutation */
     const result = await orgRepo.findOne({ slug: organizationDetails.slug });
+
+    const admin = await userRepo.findOne({ id: organizationDetails.admin });
+
     const organization = result || new Organization();
     organization.slug = organizationDetails.slug;
     organization.name = organizationDetails.name;
@@ -67,6 +75,10 @@ export default class UpdateOrganization extends Command {
     organization.linkUrl = organizationDetails.linkUrl || "";
     organization.municipality = organizationDetails.municipality || "";
     organization.region = organizationDetails.region || "";
+    if (admin) {
+      organization.admin = admin;
+    }
+
     // @ts-ignore
     await orgRepo.save(organization);
 

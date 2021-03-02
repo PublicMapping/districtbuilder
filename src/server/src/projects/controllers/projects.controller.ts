@@ -7,6 +7,8 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Post,
+  Body,
   Res,
   UseGuards,
   UseInterceptors
@@ -46,7 +48,10 @@ import { User } from "../../users/entities/user.entity";
 import { CreateProjectDto } from "../entities/create-project.dto";
 import { DistrictsGeoJSON, Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
+import { OrganizationsService } from "../../organizations/services/organizations.service";
+
 import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
+import { UsersService } from "../../users/services/users.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
 import { Errors } from "../../../../shared/types";
 
@@ -70,6 +75,10 @@ import { Errors } from "../../../../shared/types";
       "projectTemplate.organization": {
         eager: true
       },
+      "projectTemplate.organization.admin": {
+        alias: "org_admin",
+        eager: false
+      },
       "projectTemplate.regionConfig": {
         alias: "template_region_config",
         eager: true
@@ -79,6 +88,8 @@ import { Errors } from "../../../../shared/types";
       },
       user: {
         allow: ["id", "name"] as PublicUserProperties[],
+        alias: "project_user",
+        required: true,
         eager: true
       }
     }
@@ -95,7 +106,11 @@ import { Errors } from "../../../../shared/types";
     // Filter to user's projects for all update requests and for full project
     // list.
     const user = req.user as User;
-    if (req.method !== "GET" || req.route.path === "/api/projects") {
+    if (req.route.path.split("/").reverse()[1] === "toggleFeatured") {
+      return {
+        "projectTemplate.organization.admin": user.id
+      };
+    } else if (req.method !== "GET" || req.route.path === "/api/projects") {
       return {
         user_id: user ? user.id : undefined
       };
@@ -136,6 +151,8 @@ export class ProjectsController implements CrudController<Project> {
   constructor(
     public service: ProjectsService,
     public topologyService: TopologyService,
+    private readonly usersService: UsersService,
+    private readonly organizationService: OrganizationsService,
     private readonly regionConfigService: RegionConfigsService
   ) {}
 
@@ -384,5 +401,46 @@ export class ProjectsController implements CrudController<Project> {
       header: true,
       columns: [`${baseGeoLevel.toUpperCase()}ID`, "DISTRICT"]
     });
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Post(":id/toggleFeatured")
+  async setProjectAsFeatured(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId,
+    @Body() projectFeatured: { isFeatured: boolean }
+  ): Promise<Project> {
+    const project = await this.getProject(req, projectId);
+    if (project.projectTemplate) {
+      const orgId = project.projectTemplate.organization.id;
+      if (orgId) {
+        const userId = req.parsed.authPersist.userId || null;
+        const org = await this.organizationService.findOne({ id: orgId }, { relations: ["admin"] });
+        const user = await this.usersService.findOne({ id: userId });
+        if (user && org) {
+          if (org.admin) {
+            if (org.admin && org.admin.id === userId) {
+              // eslint-disable-next-line
+              project.isFeatured = projectFeatured.isFeatured;
+              await this.service.save(project);
+            } else {
+              throw new NotFoundException(
+                `User does not have admin privileges for organization: ${orgId}`
+              );
+            }
+          } else {
+            throw new NotFoundException(`Organization ${orgId} does not have an admin`);
+          }
+        } else {
+          throw new NotFoundException(`Unable to find user: ${userId}`);
+        }
+      } else {
+        throw new NotFoundException(`Project is not connected to an organization`);
+      }
+    } else {
+      throw new NotFoundException(`Project is not connected to an organization's template`);
+    }
+    return project;
   }
 }

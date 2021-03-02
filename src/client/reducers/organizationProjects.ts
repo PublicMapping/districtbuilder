@@ -3,17 +3,27 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 
-
-import { IProjectTemplate } from "../../shared/entities";
-import { fetchOrganizationProjects } from "../api";
+import { IProject, IProjectTemplateWithProjects } from "../../shared/entities";
+import { fetchOrganizationProjects, saveProjectFeatured } from "../api";
 import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
-import { organizationProjectsFetch, organizationProjectsFetchSuccess, organizationProjectsFetchFailure } from "../actions/organizationProjects";
+import {
+  organizationProjectsFetch,
+  organizationProjectsFetchSuccess,
+  organizationProjectsFetchFailure,
+  toggleProjectFeatured,
+  toggleProjectFeaturedSuccess,
+  toggleProjectFeaturedFailure
+} from "../actions/organizationProjects";
 
-export type OrganizationProjectsState = Resource<IProjectTemplate[]>;
+export interface OrganizationProjectsState {
+  readonly projectTemplates: Resource<readonly IProjectTemplateWithProjects[]>;
+  readonly featuredProjects: Resource<readonly IProject[]>;
+}
 
 export const initialState = {
-  isPending: false
+  projectTemplates: { isPending: false },
+  featuredProjects: { isPending: false }
 };
 
 const organizationProjectsReducer: LoopReducer<OrganizationProjectsState, Action> = (
@@ -24,7 +34,8 @@ const organizationProjectsReducer: LoopReducer<OrganizationProjectsState, Action
     case getType(organizationProjectsFetch):
       return loop(
         {
-          isPending: true
+          ...state,
+          projectTemplates: { isPending: true }
         },
         Cmd.run(fetchOrganizationProjects, {
           successActionCreator: organizationProjectsFetchSuccess,
@@ -34,12 +45,50 @@ const organizationProjectsReducer: LoopReducer<OrganizationProjectsState, Action
       );
     case getType(organizationProjectsFetchSuccess):
       return {
-        resource: action.payload
+        ...state,
+        projectTemplates: { resource: action.payload }
       };
     case getType(organizationProjectsFetchFailure):
       return loop(
         {
-          ...action.payload
+          ...state,
+          // error message saved under projectTemplates.errorMessage
+          projectTemplates: action.payload
+        },
+        Cmd.run(showResourceFailedToast)
+      );
+    case getType(toggleProjectFeatured): {
+      return loop(
+        {
+          ...state,
+          featuredProjects: { isPending: true }
+        },
+        Cmd.run(
+          () =>
+            saveProjectFeatured(action.payload.project).then(() => {
+              return { organization: action.payload.organization };
+            }),
+          {
+            successActionCreator: toggleProjectFeaturedSuccess,
+            failActionCreator: toggleProjectFeaturedFailure
+          }
+        )
+      );
+    }
+    case getType(toggleProjectFeaturedSuccess):
+      return loop(
+        {
+          ...state,
+          featuredProjects: { isPending: false }
+        },
+        Cmd.action(organizationProjectsFetch(action.payload.organization))
+      );
+    case getType(toggleProjectFeaturedFailure):
+      return loop(
+        {
+          ...state,
+          // error message saved under projectTemplates.errorMessage
+          featuredProjects: action.payload
         },
         Cmd.run(showResourceFailedToast)
       );

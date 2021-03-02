@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { IRegionConfig } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
+import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 @Entity()
 @Unique(["name", "countryCode", "regionCode", "version"])
@@ -16,6 +17,12 @@ export class RegionConfig implements IRegionConfig {
 
   @Column({ type: "character varying", name: "region_code" })
   regionCode: string;
+
+  @OneToMany(
+    () => ProjectTemplate,
+    projectTemplate => projectTemplate.regionConfig
+  )
+  projectTemplates: ProjectTemplate[];
 
   @OneToMany(
     () => Chamber,

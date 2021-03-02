@@ -8,6 +8,8 @@ export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name">;
 
 export type PubilicProjectProperties = "id" | "name";
 
+export type OrganizationNest = Pick<IOrganization, "slug" | "id">;
+
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
@@ -30,6 +32,7 @@ export interface IOrganization {
   readonly linkUrl: string;
   readonly municipality: string;
   readonly region: string;
+  readonly admin?: IUser;
   readonly users: readonly IUser[];
   readonly projectTemplates: readonly IProjectTemplate[];
 }
@@ -152,9 +155,28 @@ export type IProject = ProjectTemplateFields & {
   readonly archived: boolean;
 };
 
-export type ProjectNest = Pick<IProject, "user" | "id" | "updatedDt" | "numberOfDistricts" | "chamber">;
+export type ProjectNest = Pick<
+  IProject,
+  | "user"
+  | "id"
+  | "updatedDt"
+  | "numberOfDistricts"
+  | "chamber"
+  | "name"
+  | "regionConfig"
+  | "isFeatured"
+> & {
+  readonly regionConfig: Pick<IRegionConfig, "name">;
+};
 
-
+interface OrgProject {
+  readonly id: ProjectId;
+  readonly name: string;
+  readonly templateName: string;
+  readonly updatedAgo: string;
+  readonly isFeatured: boolean;
+  readonly creator: string;
+}
 
 export interface CreateProjectData {
   readonly name: string;

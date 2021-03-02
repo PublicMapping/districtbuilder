@@ -37,6 +37,25 @@ const PrivateRoute = ({ children, ...props }: RouteProps) => {
   );
 };
 
+const AdminRoute = ({ children, ...props }: RouteProps) => {
+  const savedJWT = getJWT();
+  const notLoggedIn = !savedJWT || jwtIsExpired(savedJWT);
+  // TODO: Implement Admin guarding. Not entirely sure how to do this - can we access redux store?
+  // One possible solution: https://github.com/acdlite/redux-router/issues/60#issuecomment-141691675
+  return (
+    <Route
+      {...props}
+      render={({ location }: { readonly location: H.Location }) => {
+        return notLoggedIn ? (
+          <Redirect to={{ pathname: "/login", state: { from: location } }} />
+        ) : (
+          children
+        );
+      }}
+    />
+  );
+};
+
 const App = () => (
   <ThemeProvider theme={theme}>
     <Toast />
@@ -46,7 +65,9 @@ const App = () => (
           <HomeScreen />
         </PrivateRoute>
         <Route path="/o/:organizationSlug" exact={true} component={OrganizationScreen} />
-        <Route path="/o/:organizationSlug/admin" exact={true} component={OrganizationAdminScreen} />
+        <AdminRoute path="/o/:organizationSlug/admin" exact={true}>
+          <OrganizationAdminScreen></OrganizationAdminScreen>
+        </AdminRoute>
         <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />

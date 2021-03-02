@@ -12,7 +12,6 @@ import { UsersService } from "../../users/services/users.service";
 import { ProjectTemplate } from "../entities/project-template.entity";
 import { ProjectTemplatesService } from "../services/project-templates.service";
 
-
 @Crud({
   model: {
     type: ProjectTemplate
@@ -26,13 +25,6 @@ import { ProjectTemplatesService } from "../services/project-templates.service";
       type: "string",
       primary: true
     }
-  },
-  query: {
-    join: {
-      projects: {
-        eager: true
-      }
-    }
   }
 })
 @Controller("api/project_templates")
@@ -42,11 +34,7 @@ export class ProjectTemplatesController implements CrudController<ProjectTemplat
 
   @UseGuards(JwtAuthGuard)
   @Get(":slug/")
-  async getProjects(
-    @Param("slug") organizationSlug: OrganizationSlug,
-  ): Promise<ProjectTemplate[]> {
-    return this.service.findOrgProjects(organizationSlug)
-
+  async getProjects(@Param("slug") organizationSlug: OrganizationSlug): Promise<ProjectTemplate[]> {
+    return this.service.findOrgProjects(organizationSlug);
   }
-
 }

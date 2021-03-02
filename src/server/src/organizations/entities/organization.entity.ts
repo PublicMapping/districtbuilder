@@ -1,5 +1,13 @@
-import { Column, Entity, JoinTable, JoinColumn, OneToMany, PrimaryGeneratedColumn, ManyToMany, ManyToOne } from "typeorm";
-
+import {
+  Column,
+  Entity,
+  JoinTable,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  ManyToOne
+} from "typeorm";
 
 import { IOrganization } from "../../../../shared/entities";
 import { User } from "../../users/entities/user.entity";
@@ -41,7 +49,7 @@ export class Organization implements IOrganization {
   @JoinTable()
   users: User[];
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: "user_id" })
   admin: User;
 
