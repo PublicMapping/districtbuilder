@@ -1,23 +1,6 @@
 import throttle from "lodash/throttle";
 import { isEqual } from "lodash";
 import MapboxGL from "mapbox-gl";
-import store from "../../store";
-import {
-  setSelectedGeounits,
-  clearHighlightedGeounits,
-  setHighlightedGeounits
-} from "../../actions/districtDrawing";
-import {
-  featuresToUnlockedGeoUnits,
-  GEOLEVELS_SOURCE_ID,
-  isFeatureSelected,
-  levelToSelectionLayerId,
-  ISelectionTool,
-  SET_FEATURE_DELAY,
-  setFeaturesSelectedFromGeoUnits,
-  getChildGeoUnits
-} from "./index";
-import { isBaseGeoLevelAlwaysVisible, mergeGeoUnits } from "../../functions";
 
 import {
   DistrictsDefinition,
@@ -26,6 +9,25 @@ import {
   LockedDistricts,
   UintArrays
 } from "../../../shared/entities";
+
+import {
+  setSelectedGeounits,
+  clearHighlightedGeounits,
+  setHighlightedGeounits
+} from "../../actions/districtDrawing";
+import { mergeGeoUnits } from "../../functions";
+import store from "../../store";
+
+import {
+  featuresToUnlockedGeoUnits,
+  GEOLEVELS_SOURCE_ID,
+  isFeatureSelected,
+  levelToSelectionLayerId,
+  ISelectionTool,
+  SET_FEATURE_DELAY,
+  setFeaturesSelectedFromGeoUnits,
+  deselectChildGeounits
+} from "./index";
 
 /*
  * Allows user to click and drag to select all geounits within the rectangle
@@ -52,8 +54,6 @@ const RectangleSelectionTool: ISelectionTool = {
     map.getCanvas().style.cursor = "crosshair"; // eslint-disable-line
 
     const canvas = map.getCanvasContainer();
-
-    const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(staticMetadata.geoLevelHierarchy);
 
     // Variable to hold the starting xy coordinates
     // when `mousedown` occured.
@@ -263,29 +263,7 @@ const RectangleSelectionTool: ISelectionTool = {
           lockedDistricts,
           staticGeoLevels
         );
-        // Deselect any child features as appropriate (this comes into a play when, for example, a
-        // blockgroup is selected and then the county _containing_ that blockgroup is selected)
-        Object.values(geoUnits).forEach(geoUnitsForLevel => {
-          geoUnitsForLevel.forEach(geoUnitIndices => {
-            // Ignore bottom geolevel, because it can't have sub-features. And if the base geolevel
-            // is not always visible, we can also ignore one additional geolevel, because these base
-            // geounits can't be selected at the same time as features from one geolevel up).
-            const numLevelsToIgnore = isBaseLevelAlwaysVisible ? 1 : 2;
-
-            // eslint-disable-next-line
-            if (
-              geoUnitIndices.length <=
-              staticMetadata.geoLevelHierarchy.length - numLevelsToIgnore
-            ) {
-              const { childGeoUnits } = getChildGeoUnits(
-                geoUnitIndices,
-                staticMetadata,
-                staticGeoLevels
-              );
-              setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
-            }
-          });
-        });
+        deselectChildGeounits(map, geoUnits, staticMetadata, staticGeoLevels);
         store.dispatch(setSelectedGeounits(mergeGeoUnits(geoUnits, initiallySelectedGeoUnits)));
       }
       store.dispatch(clearHighlightedGeounits());

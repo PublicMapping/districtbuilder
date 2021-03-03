@@ -38,6 +38,7 @@ import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
 import MapMessage from "./MapMessage";
 import MapTooltip from "./MapTooltip";
+import PaintBrushSelectionTool from "./PaintBrushSelectionTool";
 import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
 import { State } from "../../reducers";
@@ -372,6 +373,7 @@ const DistrictsMap = ({
       // Disable any existing selection tools
       DefaultSelectionTool.disable(map);
       RectangleSelectionTool.disable(map);
+      PaintBrushSelectionTool.disable(map);
       // Enable appropriate tool
       if (!isReadOnly && selectionTool === SelectionTool.Default) {
         DefaultSelectionTool.enable(
@@ -384,6 +386,15 @@ const DistrictsMap = ({
         );
       } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
         RectangleSelectionTool.enable(
+          map,
+          selectedGeolevel.id,
+          staticMetadata,
+          project.districtsDefinition,
+          lockedDistricts,
+          staticGeoLevels
+        );
+      } else if (!isReadOnly && selectionTool === SelectionTool.PaintBrush) {
+        PaintBrushSelectionTool.enable(
           map,
           selectedGeolevel.id,
           staticMetadata,
