@@ -84,16 +84,20 @@ export class AuthService {
     }
   }
 
-  async sendInitialVerificationEmail(user: User): Promise<void> {
+  async sendInitialVerificationEmail(user: User, org?: string): Promise<void> {
     const emailToken = await this.sendEmailVerification(user, VerificationType.INITIAL);
 
     const info = await this.mailerService.sendMail({
       to: user.email,
       from: DEFAULT_FROM_EMAIL,
-      subject: "Verify your DistrictBuilder account",
+      subject: org
+        ? `Verify your DistrictBuilder account and join ${org}`
+        : `Verify your DistrictBuilder account`,
       context: {
         user,
-        url: `${process.env.CLIENT_URL}/activate/${emailToken}`
+        url: org
+          ? `${process.env.CLIENT_URL}/activate/${emailToken}/${org}`
+          : `${process.env.CLIENT_URL}/activate/${emailToken}`
       },
       template: "verify"
     });

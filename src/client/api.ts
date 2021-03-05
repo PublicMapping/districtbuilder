@@ -70,10 +70,16 @@ export async function patchUser(userData: Partial<UpdateUserData>): Promise<IUse
   });
 }
 
-export async function registerUser(name: string, email: string, password: string): Promise<JWT> {
+export async function registerUser(
+  name: string,
+  email: string,
+  password: string,
+  organization?: string
+): Promise<JWT> {
+  const data = organization ? { name, email, password, organization } : { name, email, password };
   return new Promise((resolve, reject) => {
     apiAxios
-      .post("/api/auth/email/register", { name, email, password })
+      .post("/api/auth/email/register", data)
       .then(response => resolve(saveJWT(response)))
       .catch(error => reject(error.response?.data || error));
   });

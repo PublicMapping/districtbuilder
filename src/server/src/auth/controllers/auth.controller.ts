@@ -20,14 +20,16 @@ import {
   ResetPasswordResponse,
   VerifyEmailErrors
 } from "../../../../shared/constants";
-import { JWT } from "../../../../shared/entities";
+import { JWT, OrganizationSlug } from "../../../../shared/entities";
 import { Errors } from "../../../../shared/types";
 import { UsersService } from "../../users/services/users.service";
+import { OrganizationsService } from "../../organizations/services/organizations.service";
 
 import { LoginDto } from "../entities/login.dto";
 import { RegisterDto } from "../entities/register.dto";
 import { ResetPasswordDto } from "../entities/reset-password.dto";
 import { AuthService } from "../services/auth.service";
+import { Organization } from "../../organizations/entities/organization.entity";
 
 /*
  * Authentication service that handles logins, account activiation and
@@ -42,6 +44,7 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly orgService: OrganizationsService,
     private readonly userService: UsersService
   ) {}
 
@@ -72,11 +75,29 @@ export class AuthController {
     }
   }
 
+  async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
+    const org = await this.orgService.findOne({ slug: organizationSlug });
+    if (!org) {
+      throw new NotFoundException(`Organization ${organizationSlug} not found`);
+    }
+    return org;
+  }
+
   @Post("email/register")
   async register(@Body() registerDto: RegisterDto): Promise<JWT> {
     try {
       const newUser = await this.userService.create(registerDto);
-      await this.authService.sendInitialVerificationEmail(newUser);
+      if (!registerDto.organization) {
+        await this.authService.sendInitialVerificationEmail(newUser);
+      } else {
+        // If user joined from an organization's page, send them customized email and add them to the organization
+        await this.authService.sendInitialVerificationEmail(newUser, registerDto.organization);
+        const org = await this.getOrg(registerDto.organization);
+        // eslint-disable-next-line
+        org.users = [...org.users, newUser];
+        await this.orgService.save(org);
+      }
+
       return this.authService.generateJwt(newUser);
     } catch (error) {
       if (error.name === "QueryFailedError" && error.code === PG_UNIQUE_VIOLATION) {

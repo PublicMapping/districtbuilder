@@ -54,6 +54,11 @@ const App = () => (
         <Route path="/register" exact={true} component={RegistrationScreen} />
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
+        <Route
+          path="/activate/:token/:organizationSlug"
+          exact={true}
+          component={ActivateAccountScreen}
+        />
         <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
         <PrivateRoute path="/create-project" exact={true}>
           <CreateProjectScreen />
