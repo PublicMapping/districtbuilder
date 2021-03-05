@@ -44,7 +44,9 @@ const organizationReducer: LoopReducer<OrganizationState, Action> = (
         {
           ...action.payload
         },
-        Cmd.run(showResourceFailedToast)
+        action.payload.statusCode && action.payload.statusCode >= 500
+          ? Cmd.run(showResourceFailedToast)
+          : Cmd.none
       );
     default:
       return state;

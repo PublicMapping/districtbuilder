@@ -188,7 +188,9 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           ...state,
           projectData: action.payload
         },
-        Cmd.run(showResourceFailedToast)
+        action.payload.statusCode && action.payload.statusCode >= 500
+          ? Cmd.run(showResourceFailedToast)
+          : Cmd.none
       );
     case getType(staticDataFetchSuccess):
       return {
