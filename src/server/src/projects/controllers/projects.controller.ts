@@ -24,10 +24,10 @@ import {
 } from "@nestjsx/crud";
 import stringify from "csv-stringify/lib/sync";
 import { Response } from "express";
-import { FeatureCollection } from "geojson";
 import { convert } from "geojson2shp";
 import * as _ from "lodash";
 import { GeometryCollection } from "topojson-specification";
+import isUUID from "validator/lib/isUUID";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
 import {
@@ -56,7 +56,7 @@ import { Errors } from "../../../../shared/types";
   },
   params: {
     id: {
-      type: "uuid",
+      type: "string",
       primary: true,
       field: "id"
     }
@@ -142,16 +142,8 @@ export class ProjectsController implements CrudController<Project> {
   // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
   @Override()
   @UseGuards(OptionalJwtAuthGuard)
-  async getOne(@ParsedRequest() req: CrudRequest): Promise<Project> {
-    if (!this.base.getOneBase) {
-      this.logger.error("Routes misconfigured. Missing `getOneBase` route");
-      throw new InternalServerErrorException();
-    }
-    return this.base
-      .getOneBase(req)
-      .then(project =>
-        project.user.id === req.parsed.authPersist.userId ? project : project.getReadOnlyView()
-      );
+  async getOne(@Param("id") id: ProjectId, @ParsedRequest() req: CrudRequest): Promise<Project> {
+    return this.getProject(req, id);
   }
 
   // Overriden to add JwtAuthGuard
@@ -249,10 +241,19 @@ export class ProjectsController implements CrudController<Project> {
       this.logger.error("Routes misconfigured. Missing `getOneBase` route");
       throw new InternalServerErrorException();
     }
-    const project = await this.base.getOneBase(req);
+    if (!isUUID(projectId)) {
+      throw new NotFoundException(`Project ${projectId} is not a valid UUID`);
+    }
+
+    const project = await this.base
+      .getOneBase(req)
+      .then(project =>
+        project.user.id === req.parsed.authPersist.userId ? project : project.getReadOnlyView()
+      );
     if (!project) {
       throw new NotFoundException(`Project ${projectId} not found`);
     }
+
     return project;
   }
 
