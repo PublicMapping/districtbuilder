@@ -136,6 +136,47 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
     userInOrg ? createProjectFromTemplate() : store.dispatch(showCopyMapModal(true));
   }
 
+  const joinButton = (
+    <Flex sx={{ flexDirection: "column", flex: "none" }}>
+      <Button sx={style.join} disabled={isLoggedIn && !userIsVerified} onClick={signupAndJoinOrg}>
+        Join organization
+      </Button>
+      <Box sx={style.joinText}>Join to start making district maps with this organization</Box>
+    </Flex>
+  );
+
+  const TemplateCard = ({ template }: { readonly template: IProjectTemplate }) => {
+    const useButton = (
+      <Button
+        disabled={isLoggedIn && !userIsVerified}
+        onClick={() => setupProjectFromTemplate(template)}
+        sx={{ width: "100%" }}
+      >
+        Use this template
+      </Button>
+    );
+
+    return (
+      <Flex sx={style.template}>
+        <Heading>{template.name}</Heading>
+        <Text>
+          {template.regionConfig.name} · {template.numberOfDistricts}
+        </Text>
+        <Text>{template.description}</Text>
+        {!isLoggedIn || userIsVerified ? (
+          useButton
+        ) : (
+          <Tooltip
+            key={template.id}
+            content={<div>You must confirm your email before joining an organization</div>}
+          >
+            <Box>{useButton}</Box>
+          </Tooltip>
+        )}
+      </Flex>
+    );
+  };
+
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <SiteHeader user={user} />
@@ -178,38 +219,17 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
                 </Flex>
               ) : "resource" in user && user.resource ? (
                 userIsVerified ? (
-                  <Flex sx={{ flexDirection: "column", flex: "none" }}>
-                    <Button sx={style.join} disabled={!userIsVerified} onClick={signupAndJoinOrg}>
-                      Join organization
-                    </Button>
-                    <Box sx={style.joinText}>
-                      Join to start making district maps with this organization
-                    </Box>
-                  </Flex>
+                  joinButton
                 ) : (
                   <Tooltip
                     key={1}
                     content={<div>You must confirm your email before joining an organization</div>}
                   >
-                    <Flex sx={{ flexDirection: "column", flex: "none" }}>
-                      <Button sx={style.join} disabled={!userIsVerified} onClick={signupAndJoinOrg}>
-                        Join organization
-                      </Button>
-                      <Box sx={style.joinText}>
-                        Join to start making district maps with this organization
-                      </Box>
-                    </Flex>
+                    {joinButton}
                   </Tooltip>
                 )
               ) : (
-                <Flex sx={{ flexDirection: "column", flex: "none" }}>
-                  <Button sx={style.join} onClick={signupAndJoinOrg}>
-                    Join organization
-                  </Button>
-                  <Box sx={style.joinText}>
-                    Register for an account to start making district maps with this organization
-                  </Box>
-                </Flex>
+                joinButton
               )}
             </Flex>
             {organization.resource.projectTemplates.length > 0 && (
@@ -218,16 +238,7 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
                 Start a new map using the official settings from {organization.resource.name}
                 <Box sx={style.templateContainer}>
                   {organization.resource.projectTemplates.map(template => (
-                    <Flex key={template.id} sx={style.template}>
-                      <Heading>{template.name}</Heading>
-                      <Text>
-                        {template.regionConfig.name} · {template.numberOfDistricts}
-                      </Text>
-                      <Text>{template.description}</Text>
-                      <Button onClick={() => setupProjectFromTemplate(template)}>
-                        Use this template
-                      </Button>
-                    </Flex>
+                    <TemplateCard template={template} key={template.id} />
                   ))}
                 </Box>
               </Box>
