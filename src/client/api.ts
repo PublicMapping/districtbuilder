@@ -142,7 +142,7 @@ async function fetchProject(id: ProjectId): Promise<IProject> {
       .get(`/api/projects/${id}`)
       .then(response => resolve(response.data))
       .catch(error =>
-        reject({ errorMessage: error.response.message, statusCode: error.response.status })
+        reject({ errorMessage: error.response.data, statusCode: error.response.status })
       );
   });
 }
@@ -244,7 +244,7 @@ export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrgani
       .get(`/api/organization/${slug}`)
       .then(response => resolve(response.data))
       .catch(error => {
-        reject(error.response.data);
+        reject({ errorMessage: error.response.data, statusCode: error.response.status });
       });
   });
 }

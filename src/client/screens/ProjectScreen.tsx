@@ -202,10 +202,8 @@ function mapStateToProps(state: State): StateProps {
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||
       ("isPending" in state.project.staticData && state.project.staticData.isPending),
-    projectNotFound: !!(
-      ("statusCode" in state.project.projectData && state.project.projectData.statusCode === 400) ||
-      ("statusCode" in state.project.staticData && state.project.staticData.statusCode === 400)
-    ),
+    projectNotFound:
+      "statusCode" in state.project.projectData && state.project.projectData.statusCode === 404,
     isReadOnly:
       !("resource" in state.user) ||
       (project !== undefined && state.user.resource.id !== project.user.id),
