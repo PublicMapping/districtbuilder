@@ -3,6 +3,7 @@ import MapboxGL from "mapbox-gl";
 
 import {
   DistrictsDefinition,
+  FeatureId,
   GeoUnits,
   IStaticMetadata,
   LockedDistricts,
@@ -20,8 +21,8 @@ import {
   levelToSelectionLayerId,
   ISelectionTool,
   setFeaturesSelectedFromGeoUnits,
-  deselectChildGeounits,
-  SET_FEATURE_DELAY
+  SET_FEATURE_DELAY,
+  getChildGeoUnits
 } from "./index";
 
 /*
@@ -49,15 +50,21 @@ const PaintBrushSelectionTool: ISelectionTool = {
     this.mouseDown = mouseDown; // eslint-disable-line
 
     // eslint-disable-next-line
-    let batchGeounits = {};
+    let batchGeounits = { add: {}, remove: {} };
     const throttledStoreToRedux = throttle(() => {
-      store.dispatch(editSelectedGeounits({ add: batchGeounits }));
-      batchGeounits = {};
+      store.dispatch(editSelectedGeounits(batchGeounits));
+      batchGeounits = { add: {}, remove: {} };
     }, SET_FEATURE_DELAY);
 
     // Helper function to batch adding geounits to the redux store
     const throttledAddGeounits = (geounits: GeoUnits) => {
-      batchGeounits = mergeGeoUnits(batchGeounits, geounits);
+      batchGeounits = { ...batchGeounits, add: mergeGeoUnits(batchGeounits.add, geounits) };
+      throttledStoreToRedux();
+    };
+
+    // Helper function to batch removing geounits to the redux store
+    const throttledRemoveGeounits = (geounits: GeoUnits) => {
+      batchGeounits = { ...batchGeounits, remove: mergeGeoUnits(batchGeounits.remove, geounits) };
       throttledStoreToRedux();
     };
 
@@ -101,7 +108,16 @@ const PaintBrushSelectionTool: ISelectionTool = {
           })
       );
       setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
-      deselectChildGeounits(map, newGeoUnits, staticMetadata, staticGeoLevels);
+      // Geounit is not selected, so select it, making sure to remove the selection on any child
+      // geounits since the parent selection supercedes any child selections
+      features.forEach(feature => {
+        const unlockedGeoUnitForFeature = geoUnits[geoLevelId].get(feature.id as FeatureId);
+        const { childGeoUnits } = unlockedGeoUnitForFeature
+          ? getChildGeoUnits(unlockedGeoUnitForFeature, staticMetadata, staticGeoLevels)
+          : { childGeoUnits: {} };
+        setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
+        throttledRemoveGeounits(childGeoUnits);
+      });
       throttledAddGeounits(newGeoUnits);
     }
 
