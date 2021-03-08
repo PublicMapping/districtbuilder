@@ -21,7 +21,7 @@ const style: ThemeUIStyleObject = {
     "& button > svg": {
       marginRight: "0"
     },
-    "&:not(:last-of-type):not(:first-of-type) > span > button": {
+    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)": {
       borderRadius: 0,
       borderLeftWidth: 0
     },
@@ -206,6 +206,15 @@ const MapHeader = ({
                 onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
               >
                 <Icon name="draw-square" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Paint brush selection">
+              <Button
+                sx={{ ...style.selectionButton }}
+                className={buttonClassName(selectionTool === SelectionTool.PaintBrush)}
+                onClick={() => store.dispatch(setSelectionTool(SelectionTool.PaintBrush))}
+              >
+                <Icon name="paint-brush" />
               </Button>
             </Tooltip>
           </Flex>

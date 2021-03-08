@@ -17,6 +17,7 @@ import {
   UintArrays
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
+import { isBaseGeoLevelAlwaysVisible } from "../../functions";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -295,6 +296,32 @@ export function setFeaturesSelectedFromGeoUnits(
     [...geoUnitsForLevel.keys()].forEach(featureId => {
       const currentFeature = { id: featureId, sourceLayer: geoLevelId };
       map.setFeatureState(featureStateGeoLevel(currentFeature), { selected });
+    });
+  });
+}
+
+export function deselectChildGeounits(
+  map: MapboxGL.Map,
+  geoUnits: GeoUnits,
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: UintArrays
+) {
+  const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(staticMetadata.geoLevelHierarchy);
+
+  // Deselect any child features as appropriate (this comes into a play when, for example, a
+  // blockgroup is selected and then the county _containing_ that blockgroup is selected)
+  Object.values(geoUnits).forEach(geoUnitsForLevel => {
+    geoUnitsForLevel.forEach(geoUnitIndices => {
+      // Ignore bottom geolevel, because it can't have sub-features. And if the base geolevel
+      // is not always visible, we can also ignore one additional geolevel, because these base
+      // geounits can't be selected at the same time as features from one geolevel up).
+      const numLevelsToIgnore = isBaseLevelAlwaysVisible ? 1 : 2;
+
+      // eslint-disable-next-line
+      if (geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - numLevelsToIgnore) {
+        const { childGeoUnits } = getChildGeoUnits(geoUnitIndices, staticMetadata, staticGeoLevels);
+        setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
+      }
     });
   });
 }

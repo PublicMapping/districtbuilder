@@ -4,7 +4,8 @@ import { SavingState } from "../types";
 
 export enum SelectionTool {
   Default = "DEFAULT",
-  Rectangle = "RECTANGLE"
+  Rectangle = "RECTANGLE",
+  PaintBrush = "PAINTBRUSH"
 }
 
 export enum FindTool {
