@@ -2,35 +2,35 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
-import { Box, Button, Flex, Heading, Image, Link, jsx, Text } from "theme-ui";
+import { Box, Button, Flex, Heading, Image, jsx, Link, Text } from "theme-ui";
 
+import {
+  CreateProjectData,
+  IOrganization,
+  IProject,
+  IProjectTemplate,
+  IUser
+} from "../../shared/entities";
+
+import { showCopyMapModal } from "../actions/districtDrawing";
 import { organizationFetch } from "../actions/organization";
 import { leaveOrganization } from "../actions/organizationJoin";
 import { userFetch } from "../actions/user";
+import { createProject } from "../api";
+import Icon from "../components/Icon";
+import JoinOrganizationModal from "../components/JoinOrganizationModal";
+import SiteHeader from "../components/SiteHeader";
+import Tooltip from "../components/Tooltip";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { OrganizationState } from "../reducers/organization";
-import { ProjectState } from "../reducers/project";
 import { UserState } from "../reducers/user";
 import store from "../store";
-import SiteHeader from "../components/SiteHeader";
-import Icon from "../components/Icon";
-import { showCopyMapModal } from "../actions/districtDrawing";
-import JoinOrganizationModal from "../components/JoinOrganizationModal";
-import Tooltip from "../components/Tooltip";
-import {
-  IProject,
-  IOrganization,
-  IUser,
-  IProjectTemplate,
-  CreateProjectData
-} from "../../shared/entities";
-import { createProject } from "../api";
+
 import PageNotFoundScreen from "./PageNotFoundScreen";
 
 interface StateProps {
   readonly organization: OrganizationState;
-  readonly project: ProjectState;
   readonly user: UserState;
 }
 
@@ -77,7 +77,7 @@ const style = {
   }
 } as const;
 
-const OrganizationScreen = ({ organization, project, user }: StateProps) => {
+const OrganizationScreen = ({ organization, user }: StateProps) => {
   const { organizationSlug } = useParams();
   const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
   const history = useHistory();
@@ -88,17 +88,8 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
     "resource" in organization &&
     organization.resource &&
     checkIfUserInOrg(organization.resource, user.resource);
-  const userLoggedIn = "resource" in user && user.resource;
 
   const userIsVerified = "resource" in user && user.resource && user.resource.isEmailVerified;
-
-  useEffect(() => {
-    !userLoggedIn &&
-      "resource" in user &&
-      user.resource &&
-      project.showCopyMapModal &&
-      store.dispatch(showCopyMapModal(false));
-  }, [user, project.showCopyMapModal]);
 
   useEffect(() => {
     isLoggedIn && store.dispatch(userFetch());
@@ -145,6 +136,47 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
     userInOrg ? createProjectFromTemplate() : store.dispatch(showCopyMapModal(true));
   }
 
+  const joinButton = (
+    <Flex sx={{ flexDirection: "column", flex: "none" }}>
+      <Button sx={style.join} disabled={isLoggedIn && !userIsVerified} onClick={signupAndJoinOrg}>
+        Join organization
+      </Button>
+      <Box sx={style.joinText}>Join to start making district maps with this organization</Box>
+    </Flex>
+  );
+
+  const TemplateCard = ({ template }: { readonly template: IProjectTemplate }) => {
+    const useButton = (
+      <Button
+        disabled={isLoggedIn && !userIsVerified}
+        onClick={() => setupProjectFromTemplate(template)}
+        sx={{ width: "100%" }}
+      >
+        Use this template
+      </Button>
+    );
+
+    return (
+      <Flex sx={style.template}>
+        <Heading>{template.name}</Heading>
+        <Text>
+          {template.regionConfig.name} · {template.numberOfDistricts}
+        </Text>
+        <Text>{template.description}</Text>
+        {!isLoggedIn || userIsVerified ? (
+          useButton
+        ) : (
+          <Tooltip
+            key={template.id}
+            content={<div>You must confirm your email before joining an organization</div>}
+          >
+            <Box>{useButton}</Box>
+          </Tooltip>
+        )}
+      </Flex>
+    );
+  };
+
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <SiteHeader user={user} />
@@ -187,36 +219,17 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                 </Flex>
               ) : "resource" in user && user.resource ? (
                 userIsVerified ? (
-                  <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
-                    <Button sx={style.join} disabled={!userIsVerified}>
-                      Join organization
-                    </Button>
-                    <Box sx={style.joinText}>
-                      Join to start making district maps with this organization
-                    </Box>
-                  </Flex>
+                  joinButton
                 ) : (
                   <Tooltip
                     key={1}
                     content={<div>You must confirm your email before joining an organization</div>}
                   >
-                    <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
-                      <Button sx={style.join} disabled={!userIsVerified}>
-                        Join organization
-                      </Button>
-                      <Box sx={style.joinText}>
-                        Join to start making district maps with this organization
-                      </Box>
-                    </Flex>
+                    {joinButton}
                   </Tooltip>
                 )
               ) : (
-                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={signupAndJoinOrg}>
-                  <Button sx={style.join}>Join organization</Button>
-                  <Box sx={style.joinText}>
-                    Register for an account to start making district maps with this organization
-                  </Box>
-                </Flex>
+                joinButton
               )}
             </Flex>
             {organization.resource.projectTemplates.length > 0 && (
@@ -225,16 +238,7 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
                 Start a new map using the official settings from {organization.resource.name}
                 <Box sx={style.templateContainer}>
                   {organization.resource.projectTemplates.map(template => (
-                    <Flex key={template.id} sx={style.template}>
-                      <Heading>{template.name}</Heading>
-                      <Text>
-                        {template.regionConfig.name} · {template.numberOfDistricts}
-                      </Text>
-                      <Text>{template.description}</Text>
-                      <Button onClick={() => setupProjectFromTemplate(template)}>
-                        Use this template
-                      </Button>
-                    </Flex>
+                    <TemplateCard template={template} key={template.id} />
                   ))}
                 </Box>
               </Box>
@@ -259,7 +263,6 @@ const OrganizationScreen = ({ organization, project, user }: StateProps) => {
 function mapStateToProps(state: State): StateProps {
   return {
     organization: state.organization,
-    project: state.project,
     user: state.user
   };
 }
