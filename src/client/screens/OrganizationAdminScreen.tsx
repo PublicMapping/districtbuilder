@@ -17,14 +17,11 @@ import { userFetch } from "../actions/user";
 import { isThisYear, isToday } from "date-fns";
 import format from "date-fns/format";
 
-
-
 interface StateProps {
   readonly organization: OrganizationState;
   readonly organizationProjects: OrganizationProjectsState;
   readonly user: UserState;
 }
-
 
 const style = {
   main: { width: "100%", mx: 0, flexDirection: "column" },
@@ -88,14 +85,14 @@ const style = {
 } as const;
 
 function formatDate(date: Date): string {
-    const d = new Date(date)
-    return date
-        ? isToday(d)
-            ? format(d, "h:mm a")
-            : isThisYear(d)
-                ? format(d, "MMM d")
-                : format(d, "MMM d yyyy")
-        : "—";
+  const d = new Date(date);
+  return date
+    ? isToday(d)
+      ? format(d, "h:mm a")
+      : isThisYear(d)
+      ? format(d, "MMM d")
+      : format(d, "MMM d yyyy")
+    : "—";
 }
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {

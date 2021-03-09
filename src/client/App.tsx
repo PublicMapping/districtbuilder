@@ -47,7 +47,7 @@ const App = () => (
         </PrivateRoute>
         <Route path="/o/:organizationSlug" exact={true} component={OrganizationScreen} />
         <PrivateRoute path="/o/:organizationSlug/admin" exact={true}>
-          <OrganizationAdminScreen/>
+          <OrganizationAdminScreen />
         </PrivateRoute>
         <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />

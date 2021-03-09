@@ -7,9 +7,6 @@ export type PublicUserProperties = "id" | "name";
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name">;
 
 export type PubilicProjectProperties = "id" | "name";
-
-export type OrganizationNest = Pick<IOrganization, "slug" | "id">;
-
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
