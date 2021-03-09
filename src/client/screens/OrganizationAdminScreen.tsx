@@ -87,13 +87,14 @@ const style = {
   }
 } as const;
 
-function formatDate(date: Date | null): string {
-    return date instanceof Date
-        ? isToday(date)
-            ? format(date, "h:mma")
-            : isThisYear(date)
-                ? format(date, "MMM d")
-                : format(date, "MMM d yyyy")
+function formatDate(date: Date): string {
+    const d = new Date(date)
+    return date
+        ? isToday(d)
+            ? format(d, "h:mm a")
+            : isThisYear(d)
+                ? format(d, "MMM d")
+                : format(d, "MMM d yyyy")
         : "—";
 }
 
