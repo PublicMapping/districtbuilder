@@ -14,7 +14,7 @@ import { UsersService } from "../services/users.service";
     exclude: ["passwordHash"],
     join: {
       organizations: {
-        allow: ["slug"],
+        allow: ["slug", "name"],
         eager: true
       }
     }
@@ -43,6 +43,7 @@ import { UsersService } from "../services/users.service";
 })
 @UseGuards(JwtAuthGuard)
 @Controller("api/user")
+// @ts-ignore
 export class UsersController implements CrudController<User> {
   constructor(public service: UsersService) {}
 }

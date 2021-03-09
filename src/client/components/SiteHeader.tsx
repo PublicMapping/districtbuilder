@@ -6,6 +6,7 @@ import { Link, useHistory } from "react-router-dom";
 import * as H from "history";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
+import OrganizationDropdown from "../components/OrganizationDropdown";
 import { Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
@@ -132,6 +133,9 @@ const SiteHeader = ({ user }: Props) => {
       ) : "resource" in user ? (
         <React.Fragment>
           <SupportMenu />
+          {user.resource.organizations.length > 0 && (
+            <OrganizationDropdown organizations={user.resource.organizations} />
+          )}
           <Wrapper onSelection={handleSelection(history)} sx={{ ml: 3 }}>
             <MenuButton sx={style.menuButton}>
               <Avatar
