@@ -34,6 +34,7 @@ import store from "../store";
 import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
+import ProjectEvaluateSidebar from "../components/ProjectEvaluateSidebar";
 
 interface StateProps {
   readonly project?: IProject;
@@ -41,6 +42,7 @@ interface StateProps {
   readonly staticMetadata?: IStaticMetadata;
   readonly staticGeoLevels: UintArrays;
   readonly projectNotFound?: boolean;
+  readonly evaluateMode: boolean;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
@@ -65,6 +67,7 @@ const ProjectScreen = ({
   geojson,
   staticMetadata,
   staticGeoLevels,
+  evaluateMode,
   projectNotFound,
   geoUnitHierarchy,
   districtDrawing,
@@ -78,6 +81,7 @@ const ProjectScreen = ({
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
   const presentDrawingState = districtDrawing.undoHistory.present.state;
+  const metric = districtDrawing.evaluateMetric;
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
@@ -125,30 +129,39 @@ const ProjectScreen = ({
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
       <ProjectHeader map={map} project={project} isReadOnly={isReadOnly} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
-        <ProjectSidebar
-          project={project}
-          geojson={geojson}
-          isLoading={isLoading}
-          staticMetadata={staticMetadata}
-          selectedDistrictId={districtDrawing.selectedDistrictId}
-          selectedGeounits={presentDrawingState.selectedGeounits}
-          highlightedGeounits={districtDrawing.highlightedGeounits}
-          geoUnitHierarchy={geoUnitHierarchy}
-          lockedDistricts={presentDrawingState.lockedDistricts}
-          saving={districtDrawing.saving}
-          isReadOnly={isReadOnly}
-        />
-        <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
-          <MapHeader
-            label={label}
-            setMapLabel={setMapLabel}
-            metadata={staticMetadata}
-            selectionTool={districtDrawing.selectionTool}
-            geoLevelIndex={presentDrawingState.geoLevelIndex}
+        {!evaluateMode ? (
+          <ProjectSidebar
+            project={project}
+            geojson={geojson}
+            isLoading={isLoading}
+            staticMetadata={staticMetadata}
+            selectedDistrictId={districtDrawing.selectedDistrictId}
             selectedGeounits={presentDrawingState.selectedGeounits}
-            advancedEditingEnabled={project?.advancedEditingEnabled}
+            highlightedGeounits={districtDrawing.highlightedGeounits}
+            geoUnitHierarchy={geoUnitHierarchy}
+            lockedDistricts={presentDrawingState.lockedDistricts}
+            saving={districtDrawing.saving}
             isReadOnly={isReadOnly}
           />
+        ) : (
+          <ProjectEvaluateSidebar geojson={geojson} metric={metric} />
+        )}
+        <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
+          {!evaluateMode ? (
+            <MapHeader
+              label={label}
+              setMapLabel={setMapLabel}
+              metadata={staticMetadata}
+              selectionTool={districtDrawing.selectionTool}
+              geoLevelIndex={presentDrawingState.geoLevelIndex}
+              selectedGeounits={presentDrawingState.selectedGeounits}
+              advancedEditingEnabled={project?.advancedEditingEnabled}
+              isReadOnly={isReadOnly}
+            />
+          ) : (
+            <Flex></Flex>
+          )}
+
           {project && staticMetadata && staticGeoLevels && geojson ? (
             <React.Fragment>
               {!isReadOnly && "resource" in user && (
@@ -198,6 +211,7 @@ function mapStateToProps(state: State): StateProps {
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
     staticGeoLevels: destructureResource(state.project.staticData, "staticGeoLevels"),
     geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
+    evaluateMode: state.project.evaluateMode,
     districtDrawing: state.project,
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||
