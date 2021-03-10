@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add verify and join link to user verification email [#616](https://github.com/PublicMapping/districtbuilder/pull/616)
 - Display organizations dropdown in header [#620](https://github.com/PublicMapping/districtbuilder/pull/620)
 - Organization Admin page and featured map workflow [#614](https://github.com/PublicMapping/districtbuilder/pull/614)
+- Build out scaffolding for Project Evaluate view [#623](https://github.com/PublicMapping/districtbuilder/pull/623)
 
 ### Changed
 

@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { DistrictId, GeoUnits } from "../../shared/entities";
+import { DistrictId, EvaluateMetric, GeoUnits } from "../../shared/entities";
 import { SavingState } from "../types";
 
 export enum SelectionTool {
@@ -55,6 +55,11 @@ export const redo = createAction("Redo project action")();
 export const toggleFind = createAction("Toggle find menu visibility")<boolean>();
 export const setFindType = createAction("Set find menu search type")<FindTool>();
 export const setFindIndex = createAction("Set find menu polygon index")<number | undefined>();
+
+export const toggleEvaluate = createAction("Toggle evaluate mode")<boolean>();
+export const selectEvaluationMetric = createAction("Select evaluation metric")<
+  EvaluateMetric | undefined
+>();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();
 

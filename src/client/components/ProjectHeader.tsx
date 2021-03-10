@@ -7,7 +7,7 @@ import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
 import { Box, Button, Flex, jsx, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
-import { undo, redo, toggleFind } from "../actions/districtDrawing";
+import { undo, redo, toggleFind, toggleEvaluate } from "../actions/districtDrawing";
 import { heights } from "../theme";
 import CopyMapButton from "../components/CopyMapButton";
 import ExportMenu from "../components/ExportMenu";
@@ -52,11 +52,13 @@ const HeaderDivider = () => {
 
 interface StateProps {
   readonly findMenuOpen: boolean;
+  readonly evaluateMode: boolean;
   readonly undoHistory: UndoHistory;
 }
 
 const ProjectHeader = ({
   findMenuOpen,
+  evaluateMode,
   map,
   project,
   isReadOnly,
@@ -105,7 +107,7 @@ const ProjectHeader = ({
           <ShareMenu invert={true} project={project} />
           <SupportMenu invert={true} />
           {project ? <ExportMenu invert={true} project={project} /> : null}
-          <Box sx={{ position: "relative" }}>
+          <Box sx={{ position: "relative", mr: "5px" }}>
             <Button
               sx={{
                 ...{
@@ -127,6 +129,28 @@ const ProjectHeader = ({
               </Box>
             </Button>
           </Box>
+          <Box sx={{ position: "relative" }}>
+            <Button
+              sx={{
+                ...{
+                  variant: "buttons.ghost",
+                  fontWeight: "light"
+                },
+                ...menuButtonStyle.menuButton
+              }}
+              onClick={() => store.dispatch(toggleEvaluate(!evaluateMode))}
+            >
+              <Box
+                sx={{
+                  borderBottom: evaluateMode ? "solid 1px" : "none",
+                  borderBottomColor: "muted",
+                  mb: !evaluateMode ? "-1px" : "0"
+                }}
+              >
+                Evaluate
+              </Box>
+            </Button>
+          </Box>
         </React.Fragment>
       ) : (
         <React.Fragment>
@@ -140,6 +164,7 @@ const ProjectHeader = ({
 function mapStateToProps(state: State): StateProps {
   return {
     findMenuOpen: state.project.findMenuOpen,
+    evaluateMode: state.project.evaluateMode,
     undoHistory: state.project.undoHistory
   };
 }

@@ -15,6 +15,14 @@ export interface IUser {
   readonly organizations: readonly OrganizationNest[];
 }
 
+export type EvaluateMetric = {
+  readonly name: string;
+  readonly type?: "fraction" | "percent" | "count";
+  readonly value?: number;
+  readonly status?: boolean;
+  readonly description: string;
+};
+
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
 
 export type OrganizationSlug = string;
