@@ -145,7 +145,7 @@ const OrganizationAdminScreen = ({ organization, user, organizationProjects }: S
               </Box>
             </Flex>
             {projects ? (
-              <div>
+              <Box sx={{ p: 5 }}>
                 <OrganizationAdminProjectsTable
                   projects={projects}
                   organizationSlug={organizationSlug}
@@ -159,7 +159,7 @@ const OrganizationAdminScreen = ({ organization, user, organizationProjects }: S
                     <Box sx={style.projectCount}>0 / 12 projects currently featured</Box>
                   )}
                 </Box>
-              </div>
+              </Box>
             ) : (
               <div>Loading</div>
             )}

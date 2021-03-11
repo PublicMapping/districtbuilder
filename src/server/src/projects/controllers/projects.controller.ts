@@ -103,13 +103,15 @@ import { Errors } from "../../../../shared/types";
 })
 @CrudAuth({
   filter: (req: any) => {
-    // Filter to user's projects for all update requests and for full project
-    // list.
+
     const user = req.user as User;
+    // Restrict access to organization projects if using toggleFeatured endpoint
     if (req.route.path.split("/").reverse()[1] === "toggleFeatured") {
       return {
         "projectTemplate.organization.admin": user.id
       };
+      // Filter to user's projects for all other update requests and for full project
+      // list.
     } else if (req.method !== "GET" || req.route.path === "/api/projects") {
       return {
         user_id: user ? user.id : undefined
