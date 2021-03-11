@@ -45,6 +45,7 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
     []
   );
   const data = useMemo(() => projects, [projects]);
+  // ts-ignore needed below bc react-table requires mutable types, even though it doesn't mutate them?
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable<OrgProject>(
     {
       // @ts-ignore
@@ -61,6 +62,9 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
     );
   }
 
+  // The 'key' is provided by react-table - note that if you try to add one there is a separate
+  // error about duplicate props. It seems eslint can't figure it out.
+  /* eslint-disable react/jsx-key */
   return (
     <Flex sx={{ flexDirection: "column" }}>
       <table {...getTableProps()} style={{ border: "solid 1px blue" }}>
@@ -100,8 +104,7 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
                 })}
                 <td>
                   <Button onClick={() => projectFeaturedToggle(row)}>
-                    {/* @ts-ignore */
-                    row.original.isFeatured ? "Unfeature" : "Feature"}
+                    {row.original.isFeatured ? "Unfeature" : "Feature"}
                   </Button>
                 </td>
               </tr>
@@ -111,6 +114,7 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
       </table>
     </Flex>
   );
+  /* eslint-enable react/jsx-key */
 };
 
 export default OrganizationAdminProjectsTable;
