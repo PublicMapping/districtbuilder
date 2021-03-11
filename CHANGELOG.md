@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Display organizations dropdown in header [#620](https://github.com/PublicMapping/districtbuilder/pull/620)
 - Organization Admin page and featured map workflow [#614](https://github.com/PublicMapping/districtbuilder/pull/614)
 - Build out scaffolding for Project Evaluate view [#623](https://github.com/PublicMapping/districtbuilder/pull/623)
+- Add flag on project templates to mark as active or inactive [#626](https://github.com/PublicMapping/districtbuilder/pull/626)
 
 ### Changed
 

@@ -51,4 +51,7 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
 
   @Column({ type: "character varying" })
   details: string;
+
+  @Column({ name: "is_active", type: "boolean", default: true })
+  isActive: boolean;
 }

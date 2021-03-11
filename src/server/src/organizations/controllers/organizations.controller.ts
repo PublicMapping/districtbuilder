@@ -1,11 +1,9 @@
-import { Controller, UseGuards, Param, Post, NotFoundException, Body } from "@nestjs/common";
-import { Crud, CrudController } from "@nestjsx/crud";
-import { IsNotEmpty } from "class-validator";
+import { Controller, UseGuards, Param, Post, NotFoundException, Body, Get } from "@nestjs/common";
 
-import { OrganizationSlug, PublicUserProperties, UserId } from "../../../../shared/entities";
+import { OrganizationSlug, UserId } from "../../../../shared/entities";
 import { JoinOrganizationErrors } from "../../../../shared/constants";
 
-import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { User } from "../../users/entities/user.entity";
 import { UsersService } from "../../users/services/users.service";
 
@@ -13,50 +11,12 @@ import { Organization } from "../entities/organization.entity";
 import { OrganizationUserDto } from "../entities/organizationUser.dto";
 import { OrganizationsService } from "../services/organizations.service";
 
-export class AddUserToOrg {
-  @IsNotEmpty({ message: "Please enter a name for your project" })
-  userId: UserId;
-}
-
-@Crud({
-  model: {
-    type: Organization
-  },
-  routes: {
-    only: ["getOneBase"]
-  },
-  params: {
-    slug: {
-      field: "slug",
-      type: "string",
-      primary: true
-    }
-  },
-  query: {
-    join: {
-      projectTemplates: {
-        eager: true
-      },
-      "projectTemplates.regionConfig": {
-        eager: true
-      },
-      users: {
-        allow: ["id", "name"] as PublicUserProperties[],
-        eager: true
-      },
-      admin: {
-        eager: true
-      }
-    }
-  }
-})
 @Controller("api/organization")
-// @ts-ignore
-export class OrganizationsController implements CrudController<Organization> {
+export class OrganizationsController {
   constructor(public service: OrganizationsService, private readonly usersService: UsersService) {}
 
   async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
-    const org = await this.service.findOne({ slug: organizationSlug });
+    const org = await this.service.getOrgAndProjects(organizationSlug);
     if (!org) {
       throw new NotFoundException(`Organization ${organizationSlug} not found`);
     }
@@ -72,6 +32,12 @@ export class OrganizationsController implements CrudController<Organization> {
       );
     }
     return user;
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get(":slug/")
+  async getOne(@Param("slug") slug: OrganizationSlug): Promise<Organization> {
+    return this.getOrg(slug);
   }
 
   @UseGuards(JwtAuthGuard)
