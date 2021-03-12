@@ -103,7 +103,6 @@ import { Errors } from "../../../../shared/types";
 })
 @CrudAuth({
   filter: (req: any) => {
-
     const user = req.user as User;
     // Restrict access to organization projects if using toggleFeatured endpoint
     if (req.route.path.split("/").reverse()[1] === "toggleFeatured") {
