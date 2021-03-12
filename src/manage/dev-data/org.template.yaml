@@ -1,0 +1,21 @@
+name: {Your organization's name}
+slug:  {your-organization-slug}
+description:
+  HODOR HODOR! Hodor! Hodor hodor. Hodor? HODOR? Hodor, hodor, hodor hodor. Hodor? Hodor, hodor. Hodor. Hodor. Hodor! Hodor hodor.
+  Hodor, hodor, hodor hodor. Hodor hodor HODOR! Hodor. Hodor! Hodor hodor. HODOR? HODOR hodor, hodor. Hodor? Hodor, hodor. Hodor!
+logoUrl: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABLCAYAAADXjBHUAAACr0lEQVR4Ae3aAWQbURwG8FtbqgUAMBgAGIAB7F6zVVc6FDDAvQa7pGGAzcIMGFarLS/AGORsAENeqsDAwDCmBbUNStzLJrPB252l26GWL7KT/eP7+AtBJL98Hv7vAkZgam17J251+7WW7TTN21WKnIdkevcyJF+Yg/FYRCIWjkSsSZCIVW/ZuyASjkUkHItIOBaRcCwioVhEArCIBGARCcciEo5FJByLSDgWkXAsIuFYRMKxiARMzdiXREKgWnbovb9ApHFjeg/nF8nYT9nryfRt6j2e4ybZ583Dw6Uk8Yt1Y5/+K6TBTmXT6fDYRarj9eaqfCTvF4JR8rMFwxqDVF27mSH9SKPQj+bAN7ZX5gIJx5oQqYiVN0t0k+L15fwfx7BwJBxLANKXauWq0+FpqlV/UA1vAFgwEo4lACnV4fDsR7hIfUewcCQcSwwSgoUj4Vhl3eCWgoRg7Rq7kSFdx5FwLDlNArCKwZFwLFFNQrEmR8Kw5CABWFMhAVgikYpYTq/tZUD70yOBWHVjG3KQZjBa2V9tatmPRPr7fN25djmIjX1S0mbxNH59tHyG5JvNJafVZ2lILlIf8u8e5CuN/CncErD6jeTNym+oZHsx1epEFJIOj4fx+sVglNKw8n11/tl/dkLhlTQKByKRiIUjEQtHmhGWVk4YErEAJGJhSDPAio19BZxZMpBKb1a7eysoxGl1XyxSmVi7prcVFJLq8JFopFKwTHcvKGSgK1v5FkA8Eo5FJBwLv3ebXyQcC793k4+EYxEJxyISjkUkHItIKFbbPsuQ+nHbPiASGiLhcVptEAlIqtU7IkGNCveJBCS/D0u1Sog0ERaRcCwi4VhEArFcpDpEKgELQCIWgEQsFIlYOBKxsvePiHQOFo5ErBcjpPdjkJhvtyuXMrSF4D/LT5deJlztCVGzAAAAAElFTkSuQmCC
+linkUrl: azavea.com
+municipality: Philadelphia
+region: PA
+admin: {YOUR-USER-ID}
+projectTemplates:
+  - id: 34711584-2e4c-427d-91cf-706a14b5ddde
+    name: City Council
+    regionConfig: {YOUR-REGION-CONFIG-ID}
+    numberOfDistricts: 7
+    description: Veggies es bonus vobis, proinde vos postulo essum magis kohlrabi welsh onion daikon amaranth tatsoi tomatillo melon azuki bean garlic.
+    details:
+      Hodor... Hodor hodor. Hodor, hodor, hodor hodor. HODOR? Hodor, hodor. Hodor. Hodor. Hodor hodor. Hodor, hodor. Hodor. Hodor, hodor. Hodor. Hodor, hodor. Hodor. Hodor. Hodor, hodor. Hodor. Hodor. HODOR? HODOR?
+      HODOR HODOR! Hodor, hodor. Hodor. Hodor. Hodor, hodor. Hodor. Hodor. HODOR? HODOR HODOR!
+      HODOR HODOR! Hodor, hodor. Hodor. Hodor! Hodor hodor. Hodor... Hodor hodor. Hodor! Hodor hodor. Hodor hodor HODOR! Hodor. HODOR? Hodor hodor! Hodor... Hodor hodor. Hodor, hodor. Hodor. Hodor. Hodor! Hodor hodor. Hodor... Hodor hodor. Hodor... Hodor hodor.
+      Hodor? Hodor, hodor. Hodor. Hodor. Hodor hodor! Hodor, hodor, hodor hodor. Hodor? HODOR hodor, hodor. Hodor hodor! Hodor? Hodor, hodor, hodor hodor.

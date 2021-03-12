@@ -58,6 +58,18 @@ This will proxy local all requests directed at `/api` to `https://staging.distri
 
 ### Development Data
 
+#### Using pre-processed data for existing regions organization and project templates
+
+1. Load region configs with `$ ./scripts/load-region-configs`
+1. Open up a new psql shell, `# SELECT * FROM region_config;`, and pick one of the regions to use as your testing region
+1. Copy the organization yaml template `$ cp src/manage/dev-data/org.template.yaml src/manage/data/org.yaml`
+1. Open the `manage/data/org.yaml` file in a text editor, add a name and slug and edit the `regionConfig` line to match with the ID of the region config you selected
+1. Once you have the server running, create a new user on the web frontend and confirm your email
+1. Open up a new psql shell, `SELECT * FROM "user";`, and copy your user's id to the `admin` line of `mikes.yaml`
+1. Create your organization and project templates by running `./scripts/manage/update-organization data/org.yaml`
+
+#### Processing your own data for custom regions
+
 To have data to work with, you'll need to do a two step process:
 
 1. Process the GeoJSON for your state/region (this outputs all the static files DistrictBuilder needs to work in a local directory)
@@ -129,6 +141,7 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 | `cipublish` | Publish container images to Elastic Container Registry.                   |
 | `dbshell`   | Enter a database shell.                                                   |
 | `infra`     | Execute Terraform subcommands with remote state management.               |
+| `load-region-configs`     | Loads region configurations for testing                     |
 | `manage`    | Execute commands with the `manage` CLI tool.                              |
 | `migration` | Execute TypeORM migration CLI commands.                                   |
 | `server`    | Bring up all of the services required for the project to function.        |
