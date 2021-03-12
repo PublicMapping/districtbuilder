@@ -28,6 +28,7 @@ export interface IOrganization {
   readonly linkUrl: string;
   readonly municipality: string;
   readonly region: string;
+  readonly admin?: IUser;
   readonly users: readonly IUser[];
   readonly projectTemplates: readonly IProjectTemplate[];
 }
@@ -144,10 +145,34 @@ export type IProject = ProjectTemplateFields & {
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly projectTemplate?: IProjectTemplate;
   readonly advancedEditingEnabled: boolean;
+  readonly isFeatured: boolean;
   readonly lockedDistricts: readonly boolean[];
   readonly visibility: ProjectVisibility;
   readonly archived: boolean;
 };
+
+export type ProjectNest = Pick<
+  IProject,
+  | "user"
+  | "id"
+  | "updatedDt"
+  | "numberOfDistricts"
+  | "chamber"
+  | "name"
+  | "regionConfig"
+  | "isFeatured"
+> & {
+  readonly regionConfig: Pick<IRegionConfig, "name">;
+};
+
+interface OrgProject {
+  readonly id: ProjectId;
+  readonly name: string;
+  readonly templateName: string;
+  readonly updatedAgo: string;
+  readonly isFeatured: boolean;
+  readonly creator: string;
+}
 
 export interface CreateProjectData {
   readonly name: string;
@@ -175,6 +200,10 @@ export type IProjectTemplate = ProjectTemplateFields & {
   readonly organization: IOrganization;
   readonly description: string;
   readonly details: string;
+};
+
+export type IProjectTemplateWithProjects = IProjectTemplate & {
+  readonly projects: readonly ProjectNest[];
 };
 
 export type ChamberId = string;

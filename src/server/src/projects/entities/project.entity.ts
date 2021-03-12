@@ -13,7 +13,7 @@ import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../s
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
-import { ProjectTemplate } from "src/project-templates/entities/project-template.entity";
+import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 // TODO #179: Move to shared/entities
 export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -23,7 +23,7 @@ export class Project implements IProject {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ type: "character varying" })
   name: string;
 
   @ManyToOne(() => RegionConfig, { nullable: false })
@@ -38,7 +38,7 @@ export class Project implements IProject {
   @JoinColumn({ name: "project_template_id" })
   projectTemplate?: ProjectTemplate;
 
-  @Column({ name: "number_of_districts" })
+  @Column({ name: "number_of_districts", type: "integer" })
   numberOfDistricts: number;
 
   @Column({
@@ -55,7 +55,7 @@ export class Project implements IProject {
   })
   districts: DistrictsGeoJSON;
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: false, eager: true })
   @JoinColumn({ name: "user_id" })
   user: User;
 
@@ -69,7 +69,7 @@ export class Project implements IProject {
   })
   updatedDt: Date;
 
-  @Column({ default: false })
+  @Column({ type: "boolean", default: false })
   advancedEditingEnabled: boolean;
 
   @Column({
@@ -85,6 +85,9 @@ export class Project implements IProject {
 
   @Column({ type: "boolean", default: false })
   archived: boolean;
+
+  @Column({ type: "boolean", default: false })
+  isFeatured: boolean;
 
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {

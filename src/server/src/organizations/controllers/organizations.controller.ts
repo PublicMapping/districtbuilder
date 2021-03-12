@@ -43,6 +43,9 @@ export class AddUserToOrg {
       users: {
         allow: ["id", "name"] as PublicUserProperties[],
         eager: true
+      },
+      admin: {
+        eager: true
       }
     }
   }

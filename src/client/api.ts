@@ -5,6 +5,7 @@ import {
   CreateProjectData,
   IOrganization,
   IProject,
+  IProjectTemplateWithProjects,
   IRegionConfig,
   IUser,
   JWT,
@@ -12,7 +13,8 @@ import {
   ProjectId,
   UpdateProjectData,
   UpdateUserData,
-  UserId
+  UserId,
+  OrgProject
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -245,6 +247,35 @@ export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrgani
       .then(response => resolve(response.data))
       .catch(error => {
         reject({ errorMessage: error.response.data, statusCode: error.response.status });
+      });
+  });
+}
+
+export async function fetchOrganizationProjects(
+  slug: OrganizationSlug
+): Promise<readonly IProjectTemplateWithProjects[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/${slug}`)
+      .then(response => {
+        resolve(response.data);
+      })
+      .catch(error => {
+        reject(error.response.data);
+      });
+  });
+}
+
+export async function saveProjectFeatured(project: OrgProject): Promise<IOrganization> {
+  return new Promise((resolve, reject) => {
+    const projectPost = {
+      isFeatured: !project.isFeatured
+    };
+    apiAxios
+      .post(`/api/projects/${project.id}/toggleFeatured`, projectPost)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
       });
   });
 }
