@@ -8,12 +8,14 @@ import { AuthController } from "./controllers/auth.controller";
 import { EmailVerification } from "./entities/email-verification.entity";
 import { AuthService } from "./services/auth.service";
 import { JwtStrategy } from "./strategies/jwt.strategy";
+import { OrganizationsModule } from "../organizations/organizations.module";
 
 @Module({
   imports: [
     UsersModule,
     TypeOrmModule.forFeature([EmailVerification]),
     PassportModule,
+    OrganizationsModule,
     JwtModule.register({
       signOptions: {
         expiresIn: process.env.JWT_EXPIRATION_IN_MS

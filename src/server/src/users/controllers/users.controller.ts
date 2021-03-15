@@ -14,7 +14,7 @@ import { UsersService } from "../services/users.service";
     exclude: ["passwordHash"],
     join: {
       organizations: {
-        allow: ["slug", "name"],
+        allow: ["slug", "name", "logoUrl"],
         eager: true
       }
     }

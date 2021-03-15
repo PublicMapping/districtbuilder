@@ -4,7 +4,7 @@ export type UserId = string;
 
 export type PublicUserProperties = "id" | "name";
 
-export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name">;
+export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
 
 export interface IUser {
   readonly id: UserId;
@@ -99,6 +99,7 @@ export interface Login {
 
 export interface Register extends Login {
   readonly name: string;
+  readonly organization?: string;
 }
 
 export interface ResetPassword {

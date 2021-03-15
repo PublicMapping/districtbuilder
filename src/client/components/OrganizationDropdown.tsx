@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from "theme-ui";
+import { jsx, Image } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import Icon from "../components/Icon";
 import { invertStyles, style } from "./MenuButton.styles";
@@ -32,6 +32,10 @@ const OrganizationDropdown = ({ organizations }: Props) => {
           {organizations.map(o => (
             <li key={o.slug}>
               <MenuItem value={o.slug} sx={style.menuListItem}>
+                <Image
+                  src={o.logoUrl}
+                  sx={{ width: "25px", height: "25px", paddingRight: "5px" }}
+                />
                 {o.name}
               </MenuItem>
             </li>

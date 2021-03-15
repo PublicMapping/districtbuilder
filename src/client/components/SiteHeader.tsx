@@ -1,19 +1,22 @@
 /** @jsx jsx */
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import Avatar from "react-avatar";
-import React from "react";
+import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import * as H from "history";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
 import OrganizationDropdown from "../components/OrganizationDropdown";
-import { Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Alert, Styled, Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { resetState } from "../actions/root";
 import { clearJWT, getJWT } from "../jwt";
 import { UserState } from "../reducers/user";
 import store from "../store";
+import { resendConfirmationEmail } from "../api";
+import { WriteResource } from "../resource";
 
 interface Props {
   readonly user: UserState;
@@ -113,55 +116,101 @@ const style: ThemeUIStyleObject = {
 const SiteHeader = ({ user }: Props) => {
   const history = useHistory();
   const isLoggedIn = getJWT() !== null;
+  const [resendEmail, setResendEmail] = useState<WriteResource<void, void>>({ data: void 0 });
 
   return (
-    <Flex as="header" sx={style.header}>
-      <Heading as="h1" sx={{ mb: "0px", mr: "auto", p: 2 }}>
-        <Link to="/" sx={style.logoLink}>
-          <Logo sx={{ width: "15rem" }} />
-        </Link>
-      </Heading>
-      {!isLoggedIn ? (
-        <React.Fragment>
-          <Link to="/login" sx={{ p: 2 }}>
-            Login
-          </Link>{" "}
-          <Link to="/register" sx={{ p: 2 }}>
-            Register
+    <Flex sx={{ flexDirection: "column" }}>
+      {"resource" in user && !user.resource.isEmailVerified && (
+        <Alert sx={{ borderRadius: "0" }}>
+          <Box>
+            Please confirm your email.{" "}
+            <Box sx={{ display: "inline-block", p: 1 }}>
+              {"resource" in resendEmail ? (
+                <span sx={{ fontWeight: "body" }}>
+                  Confirmation email sent to <b>{user.resource.email}</b>!
+                </span>
+              ) : (
+                <React.Fragment>
+                  <Button
+                    sx={{
+                      height: "auto",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                      p: 0
+                    }}
+                    disabled={"isPending" in resendEmail && resendEmail.isPending}
+                    onClick={() => {
+                      setResendEmail({ ...resendEmail, isPending: true });
+                      resendConfirmationEmail(user.resource.email)
+                        .then(resource => setResendEmail({ data: resendEmail.data, resource }))
+                        .catch(errors => setResendEmail({ data: resendEmail.data, errors }));
+                    }}
+                  >
+                    Resend Email
+                  </Button>
+                </React.Fragment>
+              )}
+            </Box>
+            {"errors" in resendEmail && (
+              <Box sx={{ fontWeight: "body" }}>
+                Error resending email. If this error persists, please contact us at{" "}
+                <Styled.a sx={{ color: "muted" }} href="mailto:support@districtbuilder.org">
+                  support@districtbuilder.org
+                </Styled.a>
+                .
+              </Box>
+            )}
+          </Box>
+        </Alert>
+      )}
+      <Flex as="header" sx={style.header}>
+        <Heading as="h1" sx={{ mb: "0px", mr: "auto", p: 2 }}>
+          <Link to="/" sx={style.logoLink}>
+            <Logo sx={{ width: "15rem" }} />
           </Link>
-        </React.Fragment>
-      ) : "resource" in user ? (
-        <React.Fragment>
-          <SupportMenu />
-          {user.resource.organizations.length > 0 && (
-            <OrganizationDropdown organizations={user.resource.organizations} />
-          )}
-          <Wrapper onSelection={handleSelection(history)} sx={{ ml: 3 }}>
-            <MenuButton sx={style.menuButton}>
-              <Avatar
-                name={user.resource.name}
-                round={true}
-                size={"2.5rem"}
-                color={"#2c485e"}
-                maxInitials={3}
-                sx={style.avatar}
-              />
-              <div sx={{ ml: 2 }}>
-                <Icon name="chevron-down" />
-              </div>
-            </MenuButton>
-            <Menu sx={style.menu}>
-              <ul sx={style.menuList}>
-                <li key={UserMenuKeys.Logout}>
-                  <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
-                    Logout
-                  </MenuItem>
-                </li>
-              </ul>
-            </Menu>
-          </Wrapper>
-        </React.Fragment>
-      ) : null}
+        </Heading>
+        {!isLoggedIn ? (
+          <React.Fragment>
+            <Link to="/login" sx={{ p: 2 }}>
+              Login
+            </Link>{" "}
+            <Link to="/register" sx={{ p: 2 }}>
+              Register
+            </Link>
+          </React.Fragment>
+        ) : "resource" in user ? (
+          <React.Fragment>
+            <SupportMenu />
+            {user.resource.organizations.length > 0 && (
+              <OrganizationDropdown organizations={user.resource.organizations} />
+            )}
+            <Wrapper onSelection={handleSelection(history)} sx={{ ml: 3 }}>
+              <MenuButton sx={style.menuButton}>
+                <Avatar
+                  name={user.resource.name}
+                  round={true}
+                  size={"2.5rem"}
+                  color={"#2c485e"}
+                  maxInitials={3}
+                  sx={style.avatar}
+                />
+                <div sx={{ ml: 2 }}>
+                  <Icon name="chevron-down" />
+                </div>
+              </MenuButton>
+              <Menu sx={style.menu}>
+                <ul sx={style.menuList}>
+                  <li key={UserMenuKeys.Logout}>
+                    <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
+                      Logout
+                    </MenuItem>
+                  </li>
+                </ul>
+              </Menu>
+            </Wrapper>
+          </React.Fragment>
+        ) : null}
+      </Flex>
     </Flex>
   );
 };

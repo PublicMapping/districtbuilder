@@ -163,12 +163,18 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
           {template.regionConfig.name} · {template.numberOfDistricts}
         </Text>
         <Text>{template.description}</Text>
-        {!isLoggedIn || userIsVerified ? (
+        {userIsVerified || !isLoggedIn ? (
           useButton
         ) : (
           <Tooltip
             key={template.id}
-            content={<div>You must confirm your email before joining an organization</div>}
+            content={
+              <div>
+                {userInOrg
+                  ? "You must confirm your email before using your organization's template"
+                  : "You must confirm your email before using this organization's template"}
+              </div>
+            }
           >
             <Box>{useButton}</Box>
           </Tooltip>
@@ -213,7 +219,7 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
                   <Box>{organization.resource.description}</Box>
                 )}
               </Box>
-              {userInOrg ? (
+              {userInOrg && userIsVerified ? (
                 <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={leaveOrg}>
                   <Button sx={style.join}>Leave organization</Button>
                 </Flex>
@@ -223,7 +229,13 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
                 ) : (
                   <Tooltip
                     key={1}
-                    content={<div>You must confirm your email before joining an organization</div>}
+                    content={
+                      <div>
+                        {userInOrg
+                          ? "Confirm your email to finish joining this organization"
+                          : "You must confirm your email before joining an organization"}
+                      </div>
+                    }
                   >
                     {joinButton}
                   </Tooltip>
@@ -232,17 +244,19 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
                 joinButton
               )}
             </Flex>
-            {organization.resource.projectTemplates.length > 0 && (
-              <Box sx={style.templates}>
-                <Heading>Templates</Heading>
-                Start a new map using the official settings from {organization.resource.name}
-                <Box sx={style.templateContainer}>
-                  {organization.resource.projectTemplates.map(template => (
-                    <TemplateCard template={template} key={template.id} />
-                  ))}
+            <Flex>
+              {organization.resource.projectTemplates.length > 0 && (
+                <Box sx={style.templates}>
+                  <Heading>Templates</Heading>
+                  Start a new map using the official settings from {organization.resource.name}
+                  <Box sx={style.templateContainer}>
+                    {organization.resource.projectTemplates.map(template => (
+                      <TemplateCard template={template} key={template.id} />
+                    ))}
+                  </Box>
                 </Box>
-              </Box>
-            )}
+              )}
+            </Flex>
           </Box>
         ) : "statusCode" in organization && organization.statusCode === 404 ? (
           <PageNotFoundScreen model={"organization"} />

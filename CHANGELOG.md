@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Require users to confirm before joining an organization [#593](https://github.com/PublicMapping/districtbuilder/pull/593) & [#615](https://github.com/PublicMapping/districtbuilder/pull/615)
 - Show not found page for missing projects and organizations [#613](https://github.com/PublicMapping/districtbuilder/pull/613)
 - Add paintbrush drawing tool [#611](https://github.com/PublicMapping/districtbuilder/pull/611)
+- Add verify and join link to user verification email [#616](https://github.com/PublicMapping/districtbuilder/pull/616)
 - Display organizations dropdown in header [#620](https://github.com/PublicMapping/districtbuilder/pull/620)
 - Organization Admin page and featured map workflow [#614](https://github.com/PublicMapping/districtbuilder/pull/614)
 
