@@ -107,7 +107,7 @@ export async function activateAccount(token: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
       .post(`/api/auth/email/verify/${token}`)
-      .then(response => resolve(saveJWT(response)))
+      .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });
 }

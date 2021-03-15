@@ -7,11 +7,13 @@ import { ReactComponent as Logo } from "../media/logos/logo.svg";
 import { ReactComponent as SuccessIllustration } from "../media/successfully-registered-illustration.svg";
 
 import { activateAccount } from "../api";
+import { getJWT } from "../jwt";
 import CenteredContent from "../components/CenteredContent";
 import { Resource } from "../resource";
 
 const ActivateAccountScreen = () => {
   const { token, organizationSlug } = useParams();
+  const isLoggedIn = getJWT() !== null;
   const history = useHistory();
   const [activationResource, setActivationResource] = useState<Resource<void>>({
     isPending: false
@@ -27,7 +29,6 @@ const ActivateAccountScreen = () => {
             .then(() => {
               setActivationResource({ resource: void 0 });
             })
-            .then(() => history.push(`/o/${organizationSlug}`))
             .catch(errorMessage => setActivationResource({ errorMessage }))
         : activateAccount(token)
             .then(() => setActivationResource({ resource: void 0 }))
@@ -62,8 +63,20 @@ const ActivateAccountScreen = () => {
               Thank you for activating your account!
             </Text>
 
-            <Styled.a as={Link} to="/login" sx={{ variant: "linkButton" }}>
-              Log in
+            <Styled.a
+              as={Link}
+              to={
+                !isLoggedIn && organizationSlug
+                  ? { pathname: "/login", state: { from: `/o/${organizationSlug}` } }
+                  : !isLoggedIn
+                  ? "/login"
+                  : organizationSlug
+                  ? `/o/${organizationSlug}`
+                  : "/"
+              }
+              sx={{ variant: "linkButton" }}
+            >
+              {!isLoggedIn ? "Log in" : "Start mapping!"}
             </Styled.a>
           </Card>
         </Box>
