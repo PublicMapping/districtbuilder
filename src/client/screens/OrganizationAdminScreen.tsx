@@ -14,8 +14,8 @@ import PageNotFoundScreen from "./PageNotFoundScreen";
 import { OrganizationProjectsState } from "../reducers/organizationProjects";
 import OrganizationAdminProjectsTable from "../components/OrganizationAdminProjectsTable";
 import { userFetch } from "../actions/user";
-import { isThisYear, isToday } from "date-fns";
-import format from "date-fns/format";
+import { formatDate } from "../functions";
+
 
 interface StateProps {
   readonly organization: OrganizationState;
@@ -83,17 +83,6 @@ const style = {
     flexDirection: "column"
   }
 } as const;
-
-function formatDate(date: Date): string {
-  const d = new Date(date);
-  return date
-    ? isToday(d)
-      ? format(d, "h:mm a")
-      : isThisYear(d)
-      ? format(d, "MMM d")
-      : format(d, "MMM d yyyy")
-    : "—";
-}
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {
   const { organizationSlug } = useParams();

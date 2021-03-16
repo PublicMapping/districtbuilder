@@ -13,6 +13,8 @@ import {
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
+import {isThisYear, isToday} from "date-fns";
+import format from "date-fns/format";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
@@ -159,3 +161,14 @@ export function mergeGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
 export const showActionFailedToast = () => toast.error("Something went wrong, please try again.");
 export const showResourceFailedToast = () =>
   toast.error("Something went wrong, please refresh the page.");
+
+export const formatDate = (date: Date): string => {
+    const d = new Date(date);
+    return date
+        ? isToday(d)
+            ? format(d, "h:mm a")
+            : isThisYear(d)
+                ? format(d, "MMM d")
+                : format(d, "MMM d yyyy")
+        : "—";
+}

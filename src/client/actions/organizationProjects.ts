@@ -1,10 +1,6 @@
 import { createAction } from "typesafe-actions";
-import {
-  IProjectTemplateWithProjects,
-  OrganizationSlug,
-  IProject,
-  OrgProject
-} from "../../shared/entities";
+import { IProjectTemplateWithProjects, OrganizationSlug, IProject } from "../../shared/entities";
+import { OrgProject } from "../types";
 import { ResourceFailure } from "../resource";
 
 export const organizationProjectsFetch = createAction("Organization projects fetch")<

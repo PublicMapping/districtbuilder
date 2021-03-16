@@ -13,9 +13,9 @@ import {
   ProjectId,
   UpdateProjectData,
   UpdateUserData,
-  UserId,
-  OrgProject
+  UserId
 } from "../shared/entities";
+import { OrgProject } from "./types";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
