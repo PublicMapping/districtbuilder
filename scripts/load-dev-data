@@ -9,7 +9,7 @@ fi
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
-Load region configs for development purposes.
+Load region configs and a test organization for development purposes.
 
 This avoids having to process GeoJSON locally and publish it to S3.
 "
@@ -29,7 +29,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
             exec database psql -U districtbuilder districtbuilder -c "
               INSERT INTO region_config
               VALUES (
-                DEFAULT,
+                'e7728e7d-cf2e-45e9-a8d8-e44699d87a21',
                 'Michigan',
                 'US',
                 'MI',
@@ -37,7 +37,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 DEFAULT,
                 DEFAULT
               ), (
-                DEFAULT,
+                '4a48268f-ddcf-4ae9-b41f-23cda93c3eba',
                 'Dane County',
                 'US',
                 'WI',
@@ -45,7 +45,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 DEFAULT,
                 DEFAULT
               ), (
-                 DEFAULT,
+                '96bca832-99b3-4c4d-8913-ab4ca82ec442',
                 'Pennsylvania',
                 'US',
                 'PA',
@@ -54,6 +54,15 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 DEFAULT
              )
               ON CONFLICT DO NOTHING;
+            "
+
+        # Add testing organization
+        ./scripts/manage update-organization dev-data/azavea.yaml
+
+        # Set testing organization admin (no-op if there are no users) 
+        docker-compose \
+            exec database psql -U districtbuilder districtbuilder -c "
+              UPDATE organization SET user_id = (SELECT id FROM \"user\" ORDER BY id LIMIT 1) WHERE slug = 'azavea';
             "
     fi
 fi

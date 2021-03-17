@@ -58,6 +58,16 @@ This will proxy local all requests directed at `/api` to `https://staging.distri
 
 ### Development Data
 
+#### Using pre-processed data for development and testing
+
+1. Sign up for an account using the application (if you haven't already done so)
+1. Load testing data with `$ ./scripts/load-dev-data`. This will:
+  - Load region configs for Pennsylvania, Michigan, and Dane County WI.
+  - Create an organization, accessible at [`http://localhost:3003/o/azavea`](http://localhost:3003/o/azavea)
+  - Set the user you just created as the organization administrator
+
+#### Processing your own data for custom regions
+
 To have data to work with, you'll need to do a two step process:
 
 1. Process the GeoJSON for your state/region (this outputs all the static files DistrictBuilder needs to work in a local directory)
@@ -117,25 +127,26 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 ### Ports
 
 | Port                          | Service          |
-| ----------------------------- | ---------------- |
+|-------------------------------|------------------|
 | [3003](http://localhost:3003) | Create React App |
 | [3005](http://localhost:3005) | NestJS           |
 
 ## Scripts
 
-| Name        | Description                                                               |
-| ----------- | ------------------------------------------------------------------------- |
-| `cibuild`   | Build application for staging or a release.                               |
-| `cipublish` | Publish container images to Elastic Container Registry.                   |
-| `dbshell`   | Enter a database shell.                                                   |
-| `infra`     | Execute Terraform subcommands with remote state management.               |
-| `manage`    | Execute commands with the `manage` CLI tool.                              |
-| `migration` | Execute TypeORM migration CLI commands.                                   |
-| `server`    | Bring up all of the services required for the project to function.        |
-| `setup`     | Setup the project's development environment.                              |
-| `test`      | Run linters and tests.                                                    |
-| `update`    | Build container images, update dependencies, and run database migrations. |
-| `yarn`      | Execute Yarn CLI commands.                                                |
+| Name            | Description                                                               |
+|-----------------|---------------------------------------------------------------------------|
+| `cibuild`       | Build application for staging or a release.                               |
+| `cipublish`     | Publish container images to Elastic Container Registry.                   |
+| `dbshell`       | Enter a database shell.                                                   |
+| `infra`         | Execute Terraform subcommands with remote state management.               |
+| `load-dev-data` | Loads development data for testing                                        |
+| `manage`        | Execute commands with the `manage` CLI tool.                              |
+| `migration`     | Execute TypeORM migration CLI commands.                                   |
+| `server`        | Bring up all of the services required for the project to function.        |
+| `setup`         | Setup the project's development environment.                              |
+| `test`          | Run linters and tests.                                                    |
+| `update`        | Build container images, update dependencies, and run database migrations. |
+| `yarn`          | Execute Yarn CLI commands.                                                |
 
 ## Command Line Interface
 
