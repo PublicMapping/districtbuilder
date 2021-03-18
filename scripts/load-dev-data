@@ -58,6 +58,12 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
 
         # Add testing organization
         ./scripts/manage update-organization dev-data/azavea.yaml
+        
+        # Add user to testing organization
+        docker-compose \
+            exec database psql -U districtbuilder districtbuilder -c "
+              INSERT INTO organization_users_user VALUES((SELECT id FROM organization WHERE slug = 'azavea'), (SELECT id FROM \"user\" ORDER BY id LIMIT 1));
+            "
 
         # Set testing organization admin (no-op if there are no users) 
         docker-compose \
