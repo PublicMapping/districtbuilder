@@ -12,7 +12,6 @@ import { AuthModalContent } from "./AuthComponents";
 import ConfirmJoinOrganization from "./ConfirmJoinOrganization";
 import { Resource } from "../resource";
 import { CreateProjectData } from "../../shared/entities";
-import { useEffect } from "react";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -49,10 +48,6 @@ const JoinOrganizationModal = ({
   readonly projectTemplate?: CreateProjectData;
 }) => {
   const hideModal = () => store.dispatch(showCopyMapModal(false));
-
-  useEffect(() => {
-    "resource" in user && showModal && store.dispatch(showCopyMapModal(false));
-  }, [user, showModal]);
 
   return showModal ? (
     <AriaModal
