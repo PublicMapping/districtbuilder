@@ -17,7 +17,8 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
     return this.repo.save(org);
   }
 
-  async getOrgAndProjects(slug: string): Promise<Organization | undefined> {
+  async getOrgAndProjectTemplates(slug: string): Promise<Organization | undefined> {
+    // Returns public data for organization screen
     const builder = this.repo.createQueryBuilder("organization");
     const data = await builder
       .leftJoinAndSelect("organization.users", "users")

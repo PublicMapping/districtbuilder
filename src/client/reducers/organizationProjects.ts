@@ -3,14 +3,21 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
 
-import { IProject, IProjectTemplateWithProjects } from "../../shared/entities";
-import { fetchOrganizationProjects, saveProjectFeatured } from "../api";
+import { IProjectTemplateWithProjects } from "../../shared/entities";
+import {
+  fetchOrganizationFeaturedProjects,
+  fetchOrganizationProjects,
+  saveProjectFeatured
+} from "../api";
 import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
 import {
   organizationProjectsFetch,
   organizationProjectsFetchSuccess,
   organizationProjectsFetchFailure,
+  organizationFeaturedProjectsFetch,
+  organizationFeaturedProjectsFetchSuccess,
+  organizationFeaturedProjectsFetchFailure,
   toggleProjectFeatured,
   toggleProjectFeaturedSuccess,
   toggleProjectFeaturedFailure
@@ -18,7 +25,7 @@ import {
 
 export interface OrganizationProjectsState {
   readonly projectTemplates: Resource<readonly IProjectTemplateWithProjects[]>;
-  readonly featuredProjects: Resource<readonly IProject[]>;
+  readonly featuredProjects: Resource<readonly IProjectTemplateWithProjects[]>;
 }
 
 export const initialState = {
@@ -49,6 +56,32 @@ const organizationProjectsReducer: LoopReducer<OrganizationProjectsState, Action
         projectTemplates: { resource: action.payload }
       };
     case getType(organizationProjectsFetchFailure):
+      return loop(
+        {
+          ...state,
+          // error message saved under projectTemplates.errorMessage
+          projectTemplates: action.payload
+        },
+        Cmd.run(showResourceFailedToast)
+      );
+    case getType(organizationFeaturedProjectsFetch):
+      return loop(
+        {
+          ...state,
+          featuredProjects: { isPending: true }
+        },
+        Cmd.run(fetchOrganizationFeaturedProjects, {
+          successActionCreator: organizationFeaturedProjectsFetchSuccess,
+          failActionCreator: organizationFeaturedProjectsFetchFailure,
+          args: [action.payload] as Parameters<typeof fetchOrganizationFeaturedProjects>
+        })
+      );
+    case getType(organizationFeaturedProjectsFetchSuccess):
+      return {
+        ...state,
+        featuredProjects: { resource: action.payload }
+      };
+    case getType(organizationFeaturedProjectsFetchFailure):
       return loop(
         {
           ...state,

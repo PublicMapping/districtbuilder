@@ -13,6 +13,16 @@ export const organizationProjectsFetchFailure = createAction("Organization proje
   ResourceFailure
 >();
 
+export const organizationFeaturedProjectsFetch = createAction(
+  "Organization featured projects fetch"
+)<OrganizationSlug>();
+export const organizationFeaturedProjectsFetchSuccess = createAction(
+  "Organization featured projects fetch success"
+)<readonly IProjectTemplateWithProjects[]>();
+export const organizationFeaturedProjectsFetchFailure = createAction(
+  "Organization featured projects fetch failure"
+)<ResourceFailure>();
+
 export const toggleProjectFeatured = createAction("Toggle project featured")<{
   readonly project: OrgProject;
   readonly organization: OrganizationSlug;

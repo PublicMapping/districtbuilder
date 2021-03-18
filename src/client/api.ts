@@ -272,6 +272,21 @@ export async function fetchOrganizationProjects(
   });
 }
 
+export async function fetchOrganizationFeaturedProjects(
+  slug: OrganizationSlug
+): Promise<readonly IProjectTemplateWithProjects[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/featured/${slug}`)
+      .then(response => {
+        resolve(response.data);
+      })
+      .catch(error => {
+        reject(error.response.data);
+      });
+  });
+}
+
 export async function saveProjectFeatured(project: OrgProject): Promise<IOrganization> {
   return new Promise((resolve, reject) => {
     const projectPost = {

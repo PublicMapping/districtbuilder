@@ -16,7 +16,6 @@ import OrganizationAdminProjectsTable from "../components/OrganizationAdminProje
 import { userFetch } from "../actions/user";
 import { formatDate } from "../functions";
 
-
 interface StateProps {
   readonly organization: OrganizationState;
   readonly organizationProjects: OrganizationProjectsState;

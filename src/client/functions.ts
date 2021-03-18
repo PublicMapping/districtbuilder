@@ -13,7 +13,7 @@ import {
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
-import {isThisYear, isToday} from "date-fns";
+import { isThisYear, isToday } from "date-fns";
 import format from "date-fns/format";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
@@ -163,12 +163,12 @@ export const showResourceFailedToast = () =>
   toast.error("Something went wrong, please refresh the page.");
 
 export const formatDate = (date: Date): string => {
-    const d = new Date(date);
-    return date
-        ? isToday(d)
-            ? format(d, "h:mm a")
-            : isThisYear(d)
-                ? format(d, "MMM d")
-                : format(d, "MMM d yyyy")
-        : "—";
-}
+  const d = new Date(date);
+  return date
+    ? isToday(d)
+      ? format(d, "h:mm a")
+      : isThisYear(d)
+      ? format(d, "MMM d")
+      : format(d, "MMM d yyyy")
+    : "—";
+};

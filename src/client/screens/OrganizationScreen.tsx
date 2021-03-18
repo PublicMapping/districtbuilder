@@ -9,7 +9,7 @@ import { showCopyMapModal } from "../actions/districtDrawing";
 import { organizationFetch } from "../actions/organization";
 import { leaveOrganization } from "../actions/organizationJoin";
 import { userFetch } from "../actions/user";
-import { organizationProjectsFetch } from "../actions/organizationProjects";
+import { organizationFeaturedProjectsFetch } from "../actions/organizationProjects";
 import { createProject } from "../api";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
@@ -110,7 +110,6 @@ const style = {
   }
 } as const;
 
-
 const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
   const { organizationSlug } = useParams();
   const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
@@ -126,8 +125,8 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
   const userIsVerified = "resource" in user && user.resource && user.resource.isEmailVerified;
 
   const featuredProjects =
-    "resource" in organizationProjects.projectTemplates
-      ? organizationProjects.projectTemplates.resource
+    "resource" in organizationProjects.featuredProjects
+      ? organizationProjects.featuredProjects.resource
           .map(pt => {
             return pt.projects.map(p => {
               return {
@@ -141,7 +140,6 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
             });
           })
           .flat()
-          .filter(p => p.isFeatured)
       : undefined;
 
   useEffect(() => {
@@ -150,7 +148,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
 
   useEffect(() => {
     store.dispatch(organizationFetch(organizationSlug));
-    store.dispatch(organizationProjectsFetch(organizationSlug));
+    store.dispatch(organizationFeaturedProjectsFetch(organizationSlug));
   }, [organizationSlug]);
 
   function signupAndJoinOrg() {
@@ -170,24 +168,25 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
     return userExists.length > 0;
   }
 
-  function createProjectFromTemplate() {
-    projectTemplate &&
-      void createProject(projectTemplate).then((project: IProject) =>
-        history.push(`/projects/${project.id}`)
-      );
+  function createProjectFromTemplate(template: CreateProjectData) {
+    void createProject(template).then((project: IProject) =>
+      history.push(`/projects/${project.id}`)
+    );
   }
 
   function setupProjectFromTemplate(template: IProjectTemplate) {
     const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
-    setProjectTemplate({
+    const currentTemplate = {
       name,
       regionConfig,
       numberOfDistricts,
       districtsDefinition,
       chamber,
       projectTemplate: { id }
-    });
-    userInOrg ? createProjectFromTemplate() : store.dispatch(showCopyMapModal(true));
+    };
+    // Set project template so we can redirect unauthenticated users after they login
+    setProjectTemplate(currentTemplate);
+    userInOrg ? createProjectFromTemplate(currentTemplate) : store.dispatch(showCopyMapModal(true));
   }
 
   const joinButton = (

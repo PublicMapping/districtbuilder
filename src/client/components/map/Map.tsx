@@ -43,7 +43,7 @@ import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
 import { State } from "../../reducers";
 import { connect } from "react-redux";
-import {MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
+import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 
 interface Props {
   readonly project: IProject;
