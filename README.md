@@ -60,7 +60,7 @@ This will proxy local all requests directed at `/api` to `https://staging.distri
 
 #### Using pre-processed data for development and testing
 
-1. Sign up for an account using the application (if you haven't already done so)
+1. Sign up for an account in your local dev instance of the application at [http://localhost:3003](http://localhost:3003)(if you haven't already done so)
 1. Load testing data with `$ ./scripts/load-dev-data`. This will:
   - Load region configs for Pennsylvania, Michigan, and Dane County WI.
   - Create an organization, accessible at [`http://localhost:3003/o/azavea`](http://localhost:3003/o/azavea)
