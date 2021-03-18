@@ -2,7 +2,7 @@
 import { OrgProject } from "../types";
 import { Box, Flex, Heading, jsx } from "theme-ui";
 import MapboxGL from "mapbox-gl";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import bbox from "@turf/bbox";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../constants/map";
 
@@ -11,16 +11,26 @@ const style = {
     flexDirection: "column",
     border: "1px solid black",
     padding: "20px",
-    minHeight: "200px"
+    minHeight: "400px",
+    minWidth: "350px",
+    position: "relative"
   },
   projectMap: {
     height: "300px",
-    width: "300px"
+    width: "350px",
+    align: "center",
+    ml: "auto"
+  },
+  mapLabel: {
+    position: "absolute",
+    bottom: "0px",
+    pt: "30px"
   }
 } as const;
 
 const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -58,14 +68,23 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
 
       // @ts-ignore
       bounds && map.fitBounds(bounds);
+
+      setMapLoaded(true);
     });
   }, [mapRef, project.districts]);
 
   return (
     <Flex sx={style.featuredProject}>
-      <Box ref={mapRef} sx={style.projectMap}></Box>
-      <Heading>{project.name}</Heading>
-      <Box>by {project.user?.name}</Box>
+      <Box
+        ref={mapRef}
+        sx={style.projectMap}
+        style={mapLoaded ? { display: "block" } : { display: "none" }}
+      ></Box>
+      {!mapLoaded && <Box sx={style.projectMap}>Loading map...</Box>}
+      <Box sx={style.mapLabel}>
+        <Heading>{project.name}</Heading>
+        <Box>by {project.user?.name}</Box>
+      </Box>
     </Flex>
   );
 };

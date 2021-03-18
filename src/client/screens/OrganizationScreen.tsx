@@ -84,7 +84,7 @@ const style = {
   },
   featuredProjectContainer: {
     display: "grid",
-    gridTemplateColumns: "350px 350px 350px",
+    gridTemplateColumns: "400px 400px 400px",
     gridGap: "30px",
     justifyContent: "space-between"
   },
