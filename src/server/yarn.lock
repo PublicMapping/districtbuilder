@@ -508,7 +508,7 @@
   dependencies:
     uuid "8.3.1"
 
-"@nestjsx/crud-request@^4.6.2":
+"@nestjsx/crud-request@^4.6.0":
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/@nestjsx/crud-request/-/crud-request-4.6.2.tgz#c0d29df354b3de648a44dc0973f80131c953af86"
   integrity sha512-EqveTzR5JLMRBnxqJzo0mm7Ff05IzQ6dvfg1gj46q6nOwZ0hfXr0FBTChtciKtkZB/QOlWQ5B1scCap/QuNJWQ==
@@ -516,23 +516,23 @@
     "@nestjsx/util" "^4.6.2"
     qs "^6.8.0"
 
-"@nestjsx/crud-typeorm@4.6.2":
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/@nestjsx/crud-typeorm/-/crud-typeorm-4.6.2.tgz#8d36b07b139489133545673af2209d2f1ce3d4fa"
-  integrity sha512-RHJlxz9QrLauaCtgRp0C2o38WVLbcZzvFWjHOpsSa8Pti74lUppphiAvlSaOnoMjOtlSCYcHJ954ynKcy0GwLA==
+"@nestjsx/crud-typeorm@4.6.0":
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/@nestjsx/crud-typeorm/-/crud-typeorm-4.6.0.tgz#a621377d9335b056889c0751ac83eef6789e3e62"
+  integrity sha512-6l281T5xBvyhq83LCESDmvhKVqsMhUDef0k5Ko4MTqNkPygFMmgVyglxD+p2UFvWiJ92VzLMHUh0jstesXC9Xg==
   dependencies:
     "@zmotivat0r/o0" "^1.0.2"
 
-"@nestjsx/crud@4.6.2":
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/@nestjsx/crud/-/crud-4.6.2.tgz#7b6c3e8642f44f6113e7d9945aa397bbda334b26"
-  integrity sha512-WWzPI7X2saxJ2No5vO4+zaSRP4CABqSM4NGVAE1VjGQ1ApdjDxj3dFu08Y7YSa5kz+vmrVRwh++Vh+xd9MixUQ==
+"@nestjsx/crud@4.6.0":
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/@nestjsx/crud/-/crud-4.6.0.tgz#d5de84136e64e91549db28cc4db6a70b51da97e4"
+  integrity sha512-SVQA8zYCrO3fno3g2918NmP3p10bzks9zwKIxW6OPOvKT3PHhWtWgStybuuAuN6v0qYiQ6K2AkQdin575mSkiw==
   dependencies:
-    "@nestjsx/crud-request" "^4.6.2"
-    "@nestjsx/util" "^4.6.2"
+    "@nestjsx/crud-request" "^4.6.0"
+    "@nestjsx/util" "^4.6.0"
     deepmerge "^3.2.0"
 
-"@nestjsx/util@^4.6.2":
+"@nestjsx/util@^4.6.0", "@nestjsx/util@^4.6.2":
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/@nestjsx/util/-/util-4.6.2.tgz#89bd31447a30f9666d7ad1616111c78b2d61dd56"
   integrity sha512-YG2gQvSm7p8zBFaW6MFM5r1Ihk4Vr189SB2OTr7fV7qcjPS+02v7xILw2dTz2emdmu0t0AgCL2RU1V0lY8Aa9w==
