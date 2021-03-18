@@ -67,6 +67,8 @@ import { Errors } from "../../../../shared/types";
     }
   },
   query: {
+    // This is a pretty heavy column, and is exposed by the export/geojson endpoint separately
+    exclude: ["districts"],
     join: {
       projectTemplate: {
         exclude: ["districtsDefinition"],
