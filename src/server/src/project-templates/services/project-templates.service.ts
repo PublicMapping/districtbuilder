@@ -19,6 +19,7 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
       .innerJoinAndSelect("projectTemplate.projects", "projects")
       .innerJoinAndSelect("projects.user", "user")
       .where("organization.slug = :slug", { slug: slug })
+      .andWhere("projectTemplate.isActive = TRUE")
       .select([
         "projectTemplate.name",
         "projectTemplate.numberOfDistricts",
