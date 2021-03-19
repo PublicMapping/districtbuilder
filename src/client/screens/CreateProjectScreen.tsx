@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
+import { userFetch } from "../actions/user";
 import {
   Box,
   Button,
@@ -17,18 +18,24 @@ import {
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
-import { IProject, IRegionConfig, IChamber } from "../../shared/entities";
+import { IProject, IRegionConfig, IChamber, OrganizationSlug } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
+import { organizationFetch } from "../actions/organization";
 import { createProject } from "../api";
 import { InputField, SelectField } from "../components/Field";
 import FormError from "../components/FormError";
 import { State } from "../reducers";
+import { UserState } from "../reducers/user";
 import { RegionConfigState } from "../reducers/regionConfig";
 import { WriteResource } from "../resource";
 import store from "../store";
+import { OrganizationState } from "../reducers/organization";
+import OrganizationTemplates from "../components/OrganizationTemplates";
 
 interface StateProps {
   readonly regionConfigs: RegionConfigState;
+  readonly organization: OrganizationState;
+  readonly user: UserState;
 }
 
 const validate = (form: ProjectForm) =>
@@ -57,9 +64,10 @@ interface InvalidForm extends ProjectForm {
   readonly valid: false;
 }
 
-const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
+const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) => {
   useEffect(() => {
     store.dispatch(regionConfigsFetch());
+    store.dispatch(userFetch());
   }, []);
   const [createProjectResource, setCreateProjectResource] = useState<
     WriteResource<ProjectForm, IProject>
@@ -73,6 +81,10 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
     }
   });
   const { data } = createProjectResource;
+  const [organizationSlug, setOrganizationSlug] = useState<OrganizationSlug | undefined>(undefined);
+  useEffect(() => {
+    organizationSlug && store.dispatch(organizationFetch(organizationSlug));
+  }, [organizationSlug]);
 
   const onDistrictChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chamber =
@@ -108,6 +120,7 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
       maxWidth: "medium",
       my: 7,
       mx: "auto",
+      display: "block",
       flexDirection: "column",
       "@media screen and (max-width: 770px)": {
         width: "95%",
@@ -160,7 +173,42 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
       paddingInlineStart: "0",
       paddingInlineEnd: "0",
       paddingBlockEnd: "0"
+    },
+    userOrgs: {
+      left: "40%",
+      display: "block",
+      minHeight: "100px",
+      border: "1px solid black",
+      width: "100%",
+      maxWidth: "medium",
+      my: 7,
+      mx: "auto",
+      padding: "10px"
+    },
+    orgCardLabel: {
+      mt: "5px"
+    },
+    orgCardSubtitle: {
+      mb: "10px"
+    },
+    orgTemplates: {
+      left: "40%",
+      display: "block",
+      minHeight: "100px",
+      pl: "5px",
+      "> *": {
+        mx: 5
+      },
+      mx: "auto",
+      width: "100%",
+      maxWidth: "medium",
+      my: 7
     }
+  };
+
+  const onOrgChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.currentTarget.value !== "" && setOrganizationSlug(e.currentTarget.value);
+    e.currentTarget.value === "" && setOrganizationSlug(undefined);
   };
 
   return "resource" in createProjectResource ? (
@@ -192,214 +240,276 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
           New Map
         </Heading>
       </Flex>
-      <Flex as="main" sx={{ width: "100%" }}>
-        <Flex sx={style.formContainer}>
-          <Flex
-            as="form"
-            sx={{ flexDirection: "column" }}
-            onSubmit={(e: React.FormEvent) => {
-              e.preventDefault();
-              const validatedForm = validate(data);
-              if (validatedForm.valid === true) {
-                setCreateProjectResource({ data, isPending: true });
-                createProject({
-                  ...validatedForm,
-                  chamber: validatedForm.chamber || undefined,
-                  numberOfDistricts: validatedForm.numberOfDistricts
-                })
-                  .then((project: IProject) =>
-                    setCreateProjectResource({ data, resource: project })
-                  )
-                  .catch(errors => setCreateProjectResource({ data, errors }));
-              }
-            }}
-          >
-            <Card sx={{ variant: "card.flat" }}>
-              <FormError resource={createProjectResource} />
-              <InputField
-                field="name"
-                label={
-                  <Box as="span" sx={style.cardLabel}>
-                    Map name
-                  </Box>
+      <Flex as="main" sx={{ width: "100%", display: "block" }}>
+        {"resource" in user && user.resource.organizations.length > 0 && (
+          <Flex sx={style.userOrgs}>
+            <Heading as="h3" sx={style.orgCardLabel}>
+              Organization
+            </Heading>
+            <Box sx={style.orgCardSubtitle}>
+              Are you making a new map with an organization you&apos;ve joined?
+            </Box>
+            <div
+              sx={{
+                flex: "0 0 50%",
+                "@media screen and (max-width: 770px)": {
+                  flex: "0 0 100%"
                 }
-                description={
-                  <Box as="span" sx={style.cardHint}>
-                    e.g. ‘Arizona House of Representatives’. Make it specific to help tell your maps
-                    apart.
-                  </Box>
-                }
-                resource={createProjectResource}
-                inputProps={{
-                  onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                    setCreateProjectResource({
-                      data: { ...data, name: e.currentTarget.value }
-                    })
-                }}
-              />
-            </Card>
-            <Card sx={{ variant: "card.flat" }}>
-              <SelectField
-                field="regionConfig"
-                label={
-                  <Box as="span" sx={style.cardLabel}>
-                    State
-                  </Box>
-                }
-                description={
-                  <Box as="span" sx={style.cardHint}>
-                    What state do you want to map? If you don’t see it in the list,{" "}
-                    <Styled.a
-                      href="https://districtbuilder.us1.list-manage.com/subscribe?u=61da999c9897859f1c1fff262&id=70fdf1ae35"
-                      target="_blank"
-                    >
-                      sign up for our mailing list
-                    </Styled.a>{" "}
-                    to know when new states are available!
-                  </Box>
-                }
-                resource={createProjectResource}
-                selectProps={{
-                  onChange:
-                    "resource" in regionConfigs
-                      ? (e: React.ChangeEvent<HTMLSelectElement>) => {
-                          const regionConfig = regionConfigs.resource.find(
-                            regionConfig => regionConfig.id === e.currentTarget.value
-                          );
-                          setCreateProjectResource({
-                            data: { ...data, regionConfig: regionConfig || null }
-                          });
-                        }
-                      : undefined
+              }}
+              key="custom"
+            >
+              <Label>
+                <Radio
+                  name="organization"
+                  value=""
+                  onChange={onOrgChanged}
+                  checked={organizationSlug === undefined}
+                />
+                <Flex as="span" sx={{ flexDirection: "column" }}>
+                  <div sx={style.radioHeading}>No organization</div>
+                  <div sx={style.radioSubHeading}>Continue without an organization</div>
+                </Flex>
+              </Label>
+            </div>
+            {user.resource.organizations.map(org => (
+              <Label
+                key={org.slug}
+                sx={{
+                  display: "inline-flex",
+                  "@media screen and (min-width: 750px)": {
+                    flex: "0 0 48%",
+                    "&:nth-of-type(even)": {
+                      mr: "2%"
+                    }
+                  }
                 }}
               >
-                <option>Select...</option>
-                {"resource" in regionConfigs
-                  ? regionConfigs.resource
-                      .filter(regionConfig => !regionConfig.hidden)
-                      .map(regionConfig => (
-                        <option key={regionConfig.id} value={regionConfig.id}>
-                          {regionConfig.name}
-                        </option>
-                      ))
-                  : null}
-              </SelectField>
-            </Card>
-            {data.regionConfig ? (
+                <Radio name="organization" value={org.slug} onChange={onOrgChanged} />
+                <Flex as="span" sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}>
+                  <div sx={style.radioHeading}>{org.name}</div>
+                  <div sx={style.radioSubHeading}>{org.slug}</div>
+                </Flex>
+              </Label>
+            ))}
+          </Flex>
+        )}
+        {"resource" in organization && "resource" in user && organizationSlug && (
+          <Box sx={style.orgTemplates}>
+            <OrganizationTemplates user={user.resource} organization={organization.resource} />
+          </Box>
+        )}
+        {!organizationSlug && (
+          <Flex sx={style.formContainer}>
+            <Flex
+              as="form"
+              sx={{ flexDirection: "column" }}
+              onSubmit={(e: React.FormEvent) => {
+                e.preventDefault();
+                const validatedForm = validate(data);
+                // Disabling 'functional/no-conditional-statement' without naming it.
+                // See https://github.com/jonaskello/eslint-plugin-functional/issues/105
+                // eslint-disable-next-line
+                if (validatedForm.valid === true) {
+                  setCreateProjectResource({ data, isPending: true });
+                  createProject({
+                    ...validatedForm,
+                    chamber: validatedForm.chamber || undefined,
+                    numberOfDistricts: validatedForm.numberOfDistricts
+                  })
+                    .then((project: IProject) =>
+                      setCreateProjectResource({ data, resource: project })
+                    )
+                    .catch(errors => setCreateProjectResource({ data, errors }));
+                }
+              }}
+            >
               <Card sx={{ variant: "card.flat" }}>
-                <fieldset sx={style.fieldset}>
-                  <Flex sx={{ flexWrap: "wrap" }}>
-                    <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                      Districts
-                    </legend>
-                    <Box
-                      id="description-districts"
-                      as="span"
-                      sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
-                    >
-                      How many districts do you want to map? Choose a federal or state legislative
-                      chamber or define your own.
+                <FormError resource={createProjectResource} />
+                <InputField
+                  field="name"
+                  label={
+                    <Box as="span" sx={style.cardLabel}>
+                      Map name
                     </Box>
-                    {data.regionConfig &&
-                      [...data.regionConfig.chambers]
-                        .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
-                        .map(chamber => (
-                          <Label
-                            key={chamber.id}
-                            sx={{
-                              display: "inline-flex",
-                              "@media screen and (min-width: 750px)": {
-                                flex: "0 0 48%",
-                                "&:nth-of-type(even)": {
-                                  mr: "2%"
-                                }
-                              }
-                            }}
-                          >
-                            <Radio
-                              name="project-district"
-                              value={chamber.id}
-                              onChange={onDistrictChanged}
-                              aria-describedby="description-districts"
-                            />
-                            <Flex
-                              as="span"
-                              sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                            >
-                              <div sx={style.radioHeading}>{chamber.name}</div>
-                              <div sx={style.radioSubHeading}>
-                                {chamber.numberOfDistricts} districts
-                              </div>
-                            </Flex>
-                          </Label>
+                  }
+                  description={
+                    <Box as="span" sx={style.cardHint}>
+                      e.g. ‘Arizona House of Representatives’. Make it specific to help tell your
+                      maps apart.
+                    </Box>
+                  }
+                  resource={createProjectResource}
+                  inputProps={{
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                      setCreateProjectResource({
+                        data: { ...data, name: e.currentTarget.value }
+                      })
+                  }}
+                />
+              </Card>
+              <Card sx={{ variant: "card.flat" }}>
+                <SelectField
+                  field="regionConfig"
+                  label={
+                    <Box as="span" sx={style.cardLabel}>
+                      State
+                    </Box>
+                  }
+                  description={
+                    <Box as="span" sx={style.cardHint}>
+                      What state do you want to map? If you don’t see it in the list,{" "}
+                      <Styled.a
+                        href="https://districtbuilder.us1.list-manage.com/subscribe?u=61da999c9897859f1c1fff262&id=70fdf1ae35"
+                        target="_blank"
+                      >
+                        sign up for our mailing list
+                      </Styled.a>{" "}
+                      to know when new states are available!
+                    </Box>
+                  }
+                  resource={createProjectResource}
+                  selectProps={{
+                    onChange:
+                      "resource" in regionConfigs
+                        ? (e: React.ChangeEvent<HTMLSelectElement>) => {
+                            const regionConfig = regionConfigs.resource.find(
+                              regionConfig => regionConfig.id === e.currentTarget.value
+                            );
+                            setCreateProjectResource({
+                              data: { ...data, regionConfig: regionConfig || null }
+                            });
+                          }
+                        : undefined
+                  }}
+                >
+                  <option>Select...</option>
+                  {"resource" in regionConfigs
+                    ? regionConfigs.resource
+                        .filter(regionConfig => !regionConfig.hidden)
+                        .map(regionConfig => (
+                          <option key={regionConfig.id} value={regionConfig.id}>
+                            {regionConfig.name}
+                          </option>
                         ))
-                        .concat(
-                          <div
-                            sx={{
-                              flex: "0 0 50%",
-                              "@media screen and (max-width: 770px)": {
-                                flex: "0 0 100%"
-                              }
-                            }}
-                            key="custom"
-                          >
-                            <Label>
+                    : null}
+                </SelectField>
+              </Card>
+              {data.regionConfig ? (
+                <Card sx={{ variant: "card.flat" }}>
+                  <fieldset sx={style.fieldset}>
+                    <Flex sx={{ flexWrap: "wrap" }}>
+                      <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
+                        Districts
+                      </legend>
+                      <Box
+                        id="description-districts"
+                        as="span"
+                        sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                      >
+                        How many districts do you want to map? Choose a federal or state legislative
+                        chamber or define your own.
+                      </Box>
+                      {data.regionConfig &&
+                        [...data.regionConfig.chambers]
+                          .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
+                          .map(chamber => (
+                            <Label
+                              key={chamber.id}
+                              sx={{
+                                display: "inline-flex",
+                                "@media screen and (min-width: 750px)": {
+                                  flex: "0 0 48%",
+                                  "&:nth-of-type(even)": {
+                                    mr: "2%"
+                                  }
+                                }
+                              }}
+                            >
                               <Radio
                                 name="project-district"
-                                value=""
+                                value={chamber.id}
                                 onChange={onDistrictChanged}
+                                aria-describedby="description-districts"
                               />
-                              <Flex as="span" sx={{ flexDirection: "column" }}>
-                                <div sx={style.radioHeading}>Custom</div>
+                              <Flex
+                                as="span"
+                                sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                              >
+                                <div sx={style.radioHeading}>{chamber.name}</div>
                                 <div sx={style.radioSubHeading}>
-                                  Define a custom number of districts
+                                  {chamber.numberOfDistricts} districts
                                 </div>
                               </Flex>
                             </Label>
-                          </div>
-                        )}
-                    {data.isCustom ? (
-                      <Box sx={style.customInputContainer}>
-                        <InputField
-                          field="numberOfDistricts"
-                          label="Number of districts"
-                          resource={createProjectResource}
-                          inputProps={{
-                            onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                              const value = parseInt(e.currentTarget.value, 10);
-                              const numberOfDistricts = isNaN(value) ? null : value;
-                              setCreateProjectResource({
-                                data: {
-                                  ...data,
-                                  numberOfDistricts,
-                                  isCustom: true
+                          ))
+                          .concat(
+                            <div
+                              sx={{
+                                flex: "0 0 50%",
+                                "@media screen and (max-width: 770px)": {
+                                  flex: "0 0 100%"
                                 }
-                              });
-                            }
-                          }}
-                        />
-                      </Box>
-                    ) : null}
-                  </Flex>
-                </fieldset>
-              </Card>
-            ) : (
-              undefined
-            )}
-            <Box sx={{ mt: 3, textAlign: "left" }}>
-              <Button
-                type="submit"
-                disabled={
-                  (("isPending" in createProjectResource && createProjectResource.isPending) ||
-                    !validate(data).valid) &&
-                  !("errorMessage" in createProjectResource)
-                }
-              >
-                Create map
-              </Button>
-            </Box>
+                              }}
+                              key="custom"
+                            >
+                              <Label>
+                                <Radio
+                                  name="project-district"
+                                  value=""
+                                  onChange={onDistrictChanged}
+                                />
+                                <Flex as="span" sx={{ flexDirection: "column" }}>
+                                  <div sx={style.radioHeading}>Custom</div>
+                                  <div sx={style.radioSubHeading}>
+                                    Define a custom number of districts
+                                  </div>
+                                </Flex>
+                              </Label>
+                            </div>
+                          )}
+                      {data.isCustom ? (
+                        <Box sx={style.customInputContainer}>
+                          <InputField
+                            field="numberOfDistricts"
+                            label="Number of districts"
+                            resource={createProjectResource}
+                            inputProps={{
+                              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                                const value = parseInt(e.currentTarget.value, 10);
+                                const numberOfDistricts = isNaN(value) ? null : value;
+                                setCreateProjectResource({
+                                  data: {
+                                    ...data,
+                                    numberOfDistricts,
+                                    isCustom: true
+                                  }
+                                });
+                              }
+                            }}
+                          />
+                        </Box>
+                      ) : null}
+                    </Flex>
+                  </fieldset>
+                </Card>
+              ) : (
+                undefined
+              )}
+              <Box sx={{ mt: 3, textAlign: "left" }}>
+                <Button
+                  type="submit"
+                  disabled={
+                    (("isPending" in createProjectResource && createProjectResource.isPending) ||
+                      !validate(data).valid) &&
+                    !("errorMessage" in createProjectResource)
+                  }
+                >
+                  Create map
+                </Button>
+              </Box>
+            </Flex>
           </Flex>
-        </Flex>
+        )}
       </Flex>
     </Flex>
   );
@@ -407,7 +517,9 @@ const CreateProjectScreen = ({ regionConfigs }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    regionConfigs: state.regionConfig
+    regionConfigs: state.regionConfig,
+    organization: state.organization,
+    user: state.user
   };
 }
 

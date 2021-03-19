@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { useHistory, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Box, Button, Flex, Heading, Image, jsx, Link, Spinner, Text } from "theme-ui";
 import { formatDate } from "../functions";
 
@@ -10,7 +10,6 @@ import { organizationFetch } from "../actions/organization";
 import { leaveOrganization } from "../actions/organizationJoin";
 import { userFetch } from "../actions/user";
 import { organizationFeaturedProjectsFetch } from "../actions/organizationProjects";
-import { createProject } from "../api";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { OrganizationState } from "../reducers/organization";
@@ -18,13 +17,7 @@ import { UserState } from "../reducers/user";
 import { OrganizationProjectsState } from "../reducers/organizationProjects";
 import store from "../store";
 
-import {
-  CreateProjectData,
-  IOrganization,
-  IProject,
-  IProjectTemplate,
-  IUser
-} from "../../shared/entities";
+import { CreateProjectData, IOrganization, IUser } from "../../shared/entities";
 import { OrgProject } from "../types";
 
 import Icon from "../components/Icon";
@@ -32,6 +25,7 @@ import JoinOrganizationModal from "../components/JoinOrganizationModal";
 import SiteHeader from "../components/SiteHeader";
 import Tooltip from "../components/Tooltip";
 import FeaturedProjectCard from "../components/FeaturedProjectCard";
+import OrganizationTemplates from "../components/OrganizationTemplates";
 
 import PageNotFoundScreen from "./PageNotFoundScreen";
 
@@ -127,7 +121,6 @@ const style = {
 const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
   const { organizationSlug } = useParams();
   const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
-  const history = useHistory();
   const isLoggedIn = getJWT() !== null;
   const userInOrg =
     "resource" in user &&
@@ -182,27 +175,6 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
     return userExists.length > 0;
   }
 
-  function createProjectFromTemplate(template: CreateProjectData) {
-    void createProject(template).then((project: IProject) =>
-      history.push(`/projects/${project.id}`)
-    );
-  }
-
-  function setupProjectFromTemplate(template: IProjectTemplate) {
-    const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
-    const currentTemplate = {
-      name,
-      regionConfig,
-      numberOfDistricts,
-      districtsDefinition,
-      chamber,
-      projectTemplate: { id }
-    };
-    // Set project template so we can redirect unauthenticated users after they login
-    setProjectTemplate(currentTemplate);
-    userInOrg ? createProjectFromTemplate(currentTemplate) : store.dispatch(showCopyMapModal(true));
-  }
-
   const joinButton = (
     <Flex
       sx={{
@@ -220,66 +192,6 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
       </Box>
     </Flex>
   );
-
-  const TemplateCard = ({ template }: { readonly template: IProjectTemplate }) => {
-    const useButton = (
-      <Button
-        disabled={isLoggedIn && !userIsVerified}
-        onClick={() => setupProjectFromTemplate(template)}
-        sx={style.useTemplateBtn}
-      >
-        Use this template
-      </Button>
-    );
-
-    return (
-      <Flex sx={style.template}>
-        <Heading
-          as="h3"
-          sx={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            mb: "0"
-          }}
-        >
-          {template.name}
-        </Heading>
-        <Text
-          sx={{
-            fontSize: "2",
-            margin: "4px 0 2px"
-          }}
-        >
-          {template.regionConfig.name} · {template.numberOfDistricts} districts
-        </Text>
-        <Text
-          sx={{
-            fontSize: "1",
-            mb: "3"
-          }}
-        >
-          {template.description}
-        </Text>
-        {userIsVerified || !isLoggedIn ? (
-          useButton
-        ) : (
-          <Tooltip
-            key={template.id}
-            content={
-              <div>
-                {userInOrg
-                  ? "You must confirm your email before using your organization's template"
-                  : "You must confirm your email before using this organization's template"}
-              </div>
-            }
-          >
-            <Box>{useButton}</Box>
-          </Tooltip>
-        )}
-      </Flex>
-    );
-  };
 
   return (
     <Flex sx={{ flexDirection: "column" }}>
@@ -368,21 +280,13 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                 )}
               </Flex>
             </Flex>
-            <Box sx={style.container}>
-              {organization.resource.projectTemplates.length > 0 && (
-                <Box sx={style.templates}>
-                  <Heading as="h2" sx={{ mb: "3" }}>
-                    Templates
-                  </Heading>
-                  <Text>
-                    Start a new map using the official settings from {organization.resource.name}
-                  </Text>
-                  <Box sx={style.templateContainer}>
-                    {organization.resource.projectTemplates.map(template => (
-                      <TemplateCard template={template} key={template.id} />
-                    ))}
-                  </Box>
-                </Box>
+            <Box>
+              {"resource" in organization && (
+                <OrganizationTemplates
+                  user={"resource" in user ? user.resource : undefined}
+                  organization={organization.resource}
+                  setTemplate={setProjectTemplate}
+                />
               )}
             </Box>
             <Box>
