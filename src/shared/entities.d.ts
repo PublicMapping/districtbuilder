@@ -16,6 +16,7 @@ export interface IUser {
 }
 
 export type EvaluateMetric = {
+  readonly key: string;
   readonly name: string;
   readonly type?: "fraction" | "percent" | "count";
   readonly value?: number;

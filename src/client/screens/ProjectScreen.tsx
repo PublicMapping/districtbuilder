@@ -34,7 +34,7 @@ import store from "../store";
 import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
-import ProjectEvaluateSidebar from "../components/ProjectEvaluateSidebar";
+import ProjectEvaluateView from "../components/evaluate/ProjectEvaluateSidebar";
 
 interface StateProps {
   readonly project?: IProject;
@@ -144,7 +144,7 @@ const ProjectScreen = ({
             isReadOnly={isReadOnly}
           />
         ) : (
-          <ProjectEvaluateSidebar geojson={geojson} metric={metric} />
+          <ProjectEvaluateView geojson={geojson} metric={metric} project={project} />
         )}
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           {!evaluateMode ? (
