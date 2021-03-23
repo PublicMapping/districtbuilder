@@ -18,7 +18,7 @@ export default class TopologyLoadedIndicator extends HealthIndicator {
 
     const layerEntries = (await Promise.all(
       Object.entries(layers).map(([layerId, topology]) => {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           // Promise.race should return the first already resolved promise
           // immediately when provided at least one, so this shouldn't block
           void Promise.race([topology, Promise.resolve(undefined)]).then(topology => {

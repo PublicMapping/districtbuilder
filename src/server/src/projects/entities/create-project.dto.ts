@@ -1,12 +1,4 @@
-import {
-  Allow,
-  ArrayNotEmpty,
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsPositive
-} from "class-validator";
+import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsOptional, IsPositive } from "class-validator";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
 import { ChamberIdDto } from "../../chambers/entities/chamber-id.dto";
