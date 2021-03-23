@@ -105,7 +105,7 @@ import { Errors } from "../../../../shared/types";
   filter: (req: any) => {
     const user = req.user as User;
     // Restrict access to organization projects if using toggleFeatured endpoint
-    if (req.route.path.split("/").reverse()[1] === "toggleFeatured") {
+    if (req.route.path.split("/").reverse()[0] === "toggleFeatured") {
       return {
         "projectTemplate.organization.admin": user.id
       };
@@ -254,7 +254,7 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   // Helper for obtaining a project for a given project request, throws exception if not found
-  async getProject(req: CrudRequest, projectId: ProjectId): Promise<Project> {
+  async getProject(req: CrudRequest, projectId: ProjectId, admin?: boolean): Promise<Project> {
     if (!this.base.getOneBase) {
       this.logger.error("Routes misconfigured. Missing `getOneBase` route");
       throw new InternalServerErrorException();
@@ -262,16 +262,14 @@ export class ProjectsController implements CrudController<Project> {
     if (!isUUID(projectId)) {
       throw new NotFoundException(`Project ${projectId} is not a valid UUID`);
     }
-
-    const project = await this.base
-      .getOneBase(req)
-      .then(project =>
-        project.user.id === req.parsed.authPersist.userId ? project : project.getReadOnlyView()
-      );
+    const project = await this.base.getOneBase(req).then(project => {
+      return project.user.id === req.parsed.authPersist.userId || admin
+        ? project
+        : project.getReadOnlyView();
+    });
     if (!project) {
       throw new NotFoundException(`Project ${projectId} not found`);
     }
-
     return project;
   }
 

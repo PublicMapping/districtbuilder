@@ -7,7 +7,6 @@ import bbox from "@turf/bbox";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../constants/map";
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
-
 const style = {
   featuredProject: {
     flexDirection: "column",
@@ -68,7 +67,6 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
           "line-color": "#000"
         }
       });
-
 
       setMapLoaded(true);
     });
