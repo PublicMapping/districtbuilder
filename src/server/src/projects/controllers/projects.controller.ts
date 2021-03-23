@@ -254,7 +254,7 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   // Helper for obtaining a project for a given project request, throws exception if not found
-  async getProject(req: CrudRequest, projectId: ProjectId, admin?: boolean): Promise<Project> {
+  async getProject(req: CrudRequest, projectId: ProjectId): Promise<Project> {
     if (!this.base.getOneBase) {
       this.logger.error("Routes misconfigured. Missing `getOneBase` route");
       throw new InternalServerErrorException();
@@ -263,7 +263,7 @@ export class ProjectsController implements CrudController<Project> {
       throw new NotFoundException(`Project ${projectId} is not a valid UUID`);
     }
     const project = await this.base.getOneBase(req).then(project => {
-      return project.user.id === req.parsed.authPersist.userId || admin
+      return project.user.id === req.parsed.authPersist.userId
         ? project
         : project.getReadOnlyView();
     });
