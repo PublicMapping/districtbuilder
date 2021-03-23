@@ -37,6 +37,7 @@ import { RegionConfigsService } from "../services/region-configs.service";
 })
 @UseGuards(JwtAuthGuard)
 @Controller("api/region-configs")
+// @ts-ignore
 export class RegionConfigsController implements CrudController<RegionConfig> {
   get base(): CrudController<RegionConfig> {
     return this;
