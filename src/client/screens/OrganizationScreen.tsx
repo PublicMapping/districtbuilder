@@ -3,6 +3,20 @@ import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
 import { Box, Button, Flex, Heading, Image, jsx, Link, Text } from "theme-ui";
+import { formatDate } from "../functions";
+
+import { showCopyMapModal } from "../actions/districtDrawing";
+import { organizationFetch } from "../actions/organization";
+import { leaveOrganization } from "../actions/organizationJoin";
+import { userFetch } from "../actions/user";
+import { organizationFeaturedProjectsFetch } from "../actions/organizationProjects";
+import { createProject } from "../api";
+import { getJWT } from "../jwt";
+import { State } from "../reducers";
+import { OrganizationState } from "../reducers/organization";
+import { UserState } from "../reducers/user";
+import { OrganizationProjectsState } from "../reducers/organizationProjects";
+import store from "../store";
 
 import {
   CreateProjectData,
@@ -11,26 +25,19 @@ import {
   IProjectTemplate,
   IUser
 } from "../../shared/entities";
+import { OrgProject } from "../types";
 
-import { showCopyMapModal } from "../actions/districtDrawing";
-import { organizationFetch } from "../actions/organization";
-import { leaveOrganization } from "../actions/organizationJoin";
-import { userFetch } from "../actions/user";
-import { createProject } from "../api";
 import Icon from "../components/Icon";
 import JoinOrganizationModal from "../components/JoinOrganizationModal";
 import SiteHeader from "../components/SiteHeader";
 import Tooltip from "../components/Tooltip";
-import { getJWT } from "../jwt";
-import { State } from "../reducers";
-import { OrganizationState } from "../reducers/organization";
-import { UserState } from "../reducers/user";
-import store from "../store";
+import FeaturedProjectCard from "../components/FeaturedProjectCard";
 
 import PageNotFoundScreen from "./PageNotFoundScreen";
 
 interface StateProps {
   readonly organization: OrganizationState;
+  readonly organizationProjects: OrganizationProjectsState;
   readonly user: UserState;
 }
 
@@ -66,18 +73,44 @@ const style = {
   templates: {
     p: 5
   },
+  featuredProjects: {
+    p: 5
+  },
   templateContainer: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, 300px)",
+    gridTemplateColumns: "350px 350px 350px",
+    gridGap: "30px",
+    justifyContent: "space-between"
+  },
+  featuredProjectContainer: {
+    display: "grid",
+    gridTemplateColumns: "400px 400px 400px",
     gridGap: "30px",
     justifyContent: "space-between"
   },
   template: {
-    flexDirection: "column"
+    flexDirection: "column",
+    border: "1px solid black",
+    padding: "20px"
+  },
+  featuredProject: {
+    flexDirection: "column",
+    border: "1px solid black",
+    padding: "20px",
+    minHeight: "200px"
+  },
+  useTemplateBtn: {
+    width: "100%",
+    background: "lightgray",
+    color: "black"
+  },
+  projectMap: {
+    height: "100px",
+    width: "100px"
   }
 } as const;
 
-const OrganizationScreen = ({ organization, user }: StateProps) => {
+const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
   const { organizationSlug } = useParams();
   const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
   const history = useHistory();
@@ -91,12 +124,31 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
 
   const userIsVerified = "resource" in user && user.resource && user.resource.isEmailVerified;
 
+  const featuredProjects =
+    "resource" in organizationProjects.featuredProjects
+      ? organizationProjects.featuredProjects.resource
+          .map(pt => {
+            return pt.projects.map(p => {
+              return {
+                ...p,
+                updatedAgo: formatDate(p.updatedDt),
+                creator: p.user.name,
+                templateName: pt.name,
+                regionConfig: pt.regionConfig,
+                numberOfDistricts: pt.numberOfDistricts
+              };
+            });
+          })
+          .flat()
+      : undefined;
+
   useEffect(() => {
     isLoggedIn && store.dispatch(userFetch());
   }, [isLoggedIn]);
 
   useEffect(() => {
     store.dispatch(organizationFetch(organizationSlug));
+    store.dispatch(organizationFeaturedProjectsFetch(organizationSlug));
   }, [organizationSlug]);
 
   function signupAndJoinOrg() {
@@ -116,24 +168,25 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
     return userExists.length > 0;
   }
 
-  function createProjectFromTemplate() {
-    projectTemplate &&
-      void createProject(projectTemplate).then((project: IProject) =>
-        history.push(`/projects/${project.id}`)
-      );
+  function createProjectFromTemplate(template: CreateProjectData) {
+    void createProject(template).then((project: IProject) =>
+      history.push(`/projects/${project.id}`)
+    );
   }
 
   function setupProjectFromTemplate(template: IProjectTemplate) {
     const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
-    setProjectTemplate({
+    const currentTemplate = {
       name,
       regionConfig,
       numberOfDistricts,
       districtsDefinition,
       chamber,
       projectTemplate: { id }
-    });
-    userInOrg ? createProjectFromTemplate() : store.dispatch(showCopyMapModal(true));
+    };
+    // Set project template so we can redirect unauthenticated users after they login
+    setProjectTemplate(currentTemplate);
+    userInOrg ? createProjectFromTemplate(currentTemplate) : store.dispatch(showCopyMapModal(true));
   }
 
   const joinButton = (
@@ -150,7 +203,7 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
       <Button
         disabled={isLoggedIn && !userIsVerified}
         onClick={() => setupProjectFromTemplate(template)}
-        sx={{ width: "100%" }}
+        sx={style.useTemplateBtn}
       >
         Use this template
       </Button>
@@ -257,6 +310,24 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
                 </Box>
               )}
             </Flex>
+            <Flex>
+              {featuredProjects ? (
+                <Box sx={style.featuredProjects}>
+                  <Heading>Featured maps</Heading>
+                  <Box sx={style.featuredProjectContainer}>
+                    {featuredProjects.length > 0 ? (
+                      featuredProjects.map((project: OrgProject) => (
+                        <FeaturedProjectCard project={project} key={project.id} />
+                      ))
+                    ) : (
+                      <Box>{organization.resource.name} has no featured maps yet.</Box>
+                    )}
+                  </Box>
+                </Box>
+              ) : (
+                <div>Loading</div>
+              )}
+            </Flex>
           </Box>
         ) : "statusCode" in organization && organization.statusCode === 404 ? (
           <PageNotFoundScreen model={"organization"} />
@@ -277,6 +348,7 @@ const OrganizationScreen = ({ organization, user }: StateProps) => {
 function mapStateToProps(state: State): StateProps {
   return {
     organization: state.organization,
+    organizationProjects: state.organizationProjects,
     user: state.user
   };
 }

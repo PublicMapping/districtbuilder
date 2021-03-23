@@ -16,7 +16,7 @@ export class OrganizationsController {
   constructor(public service: OrganizationsService, private readonly usersService: UsersService) {}
 
   async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
-    const org = await this.service.getOrgAndProjects(organizationSlug);
+    const org = await this.service.getOrgAndProjectTemplates(organizationSlug);
     if (!org) {
       throw new NotFoundException(`Organization ${organizationSlug} not found`);
     }

@@ -3,9 +3,9 @@ import { useMemo } from "react";
 import { Button, Flex, jsx } from "theme-ui";
 import store from "../store";
 import { toggleProjectFeatured } from "../actions/organizationProjects";
-import { OrganizationSlug, OrgProject } from "../../shared/entities";
+import { OrganizationSlug } from "../../shared/entities";
 import { useTable, Row, HeaderGroup, Cell, useSortBy } from "react-table";
-
+import { OrgProject } from "../types";
 interface ProjectsTableProps {
   readonly projects: readonly OrgProject[];
   readonly organizationSlug: OrganizationSlug;

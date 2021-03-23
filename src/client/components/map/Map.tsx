@@ -43,6 +43,7 @@ import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
 import { State } from "../../reducers";
 import { connect } from "react-redux";
+import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 
 interface Props {
   readonly project: IProject;
@@ -103,12 +104,11 @@ const DistrictsMap = ({
     }
 
     // eslint-disable-next-line
-    MapboxGL.accessToken =
-      "pk.eyJ1IjoiZGlzdHJpY3RidWlsZGVyIiwiYSI6ImNrZXZzeXlvMjIxb2QycW1yeGpuMDJ2ZGwifQ.FdOGNk3y1BPkGvF_yCjjGQ";
+    MapboxGL.accessToken = MAPBOX_TOKEN;
 
     const map = new MapboxGL.Map({
       container: mapRef.current,
-      style: "mapbox://styles/districtbuilder/ckexc26lz0d3k19owrswhxz9o",
+      style: MAPBOX_STYLE,
       bounds: [b0, b1, b2, b3],
       fitBoundsOptions: { padding: 20 },
       minZoom: minZoom,

@@ -5,7 +5,8 @@ import {
   IStaticMetadata,
   UintArrays,
   GeoUnitHierarchy,
-  DistrictProperties
+  DistrictProperties,
+  DistrictsDefinition
 } from "../shared/entities";
 
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;
@@ -33,4 +34,16 @@ export type SavingState = "unsaved" | "saving" | "saved" | "failed";
 
 export interface AuthLocationState {
   readonly from: H.Location;
+}
+
+interface OrgProject {
+  readonly id: ProjectId;
+  readonly name: string;
+  readonly templateName: string;
+  readonly updatedAgo: string;
+  readonly isFeatured: boolean;
+  readonly user: Pick<IUser, PublicUserProperties>;
+  readonly districts?: DistrictsGeoJSON;
+  readonly districtsDefinition?: DistrictsDefinition;
+  readonly creator: string;
 }

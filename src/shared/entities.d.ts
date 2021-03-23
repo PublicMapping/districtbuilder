@@ -174,15 +174,6 @@ export type ProjectNest = Pick<
   readonly regionConfig: Pick<IRegionConfig, "name">;
 };
 
-interface OrgProject {
-  readonly id: ProjectId;
-  readonly name: string;
-  readonly templateName: string;
-  readonly updatedAgo: string;
-  readonly isFeatured: boolean;
-  readonly creator: string;
-}
-
 export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;

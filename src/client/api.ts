@@ -13,9 +13,9 @@ import {
   ProjectId,
   UpdateProjectData,
   UpdateUserData,
-  UserId,
-  OrgProject
+  UserId
 } from "../shared/entities";
+import { OrgProject } from "./types";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
@@ -263,6 +263,21 @@ export async function fetchOrganizationProjects(
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/project_templates/${slug}`)
+      .then(response => {
+        resolve(response.data);
+      })
+      .catch(error => {
+        reject(error.response.data);
+      });
+  });
+}
+
+export async function fetchOrganizationFeaturedProjects(
+  slug: OrganizationSlug
+): Promise<readonly IProjectTemplateWithProjects[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/featured/${slug}`)
       .then(response => {
         resolve(response.data);
       })
