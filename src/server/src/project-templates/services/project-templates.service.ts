@@ -29,7 +29,6 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
         "projects.isFeatured",
         "projects.id",
         "projects.updatedDt",
-        "projects.districtsDefinition",
         "regionConfig.name",
         "user.name"
       ])
