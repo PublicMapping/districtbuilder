@@ -7,9 +7,9 @@ import {
   IsOptional,
   IsPositive
 } from "class-validator";
-import { ChamberIdDto } from "src/chambers/entities/chamber-id.dto";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
+import { ChamberIdDto } from "../../chambers/entities/chamber-id.dto";
 import { ProjectTemplateIdDto } from "../../project-templates/entities/project-template-id.dto";
 import { RegionConfigIdDto } from "../../region-configs/entities/region-config-id.dto";
 
