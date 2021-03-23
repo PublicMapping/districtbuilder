@@ -11,7 +11,8 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
     super(repo);
   }
 
-  async findOrgProjects(slug: string): Promise<ProjectTemplate[]> {
+  async findAdminOrgProjects(slug: string): Promise<ProjectTemplate[]> {
+    // Returns admin-only listing of all organization projects
     const builder = this.repo.createQueryBuilder("projectTemplate");
     const data = await builder
       .innerJoinAndSelect("projectTemplate.organization", "organization")
@@ -28,6 +29,32 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
         "projects.isFeatured",
         "projects.id",
         "projects.updatedDt",
+        "regionConfig.name",
+        "user.name"
+      ])
+      .getMany();
+    return data;
+  }
+
+  async findOrgFeaturedProjects(slug: string): Promise<ProjectTemplate[]> {
+    // Returns public listing of all featured projects for an organization
+    const builder = this.repo.createQueryBuilder("projectTemplate");
+    const data = await builder
+      .innerJoinAndSelect("projectTemplate.organization", "organization")
+      .innerJoinAndSelect("projectTemplate.regionConfig", "regionConfig")
+      .leftJoinAndSelect("projectTemplate.projects", "projects", "projects.isFeatured = TRUE")
+      .innerJoinAndSelect("projects.user", "user")
+      .where("organization.slug = :slug", { slug: slug })
+      .andWhere("projectTemplate.isActive = TRUE")
+      .select([
+        "projectTemplate.name",
+        "projectTemplate.numberOfDistricts",
+        "projectTemplate.id",
+        "projects.name",
+        "projects.isFeatured",
+        "projects.id",
+        "projects.updatedDt",
+        "projects.districts",
         "regionConfig.name",
         "user.name"
       ])
