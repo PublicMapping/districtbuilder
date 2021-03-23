@@ -3,7 +3,8 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { TerminusModule } from "@nestjs/terminus";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { HandlebarsAdapter, MailerModule } from "@nestjs-modules/mailer";
+import { MailerModule } from "@nestjs-modules/mailer";
+import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
 import { SES } from "aws-sdk";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import * as StreamTransport from "nodemailer/lib/stream-transport";
