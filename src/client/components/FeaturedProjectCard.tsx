@@ -5,6 +5,8 @@ import MapboxGL from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 import bbox from "@turf/bbox";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../constants/map";
+import { BBox2d } from "@turf/helpers/lib/geojson";
+
 
 const style = {
   featuredProject: {
@@ -33,7 +35,6 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    // eslint-disable-next-line
     if (mapRef.current === null) {
       return;
     }
@@ -41,12 +42,15 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
     // eslint-disable-next-line
     MapboxGL.accessToken = MAPBOX_TOKEN;
 
+    const bounds = project.districts && (bbox(project.districts) as BBox2d);
     const map = new MapboxGL.Map({
       container: mapRef.current,
       style: MAPBOX_STYLE,
+      bounds,
       fitBoundsOptions: { padding: 20 },
       minZoom: 5,
-      maxZoom: 5
+      maxZoom: 5,
+      interactive: false
     });
 
     map.on("load", function() {
@@ -64,10 +68,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
           "line-color": "#000"
         }
       });
-      const bounds = project.districts && bbox(project.districts);
 
-      // @ts-ignore
-      bounds && map.fitBounds(bounds);
 
       setMapLoaded(true);
     });
