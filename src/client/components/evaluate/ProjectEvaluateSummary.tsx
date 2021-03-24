@@ -70,39 +70,23 @@ const style: ThemeUIStyleObject = {
 };
 
 const ProjectEvaluateView = ({
-  projectMetricValues,
   requiredMetrics,
   optionalMetrics
 }: {
   // Still working out what the type should be here
-  // eslint-ignore
-  readonly projectMetricValues: any;
   readonly requiredMetrics: readonly EvaluateMetric[];
   readonly optionalMetrics: readonly EvaluateMetric[];
 }) => {
-  function formatMetricValue(metric: EvaluateMetric, value?: any): string {
-    if (!value) {
-      switch (metric.type) {
-        case "fraction":
-          return `${metric.value} / 18`;
-        case "percent":
-          return `${metric.value}%`;
-        case "count":
-          return `${metric.value}`;
-        default:
-          return "";
-      }
-    } else {
-      switch (metric.type) {
-        case "fraction":
-          return `${value.value} / ${value.total}`;
-        case "percent":
-          return `${metric.value}%`;
-        case "count":
-          return `${value.value}`;
-        default:
-          return "";
-      }
+  function formatMetricValue(metric: EvaluateMetric): string {
+    switch (metric.type) {
+      case "fraction":
+        return `${metric.value} / 18`;
+      case "percent":
+        return `${metric.value}%`;
+      case "count":
+        return `${metric.value}`;
+      default:
+        return "";
     }
   }
   return (
@@ -127,18 +111,14 @@ const ProjectEvaluateView = ({
           <Box
             sx={style.metricRow}
             onClick={() => store.dispatch(selectEvaluationMetric(metric))}
-            key={metric.name}
+            key={metric.key}
           >
             <Flex sx={style.metricRow}>
               <Box sx={{ mr: "50px" }}>
                 {metric.status ? <Icon name={"check"} /> : <Icon name={"question-circle"} />}
               </Box>
               <Box>{metric.name}</Box>
-              <Box sx={style.metricValue}>
-                {projectMetricValues[metric.name]
-                  ? formatMetricValue(metric, projectMetricValues[metric.key])
-                  : formatMetricValue(metric)}
-              </Box>
+              <Box sx={style.metricValue}>{formatMetricValue(metric)}</Box>
             </Flex>
             <Flex sx={style.metricText}>Lorem ipsum dolor</Flex>
           </Box>
@@ -149,18 +129,14 @@ const ProjectEvaluateView = ({
           Optional
         </Heading>
         {optionalMetrics.map(metric => (
-          <Flex key={metric.name}>
+          <Flex key={metric.key}>
             <Box
               sx={style.metricRow}
               onClick={() => store.dispatch(selectEvaluationMetric(metric))}
             >
               <Flex sx={style.metricRow}>
                 <Box sx={{ ml: "50px" }}>{metric.name}</Box>
-                <Box sx={style.metricValue}>
-                  {projectMetricValues[metric.key]
-                    ? formatMetricValue(metric, projectMetricValues[metric.key])
-                    : formatMetricValue(metric)}
-                </Box>
+                <Box sx={style.metricValue}>{formatMetricValue(metric)}</Box>
               </Flex>
               <Flex sx={style.metricText}>Lorem ipsum dolor</Flex>
             </Box>

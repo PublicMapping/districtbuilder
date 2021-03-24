@@ -12,7 +12,8 @@ import {
   IProject,
   IStaticMetadata,
   IUser,
-  UintArrays
+  UintArrays,
+  EvaluateMetric
 } from "../../shared/entities";
 import { projectDataFetch } from "../actions/projectData";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
@@ -34,7 +35,7 @@ import store from "../store";
 import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
-import ProjectEvaluateView from "../components/evaluate/ProjectEvaluateSidebar";
+import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
 
 interface StateProps {
   readonly project?: IProject;
@@ -43,6 +44,7 @@ interface StateProps {
   readonly staticGeoLevels: UintArrays;
   readonly projectNotFound?: boolean;
   readonly evaluateMode: boolean;
+  readonly evaluateMetric: EvaluateMetric | undefined;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
@@ -68,6 +70,7 @@ const ProjectScreen = ({
   staticMetadata,
   staticGeoLevels,
   evaluateMode,
+  evaluateMetric,
   projectNotFound,
   geoUnitHierarchy,
   districtDrawing,
@@ -81,7 +84,6 @@ const ProjectScreen = ({
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
   const presentDrawingState = districtDrawing.undoHistory.present.state;
-  const metric = districtDrawing.evaluateMetric;
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
@@ -144,7 +146,7 @@ const ProjectScreen = ({
             isReadOnly={isReadOnly}
           />
         ) : (
-          <ProjectEvaluateView geojson={geojson} metric={metric} project={project} />
+          <ProjectEvaluateSidebar geojson={geojson} metric={evaluateMetric} project={project} />
         )}
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           {!evaluateMode ? (
@@ -212,6 +214,7 @@ function mapStateToProps(state: State): StateProps {
     staticGeoLevels: destructureResource(state.project.staticData, "staticGeoLevels"),
     geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
     evaluateMode: state.project.evaluateMode,
+    evaluateMetric: state.project.evaluateMetric,
     districtDrawing: state.project,
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||

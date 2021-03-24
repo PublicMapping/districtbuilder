@@ -69,54 +69,6 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const requiredMetrics: readonly EvaluateMetric[] = [
-  {
-    key: "equalPopulation",
-    name: "Equal Population",
-    status: false,
-    description: "have equal population",
-    type: "fraction",
-    value: 17
-  },
-  {
-    key: "contiguity",
-    name: "Contiguity",
-    status: true,
-    description: "are contiguous",
-    type: "fraction",
-    value: 18
-  }
-];
-
-const optionalMetrics: readonly EvaluateMetric[] = [
-  {
-    key: "competitiveness",
-    name: "Competitiveness",
-    description: "are competitive"
-  },
-  {
-    key: "compactness",
-    name: "Compactness",
-    type: "percent",
-    description: "are compact",
-    value: 56.2
-  },
-  {
-    key: "minorityMajority",
-    name: "Minority-Majority",
-    type: "fraction",
-    description: "are minority-majority",
-    value: 1
-  },
-  {
-    key: "countySplits",
-    name: "County splits",
-    type: "count",
-    description: "are split",
-    value: 15
-  }
-];
-
 const ProjectEvaluateSidebar = ({
   geojson,
   metric,
@@ -126,22 +78,67 @@ const ProjectEvaluateSidebar = ({
   readonly metric: EvaluateMetric | undefined;
   readonly project?: IProject;
 }) => {
-  const countySplits = project?.districtsDefinition.filter(x => !Array.isArray(x)).length;
-  const totalCounties = project ? project.districtsDefinition : 0;
-  const projectMetricValues = {
-    countySplits: {
-      total: totalCounties,
-      value: countySplits
+  const requiredMetrics: readonly EvaluateMetric[] = [
+    {
+      key: "equalPopulation",
+      name: "Equal Population",
+      status: false,
+      description: "have equal population",
+      type: "fraction",
+      value: 17
+    },
+    {
+      key: "contiguity",
+      name: "Contiguity",
+      status: true,
+      description: "are contiguous",
+      type: "fraction",
+      value: 18
     }
-  };
+  ];
+  const optionalMetrics: readonly EvaluateMetric[] = [
+    {
+      key: "competitiveness",
+      name: "Competitiveness",
+      description: "are competitive"
+    },
+    {
+      key: "compactness",
+      name: "Compactness",
+      type: "percent",
+      description: "are compact",
+      value: 56.2
+    },
+    {
+      key: "minorityMajority",
+      name: "Minority-Majority",
+      type: "fraction",
+      description: "are minority-majority",
+      value: 1
+    },
+    {
+      key: "countySplits",
+      name: "County splits",
+      type: "count",
+      description: "are split",
+      value: project?.districtsDefinition.filter(x => Array.isArray(x)).length,
+      total: project ? project.districtsDefinition.length : 0,
+      splitCounties: project?.districtsDefinition.map(c => {
+        if (Array.isArray(c)) {
+          return c;
+        } else {
+          return undefined;
+        }
+      })
+    }
+  ];
   return (
     <Container sx={style.sidebar} className="evaluate-sidebar">
       {!metric ? (
         <ProjectEvaluateSummary
-          projectMetricValues={projectMetricValues}
           requiredMetrics={requiredMetrics}
           optionalMetrics={optionalMetrics}
-        ></ProjectEvaluateSummary>
+        />
       ) : (
         <ProjectEvaluateMetricDetail geojson={geojson} metric={metric} />
       )}
