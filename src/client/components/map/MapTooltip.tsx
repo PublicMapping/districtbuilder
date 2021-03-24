@@ -12,6 +12,7 @@ import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
 import DemographicsTooltip from "../DemographicsTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
+import { getLabel } from "./labels";
 
 const style: ThemeUIStyleObject = {
   tooltip: {
@@ -147,15 +148,7 @@ const MapTooltip = ({
           ));
 
         const featureLabel = () => (
-          <span sx={{ textTransform: "capitalize" }}>
-            {feature && feature.properties && typeof feature.properties.name === "string" ? (
-              feature.properties.name
-            ) : feature ? (
-              <span sx={{ textTransform: "capitalize" }}>{`${geoLevelId} #${feature.id}`}</span>
-            ) : (
-              ""
-            )}
-          </span>
+          <span sx={{ textTransform: "capitalize" }}>{getLabel(geoLevelId, feature)}</span>
         );
         const highlightedGeounitsForLevel = highlightedGeounits[geoLevelId];
         const heading =

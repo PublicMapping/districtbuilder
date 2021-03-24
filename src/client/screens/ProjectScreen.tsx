@@ -11,6 +11,7 @@ import {
   GeoUnitHierarchy,
   IProject,
   IStaticMetadata,
+  RegionLookupProperties,
   IUser,
   UintArrays,
   EvaluateMetric
@@ -43,6 +44,7 @@ interface StateProps {
   readonly staticMetadata?: IStaticMetadata;
   readonly staticGeoLevels: UintArrays;
   readonly projectNotFound?: boolean;
+  readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly evaluateMode: boolean;
   readonly evaluateMetric: EvaluateMetric | undefined;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
@@ -71,6 +73,7 @@ const ProjectScreen = ({
   staticGeoLevels,
   evaluateMode,
   evaluateMetric,
+  regionProperties,
   projectNotFound,
   geoUnitHierarchy,
   districtDrawing,
@@ -146,7 +149,13 @@ const ProjectScreen = ({
             isReadOnly={isReadOnly}
           />
         ) : (
-          <ProjectEvaluateSidebar geojson={geojson} metric={evaluateMetric} project={project} />
+          <ProjectEvaluateSidebar
+            geojson={geojson}
+            metric={evaluateMetric}
+            project={project}
+            regionProperties={regionProperties}
+            staticMetadata={staticMetadata}
+          />
         )}
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           {!evaluateMode ? (
@@ -218,6 +227,7 @@ function mapStateToProps(state: State): StateProps {
     evaluateMode: state.project.evaluateMode,
     evaluateMetric: state.project.evaluateMetric,
     districtDrawing: state.project,
+    regionProperties: state.regionConfig.regionProperties,
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||
       ("isPending" in state.project.staticData && state.project.staticData.isPending),

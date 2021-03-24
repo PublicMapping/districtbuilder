@@ -26,14 +26,13 @@ import { InputField, SelectField } from "../components/Field";
 import FormError from "../components/FormError";
 import { State } from "../reducers";
 import { UserState } from "../reducers/user";
-import { RegionConfigState } from "../reducers/regionConfig";
-import { WriteResource } from "../resource";
+import { WriteResource, Resource } from "../resource";
 import store from "../store";
 import { OrganizationState } from "../reducers/organization";
 import OrganizationTemplates from "../components/OrganizationTemplates";
 
 interface StateProps {
-  readonly regionConfigs: RegionConfigState;
+  readonly regionConfigs: Resource<readonly IRegionConfig[]>;
   readonly organization: OrganizationState;
   readonly user: UserState;
 }
@@ -507,7 +506,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
 
 function mapStateToProps(state: State): StateProps {
   return {
-    regionConfigs: state.regionConfig,
+    regionConfigs: state.regionConfig.regionConfigs,
     organization: state.organization,
     user: state.user
   };
