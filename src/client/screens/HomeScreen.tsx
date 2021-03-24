@@ -68,10 +68,17 @@ const HomeScreen = ({ projects, user }: StateProps) => {
         sx={{ width: "100%", maxWidth: "large", my: 6, mx: "auto", flexDirection: "column", px: 4 }}
       >
         {projectList.length > 0 && (
-          <Flex sx={{ justifyContent: "space-between", mb: 3 }}>
-            <Heading as="h1" sx={{ variant: "text.h3" }}>
+          <Flex sx={{ mb: 3 }}>
+            <Heading as="h1" sx={{ variant: "text.h3", mr: "auto" }}>
               Maps
             </Heading>
+            <Styled.a
+              as={Link}
+              to="/import-project"
+              sx={{ variant: "links.secondaryButton", fontSize: 3, px: 4, py: 2, mr: 2 }}
+            >
+              Import
+            </Styled.a>
             <Styled.a
               as={Link}
               to="/create-project"

@@ -1,11 +1,11 @@
 /** @jsx jsx */
 import { Box, Button, Flex, jsx, ThemeUIStyleObject, Heading } from "theme-ui";
 
-import { EvaluateMetric } from "../../shared/entities";
-import Icon from "./Icon";
-import { DistrictsGeoJSON } from "../types";
-import store from "../store";
-import { selectEvaluationMetric } from "../actions/districtDrawing";
+import { EvaluateMetric } from "../../../shared/entities";
+import Icon from "../Icon";
+import { DistrictsGeoJSON } from "../../types";
+import store from "../../store";
+import { selectEvaluationMetric } from "../../actions/districtDrawing";
 
 const style: ThemeUIStyleObject = {
   td: {

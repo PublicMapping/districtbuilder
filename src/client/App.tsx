@@ -9,6 +9,7 @@ import ActivateAccountScreen from "./screens/ActivateAccountScreen";
 import CreateProjectScreen from "./screens/CreateProjectScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import HomeScreen from "./screens/HomeScreen";
+import ImportProjectScreen from "./screens/ImportProjectScreen";
 import LoginScreen from "./screens/LoginScreen";
 import OrganizationScreen from "./screens/OrganizationScreen";
 import OrganizationAdminScreen from "./screens/OrganizationAdminScreen";
@@ -65,6 +66,9 @@ const App = () => (
         </PrivateRoute>
         <PrivateRoute path="/start-project" exact={true}>
           <StartProjectScreen />
+        </PrivateRoute>
+        <PrivateRoute path="/import-project" exact={true}>
+          <ImportProjectScreen />
         </PrivateRoute>
       </Switch>
     </Router>

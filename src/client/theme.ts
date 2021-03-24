@@ -453,6 +453,23 @@ const theme: Theme & StyledSystemTheme = {
       px: 3,
       py: 2
     },
+    secondaryButton: {
+      ...appButtonStyles,
+      backgroundColor: "secondary",
+      color: "muted",
+      textDecoration: "none",
+      px: 3,
+      py: 2,
+      "&:visited,&:active": {
+        bg: "secondary",
+        color: "muted"
+      },
+      "&:hover:not([disabled]):not(:active)": {
+        bg: darken("secondary", 0.1),
+        textDecoration: "none",
+        color: "muted"
+      }
+    },
     alert: {
       color: "gray.0",
       fontWeight: "bold",

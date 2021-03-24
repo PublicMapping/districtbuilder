@@ -13,10 +13,10 @@ import {
   ProjectId,
   UpdateProjectData,
   UpdateUserData,
-  UserId
+  UserId,
+  DistrictsDefinition
 } from "../shared/entities";
-import { OrgProject } from "./types";
-import { DistrictsGeoJSON, DynamicProjectData } from "./types";
+import { DistrictsGeoJSON, DynamicProjectData, OrgProject } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();
@@ -241,6 +241,21 @@ export async function exportProjectShp(project: IProject): Promise<void> {
         return resolve(
           saveAs(new Blob([response.data], { type: "application/zip" }), `${project.name}.zip`)
         );
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function importCsv(file: Blob): Promise<DistrictsDefinition> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/districts/import/csv`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      })
+      .then(response => {
+        return resolve(response.data);
       })
       .catch(error => reject(error.message));
   });

@@ -16,11 +16,15 @@ export interface IUser {
 }
 
 export type EvaluateMetric = {
+  readonly key: string;
   readonly name: string;
   readonly type?: "fraction" | "percent" | "count";
   readonly value?: number;
+  readonly total?: number;
   readonly status?: boolean;
   readonly description: string;
+  // eslint-disable-next-line
+  readonly [key: string]: any;
 };
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
