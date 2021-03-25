@@ -4,7 +4,8 @@ import { Box, Flex, Heading, jsx } from "theme-ui";
 import MapboxGL from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 import bbox from "@turf/bbox";
-import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../constants/map";
+import { getDistrictColor } from "../constants/colors";
+
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
 const style = {
@@ -14,19 +15,19 @@ const style = {
     padding: "20px",
     minHeight: "400px",
     minWidth: "350px",
-    position: "relative"
+    position: "relative",
   },
   projectMap: {
     height: "300px",
     width: "350px",
     align: "center",
-    ml: "auto"
+    ml: "auto",
   },
   mapLabel: {
     position: "absolute",
     bottom: "0px",
-    pt: "30px"
-  }
+    pt: "30px",
+  },
 } as const;
 
 const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
@@ -38,34 +39,40 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
       return;
     }
 
-    // eslint-disable-next-line
-    MapboxGL.accessToken = MAPBOX_TOKEN;
+    // @ts-ignore
+    project.districts.features.forEach((feature, id) => {
+      // @ts-ignore
+      // eslint-disable-next-line
+      feature.properties.color = getDistrictColor(id);
+    });
 
     const bounds = project.districts && (bbox(project.districts) as BBox2d);
     const map = new MapboxGL.Map({
       container: mapRef.current,
-      style: MAPBOX_STYLE,
+      style: {
+        version: 8,
+        sources: {},
+        layers: [],
+      },
       bounds,
-      fitBoundsOptions: { padding: 20 },
-      minZoom: 5,
-      maxZoom: 5,
-      interactive: false
+      fitBoundsOptions: { padding: 0 },
+      interactive: false,
     });
 
-    map.on("load", function() {
+    map.on("load", function () {
       project.districts &&
         map.addSource("districts", {
           type: "geojson",
-          data: project.districts
+          data: project.districts,
         });
       map.addLayer({
         id: "districts",
-        type: "line",
+        type: "fill",
         source: "districts",
         layout: {},
         paint: {
-          "line-color": "#000"
-        }
+          "fill-color": { type: "identity", property: "color" },
+        },
       });
 
       setMapLoaded(true);
