@@ -82,7 +82,7 @@ const ProjectEvaluateView = ({
   function formatMetricValue(metric: EvaluateMetricWithValue): string {
     switch (metric.type) {
       case "fraction":
-        return `${metric.value} / 18`;
+        return `${metric.value} / ${metric.total || 18}`;
       case "percent":
         return `${Math.floor(metric.value * 100)}%`;
       case "count":

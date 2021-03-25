@@ -28,6 +28,10 @@ export const DISTRICTS_LAYER_ID = "districts";
 // Id for districts layer outline, used for Find
 export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
 // Id for districts layer outline used in evaluate mode
+export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
+// Id for districts fill outline used in evaluate mode
+export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
+// Id for districts layer outline used in evaluate mode
 export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
@@ -46,6 +50,8 @@ export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
 
 // Delay used to throttle calls to set the current feature(s), in milliseconds
 export const SET_FEATURE_DELAY = 300;
+export const CONTIGUITY_FILL_COLOR = "#9400D3";
+export const EVALUATE_GRAY_FILL_COLOR = "#D3D3D3";
 
 // Layers in the Mapbox Studio project that we filter to only show the active region.
 const filteredLabelLayers = [
@@ -243,6 +249,29 @@ export function generateMapLayers(
       }
     },
     LINES_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": [
+          "match",
+          ["get", "contiguity"],
+          "contiguous",
+          CONTIGUITY_FILL_COLOR,
+          "non-contiguous",
+          EVALUATE_GRAY_FILL_COLOR,
+          "black"
+        ],
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.66, 14, 0.45],
+        "fill-antialias": false
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
   );
 
   geoLevels.forEach(level => {

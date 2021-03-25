@@ -41,7 +41,10 @@ import {
   DISTRICTS_LAYER_ID,
   levelToSelectionLayerId,
   getChoroplethLabels,
-  getChoroplethStops
+  getChoroplethStops,
+  DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
+  CONTIGUITY_FILL_COLOR,
+  EVALUATE_GRAY_FILL_COLOR
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -97,7 +100,8 @@ const style: ThemeUIStyleObject = {
   },
   legendItem: {
     display: "inline-block",
-    maxWidth: "150px",
+    minWidth: "150px",
+    maxWidth: "170px",
     mr: "20px"
   },
   legendTitle: {
@@ -109,8 +113,10 @@ const style: ThemeUIStyleObject = {
   legendBox: {
     position: "absolute",
     bottom: "20px",
-    left: "300px",
+    left: "100px",
+    right: "200px",
     height: "60px",
+    minWidth: "600px",
     maxWidth: "1050px",
     fontSize: "14pt",
     display: "inline-block",
@@ -300,6 +306,10 @@ const DistrictsMap = ({
           map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "visible");
           map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "visible");
         }
+        if (evaluateMetric.key === "contiguity") {
+          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
+          map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "visible");
+        }
       } else {
         // Reset map state to default
         map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
@@ -307,6 +317,7 @@ const DistrictsMap = ({
         map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
+        map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
         staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
           if (idx === staticMetadata.geoLevelHierarchy.length - 1) {
             map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "visible");
@@ -574,6 +585,37 @@ const DistrictsMap = ({
               <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
             </Box>
           ))}
+        </Box>
+      )}
+      {evaluateMetric && evaluateMetric.key === "contiguity" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>Contiguity</Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                display: "inline-block",
+                mr: "10px",
+                width: "20px",
+                height: "20px",
+                opacity: "0.9",
+                backgroundColor: CONTIGUITY_FILL_COLOR
+              }}
+            ></Box>
+            <Box sx={style.legendLabel}>Contiguous</Box>
+          </Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                display: "inline-block",
+                mr: "10px",
+                width: "20px",
+                height: "20px",
+                opacity: "0.9",
+                backgroundColor: EVALUATE_GRAY_FILL_COLOR
+              }}
+            ></Box>
+            <Box sx={style.legendLabel}>Non-contiguous</Box>
+          </Box>
         </Box>
       )}
     </Box>

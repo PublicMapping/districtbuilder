@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add project evaluate view for compactness [#646](https://github.com/PublicMapping/districtbuilder/pull/646)
 - Allow user to create a project with an organization template from Create Project screen [#638](https://github.com/PublicMapping/districtbuilder/pull/638)
 - Add button to Organization page to link to Organization Admin page for admin users [#669](https://github.com/PublicMapping/districtbuilder/pull/669)
+- Add project evaluate view for contiguity [#648](https://github.com/PublicMapping/districtbuilder/pull/648)
 - Add project evaluate view for County Splits [#644](https://github.com/PublicMapping/districtbuilder/pull/644)
 
 ### Changed
