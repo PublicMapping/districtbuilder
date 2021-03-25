@@ -36,6 +36,7 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
         "organization.name",
         "organization.description",
         "organization.linkUrl",
+        "organization.logoUrl",
         "organization.municipality",
         "organization.region",
         "users.id",
