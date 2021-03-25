@@ -6,6 +6,7 @@ import Icon from "../Icon";
 import { DistrictsGeoJSON } from "../../types";
 import store from "../../store";
 import { selectEvaluationMetric } from "../../actions/districtDrawing";
+import CompactnessMetricDetail from "./detail/Compactness";
 
 const style: ThemeUIStyleObject = {
   td: {
@@ -51,8 +52,8 @@ const style: ThemeUIStyleObject = {
   },
   metricText: {
     fontSize: "10",
-    ml: "50px",
-    minHeight: "50px"
+    minHeight: "100px",
+    fontWeight: "400"
   }
 };
 
@@ -76,25 +77,27 @@ const ProjectEvaluateMetricDetail = ({
         <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
           <Icon name={"check"} /> {metric.name}
         </Heading>
-        <Flex sx={{ minHeight: "100px" }} className="metric-description">
-          Lorem ipsum lorem ipsum
-        </Flex>
+        <Flex sx={style.metricText}>{metric.longText || "Lorem ipsum lorem ipsum"}</Flex>
       </Box>
-      <Box sx={{ ml: "20px" }}>
-        <Heading as="h4" sx={{ variant: "text.h4", display: "block" }}>
-          7 / 10 districts {metric.description}
-        </Heading>
-        <Flex sx={{ flexDirection: "column" }}>
-          {geojson?.features.map(
-            d =>
-              d.properties.contiguity !== "" && (
-                <Box sx={{ display: "block" }} key={d.id}>
-                  {d.id}
-                </Box>
-              )
-          )}
-        </Flex>
-      </Box>
+      {metric && "type" in metric && metric.key === "compactness" ? (
+        <CompactnessMetricDetail metric={metric} geojson={geojson} />
+      ) : (
+        <Box sx={{ ml: "20px" }}>
+          <Heading as="h4" sx={{ variant: "text.h4", display: "block" }}>
+            7 / 10 districts {metric.description}
+          </Heading>
+          <Flex sx={{ flexDirection: "column" }}>
+            {geojson?.features.map(
+              d =>
+                d.properties.contiguity !== "" && (
+                  <Box sx={{ display: "block" }} key={d.id}>
+                    {d.id}
+                  </Box>
+                )
+            )}
+          </Flex>
+        </Box>
+      )}
     </Flex>
   );
 };

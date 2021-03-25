@@ -15,17 +15,32 @@ export interface IUser {
   readonly organizations: readonly OrganizationNest[];
 }
 
-export type EvaluateMetric = {
-  readonly key: string;
+export type MetricKey =
+  | "equalPopulation"
+  | "contiguity"
+  | "competitiveness"
+  | "compactness"
+  | "minorityMajority"
+  | "countySplits";
+
+export interface BaseEvaluateMetric {
+  readonly key: MetricKey;
   readonly name: string;
-  readonly type?: "fraction" | "percent" | "count";
-  readonly value?: number;
+  readonly description: string;
+  readonly longText?: string;
+  readonly shortText?: string;
+}
+
+export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
+  readonly type: "fraction" | "percent" | "count";
+  readonly value: number;
   readonly total?: number;
   readonly status?: boolean;
-  readonly description: string;
   // eslint-disable-next-line
   readonly [key: string]: any;
-};
+}
+
+export type EvaluateMetric = BaseEvaluateMetric | EvaluateMetricWithValue;
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
 
