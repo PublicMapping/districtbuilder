@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { OrgProject } from "../types";
-import { Box, Flex, Heading, jsx } from "theme-ui";
+import { Box, Flex, Heading, jsx, Spinner, Text } from "theme-ui";
 import MapboxGL from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 import bbox from "@turf/bbox";
@@ -11,22 +11,28 @@ import { BBox2d } from "@turf/helpers/lib/geojson";
 const style = {
   featuredProject: {
     flexDirection: "column",
-    border: "1px solid black",
-    padding: "20px",
-    minHeight: "400px",
-    minWidth: "350px",
-    position: "relative",
+    bg: "#fff",
+    borderRadius: "2px",
+    boxShadow: "small",
   },
-  projectMap: {
-    height: "300px",
-    width: "350px",
-    align: "center",
-    ml: "auto",
+  mapContainer: {
+    width: "100%",
+    height: "250px",
+    position: "relative",
+    p: "15px",
+  },
+  map: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   mapLabel: {
-    position: "absolute",
-    bottom: "0px",
-    pt: "30px",
+    p: "15px",
+    borderColor: "gray.2",
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
   },
 } as const;
 
@@ -55,7 +61,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
         layers: [],
       },
       bounds,
-      fitBoundsOptions: { padding: 0 },
+      fitBoundsOptions: { padding: 15 },
       interactive: false,
     });
 
@@ -74,6 +80,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
           "fill-color": { type: "identity", property: "color" },
         },
       });
+      map.resize();
 
       setMapLoaded(true);
     });
@@ -81,15 +88,34 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
 
   return (
     <Flex sx={style.featuredProject}>
-      <Box
-        ref={mapRef}
-        sx={style.projectMap}
-        style={mapLoaded ? { display: "block" } : { display: "none" }}
-      ></Box>
-      {!mapLoaded && <Box sx={style.projectMap}>Loading map...</Box>}
+      <Box sx={style.mapContainer}>
+        <Box ref={mapRef} sx={style.map}></Box>
+      </Box>
+      {!mapLoaded && (
+        <Box sx={style.mapContainer}>
+          <Spinner variant="spinner.small" />
+        </Box>
+      )}
       <Box sx={style.mapLabel}>
-        <Heading>{project.name}</Heading>
-        <Box>by {project.user?.name}</Box>
+        <Heading
+          as="h3"
+          sx={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontSize: "2",
+            mb: "1",
+          }}
+        >
+          {project.name}
+        </Heading>
+        <Text
+          sx={{
+            fontSize: "1",
+          }}
+        >
+          by {project.user?.name}
+        </Text>
       </Box>
     </Flex>
   );

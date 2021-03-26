@@ -8,7 +8,7 @@ export interface ButtonStyleProps {
 export const style = {
   menuButton: {
     py: 1,
-    px: 3
+    px: 3,
   } as ThemeUIStyleObject,
   menu: {
     width: "220px",
@@ -22,12 +22,12 @@ export const style = {
     borderColor: "gray.2",
     boxShadow: "small",
     borderRadius: "small",
-    zIndex: 201
+    zIndex: 201,
   } as ThemeUIStyleObject,
   menuList: {
     p: "0",
     m: "0",
-    listStyleType: "none"
+    listStyleType: "none",
   } as ThemeUIStyleObject,
   menuListItem: {
     textDecoration: "none",
@@ -40,47 +40,47 @@ export const style = {
     px: 2,
     "> svg": {
       mr: 2,
-      color: "gray.3"
+      color: "gray.3",
     },
     "&:hover:not([disabled]):not(:active)": {
       bg: "gray.0",
       cursor: "pointer",
-      textDecoration: "none"
+      textDecoration: "none",
     },
     "&:visited": {
       color: "gray.8",
       bg: "gray.0",
       cursor: "pointer",
-      textDecoration: "none"
+      textDecoration: "none",
     },
     "&[disabled]": {
       color: "gray.3",
-      cursor: "not-allowed"
+      cursor: "not-allowed",
     },
     "&:focus": {
       bg: "gray.0",
       outline: "none",
-      boxShadow: "focus"
+      boxShadow: "focus",
     },
     "&:active": {
-      bg: "gray.1"
-    }
+      bg: "gray.1",
+    },
   },
   menuListIcon: {
-    mr: "2"
-  } as ThemeUIStyleObject
+    mr: "2",
+  } as ThemeUIStyleObject,
 };
 
 export const invertStyles = ({ invert }: ButtonStyleProps): ThemeUIStyleObject => ({
   ...(invert
     ? {
-        color: "muted"
+        color: "muted",
       }
     : {
         color: "gray.7",
-        bg: "gray.1",
+        bg: "transparent",
         "&:hover:not([disabled]):not(:active)": {
-          bg: "gray.2"
-        }
-      })
+          bg: "gray.2",
+        },
+      }),
 });

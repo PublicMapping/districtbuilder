@@ -24,17 +24,17 @@ import { style as menuButtonStyle } from "./MenuButton.styles";
 const style: ThemeUIStyleObject = {
   undoRedo: {
     variant: "buttons.icon",
-    color: "muted"
+    color: "muted",
   },
   projectHeader: {
     variant: "header.app",
     backgroundColor: "blue.8",
     borderBottom: "1px solid",
-    borderColor: "blue.6"
+    borderColor: "blue.6",
   },
   menuButton: {
-    color: "muted"
-  }
+    color: "muted",
+  },
 };
 
 const HeaderDivider = () => {
@@ -44,7 +44,7 @@ const HeaderDivider = () => {
         marginLeft: 3,
         paddingLeft: 3,
         height: heights.header,
-        borderLeft: "1px solid rgba(255, 255, 255, 0.25)"
+        borderLeft: "1px solid rgba(255, 255, 255, 0.25)",
       }}
     />
   );
@@ -62,7 +62,7 @@ const ProjectHeader = ({
   map,
   project,
   isReadOnly,
-  undoHistory
+  undoHistory,
 }: {
   readonly map?: MapboxGL.Map;
   readonly project?: IProject;
@@ -75,7 +75,7 @@ const ProjectHeader = ({
         sx={{
           lineHeight: "0",
           borderRadius: "small",
-          "&:focus": { outline: "none", boxShadow: "focus" }
+          "&:focus": { outline: "none", boxShadow: "focus" },
         }}
       >
         <Logo sx={{ width: "1.75rem" }} />
@@ -112,9 +112,9 @@ const ProjectHeader = ({
               sx={{
                 ...{
                   variant: "buttons.ghost",
-                  fontWeight: "light"
+                  fontWeight: "light",
                 },
-                ...menuButtonStyle.menuButton
+                ...menuButtonStyle.menuButton,
               }}
               onClick={() => store.dispatch(toggleFind(!findMenuOpen))}
             >
@@ -122,7 +122,7 @@ const ProjectHeader = ({
                 sx={{
                   borderBottom: findMenuOpen ? "solid 1px" : "none",
                   borderBottomColor: "muted",
-                  mb: findMenuOpen ? "-1px" : "0"
+                  mb: findMenuOpen ? "-1px" : "0",
                 }}
               >
                 <Icon name="search" /> Find
@@ -133,10 +133,10 @@ const ProjectHeader = ({
             <Button
               sx={{
                 ...{
-                  variant: "buttons.ghost",
-                  fontWeight: "light"
+                  variant: "buttons.primary",
+                  fontWeight: "light",
                 },
-                ...menuButtonStyle.menuButton
+                ...menuButtonStyle.menuButton,
               }}
               onClick={() => store.dispatch(toggleEvaluate(!evaluateMode))}
             >
@@ -144,7 +144,7 @@ const ProjectHeader = ({
                 sx={{
                   borderBottom: evaluateMode ? "solid 1px" : "none",
                   borderBottomColor: "muted",
-                  mb: !evaluateMode ? "-1px" : "0"
+                  mb: !evaluateMode ? "-1px" : "0",
                 }}
               >
                 Evaluate
@@ -165,7 +165,7 @@ function mapStateToProps(state: State): StateProps {
   return {
     findMenuOpen: state.project.findMenuOpen,
     evaluateMode: state.project.evaluateMode,
-    undoHistory: state.project.undoHistory
+    undoHistory: state.project.undoHistory,
   };
 }
 
