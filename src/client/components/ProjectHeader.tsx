@@ -133,7 +133,7 @@ const ProjectHeader = ({
             <Button
               sx={{
                 ...{
-                  variant: "buttons.ghost",
+                  variant: "buttons.primary",
                   fontWeight: "light"
                 },
                 ...menuButtonStyle.menuButton

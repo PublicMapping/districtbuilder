@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
-import { Box, Button, Flex, Heading, Image, jsx, Link, Text } from "theme-ui";
+import { Box, Button, Flex, Heading, Image, jsx, Link, Spinner, Text } from "theme-ui";
 import { formatDate } from "../functions";
 
 import { showCopyMapModal } from "../actions/districtDrawing";
@@ -49,13 +49,12 @@ const style = {
     borderColor: "gray.1",
     boxShadow: "small",
     p: 5,
-    "> *": {
-      m: 5
-    }
+    mb: 4
   },
   logo: {
     flex: "none",
-    objectFit: "contain"
+    objectFit: "contain",
+    maxHeight: "60px"
   },
   item: {
     pr: 2
@@ -71,42 +70,57 @@ const style = {
     textAlign: "center"
   },
   templates: {
-    p: 5
+    py: 5
   },
   featuredProjects: {
-    p: 5
+    pt: 4,
+    pb: 8
+  },
+  container: {
+    flexDirection: "row",
+    width: "large",
+    mx: "auto",
+    "> *": {
+      mx: 5
+    },
+    "> *:last-of-type": {
+      mr: 0
+    },
+    "> *:first-of-type": {
+      ml: 0
+    }
   },
   templateContainer: {
     display: "grid",
-    gridTemplateColumns: "350px 350px 350px",
-    gridGap: "30px",
-    justifyContent: "space-between"
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gridGap: "15px",
+    justifyContent: "space-between",
+    marginTop: "4"
   },
   featuredProjectContainer: {
     display: "grid",
-    gridTemplateColumns: "400px 400px 400px",
-    gridGap: "30px",
-    justifyContent: "space-between"
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gridGap: "15px",
+    justifyContent: "space-between",
+    marginTop: "4"
   },
   template: {
     flexDirection: "column",
-    border: "1px solid black",
-    padding: "20px"
+    padding: "15px",
+    bg: "#fff",
+    borderRadius: "2px",
+    boxShadow: "small"
   },
   featuredProject: {
     flexDirection: "column",
     border: "1px solid black",
-    padding: "20px",
+    padding: "15px",
     minHeight: "200px"
   },
   useTemplateBtn: {
     width: "100%",
     background: "lightgray",
     color: "black"
-  },
-  projectMap: {
-    height: "100px",
-    width: "100px"
   }
 } as const;
 
@@ -190,11 +204,20 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
   }
 
   const joinButton = (
-    <Flex sx={{ flexDirection: "column", flex: "none" }}>
-      <Button sx={style.join} disabled={isLoggedIn && !userIsVerified} onClick={signupAndJoinOrg}>
-        Join organization
-      </Button>
-      <Box sx={style.joinText}>Join to start making district maps with this organization</Box>
+    <Flex
+      sx={{
+        flexDirection: "column",
+        flex: "1",
+        textAlign: "right",
+        alignItems: "flex-end"
+      }}
+    >
+      <Box sx={{ textAlign: "center" }}>
+        <Button sx={style.join} disabled={isLoggedIn && !userIsVerified} onClick={signupAndJoinOrg}>
+          Join organization
+        </Button>
+        <Box sx={style.joinText}>Join to start making district maps with this organization</Box>
+      </Box>
     </Flex>
   );
 
@@ -211,11 +234,33 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
 
     return (
       <Flex sx={style.template}>
-        <Heading>{template.name}</Heading>
-        <Text>
-          {template.regionConfig.name} · {template.numberOfDistricts}
+        <Heading
+          as="h3"
+          sx={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            mb: "0"
+          }}
+        >
+          {template.name}
+        </Heading>
+        <Text
+          sx={{
+            fontSize: "2",
+            margin: "4px 0 2px"
+          }}
+        >
+          {template.regionConfig.name} · {template.numberOfDistricts} districts
         </Text>
-        <Text>{template.description}</Text>
+        <Text
+          sx={{
+            fontSize: "1",
+            mb: "3"
+          }}
+        >
+          {template.description}
+        </Text>
         {userIsVerified || !isLoggedIn ? (
           useButton
         ) : (
@@ -243,65 +288,95 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
         {"resource" in organization ? (
           <Box>
             <Flex sx={style.header}>
-              {organization.resource.logoUrl && (
-                <Image src={organization.resource.logoUrl} sx={style.logo} />
-              )}
-              <Box>
-                <Heading>{organization.resource.name}</Heading>
-                <Box>
-                  {(organization.resource.municipality || organization.resource.region) && (
-                    <Box as="span" sx={style.item}>
-                      <Icon name="map-marker" /> {organization.resource.municipality}
-                      {organization.resource.municipality && organization.resource.region && ", "}
-                      {organization.resource.region}
-                    </Box>
-                  )}
-                  {organization.resource.linkUrl && (
-                    <Box as="span" sx={style.item}>
-                      <Icon name="link" />{" "}
-                      <Link href={`https://${organization.resource.linkUrl}`}>
-                        {organization.resource.linkUrl}
-                      </Link>
-                    </Box>
-                  )}
-                  <Box as="span" sx={style.item}>
-                    <Icon name="tools" /> {organization.resource.users?.length || 0} builders
+              <Flex sx={style.container}>
+                {organization.resource.logoUrl && (
+                  <Box>
+                    <Image src={organization.resource.logoUrl} sx={style.logo} />
                   </Box>
-                </Box>
-                {organization.resource.description && (
-                  <Box>{organization.resource.description}</Box>
                 )}
-              </Box>
-              {userInOrg && userIsVerified ? (
-                <Flex sx={{ flexDirection: "column", flex: "none" }} onClick={leaveOrg}>
-                  <Button sx={style.join}>Leave organization</Button>
-                </Flex>
-              ) : "resource" in user && user.resource ? (
-                userIsVerified ? (
-                  joinButton
-                ) : (
-                  <Tooltip
-                    key={1}
-                    content={
-                      <div>
-                        {userInOrg
-                          ? "Confirm your email to finish joining this organization"
-                          : "You must confirm your email before joining an organization"}
-                      </div>
-                    }
+                <Box sx={{ width: "620px" }}>
+                  <Heading as="h1">{organization.resource.name}</Heading>
+                  <Box>
+                    {(organization.resource.municipality || organization.resource.region) && (
+                      <Box as="span" sx={style.item}>
+                        <Icon name="map-marker" /> {organization.resource.municipality}
+                        {organization.resource.municipality && organization.resource.region && ", "}
+                        {organization.resource.region}
+                      </Box>
+                    )}
+                    {organization.resource.linkUrl && (
+                      <Box as="span" sx={style.item}>
+                        <Icon name="link" />{" "}
+                        <Link href={`https://${organization.resource.linkUrl}`}>
+                          {organization.resource.linkUrl}
+                        </Link>
+                      </Box>
+                    )}
+                    <Box as="span" sx={style.item}>
+                      <Icon name="tools" /> {organization.resource.users?.length || 0} builders
+                    </Box>
+                  </Box>
+                  {organization.resource.description && (
+                    <Box>{organization.resource.description}</Box>
+                  )}
+                </Box>
+                {userInOrg && userIsVerified ? (
+                  <Box
+                    sx={{
+                      flexDirection: "column",
+                      flex: "1",
+                      textAlign: "right",
+                      alignItems: "flex-end"
+                    }}
+                    onClick={leaveOrg}
                   >
-                    {joinButton}
-                  </Tooltip>
-                )
-              ) : (
-                joinButton
-              )}
+                    <Button
+                      sx={{
+                        borderColor: "primary",
+                        borderWidth: "1px",
+                        borderStyle: "solid",
+                        bg: "transparent",
+                        color: "primary",
+                        "&:hover": {
+                          bg: "#f06543 !important",
+                          borderColor: "#f06543 !important"
+                        }
+                      }}
+                    >
+                      Leave organization
+                    </Button>
+                  </Box>
+                ) : "resource" in user && user.resource ? (
+                  userIsVerified ? (
+                    joinButton
+                  ) : (
+                    <Tooltip
+                      key={1}
+                      content={
+                        <div>
+                          {userInOrg
+                            ? "Confirm your email to finish joining this organization"
+                            : "You must confirm your email before joining an organization"}
+                        </div>
+                      }
+                    >
+                      {joinButton}
+                    </Tooltip>
+                  )
+                ) : (
+                  joinButton
+                )}
+              </Flex>
             </Flex>
-            <Flex>
+            <Box sx={style.container}>
               {organization.resource.projectTemplates.length > 0 && (
                 <Box sx={style.templates}>
-                  <Heading>Templates</Heading>
-                  Start a new map using the official settings from {organization.resource.name}
+                  <Heading as="h2" sx={{ mb: "3" }}>
+                    Templates
+                  </Heading>
+                  <Text>
+                    Start a new map using the official settings from {organization.resource.name}
+                  </Text>
                   <Box sx={style.templateContainer}>
                     {organization.resource.projectTemplates.map(template => (
                       <TemplateCard template={template} key={template.id} />
@@ -309,11 +384,17 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                   </Box>
                 </Box>
               )}
-            </Flex>
-            <Flex>
+            </Box>
+            <Box>
               {featuredProjects ? (
-                <Box sx={style.featuredProjects}>
-                  <Heading>Featured maps</Heading>
+                <Box sx={{ ...style.featuredProjects, ...style.container }}>
+                  <Heading as="h2" sx={{ mb: "3" }}>
+                    Featured maps
+                  </Heading>
+                  <Text>
+                    A collection of highlighted maps built by members of{" "}
+                    {organization.resource.name}
+                  </Text>
                   <Box sx={style.featuredProjectContainer}>
                     {featuredProjects.length > 0 ? (
                       featuredProjects.map((project: OrgProject) => (
@@ -325,14 +406,18 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                   </Box>
                 </Box>
               ) : (
-                <div>Loading</div>
+                <Flex sx={{ justifyContent: "center" }}>
+                  <Spinner variant="spinner.large" />
+                </Flex>
               )}
-            </Flex>
+            </Box>
           </Box>
         ) : "statusCode" in organization && organization.statusCode === 404 ? (
           <PageNotFoundScreen model={"organization"} />
         ) : (
-          <Box>Loading...</Box>
+          <Flex sx={{ justifyContent: "center", marginTop: "6" }}>
+            <Spinner variant="spinner.large" />
+          </Flex>
         )}
       </Flex>
       {"resource" in organization && organization.resource && (
