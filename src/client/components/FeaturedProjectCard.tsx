@@ -13,27 +13,27 @@ const style = {
     flexDirection: "column",
     bg: "#fff",
     borderRadius: "2px",
-    boxShadow: "small",
+    boxShadow: "small"
   },
   mapContainer: {
     width: "100%",
     height: "250px",
     position: "relative",
-    p: "15px",
+    p: "15px"
   },
   map: {
     position: "absolute",
     top: 0,
     bottom: 0,
     left: 0,
-    right: 0,
+    right: 0
   },
   mapLabel: {
     p: "15px",
     borderColor: "gray.2",
     borderTopWidth: "1px",
-    borderTopStyle: "solid",
-  },
+    borderTopStyle: "solid"
+  }
 } as const;
 
 const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
@@ -58,18 +58,18 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
       style: {
         version: 8,
         sources: {},
-        layers: [],
+        layers: []
       },
       bounds,
       fitBoundsOptions: { padding: 15 },
-      interactive: false,
+      interactive: false
     });
 
-    map.on("load", function () {
+    map.on("load", function() {
       project.districts &&
         map.addSource("districts", {
           type: "geojson",
-          data: project.districts,
+          data: project.districts
         });
       map.addLayer({
         id: "districts",
@@ -77,8 +77,8 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
         source: "districts",
         layout: {},
         paint: {
-          "fill-color": { type: "identity", property: "color" },
-        },
+          "fill-color": { type: "identity", property: "color" }
+        }
       });
       map.resize();
 
@@ -104,14 +104,14 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
             overflow: "hidden",
             textOverflow: "ellipsis",
             fontSize: "2",
-            mb: "1",
+            mb: "1"
           }}
         >
           {project.name}
         </Heading>
         <Text
           sx={{
-            fontSize: "1",
+            fontSize: "1"
           }}
         >
           by {project.user?.name}

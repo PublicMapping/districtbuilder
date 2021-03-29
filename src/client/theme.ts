@@ -3,7 +3,7 @@ import { darken } from "@theme-ui/color";
 import { Theme } from "theme-ui";
 
 export const heights = {
-  header: "48px",
+  header: "48px"
 };
 
 const appButtonStyles = {
@@ -19,30 +19,30 @@ const appButtonStyles = {
   cursor: "pointer",
   transition: "0.2s background ease-out, 0.2s background-color ease-out",
   "& > svg": {
-    mr: 1,
+    mr: 1
   },
   "&:hover:not([disabled]):not(:active)": {
     bg: "blue.6",
     color: "muted",
-    textDecoration: "none",
+    textDecoration: "none"
   },
   "&:active": {
     color: "muted",
-    bg: "blue.7",
+    bg: "blue.7"
   },
   "&:focus": {
     outline: "none",
-    boxShadow: "focus",
+    boxShadow: "focus"
   },
   "&[disabled]": {
     opacity: 0.2,
     bg: "gray.3",
-    cursor: "not-allowed",
+    cursor: "not-allowed"
   },
   "&:visited": {
     color: "muted",
-    fontWeight: "medium",
-  },
+    fontWeight: "medium"
+  }
 };
 
 const theme: Theme & StyledSystemTheme = {
@@ -51,7 +51,7 @@ const theme: Theme & StyledSystemTheme = {
       "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
     heading:
       'frank-new, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-    monospace: "Menlo, monospace",
+    monospace: "Menlo, monospace"
   },
   colors: {
     heading: "#141414",
@@ -71,7 +71,7 @@ const theme: Theme & StyledSystemTheme = {
       "#5AA516",
       "#438A0F",
       "#306F09",
-      "#102c02",
+      "#102c02"
     ],
     blue: [
       "#f2f6f9",
@@ -82,7 +82,7 @@ const theme: Theme & StyledSystemTheme = {
       "#4B7AA0",
       "#395c78",
       "#2c485e",
-      "#131f28",
+      "#131f28"
     ],
     gray: [
       "#f8f9fa",
@@ -93,24 +93,24 @@ const theme: Theme & StyledSystemTheme = {
       "#6d6d6d",
       "#595959",
       "#2c2c2c",
-      "#141414",
-    ],
+      "#141414"
+    ]
   },
   radii: {
     small: "2px",
-    med: "4px",
+    med: "4px"
   },
   shadows: {
     small: "0 0 4px rgba(0, 0, 0, .125)",
     large: "0 0 24px rgba(0, 0, 0, .30)",
     bright: "0 0 8px 2px rgba(109, 152, 186, 0.2)",
-    focus: "0 0 0 2px rgba(109, 152, 186, 0.3)",
+    focus: "0 0 0 2px rgba(109, 152, 186, 0.3)"
   },
   sizes: {
     form: "350px",
     small: "580px",
     medium: "750px",
-    large: "1040px",
+    large: "1040px"
   },
   fontSizes: [12, 14, 16, 18, 21, 31, 37, 54],
   fontWeights: {
@@ -118,76 +118,76 @@ const theme: Theme & StyledSystemTheme = {
     medium: 500,
     bold: 700,
     body: 500,
-    heading: 500,
+    heading: 500
   },
   lineHeights: {
     body: 1.65,
-    heading: 1.125,
+    heading: 1.125
   },
   text: {
     heading: {
       mb: 2,
       fontWeight: "heading",
       lineHeight: "heading",
-      color: "heading",
+      color: "heading"
     },
     caps: {
-      textTransform: "uppercase",
+      textTransform: "uppercase"
     },
     h1: {
       variant: "text.heading",
       fontSize: 7,
-      letterSpacing: 0,
+      letterSpacing: 0
     },
     h2: {
       variant: "text.heading",
       fontSize: 6,
-      letterSpacing: 0,
+      letterSpacing: 0
     },
     h3: {
       variant: "text.heading",
       fontSize: 5,
-      letterSpacing: 0,
+      letterSpacing: 0
     },
     h4: {
       variant: "text.heading",
       fontSize: 4,
       fontWeight: "body",
-      letterSpacing: 0,
+      letterSpacing: 0
     },
     h5: {
       variant: "text.heading",
       fontSize: 3,
       fontWeight: "body",
-      letterSpacing: 0,
+      letterSpacing: 0
     },
     h6: {
       variant: "text.caps",
       fontSize: 2,
-      fontWeight: "bold",
-    },
+      fontWeight: "bold"
+    }
   },
   card: {
     flat: {
       borderRadius: "small",
       backgroundColor: "muted",
       my: 4,
-      p: 24,
+      p: 24
     },
     disabled: {
       borderRadius: "small",
       backgroundColor: "muted",
       my: 4,
       p: 24,
-      opacity: "0.4",
+      opacity: "0.4"
     },
     floating: {
       borderRadius: "small",
       boxShadow: "bright",
       backgroundColor: "muted",
       my: 4,
-      p: 24,
-    },
+      p: 24
+    }
   },
   space: [0, 4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
   buttons: {
@@ -197,57 +197,57 @@ const theme: Theme & StyledSystemTheme = {
       ...{
         bg: "secondary",
         "&:hover:not([disabled]):not(:active)": {
-          bg: "gray.6",
+          bg: "gray.6"
         },
         "&:active": {
-          bg: "gray.7",
-        },
-      },
+          bg: "gray.7"
+        }
+      }
     },
     danger: {
       ...appButtonStyles,
       ...{
         bg: "error",
         "&:hover:not([disabled]):not(:active)": {
-          bg: darken("error", 0.2),
+          bg: darken("error", 0.2)
         },
         "&:active": {
-          bg: darken("error", 0.3),
-        },
-      },
+          bg: darken("error", 0.3)
+        }
+      }
     },
     ghost: {
       ...appButtonStyles,
       ...{
         bg: "transparent",
         "&:hover:not([disabled]):not(:active)": {
-          bg: "rgba(256,256,256,0.3)",
+          bg: "rgba(256,256,256,0.3)"
         },
         "&:active": {
           color: "blue.8",
-          bg: "rgba(256,256,256,0.7)",
-        },
-      },
+          bg: "rgba(256,256,256,0.7)"
+        }
+      }
     },
     subtle: {
       ...appButtonStyles,
       ...{
         bg: "gray.1",
-        color: "heading",
+        color: "heading"
       },
       "&:hover:not([disabled]):not(:active)": {
-        bg: "gray.2",
+        bg: "gray.2"
       },
       "&:active": {
         bg: "gray.3",
-        color: "muted",
+        color: "muted"
       },
       "&[disabled]": {
         bg: "gray.1",
         color: "heading",
         opacity: 0.25,
-        cursor: "not-allowed",
-      },
+        cursor: "not-allowed"
+      }
     },
     minimal: {
       ...appButtonStyles,
@@ -256,18 +256,18 @@ const theme: Theme & StyledSystemTheme = {
         color: "gray.8",
         "&:hover:not([disabled]):not(:active)": {
           textDecoration: "underline",
-          bg: "rgba(256,256,256,0.2)",
+          bg: "rgba(256,256,256,0.2)"
         },
         "&[disabled]": {
           bg: "transparent",
           color: "gray.8",
           opacity: 0.25,
-          cursor: "not-allowed",
+          cursor: "not-allowed"
         },
         "&:active": {
-          bg: "rgba(256,256,256,0.3)",
-        },
-      },
+          bg: "rgba(256,256,256,0.3)"
+        }
+      }
     },
     linkStyle: {
       ...appButtonStyles,
@@ -279,24 +279,24 @@ const theme: Theme & StyledSystemTheme = {
         "&:hover:not([disabled]):not(:active)": {
           textDecoration: "underline",
           color: "blue.7",
-          bg: "transparent",
+          bg: "transparent"
         },
         "&[disabled]": {
           bg: "transparent",
           color: "gray.8",
           opacity: 0.25,
-          cursor: "not-allowed",
+          cursor: "not-allowed"
         },
         "&:active": {
           bg: "rgba(256,256,256,0.3)",
-          color: "blue.8",
+          color: "blue.8"
         },
         "&:focus": {
           borderRadius: "small",
           boxShadow: "focus",
-          outline: "none",
-        },
-      },
+          outline: "none"
+        }
+      }
     },
     outlined: {
       display: "inline-flex",
@@ -313,25 +313,25 @@ const theme: Theme & StyledSystemTheme = {
       color: "gray.7",
       cursor: "pointer",
       "& > svg": {
-        mr: 1,
+        mr: 1
       },
       "&:hover:not([disabled]):not(:active)": {
         color: "gray.7",
-        bg: "gray.1",
+        bg: "gray.1"
       },
       "&:active": {
         color: "gray.7",
-        bg: "gray.2",
+        bg: "gray.2"
       },
       "&:focus": {
         outline: "none",
-        boxShadow: "focus",
+        boxShadow: "focus"
       },
       "&[disabled]": {
         cursor: "not-allowed",
         bg: "muted",
-        opacity: 0.25,
-      },
+        opacity: 0.25
+      }
     },
     quiet: {
       ...appButtonStyles,
@@ -339,26 +339,26 @@ const theme: Theme & StyledSystemTheme = {
         backgroundColor: "#fff",
         color: "text",
         "&:hover:not([disabled]):not(:active)": {
-          bg: "blue.1",
+          bg: "blue.1"
         },
         "&:active": {
-          bg: "blue.2",
+          bg: "blue.2"
         },
         "&:focus": {
           outline: "none",
-          boxShadow: "focus",
+          boxShadow: "focus"
         },
         "&.selected": {
           backgroundColor: "blue.1",
-          color: "heading",
-        },
-      },
+          color: "heading"
+        }
+      }
     },
     circular: {
       ...appButtonStyles,
       ...{
-        borderRadius: "100px",
-      },
+        borderRadius: "100px"
+      }
     },
     circularSubtle: {
       ...appButtonStyles,
@@ -367,12 +367,12 @@ const theme: Theme & StyledSystemTheme = {
         backgroundColor: "gray.1",
         color: "heading",
         "&:hover:not([disabled]):not(:active)": {
-          bg: "gray.2",
+          bg: "gray.2"
         },
         "&:active": {
-          bg: "gray.3",
-        },
-      },
+          bg: "gray.3"
+        }
+      }
     },
     icon: {
       ...appButtonStyles,
@@ -382,21 +382,21 @@ const theme: Theme & StyledSystemTheme = {
         color: "gray.8",
         borderRadius: "100%",
         "> svg": {
-          mx: 0,
+          mx: 0
         },
         "&:hover:not([disabled]):not(:active)": {
-          bg: "rgba(89, 89, 89, 0.1)",
+          bg: "rgba(89, 89, 89, 0.1)"
         },
         "&[disabled]": {
           bg: "transparent",
           opacity: 0.25,
-          cursor: "not-allowed",
+          cursor: "not-allowed"
         },
         "&:active": {
-          bg: "rgba(89, 89, 89, 0.3)",
-        },
-      },
-    },
+          bg: "rgba(89, 89, 89, 0.3)"
+        }
+      }
+    }
   },
   forms: {
     label: {
@@ -405,44 +405,44 @@ const theme: Theme & StyledSystemTheme = {
       fontWeight: "bold",
       color: "gray.5",
       textAlign: "left",
-      variant: "text.caps",
+      variant: "text.caps"
     },
     radio: {
       "input:focus ~ &": {
         bg: "muted",
-        boxShadow: "focus",
-      },
+        boxShadow: "focus"
+      }
     },
     checkbox: {
       "input:focus ~ &": {
         bg: "muted",
-        boxShadow: "focus",
-      },
+        boxShadow: "focus"
+      }
     },
     input: {
       borderColor: "gray.2",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
-        outline: "none",
-      },
+        outline: "none"
+      }
     },
     select: {
       borderColor: "gray.2",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
-        outline: "none",
-      },
+        outline: "none"
+      }
     },
     textarea: {
       borderColor: "gray.2",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
-        outline: "none",
-      },
-    },
+        outline: "none"
+      }
+    }
   },
   links: {
     button: {
@@ -451,7 +451,7 @@ const theme: Theme & StyledSystemTheme = {
       color: "muted",
       textDecoration: "none",
       px: 3,
-      py: 2,
+      py: 2
     },
     secondaryButton: {
       ...appButtonStyles,
@@ -462,73 +462,73 @@ const theme: Theme & StyledSystemTheme = {
       py: 2,
       "&:visited,&:active": {
         bg: "secondary",
-        color: "muted",
+        color: "muted"
       },
       "&:hover:not([disabled]):not(:active)": {
         bg: darken("secondary", 0.1),
         textDecoration: "none",
-        color: "muted",
-      },
+        color: "muted"
+      }
     },
     alert: {
       color: "gray.0",
       fontWeight: "bold",
       textDecoration: "underline",
       "&:visited": {
-        color: "gray.0",
+        color: "gray.0"
       },
       "&:active": {
-        color: "gray.0",
+        color: "gray.0"
       },
       "&:focus": {
         borderRadius: "small",
-        outline: "none",
-      },
-    },
+        outline: "none"
+      }
+    }
   },
   spinner: {
     small: {
       color: "primary",
       size: "24px",
-      strokeWidth: "3px",
+      strokeWidth: "3px"
     },
     medium: {
       color: "primary",
       size: "48px",
-      strokeWidth: "3px",
+      strokeWidth: "3px"
     },
     large: {
       color: "primary",
       strokeWidth: "3px",
-      size: "60px",
-    },
+      size: "60px"
+    }
   },
   styles: {
     hr: {
-      color: "gray.2",
+      color: "gray.2"
     },
     a: {
       color: "blue.6",
       fontWeight: "bold",
       textDecoration: "none",
       "&:visited": {
-        color: "blue.6",
+        color: "blue.6"
       },
       "&:hover:not([disabled]):not(:active)": {
-        textDecoration: "underline",
+        textDecoration: "underline"
       },
       "&:active": {
-        color: "blue.8",
+        color: "blue.8"
       },
       "&:focus": {
         borderRadius: "small",
         boxShadow: "focus",
-        outline: "none",
-      },
+        outline: "none"
+      }
     },
     img: {
       maxWidth: "100%",
-      height: "auto",
+      height: "auto"
     },
     root: {
       m: 0,
@@ -536,19 +536,19 @@ const theme: Theme & StyledSystemTheme = {
       fontFamily: "body",
       lineHeight: "body",
       fontWeight: "body",
-      fontSize: 2,
+      fontSize: 2
     },
     table: {
-      borderCollapse: "collapse",
+      borderCollapse: "collapse"
     },
     tr: {
       borderBottom: "1px solid",
       borderColor: "gray.2",
-      "tbody > &:last-child": { borderBottom: "none" },
+      "tbody > &:last-child": { borderBottom: "none" }
     },
     td: {
-      py: 1,
-    },
+      py: 1
+    }
   },
   linkButton: {
     ...appButtonStyles,
@@ -556,37 +556,37 @@ const theme: Theme & StyledSystemTheme = {
     color: "muted",
     textDecoration: "none",
     px: 3,
-    py: 2,
+    py: 2
   },
   header: {
     app: {
       height: heights.header,
       flexShrink: 0,
       antiAlias: "",
-      p: 2,
+      p: 2
     },
     title: {
       fontFamily: "heading",
       fontWeight: "light",
-      fontSize: 2,
+      fontSize: 2
     },
     left: {
       justifyContent: "flex-start",
       alignItems: "center",
       flex: 1,
-      pl: 1,
+      pl: 1
     },
     center: {
       justifyContent: "center",
       alignItems: "center",
-      flex: 1,
+      flex: 1
     },
     right: {
       justifyContent: "flex-end",
       alignItems: "center",
-      flex: 1,
-    },
-  },
+      flex: 1
+    }
+  }
 };
 
 export default theme;
