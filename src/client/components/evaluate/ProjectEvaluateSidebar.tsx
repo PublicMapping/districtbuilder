@@ -1,10 +1,11 @@
 /** @jsx jsx */
 import { jsx, ThemeUIStyleObject, Container } from "theme-ui";
 
-import { EvaluateMetric, IProject } from "../../../shared/entities";
+import { EvaluateMetric, EvaluateMetricWithValue, IProject } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
+import { useState, useEffect } from "react";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
@@ -78,12 +79,24 @@ const ProjectEvaluateSidebar = ({
   readonly metric: EvaluateMetric | undefined;
   readonly project?: IProject;
 }) => {
-  const requiredMetrics: readonly EvaluateMetric[] = [
+  const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (geojson && !avgCompactness) {
+      const totalCompactness = geojson.features.reduce(function(accumulator, feature) {
+        return accumulator + feature.properties.compactness;
+      }, 0);
+      setAvgCompactness(totalCompactness / (geojson.features.length - 1));
+    }
+  }, [geojson, avgCompactness]);
+
+  const requiredMetrics: readonly EvaluateMetricWithValue[] = [
     {
       key: "equalPopulation",
       name: "Equal Population",
       status: false,
       description: "have equal population",
+      shortText: "Lorem ipsum",
+      longText: "Lorem ipsum",
       type: "fraction",
       value: 17
     },
@@ -92,6 +105,10 @@ const ProjectEvaluateSidebar = ({
       name: "Contiguity",
       status: true,
       description: "are contiguous",
+      longText:
+        "A district must be in a single, unbroken shape. Two areas touching at the corners are typically not considered contiguous. An exception would be the inclusion of islands in a coastal district.",
+      shortText:
+        "All parts of a district must be in physical contact with some other part of the district",
       type: "fraction",
       value: 18
     }
@@ -106,14 +123,22 @@ const ProjectEvaluateSidebar = ({
       key: "compactness",
       name: "Compactness",
       type: "percent",
+      longText:
+        "A district that is more spread out has a lower compactness. Low compactness can be an indicators of gerrymandering when lorem ipsum lorem ipsum. Above XX% is considered good. Calculated using the Polsby-Popper method.",
+      shortText:
+        "A district that is more spread out has a lower compactness. Low compactness can be an indicators of gerrymandering",
       description: "are compact",
-      value: 56.2
+      value: avgCompactness
     },
     {
       key: "minorityMajority",
       name: "Minority-Majority",
       type: "fraction",
       description: "are minority-majority",
+      shortText:
+        "A district in which the majority of the constituents are racial or ethnic minorities",
+      longText:
+        "A district in which the majority of the constituents are racial or ethnic minorities",
       value: 1
     },
     {
@@ -121,6 +146,8 @@ const ProjectEvaluateSidebar = ({
       name: "County splits",
       type: "count",
       description: "are split",
+      shortText: "Lorem ipsum",
+      longText: "Lorem ipsum",
       value: project?.districtsDefinition.filter(x => Array.isArray(x)).length,
       total: project ? project.districtsDefinition.length : 0,
       splitCounties: project?.districtsDefinition.map(c => {

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Box, Button, Flex, jsx, ThemeUIStyleObject, Heading } from "theme-ui";
 
-import { EvaluateMetric } from "../../../shared/entities";
+import { EvaluateMetric, EvaluateMetricWithValue } from "../../../shared/entities";
 import Icon from "../Icon";
 import store from "../../store";
 import { selectEvaluationMetric, toggleEvaluate } from "../../actions/districtDrawing";
@@ -65,7 +65,9 @@ const style: ThemeUIStyleObject = {
   metricText: {
     fontSize: "10",
     ml: "50px",
-    minHeight: "50px"
+    minHeight: "50px",
+    maxWidth: "50%",
+    fontWeight: "300"
   }
 };
 
@@ -77,12 +79,12 @@ const ProjectEvaluateView = ({
   readonly requiredMetrics: readonly EvaluateMetric[];
   readonly optionalMetrics: readonly EvaluateMetric[];
 }) => {
-  function formatMetricValue(metric: EvaluateMetric): string {
+  function formatMetricValue(metric: EvaluateMetricWithValue): string {
     switch (metric.type) {
       case "fraction":
         return `${metric.value} / 18`;
       case "percent":
-        return `${metric.value}%`;
+        return `${Math.floor(metric.value * 100)}%`;
       case "count":
         return `${metric.value}`;
       default:
@@ -115,12 +117,20 @@ const ProjectEvaluateView = ({
           >
             <Flex sx={style.metricRow}>
               <Box sx={{ mr: "50px" }}>
-                {metric.status ? <Icon name={"check"} /> : <Icon name={"question-circle"} />}
+                {"status" in metric ? (
+                  metric.status ? (
+                    <Icon name={"check"} />
+                  ) : (
+                    <Icon name={"question-circle"} />
+                  )
+                ) : (
+                  <Box></Box>
+                )}
               </Box>
               <Box>{metric.name}</Box>
-              <Box sx={style.metricValue}>{formatMetricValue(metric)}</Box>
+              <Box sx={style.metricValue}>{"type" in metric ? formatMetricValue(metric) : ""}</Box>
             </Flex>
-            <Flex sx={style.metricText}>Lorem ipsum dolor</Flex>
+            <Flex sx={style.metricText}>{metric.shortText}</Flex>
           </Box>
         ))}
       </Flex>
@@ -136,9 +146,11 @@ const ProjectEvaluateView = ({
             >
               <Flex sx={style.metricRow}>
                 <Box sx={{ ml: "50px" }}>{metric.name}</Box>
-                <Box sx={style.metricValue}>{formatMetricValue(metric)}</Box>
+                <Box sx={style.metricValue}>
+                  {"type" in metric ? formatMetricValue(metric) : ""}
+                </Box>
               </Flex>
-              <Flex sx={style.metricText}>Lorem ipsum dolor</Flex>
+              <Flex sx={style.metricText}>{metric.shortText || "Lorem ipsum lorem ipsum"}</Flex>
             </Box>
           </Flex>
         ))}

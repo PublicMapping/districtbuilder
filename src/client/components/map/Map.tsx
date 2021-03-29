@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { useEffect, useRef } from "react";
-import { Box, jsx } from "theme-ui";
+import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -17,7 +17,8 @@ import {
   GeoUnits,
   IProject,
   IStaticMetadata,
-  LockedDistricts
+  LockedDistricts,
+  EvaluateMetric
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
 import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
@@ -32,7 +33,12 @@ import {
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
   DISTRICTS_OUTLINE_LAYER_ID,
-  setFeaturesSelectedFromGeoUnits
+  DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
+  DISTRICTS_LAYER_ID,
+  levelToSelectionLayerId,
+  setFeaturesSelectedFromGeoUnits,
+  getChoroplethLabels,
+  getChoroplethStops
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -55,6 +61,8 @@ interface Props {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
+  readonly evaluateMetric?: EvaluateMetric;
+  readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
@@ -63,6 +71,35 @@ interface Props {
   // eslint-disable-next-line
   readonly setMap: (map: MapboxGL.Map) => void;
 }
+
+const style: ThemeUIStyleObject = {
+  legendLabel: {
+    display: "inline-block",
+    ml: "5px"
+  },
+  legendItem: {
+    display: "inline-block",
+    width: "150px",
+    mr: "20px"
+  },
+  legendTitle: {
+    display: "inline-block",
+    width: "120px",
+    fontWeight: "600",
+    mr: "40px"
+  },
+  legendBox: {
+    position: "absolute",
+    bottom: "20px",
+    left: "100px",
+    height: "60px",
+    width: "1050px",
+    fontSize: "14pt",
+    display: "inline-block",
+    outline: "1px solid gray",
+    padding: "20px"
+  }
+};
 
 const DistrictsMap = ({
   project,
@@ -76,6 +113,8 @@ const DistrictsMap = ({
   lockedDistricts,
   isReadOnly,
   findMenuOpen,
+  evaluateMetric,
+  evaluateMode,
   findTool,
   label,
   map,
@@ -190,6 +229,33 @@ const DistrictsMap = ({
         })
       );
   };
+
+  // Handle evaluate mode map views
+  useEffect(() => {
+    if (map) {
+      if (evaluateMetric && evaluateMode) {
+        // Remove all geolayers from view
+        staticMetadata.geoLevelHierarchy.forEach(geoLevel => {
+          map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "none");
+          map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "none");
+        });
+        map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "none");
+        if (evaluateMetric.key === "compactness") {
+          map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "visible");
+        }
+      } else {
+        // Reset map state to default
+        map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
+        map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+        staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
+          if (idx === staticMetadata.geoLevelHierarchy.length - 1) {
+            map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "visible");
+            map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "visible");
+          }
+        });
+      }
+    }
+  }, [evaluateMetric, evaluateMode, map, staticMetadata.geoLevelHierarchy]);
 
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
@@ -421,6 +487,26 @@ const DistrictsMap = ({
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "compactness" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>Compactness</Box>
+          {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+            <Box sx={style.legendItem} key={i}>
+              <Box
+                sx={{
+                  display: "inline-block",
+                  mr: "10px",
+                  width: "20px",
+                  height: "20px",
+                  opacity: "0.9",
+                  backgroundColor: `${step[1]}`
+                }}
+              ></Box>
+              <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
+            </Box>
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };

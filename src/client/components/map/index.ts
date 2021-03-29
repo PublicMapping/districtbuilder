@@ -27,6 +27,8 @@ export const DISTRICTS_SOURCE_ID = "districts";
 export const DISTRICTS_LAYER_ID = "districts";
 // Id for districts layer outline, used for Find
 export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
 // Used only to make districts appear in the correct position in the layer stack
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 // Used only to make highlights appear in the correct position in the layer stack
@@ -46,6 +48,32 @@ const filteredLabelLayers = [
   "settlement-subdivision-label",
   "poi-label"
 ];
+
+export function getChoroplethStops(metricKey: string) {
+  const compactnessSteps = [
+    [0.3, "#edf8fb"],
+    [0.4, "#b2e2e2"],
+    [0.5, "#66c2a4"],
+    [0.6, "#2ca25f"],
+    [1.0, "#006d2c"]
+  ];
+  switch (metricKey) {
+    case "compactness":
+      return compactnessSteps;
+    default:
+      return [];
+  }
+}
+
+export function getChoroplethLabels(metricKey: string) {
+  const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
+  switch (metricKey) {
+    case "compactness":
+      return compactnessLabels;
+    default:
+      return [];
+  }
+}
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
   const largeGeolevel = {
@@ -116,6 +144,24 @@ export function generateMapLayers(
       }
     },
     DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": {
+          property: "compactness",
+          stops: getChoroplethStops("compactness")
+        },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(

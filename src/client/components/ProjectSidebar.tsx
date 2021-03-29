@@ -208,7 +208,7 @@ const ProjectSidebar = ({
 
 const BLANK_VALUE = "–";
 
-function getCompactnessDisplay(properties: DistrictProperties) {
+export function getCompactnessDisplay(properties: DistrictProperties) {
   return properties.contiguity === "" ? (
     <Tooltip
       placement="top-start"
