@@ -31,7 +31,7 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
   chamber?: Chamber;
 
   @OneToMany(
-    type => Project,
+    () => Project,
     project => project.projectTemplate
   )
   projects: Project[];

@@ -1,28 +1,22 @@
 import {
+  BadRequestException,
   Controller,
-  UseGuards,
-  Param,
-  Post,
-  NotFoundException,
-  Body,
   Get,
+  NotFoundException,
+  Param,
   Request,
-  BadRequestException
+  UseGuards
 } from "@nestjs/common";
-import { Crud, CrudController, CrudRequest, ParsedRequest } from "@nestjsx/crud";
-import { IsNotEmpty } from "class-validator";
+import { Crud, CrudController } from "@nestjsx/crud";
 
-import { OrganizationSlug, PublicUserProperties, UserId } from "../../../../shared/entities";
-import { JoinOrganizationErrors } from "../../../../shared/constants";
-import { Organization } from "../../organizations/entities/organization.entity";
+import { OrganizationSlug } from "../../../../shared/entities";
 
 import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
-import { User } from "../../users/entities/user.entity";
-import { UsersService } from "../../users/services/users.service";
+import { Organization } from "../../organizations/entities/organization.entity";
+import { OrganizationsService } from "../../organizations/services/organizations.service";
 
 import { ProjectTemplate } from "../entities/project-template.entity";
 import { ProjectTemplatesService } from "../services/project-templates.service";
-import { OrganizationsService } from "../../organizations/services/organizations.service";
 
 @Crud({
   model: {

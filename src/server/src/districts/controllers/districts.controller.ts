@@ -55,7 +55,7 @@ export class DistrictsController {
     // hierarchy always goes out to the base geounit level), so we use it as a starting point
     // and transform it into our districts definition.
     const mapToDefinition = (hierarchySubset: GeoUnitHierarchy): DistrictsDefinition =>
-      hierarchySubset.map((hierarchyNumOrArray, idx) => {
+      hierarchySubset.map(hierarchyNumOrArray => {
         if (typeof hierarchyNumOrArray === "number") {
           // The numbers found in the hierarchy are the base geounit indices of the topology.
           // Access this item in the topology to find it's base geounit id.

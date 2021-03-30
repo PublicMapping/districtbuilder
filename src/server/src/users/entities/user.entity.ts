@@ -24,7 +24,7 @@ export class User implements IUser {
   hasSeenTour: boolean;
 
   @ManyToMany(
-    type => Organization,
+    () => Organization,
     organization => organization.users
   )
   organizations: Organization[];
