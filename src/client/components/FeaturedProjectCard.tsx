@@ -5,6 +5,7 @@ import MapboxGL from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 import bbox from "@turf/bbox";
 import { getDistrictColor } from "../constants/colors";
+import { useHistory } from "react-router-dom";
 
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
@@ -13,7 +14,10 @@ const style = {
     flexDirection: "column",
     bg: "#fff",
     borderRadius: "2px",
-    boxShadow: "small"
+    boxShadow: "small",
+    "&:hover": {
+      cursor: "pointer"
+    }
   },
   mapContainer: {
     width: "100%",
@@ -39,6 +43,11 @@ const style = {
 const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const history = useHistory();
+
+  function goToProject(project: OrgProject) {
+    history.push(`/projects/${project.id}`);
+  }
 
   useEffect(() => {
     if (mapRef.current === null) {
@@ -87,7 +96,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
   }, [mapRef, project.districts]);
 
   return (
-    <Flex sx={style.featuredProject}>
+    <Flex sx={style.featuredProject} onClick={() => goToProject(project)}>
       <Box sx={style.mapContainer}>
         <Box ref={mapRef} sx={style.map}></Box>
       </Box>

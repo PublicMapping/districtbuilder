@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project districts geojson is now cached in the project table when updated [#594](https://github.com/PublicMapping/districtbuilder/pull/594)
 - Upgrade NestJS deps [#637](https://github.com/PublicMapping/districtbuilder/pull/637)
 - Refactor project evaluate mode views [#642](https://github.com/PublicMapping/districtbuilder/pull/642)
+- Link featured projects in Organization screen to project detail pages [#657](https://github.com/PublicMapping/districtbuilder/pull/657)
 
 ### Fixed
 
