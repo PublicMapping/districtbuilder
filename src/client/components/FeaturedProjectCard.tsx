@@ -116,7 +116,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
             mb: "1"
           }}
         >
-          {project.name}
+          {project.project.name}
         </Heading>
         <Text
           sx={{

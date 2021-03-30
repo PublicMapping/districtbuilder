@@ -6,7 +6,8 @@ import {
   UintArrays,
   GeoUnitHierarchy,
   DistrictProperties,
-  DistrictsDefinition
+  DistrictsDefinition,
+  ProjectId
 } from "../shared/entities";
 
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;
@@ -38,12 +39,18 @@ export interface AuthLocationState {
 
 interface OrgProject {
   readonly id: ProjectId;
-  readonly name: string;
+  readonly project: {
+    readonly id: ProjectId;
+    readonly name: string;
+  };
+  readonly creator: {
+    readonly name: string;
+    readonly email: string;
+  };
   readonly templateName: string;
   readonly updatedAgo: string;
   readonly isFeatured: boolean;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly districts?: DistrictsGeoJSON;
   readonly districtsDefinition?: DistrictsDefinition;
-  readonly creator: string;
 }

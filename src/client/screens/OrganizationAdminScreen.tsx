@@ -92,8 +92,10 @@ const OrganizationAdminScreen = ({ organization, user, organizationProjects }: S
             return pt.projects.map(p => {
               return {
                 ...p,
+                project: { name: p.name, id: p.id },
                 updatedAgo: formatDate(p.updatedDt),
-                creator: p.user.name,
+                creator: { name: p.user.name, email: p.user.email },
+                id: p.id,
                 templateName: pt.name,
                 regionConfig: pt.regionConfig,
                 numberOfDistricts: pt.numberOfDistricts

@@ -30,8 +30,10 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
         "projects.id",
         "projects.updatedDt",
         "regionConfig.name",
-        "user.name"
+        "user.name",
+        "user.email"
       ])
+      .orderBy("projects.name")
       .getMany();
     return data;
   }
@@ -58,6 +60,7 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
         "regionConfig.name",
         "user.name"
       ])
+      .orderBy("projects.name")
       .getMany();
     return data;
   }

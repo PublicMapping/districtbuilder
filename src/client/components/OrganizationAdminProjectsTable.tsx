@@ -1,10 +1,11 @@
 /** @jsx jsx */
 import { useMemo } from "react";
-import { Button, Flex, jsx } from "theme-ui";
+import { Button, Flex, jsx, Styled } from "theme-ui";
 import store from "../store";
 import { toggleProjectFeatured } from "../actions/organizationProjects";
 import { OrganizationSlug } from "../../shared/entities";
 import { useTable, Row, HeaderGroup, Cell, useSortBy } from "react-table";
+import { Link } from "react-router-dom";
 import { OrgProject } from "../types";
 interface ProjectsTableProps {
   readonly projects: readonly OrgProject[];
@@ -27,7 +28,14 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
     () => [
       {
         Header: "Map",
-        accessor: "name" // accessor is the "key" in the data
+        accessor: "project", // accessor is the "key" in the data,
+        Cell: (p: Cell<OrgProject>) => {
+          return (
+            <Styled.a as={Link} to={`/projects/${p.value.id}`} target="_blank">
+              {p.value.name}
+            </Styled.a>
+          );
+        }
       },
       {
         Header: "Template",
@@ -35,7 +43,14 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
       },
       {
         Header: "Creator",
-        accessor: "creator"
+        accessor: "creator.name"
+      },
+      {
+        Header: "Creator email",
+        accessor: "creator.email",
+        Cell: (p: Cell<OrgProject>) => {
+          return <a href={`mailto:${p.value}`}>{p.value}</a>;
+        }
       },
       {
         Header: "Updated on",
