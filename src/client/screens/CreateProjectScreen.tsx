@@ -106,28 +106,6 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
   };
 
   const style: ThemeUIStyleObject = {
-    orgCard: {
-      left: "40%",
-      flexDirection: "column",
-      padding: "15px",
-      bg: "#fff",
-      borderRadius: "2px",
-      mx: "auto",
-      my: "20px",
-      maxWidth: "medium",
-      boxShadow: "small"
-    },
-    userOrgs: {
-      left: "40%",
-      display: "block",
-      minHeight: "100px",
-      border: "1px solid black",
-      width: "100%",
-      maxWidth: "medium",
-      my: 7,
-      mx: "auto",
-      padding: "10px"
-    },
     header: {
       py: 3,
       px: 5,
@@ -203,7 +181,6 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       mb: "10px"
     },
     orgTemplates: {
-      left: "40%",
       display: "block",
       minHeight: "100px",
       pl: "5px",
@@ -212,7 +189,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       },
       mx: "auto",
       width: "100%",
-      maxWidth: "medium",
+      maxWidth: "large",
       borderTop: "1px solid lightgray",
       my: 7
     }
@@ -253,57 +230,59 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
         </Heading>
       </Flex>
       <Flex as="main" sx={{ width: "100%", display: "block" }}>
-        {"resource" in user && user.resource.organizations.length > 0 && (
-          <Box sx={style.orgCard}>
-            <Heading as="h3" sx={style.orgCardLabel}>
-              Organization
-            </Heading>
-            <Box sx={style.orgCardSubtitle}>
-              Are you making a new map with an organization you&apos;ve joined?
-            </Box>
-            <div
-              sx={{
-                flex: "0 0 50%",
-                "@media screen and (max-width: 770px)": {
-                  flex: "0 0 100%"
-                }
-              }}
-              key="custom"
-            >
-              <Label>
-                <Radio
-                  name="organization"
-                  value=""
-                  onChange={onOrgChanged}
-                  checked={organizationSlug === undefined}
-                />
-                <Flex as="span" sx={{ flexDirection: "column" }}>
-                  <div sx={style.radioHeading}>No organization</div>
-                  <div sx={style.radioSubHeading}>Continue without an organization</div>
-                </Flex>
-              </Label>
-            </div>
-            {user.resource.organizations.map(org => (
-              <Label
-                key={org.slug}
+        <Flex sx={style.formContainer}>
+          {"resource" in user && user.resource.organizations.length > 0 && (
+            <Card sx={{ variant: "card.flat" }}>
+              <Heading as="h3" sx={style.orgCardLabel}>
+                Organization
+              </Heading>
+              <Box sx={style.orgCardSubtitle}>
+                Are you making a new map with an organization you&apos;ve joined?
+              </Box>
+              <div
                 sx={{
-                  display: "inline-flex",
-                  "@media screen and (min-width: 750px)": {
-                    flex: "0 0 48%",
-                    "&:nth-of-type(even)": {
-                      mr: "2%"
-                    }
+                  flex: "0 0 50%",
+                  "@media screen and (max-width: 770px)": {
+                    flex: "0 0 100%"
                   }
                 }}
+                key="custom"
               >
-                <Radio name="organization" value={org.slug} onChange={onOrgChanged} />
-                <Flex as="span" sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}>
-                  <div sx={style.radioHeading}>{org.name}</div>
-                </Flex>
-              </Label>
-            ))}
-          </Box>
-        )}
+                <Label>
+                  <Radio
+                    name="organization"
+                    value=""
+                    onChange={onOrgChanged}
+                    checked={organizationSlug === undefined}
+                  />
+                  <Flex as="span" sx={{ flexDirection: "column" }}>
+                    <div sx={style.radioHeading}>No organization</div>
+                    <div sx={style.radioSubHeading}>Continue without an organization</div>
+                  </Flex>
+                </Label>
+              </div>
+              {user.resource.organizations.map(org => (
+                <Label
+                  key={org.slug}
+                  sx={{
+                    display: "inline-flex",
+                    "@media screen and (min-width: 750px)": {
+                      flex: "0 0 48%",
+                      "&:nth-of-type(even)": {
+                        mr: "2%"
+                      }
+                    }
+                  }}
+                >
+                  <Radio name="organization" value={org.slug} onChange={onOrgChanged} />
+                  <Flex as="span" sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}>
+                    <div sx={style.radioHeading}>{org.name}</div>
+                  </Flex>
+                </Label>
+              ))}
+            </Card>
+          )}
+        </Flex>
         {"resource" in organization && "resource" in user && organizationSlug && (
           <Box sx={style.orgTemplates}>
             <OrganizationTemplates user={user.resource} organization={organization.resource} />
