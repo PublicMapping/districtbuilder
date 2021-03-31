@@ -106,6 +106,28 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
   };
 
   const style: ThemeUIStyleObject = {
+    orgCard: {
+      left: "40%",
+      flexDirection: "column",
+      padding: "15px",
+      bg: "#fff",
+      borderRadius: "2px",
+      mx: "auto",
+      my: "20px",
+      maxWidth: "medium",
+      boxShadow: "small"
+    },
+    userOrgs: {
+      left: "40%",
+      display: "block",
+      minHeight: "100px",
+      border: "1px solid black",
+      width: "100%",
+      maxWidth: "medium",
+      my: 7,
+      mx: "auto",
+      padding: "10px"
+    },
     header: {
       py: 3,
       px: 5,
@@ -174,17 +196,6 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       paddingInlineEnd: "0",
       paddingBlockEnd: "0"
     },
-    userOrgs: {
-      left: "40%",
-      display: "block",
-      minHeight: "100px",
-      border: "1px solid black",
-      width: "100%",
-      maxWidth: "medium",
-      my: 7,
-      mx: "auto",
-      padding: "10px"
-    },
     orgCardLabel: {
       mt: "5px"
     },
@@ -202,6 +213,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       mx: "auto",
       width: "100%",
       maxWidth: "medium",
+      borderTop: "1px solid lightgray",
       my: 7
     }
   };
@@ -242,7 +254,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       </Flex>
       <Flex as="main" sx={{ width: "100%", display: "block" }}>
         {"resource" in user && user.resource.organizations.length > 0 && (
-          <Flex sx={style.userOrgs}>
+          <Box sx={style.orgCard}>
             <Heading as="h3" sx={style.orgCardLabel}>
               Organization
             </Heading>
@@ -287,11 +299,10 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                 <Radio name="organization" value={org.slug} onChange={onOrgChanged} />
                 <Flex as="span" sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}>
                   <div sx={style.radioHeading}>{org.name}</div>
-                  <div sx={style.radioSubHeading}>{org.slug}</div>
                 </Flex>
               </Label>
             ))}
-          </Flex>
+          </Box>
         )}
         {"resource" in organization && "resource" in user && organizationSlug && (
           <Box sx={style.orgTemplates}>
