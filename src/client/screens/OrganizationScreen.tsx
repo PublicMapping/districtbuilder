@@ -139,7 +139,8 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
               return {
                 ...p,
                 updatedAgo: formatDate(p.updatedDt),
-                creator: p.user.name,
+                creator: { name: p.user.name, email: p.user.email },
+                project: { name: p.name, id: p.id },
                 templateName: pt.name,
                 regionConfig: pt.regionConfig,
                 numberOfDistricts: pt.numberOfDistricts

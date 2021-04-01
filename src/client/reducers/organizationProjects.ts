@@ -93,8 +93,7 @@ const organizationProjectsReducer: LoopReducer<OrganizationProjectsState, Action
     case getType(toggleProjectFeatured): {
       return loop(
         {
-          ...state,
-          featuredProjects: { isPending: true }
+          ...state
         },
         Cmd.run(
           () =>

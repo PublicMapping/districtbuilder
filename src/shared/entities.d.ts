@@ -2,7 +2,7 @@ import { ProjectVisibility } from "./constants";
 
 export type UserId = string;
 
-export type PublicUserProperties = "id" | "name";
+export type PublicUserProperties = "id" | "name" | "email";
 
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
 
