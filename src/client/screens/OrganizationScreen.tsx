@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { useParams } from "react-router-dom";
-import { Box, Button, Flex, Heading, Image, jsx, Link, Spinner, Text } from "theme-ui";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { Box, Button, Flex, Heading, Image, jsx, Spinner, Text, Link } from "theme-ui";
 import { formatDate } from "../functions";
 
 import { showCopyMapModal } from "../actions/districtDrawing";
@@ -115,6 +115,10 @@ const style = {
     width: "100%",
     background: "lightgray",
     color: "black"
+  },
+  viewAllBtn: {
+    fontSize: "14pt",
+    ml: 4
   }
 } as const;
 
@@ -130,6 +134,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
     checkIfUserInOrg(organization.resource, user.resource);
 
   const userIsVerified = "resource" in user && user.resource && user.resource.isEmailVerified;
+  const orgAdminUrl = `/o/${organizationSlug}/admin`;
 
   const featuredProjects =
     "resource" in organizationProjects.featuredProjects
@@ -174,6 +179,12 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
       return u.id === user.id;
     });
     return userExists.length > 0;
+  }
+
+  function userIsOrgAdmin(org: IOrganization, user: IUser) {
+    if (org && org.admin) {
+      return org.admin.id === user.id;
+    }
   }
 
   const joinButton = (
@@ -294,7 +305,20 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
               {featuredProjects ? (
                 <Box sx={{ ...style.featuredProjects, ...style.container }}>
                   <Heading as="h2" sx={{ mb: "3" }}>
-                    Featured maps
+                    <span>Featured maps</span>
+                    <span>
+                      {"resource" in user &&
+                        "resource" in organization &&
+                        organization.resource &&
+                        userIsOrgAdmin(organization.resource, user.resource) && (
+                          <RouterLink
+                            to={orgAdminUrl}
+                            sx={{ ...style.viewAllBtn, variant: "links.button" }}
+                          >
+                            View All
+                          </RouterLink>
+                        )}
+                    </span>
                   </Heading>
                   <Text>
                     A collection of highlighted maps built by members of{" "}
