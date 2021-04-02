@@ -15,9 +15,10 @@ import {
   UpdateUserData,
   UserId,
   DistrictsDefinition,
-  RegionConfigId
+  RegionConfigId,
+  ProjectNest
 } from "../shared/entities";
-import { DistrictsGeoJSON, DynamicProjectData, OrgProject } from "./types";
+import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();
@@ -317,7 +318,7 @@ export async function fetchOrganizationFeaturedProjects(
   });
 }
 
-export async function saveProjectFeatured(project: OrgProject): Promise<IOrganization> {
+export async function saveProjectFeatured(project: ProjectNest): Promise<IOrganization> {
   return new Promise((resolve, reject) => {
     const projectPost = {
       isFeatured: !project.isFeatured

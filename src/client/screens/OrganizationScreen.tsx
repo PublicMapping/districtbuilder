@@ -17,8 +17,7 @@ import { UserState } from "../reducers/user";
 import { OrganizationProjectsState } from "../reducers/organizationProjects";
 import store from "../store";
 
-import { CreateProjectData, IOrganization, IUser } from "../../shared/entities";
-import { OrgProject } from "../types";
+import { CreateProjectData, IOrganization, IUser, ProjectNest } from "../../shared/entities";
 
 import Icon from "../components/Icon";
 import JoinOrganizationModal from "../components/JoinOrganizationModal";
@@ -302,7 +301,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                   </Text>
                   <Box sx={style.featuredProjectContainer}>
                     {featuredProjects.length > 0 ? (
-                      featuredProjects.map((project: OrgProject) => (
+                      featuredProjects.map((project: ProjectNest) => (
                         <FeaturedProjectCard project={project} key={project.id} />
                       ))
                     ) : (

@@ -36,21 +36,3 @@ export type SavingState = "unsaved" | "saving" | "saved" | "failed";
 export interface AuthLocationState {
   readonly from: H.Location;
 }
-
-interface OrgProject {
-  readonly id: ProjectId;
-  readonly project: {
-    readonly id: ProjectId;
-    readonly name: string;
-  };
-  readonly creator: {
-    readonly name: string;
-    readonly email: string;
-  };
-  readonly templateName: string;
-  readonly updatedAgo: string;
-  readonly isFeatured: boolean;
-  readonly user: Pick<IUser, PublicUserProperties>;
-  readonly districts?: DistrictsGeoJSON;
-  readonly districtsDefinition?: DistrictsDefinition;
-}
