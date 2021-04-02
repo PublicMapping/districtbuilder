@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor project evaluate mode views [#642](https://github.com/PublicMapping/districtbuilder/pull/642)
 - Link featured projects in Organization screen to project detail pages [#657](https://github.com/PublicMapping/districtbuilder/pull/657)
 - Add creator email and project link to Org Admin screen [#664](https://github.com/PublicMapping/districtbuilder/pull/664)
+- Allow admins to view projects created from organization template [#672](https://github.com/PublicMapping/districtbuilder/pull/672)
 
 ### Fixed
 
