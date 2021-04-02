@@ -318,7 +318,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                 </Card>
                 <Card sx={{ variant: "card.flat" }}>
                   <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                    Distrcts
+                    Districts
                   </legend>
                   <fieldset sx={style.fieldset}>
                     <Flex>
