@@ -122,10 +122,14 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
                     </td>
                   );
                 })}
-                <td>
-                  <Button onClick={() => projectFeaturedToggle(row)}>
-                    {row.original.isFeatured ? "Unfeature" : "Feature"}
-                  </Button>
+                <td sx={{ textAlign: "center" }}>
+                  {row.original.visibility === ProjectVisibility.Published ? (
+                    <Button onClick={() => projectFeaturedToggle(row)}>
+                      {row.original.isFeatured ? "Unfeature" : "Feature"}
+                    </Button>
+                  ) : (
+                    "Unpublished"
+                  )}
                 </td>
               </tr>
             );
