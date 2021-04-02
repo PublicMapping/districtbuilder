@@ -266,7 +266,6 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
     case getType(toggleEvaluate):
       return {
         ...state,
-        evaluateMetric: undefined,
         evaluateMode: action.payload
       };
     case getType(selectEvaluationMetric):
