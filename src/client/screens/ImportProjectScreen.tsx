@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FileDrop } from "react-file-drop";
 import { connect } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
-import { Box, Button, Card, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Card, Flex, Heading, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
 import { FIPS } from "../../shared/constants";
 import { DistrictsDefinition, IProject, IRegionConfig } from "../../shared/entities";
@@ -23,14 +23,17 @@ interface StateProps {
   readonly regionConfigs: RegionConfigState;
 }
 
-const validate = (form: ProjectForm) =>
-  form.numberOfDistricts !== null && form.regionConfig !== null && form.districtsDefinition !== null
-    ? ({ ...form, valid: true } as ValidForm)
-    : ({ ...form, valid: false } as InvalidForm);
+const validate = (form: ConfigurableForm, importResource: ImportResource) => {
+  const regionConfig = importResource.data;
+  const districtsDefinition = "resource" in importResource ? importResource.resource : null;
+  return form.numberOfDistricts !== null && importResource.data && "resource" in importResource
+    ? ({ ...form, regionConfig, districtsDefinition, valid: true } as ValidForm)
+    : ({ ...form, regionConfig, districtsDefinition, valid: false } as InvalidForm);
+};
 
-interface ProjectForm {
-  readonly regionConfig: IRegionConfig | null;
-  readonly districtsDefinition: DistrictsDefinition | null;
+type ImportResource = WriteResource<IRegionConfig | null, DistrictsDefinition>;
+
+interface ConfigurableForm {
   readonly numberOfDistricts: number | null;
 }
 
@@ -41,7 +44,10 @@ interface ValidForm {
   readonly valid: true;
 }
 
-interface InvalidForm extends ProjectForm {
+interface InvalidForm {
+  readonly regionConfig: IRegionConfig | null;
+  readonly districtsDefinition: DistrictsDefinition | null;
+  readonly numberOfDistricts: number | null;
   readonly valid: false;
 }
 
@@ -140,33 +146,46 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
   }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const importNumberRef = useRef(0);
+  const [importResource, setImportResource] = useState<ImportResource>({
+    data: null
+  });
   const [createProjectResource, setCreateProjectResource] = useState<
-    WriteResource<ProjectForm, IProject>
+    WriteResource<ConfigurableForm, IProject>
   >({
     data: {
-      regionConfig: null,
-      districtsDefinition: null,
       numberOfDistricts: null
     }
   });
-  const { data } = createProjectResource;
+  const regionConfig = importResource.data;
+  const formData = createProjectResource.data;
 
   const setFile = useCallback(
     (file: Blob) => {
       async function setConfigFromFile() {
         if (file && "resource" in regionConfigs) {
           const stateAbbrev = await getStateFromCsv(file);
+          // eslint-disable-next-line
+          importNumberRef.current = importNumberRef.current + 1;
+          const importNumber = importNumberRef.current;
+
           const regionConfig =
             regionConfigs.resource.find(config => config.regionCode === stateAbbrev) || null;
-          const dataWithRegion = { ...data, regionConfig };
-          setCreateProjectResource({ data: dataWithRegion });
-          const districtsDefinition = await importCsv(file);
-          setCreateProjectResource({ data: { ...dataWithRegion, districtsDefinition } });
+          if (regionConfig) {
+            setImportResource({ data: regionConfig, isPending: true });
+            const districtsDefinition = await importCsv(file);
+            // Don't set the districtsDefinition if upload was cancelled while we were fetching it
+            if (importNumberRef.current === importNumber) {
+              setImportResource({ data: regionConfig, resource: districtsDefinition });
+            }
+          } else {
+            setImportResource({ data: null });
+          }
         }
       }
       void setConfigFromFile();
     },
-    [data, regionConfigs]
+    [regionConfigs, importNumberRef]
   );
 
   return "resource" in createProjectResource ? (
@@ -205,17 +224,17 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
             sx={{ flexDirection: "column" }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              const validatedForm = validate(data);
+              const validatedForm = validate(formData, importResource);
               if (validatedForm.valid === true) {
-                setCreateProjectResource({ data, isPending: true });
+                setCreateProjectResource({ data: formData, isPending: true });
                 createProject({
                   ...validatedForm,
                   name: validatedForm.regionConfig.name
                 })
                   .then((project: IProject) =>
-                    setCreateProjectResource({ data, resource: project })
+                    setCreateProjectResource({ data: formData, resource: project })
                   )
-                  .catch(errors => setCreateProjectResource({ data, errors }));
+                  .catch(errors => setCreateProjectResource({ data: formData, errors }));
               }
             }}
           >
@@ -238,16 +257,29 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                 accept=".csv"
                 style={{ display: "none" }}
               />
-              {data.regionConfig ? (
+              {regionConfig ? (
                 <Box sx={style.uploadSuccess}>
-                  <b>Upload successful!</b>
+                  {"resource" in importResource ? (
+                    <b>Upload success</b>
+                  ) : (
+                    <span>
+                      <Spinner variant="spinner.small" /> Uploading
+                    </span>
+                  )}
                   <Button
                     sx={{ variant: "buttons.linkStyle" }}
                     onClick={() => {
+                      // eslint-disable-next-line
+                      importNumberRef.current += 1;
+                      if (fileInputRef.current) {
+                        // eslint-disable-next-line
+                        fileInputRef.current.value = "";
+                      }
+                      setImportResource({
+                        data: null
+                      });
                       setCreateProjectResource({
                         data: {
-                          regionConfig: null,
-                          districtsDefinition: null,
                           numberOfDistricts: null
                         }
                       });
@@ -275,14 +307,14 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                 </FileDrop>
               )}
             </Card>
-            {data.regionConfig && (
+            {regionConfig && (
               <React.Fragment>
                 <Card sx={{ variant: "card.flat" }}>
                   <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                     State
                   </legend>
-                  We detected block data for <b>{data.regionConfig.name}</b>. To pick a different
-                  state, upload a new file.
+                  We detected block data for <b>{regionConfig.name}</b>. To pick a different state,
+                  upload a new file.
                 </Card>
                 <Card sx={{ variant: "card.flat" }}>
                   <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
@@ -301,7 +333,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                               const numberOfDistricts = isNaN(value) ? null : value;
                               setCreateProjectResource({
                                 data: {
-                                  ...data,
+                                  ...formData,
                                   numberOfDistricts
                                 }
                               });
@@ -316,8 +348,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                   <Button
                     type="submit"
                     disabled={
-                      (("isPending" in createProjectResource && createProjectResource.isPending) ||
-                        !validate(data).valid) &&
+                      !validate(formData, importResource).valid &&
                       !("errorMessage" in createProjectResource)
                     }
                   >
