@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { useEffect } from "react";
 import { connect } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Box, Flex, Heading, jsx } from "theme-ui";
 import { organizationFetch } from "../actions/organization";
 import { organizationProjectsFetch } from "../actions/organizationProjects";
@@ -126,7 +126,9 @@ const OrganizationAdminScreen = ({ organization, user, organizationProjects }: S
           <Box>
             <Flex sx={style.header}>
               <Box>
-                <Heading as="h3">{organization.resource.name}</Heading>
+                <Heading as="h3">
+                  <Link to={`/o/${organizationSlug}`}>{organization.resource.name}</Link>
+                </Heading>
                 <Heading>Maps</Heading>
                 <Box>
                   Published maps that were created by members of your organization. You can select
