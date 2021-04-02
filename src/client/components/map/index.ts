@@ -27,8 +27,6 @@ export const DISTRICTS_SOURCE_ID = "districts";
 export const DISTRICTS_LAYER_ID = "districts";
 // Id for districts layer outline, used for Find
 export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
-// Id for districts layer outline used in evaluate mode
-export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
 // Id for districts fill outline used in evaluate mode
 export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
 // Id for districts layer outline used in evaluate mode
@@ -52,6 +50,7 @@ export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
 export const SET_FEATURE_DELAY = 300;
 export const CONTIGUITY_FILL_COLOR = "#9400D3";
 export const EVALUATE_GRAY_FILL_COLOR = "#D3D3D3";
+export const COUNTY_SPLIT_FILL_COLOR = "#fed8b1";
 
 // Layers in the Mapbox Studio project that we filter to only show the active region.
 const filteredLabelLayers = [

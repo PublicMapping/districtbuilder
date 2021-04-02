@@ -111,8 +111,8 @@ const ProjectEvaluateMetricDetail = ({
           />
         ) : metric && "type" in metric && metric.key === "compactness" ? (
           <CompactnessMetricDetail metric={metric} geojson={geojson} />
-        ): metric && "type" in metric && metric.key === "contiguity" ? (
-            <ContiguityMetricDetail metric={metric} geojson={geojson} />
+        ) : metric && "type" in metric && metric.key === "contiguity" ? (
+          <ContiguityMetricDetail metric={metric} geojson={geojson} />
         ) : (
           <Box sx={{ ml: "20px" }}>
             <Heading as="h4" sx={{ variant: "text.h4", display: "block" }}>

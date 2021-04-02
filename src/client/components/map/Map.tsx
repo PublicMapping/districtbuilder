@@ -44,6 +44,7 @@ import {
   getChoroplethStops,
   DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
   CONTIGUITY_FILL_COLOR,
+  COUNTY_SPLIT_FILL_COLOR,
   EVALUATE_GRAY_FILL_COLOR
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
@@ -79,21 +80,6 @@ interface Props {
 }
 
 const style: ThemeUIStyleObject = {
-  fillBox: {
-    height: "10px",
-    width: "10px",
-    background: "#fed8b1",
-    opacity: "0.5",
-    outline: "1px solid gray",
-    display: "inline-block"
-  },
-  unfilledBox: {
-    height: "10px",
-    width: "10px",
-    background: "none",
-    outline: "1px solid gray",
-    display: "inline-block"
-  },
   legendLabel: {
     display: "inline-block",
     ml: "5px"
@@ -117,7 +103,7 @@ const style: ThemeUIStyleObject = {
     right: "200px",
     height: "60px",
     minWidth: "600px",
-    maxWidth: "1050px",
+    maxWidth: "1100px",
     fontSize: "14pt",
     display: "inline-block",
     outline: "1px solid gray",
@@ -128,7 +114,8 @@ const style: ThemeUIStyleObject = {
     mr: "10px",
     width: "20px",
     height: "20px",
-    opacity: "0.9"
+    opacity: "0.9",
+    outline: "1px solid lightgray"
   }
 };
 
@@ -562,11 +549,21 @@ const DistrictsMap = ({
         <Box sx={style.legendBox}>
           <Box sx={style.legendTitle}>County splits</Box>
           <Box sx={style.legendItem}>
-            <Box sx={style.fillBox}></Box>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: COUNTY_SPLIT_FILL_COLOR
+              }}
+            />
             <Box sx={style.legendLabel}>Split</Box>
           </Box>
           <Box sx={style.legendItem}>
-            <Box sx={style.unfilledBox}></Box>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: "none"
+              }}
+            />
             <Box sx={style.legendLabel}>Not split</Box>
           </Box>
         </Box>
@@ -593,11 +590,7 @@ const DistrictsMap = ({
           <Box sx={style.legendItem}>
             <Box
               sx={{
-                display: "inline-block",
-                mr: "10px",
-                width: "20px",
-                height: "20px",
-                opacity: "0.9",
+                ...style.legendColorSwatch,
                 backgroundColor: CONTIGUITY_FILL_COLOR
               }}
             ></Box>
@@ -606,11 +599,7 @@ const DistrictsMap = ({
           <Box sx={style.legendItem}>
             <Box
               sx={{
-                display: "inline-block",
-                mr: "10px",
-                width: "20px",
-                height: "20px",
-                opacity: "0.9",
+                ...style.legendColorSwatch,
                 backgroundColor: EVALUATE_GRAY_FILL_COLOR
               }}
             ></Box>
