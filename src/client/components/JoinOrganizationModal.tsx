@@ -40,14 +40,19 @@ const JoinOrganizationModal = ({
   organization,
   user,
   showModal,
-  projectTemplate
+  projectTemplate,
+  onCancel
 }: {
   readonly organization: IOrganization;
   readonly showModal: boolean;
   readonly user: Resource<IUser>;
   readonly projectTemplate?: CreateProjectData;
+  readonly onCancel: () => void;
 }) => {
-  const hideModal = () => store.dispatch(showCopyMapModal(false));
+  const hideModal = () => {
+    onCancel();
+    store.dispatch(showCopyMapModal(false));
+  };
 
   return showModal ? (
     <AriaModal
@@ -59,7 +64,11 @@ const JoinOrganizationModal = ({
     >
       <Box sx={style.modal}>
         {"resource" in user ? (
-          <ConfirmJoinOrganization organization={organization} projectTemplate={projectTemplate} />
+          <ConfirmJoinOrganization
+            organization={organization}
+            projectTemplate={projectTemplate}
+            onCancel={onCancel}
+          />
         ) : (
           <AuthModalContent organization={organization} />
         )}
