@@ -14,7 +14,8 @@ import {
   UpdateProjectData,
   UpdateUserData,
   UserId,
-  DistrictsDefinition
+  DistrictsDefinition,
+  RegionConfigId
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData, OrgProject } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -185,6 +186,20 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
     apiAxios
       .get("/api/region-configs?sort=name,ASC")
       .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchRegionProperties(
+  region: RegionConfigId,
+  geoLevel: string
+): Promise<readonly Record<string, unknown>[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/region-configs/${region}/properties/${geoLevel}?fields=name`)
+      .then(response => {
+        resolve(response.data);
+      })
       .catch(error => reject(error.message));
   });
 }

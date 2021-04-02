@@ -29,6 +29,12 @@ export const DISTRICTS_LAYER_ID = "districts";
 export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
+// Id for topmost geolevel layer in Evaluate
+export const TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID = "topmost-geo-evaluate-split";
+// Id for topmost geolevel layer fill in Evaluate
+export const TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID = "topmost-geo-evaluate-split-fill";
 // Used only to make districts appear in the correct position in the layer stack
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 // Used only to make highlights appear in the correct position in the layer stack
@@ -181,6 +187,21 @@ export function generateMapLayers(
 
   map.addLayer(
     {
+      id: DISTRICTS_EVALUATE_LAYER_ID,
+      type: "line",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      paint: {
+        "line-color": "#000",
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
       id: "districts-locked",
       type: "fill",
       source: DISTRICTS_SOURCE_ID,
@@ -191,6 +212,37 @@ export function generateMapLayers(
       }
     },
     DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+  map.addLayer(
+    {
+      id: TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
+      type: "line",
+      source: GEOLEVELS_SOURCE_ID,
+      "source-layer": geoLevels[geoLevels.length - 1].id,
+      layout: { visibility: "none" },
+      paint: {
+        "line-color": "#D3D3D3",
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+      }
+    },
+    LINES_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID,
+      source: GEOLEVELS_SOURCE_ID,
+      type: "fill",
+      "source-layer": geoLevels[geoLevels.length - 1].id,
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": "#fed8b1",
+        "fill-opacity": ["case", ["boolean", ["feature-state", "split"], false], 0.5, 0.0],
+        "fill-antialias": false
+      }
+    },
+    LINES_PLACEHOLDER_LAYER_ID
   );
 
   geoLevels.forEach(level => {

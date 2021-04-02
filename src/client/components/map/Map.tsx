@@ -33,10 +33,13 @@ import {
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
   DISTRICTS_OUTLINE_LAYER_ID,
+  DISTRICTS_EVALUATE_LAYER_ID,
+  setFeaturesSelectedFromGeoUnits,
+  TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
+  TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID,
   DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
   DISTRICTS_LAYER_ID,
   levelToSelectionLayerId,
-  setFeaturesSelectedFromGeoUnits,
   getChoroplethLabels,
   getChoroplethStops
 } from "./index";
@@ -73,31 +76,53 @@ interface Props {
 }
 
 const style: ThemeUIStyleObject = {
+  fillBox: {
+    height: "10px",
+    width: "10px",
+    background: "#fed8b1",
+    opacity: "0.5",
+    outline: "1px solid gray",
+    display: "inline-block"
+  },
+  unfilledBox: {
+    height: "10px",
+    width: "10px",
+    background: "none",
+    outline: "1px solid gray",
+    display: "inline-block"
+  },
   legendLabel: {
     display: "inline-block",
     ml: "5px"
   },
   legendItem: {
     display: "inline-block",
-    width: "150px",
+    maxWidth: "150px",
     mr: "20px"
   },
   legendTitle: {
     display: "inline-block",
     width: "120px",
     fontWeight: "600",
-    mr: "40px"
+    mr: "50px"
   },
   legendBox: {
     position: "absolute",
     bottom: "20px",
-    left: "100px",
+    left: "300px",
     height: "60px",
-    width: "1050px",
+    maxWidth: "1050px",
     fontSize: "14pt",
     display: "inline-block",
     outline: "1px solid gray",
     padding: "20px"
+  },
+  legendColorSwatch: {
+    display: "inline-block",
+    mr: "10px",
+    width: "20px",
+    height: "20px",
+    opacity: "0.9"
   }
 };
 
@@ -149,7 +174,7 @@ const DistrictsMap = ({
       container: mapRef.current,
       style: MAPBOX_STYLE,
       bounds: [b0, b1, b2, b3],
-      fitBoundsOptions: { padding: 20 },
+      fitBoundsOptions: { padding: 75 },
       minZoom: minZoom,
       maxZoom: overZoom
     });
@@ -230,6 +255,33 @@ const DistrictsMap = ({
       );
   };
 
+  // Compute array of top geolevels split across multiple districts
+  const splitCountiesDistricts = project?.districtsDefinition.map(c => {
+    if (Array.isArray(c)) {
+      return c;
+    } else {
+      return undefined;
+    }
+  });
+
+  // Set features from topmost geolayer that are split across districts to be selected
+  map &&
+    staticMetadata &&
+    splitCountiesDistricts.forEach((c, id) => {
+      if (c !== undefined) {
+        map &&
+          map.setFeatureState(
+            {
+              source: GEOLEVELS_SOURCE_ID,
+              id,
+              sourceLayer:
+                staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id
+            },
+            { split: true }
+          );
+      }
+    });
+
   // Handle evaluate mode map views
   useEffect(() => {
     if (map) {
@@ -243,10 +295,18 @@ const DistrictsMap = ({
         if (evaluateMetric.key === "compactness") {
           map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "visible");
         }
+        if (evaluateMetric.key === "countySplits") {
+          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
+          map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "visible");
+          map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "visible");
+        }
       } else {
         // Reset map state to default
         map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
+        map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "none");
         map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+        map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
+        map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
         staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
           if (idx === staticMetadata.geoLevelHierarchy.length - 1) {
             map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "visible");
@@ -487,6 +547,19 @@ const DistrictsMap = ({
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
+      {evaluateMetric && evaluateMetric.key === "countySplits" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>County splits</Box>
+          <Box sx={style.legendItem}>
+            <Box sx={style.fillBox}></Box>
+            <Box sx={style.legendLabel}>Split</Box>
+          </Box>
+          <Box sx={style.legendItem}>
+            <Box sx={style.unfilledBox}></Box>
+            <Box sx={style.legendLabel}>Not split</Box>
+          </Box>
+        </Box>
+      )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "compactness" && (
         <Box sx={style.legendBox}>
           <Box sx={style.legendTitle}>Compactness</Box>
@@ -494,11 +567,7 @@ const DistrictsMap = ({
             <Box sx={style.legendItem} key={i}>
               <Box
                 sx={{
-                  display: "inline-block",
-                  mr: "10px",
-                  width: "20px",
-                  height: "20px",
-                  opacity: "0.9",
+                  ...style.legendColorSwatch,
                   backgroundColor: `${step[1]}`
                 }}
               ></Box>

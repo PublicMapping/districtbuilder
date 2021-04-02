@@ -1,11 +1,21 @@
 /** @jsx jsx */
-import { jsx, ThemeUIStyleObject, Container } from "theme-ui";
+import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
-import { EvaluateMetric, EvaluateMetricWithValue, IProject } from "../../../shared/entities";
+import {
+  EvaluateMetric,
+  EvaluateMetricWithValue,
+  IProject,
+  IStaticMetadata,
+  RegionLookupProperties
+} from "../../../shared/entities";
+import store from "../../store";
+import { regionPropertiesFetch } from "../../actions/regionConfig";
 import { DistrictsGeoJSON } from "../../types";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
 import { useState, useEffect } from "react";
+import { Resource } from "../../resource";
+import { geoLevelLabelSingular } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
@@ -73,13 +83,18 @@ const style: ThemeUIStyleObject = {
 const ProjectEvaluateSidebar = ({
   geojson,
   metric,
-  project
+  project,
+  regionProperties,
+  staticMetadata
 }: {
   readonly geojson?: DistrictsGeoJSON;
   readonly metric: EvaluateMetric | undefined;
   readonly project?: IProject;
+  readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
+  readonly staticMetadata?: IStaticMetadata;
 }) => {
   const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
+  const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
   useEffect(() => {
     if (geojson && !avgCompactness) {
       const totalCompactness = geojson.features.reduce(function(accumulator, feature) {
@@ -88,6 +103,20 @@ const ProjectEvaluateSidebar = ({
       setAvgCompactness(totalCompactness / (geojson.features.length - 1));
     }
   }, [geojson, avgCompactness]);
+
+  useEffect(() => {
+    if (staticMetadata) {
+      setGeoLevel(staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id);
+    }
+  }, [staticMetadata]);
+
+  useEffect(() => {
+    if (project && project.regionConfig.regionCode && geoLevel) {
+      store.dispatch(
+        regionPropertiesFetch({ regionConfigId: project.regionConfig.id, geoLevel: geoLevel })
+      );
+    }
+  }, [project, geoLevel]);
 
   const requiredMetrics: readonly EvaluateMetricWithValue[] = [
     {
@@ -143,7 +172,7 @@ const ProjectEvaluateSidebar = ({
     },
     {
       key: "countySplits",
-      name: "County splits",
+      name: `${geoLevel ? geoLevelLabelSingular(geoLevel) : ""} splits`,
       type: "count",
       description: "are split",
       shortText: "Lorem ipsum",
@@ -166,8 +195,17 @@ const ProjectEvaluateSidebar = ({
           requiredMetrics={requiredMetrics}
           optionalMetrics={optionalMetrics}
         />
+      ) : geoLevel && regionProperties ? (
+        <ProjectEvaluateMetricDetail
+          geojson={geojson}
+          metric={metric}
+          project={project}
+          geoLevel={geoLevel}
+          regionProperties={regionProperties}
+          staticMetadata={staticMetadata}
+        />
       ) : (
-        <ProjectEvaluateMetricDetail geojson={geojson} metric={metric} />
+        <Box>Loading...</Box>
       )}
     </Container>
   );

@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add import plan page [#639](https://github.com/PublicMapping/districtbuilder/pull/639)
 - Add project evaluate view for compactness [#646](https://github.com/PublicMapping/districtbuilder/pull/646)
 - Allow user to create a project with an organization template from Create Project screen [#638](https://github.com/PublicMapping/districtbuilder/pull/638)
+- Add project evaluate view for County Splits [#644](https://github.com/PublicMapping/districtbuilder/pull/644)
 
 ### Changed
 

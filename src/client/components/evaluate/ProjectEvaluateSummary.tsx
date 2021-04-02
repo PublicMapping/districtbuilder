@@ -145,7 +145,7 @@ const ProjectEvaluateView = ({
               onClick={() => store.dispatch(selectEvaluationMetric(metric))}
             >
               <Flex sx={style.metricRow}>
-                <Box sx={{ ml: "50px" }}>{metric.name}</Box>
+                <Box sx={{ ml: "50px", textTransform: "capitalize" }}>{metric.name}</Box>
                 <Box sx={style.metricValue}>
                   {"type" in metric ? formatMetricValue(metric) : ""}
                 </Box>

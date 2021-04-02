@@ -136,6 +136,15 @@ export const geoLevelLabel = (id: string): string => {
   }
 };
 
+export const geoLevelLabelSingular = (id: string): string => {
+  switch (id) {
+    case "county":
+      return "County";
+    default:
+      return id[0].toUpperCase() + id.slice(1);
+  }
+};
+
 export function getSelectedGeoLevel(geoLevelHierarchy: GeoLevelHierarchy, geoLevelIndex: number) {
   return geoLevelHierarchy[geoLevelHierarchy.length - 1 - geoLevelIndex];
 }

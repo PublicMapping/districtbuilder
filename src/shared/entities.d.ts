@@ -266,3 +266,4 @@ export type LockedDistricts = readonly boolean[];
 
 export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 export type UintArrays = ReadonlyArray<UintArray>;
+export type RegionLookupProperties = Record<string, unknown>;

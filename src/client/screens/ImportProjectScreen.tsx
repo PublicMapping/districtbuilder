@@ -15,12 +15,11 @@ import { InputField } from "../components/Field";
 import Icon from "../components/Icon";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 import { State } from "../reducers";
-import { RegionConfigState } from "../reducers/regionConfig";
-import { WriteResource } from "../resource";
+import { WriteResource, Resource } from "../resource";
 import store from "../store";
 
 interface StateProps {
-  readonly regionConfigs: RegionConfigState;
+  readonly regionConfigs: Resource<readonly IRegionConfig[]>;
 }
 
 const validate = (form: ProjectForm) =>
@@ -337,7 +336,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    regionConfigs: state.regionConfig
+    regionConfigs: state.regionConfig.regionConfigs
   };
 }
 
