@@ -162,6 +162,13 @@ const HomeScreen = ({ projects, user }: StateProps) => {
                 <Icon name="plus-circle" />
                 Create a map
               </Styled.a>
+              <Styled.a
+                as={Link}
+                to="/import-project"
+                sx={{ variant: "links.secondaryButton", fontSize: 3, px: 6, py: 2, mt: 2 }}
+              >
+                Import map
+              </Styled.a>
             </Flex>
           )
         ) : null}
