@@ -119,14 +119,22 @@ import { Errors } from "../../../../shared/types";
       };
     } else {
       // Unauthenticated access is allowed for individual projects if they are
-      // visible or published, and not archived
+      // visible or published, and not archived. Admins can also see projects created from templates
+      // for organizations that they administer.
+      const publicallyVisible = [
+        { visibility: ProjectVisibility.Published },
+        { visibility: ProjectVisibility.Visible }
+      ];
       const visibleFilter = user
         ? [
+            // User created project
             { user_id: user.id },
-            { visibility: ProjectVisibility.Published },
-            { visibility: ProjectVisibility.Visible }
+            // User is admin of project template organization
+            { "projectTemplate.organization.admin": user.id },
+            // Or it's public
+            ...publicallyVisible
           ]
-        : [{ visibility: ProjectVisibility.Published }, { visibility: ProjectVisibility.Visible }];
+        : publicallyVisible;
       return {
         $and: [
           {
