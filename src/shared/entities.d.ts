@@ -185,10 +185,10 @@ export type ProjectNest = Pick<
   | "id"
   | "updatedDt"
   | "numberOfDistricts"
-  | "chamber"
   | "name"
   | "regionConfig"
   | "isFeatured"
+  | "visibility"
 > & {
   readonly regionConfig: Pick<IRegionConfig, "name">;
 };

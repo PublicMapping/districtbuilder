@@ -1,6 +1,10 @@
 import { createAction } from "typesafe-actions";
-import { IProjectTemplateWithProjects, OrganizationSlug, IProject } from "../../shared/entities";
-import { OrgProject } from "../types";
+import {
+  IProjectTemplateWithProjects,
+  OrganizationSlug,
+  IProject,
+  ProjectNest
+} from "../../shared/entities";
 import { ResourceFailure } from "../resource";
 
 export const organizationProjectsFetch = createAction("Organization projects fetch")<
@@ -24,7 +28,7 @@ export const organizationFeaturedProjectsFetchFailure = createAction(
 )<ResourceFailure>();
 
 export const toggleProjectFeatured = createAction("Toggle project featured")<{
-  readonly project: OrgProject;
+  readonly project: ProjectNest;
   readonly organization: OrganizationSlug;
 }>();
 export const toggleProjectFeaturedSuccess = createAction("Toggle project featured success")<{

@@ -29,6 +29,7 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
         "projects.isFeatured",
         "projects.id",
         "projects.updatedDt",
+        "projects.visibility",
         "regionConfig.name",
         "user.name",
         "user.email"

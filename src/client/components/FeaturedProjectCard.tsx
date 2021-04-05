@@ -1,13 +1,15 @@
 /** @jsx jsx */
-import { OrgProject } from "../types";
 import { Box, Flex, Heading, jsx, Spinner, Text } from "theme-ui";
 import MapboxGL from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 import bbox from "@turf/bbox";
-import { getDistrictColor } from "../constants/colors";
 import { useHistory } from "react-router-dom";
 
 import { BBox2d } from "@turf/helpers/lib/geojson";
+
+import { ProjectNest } from "../../shared/entities";
+import { DistrictGeoJSON } from "../types";
+import { getDistrictColor } from "../constants/colors";
 
 const style = {
   featuredProject: {
@@ -40,28 +42,30 @@ const style = {
   }
 } as const;
 
-const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
+const FeaturedProjectCard = ({ project }: { readonly project: ProjectNest }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const history = useHistory();
 
-  function goToProject(project: OrgProject) {
+  function goToProject(project: ProjectNest) {
     history.push(`/projects/${project.id}`);
   }
+
+  // TODO #179 - the districts property can't be defined in the shared/entities.d.ts right now
+  // @ts-ignore
+  const districts: DistrictGeoJSON | undefined = project.districts;
 
   useEffect(() => {
     if (mapRef.current === null) {
       return;
     }
 
-    // @ts-ignore
-    project.districts.features.forEach((feature, id) => {
-      // @ts-ignore
+    districts.features.forEach((feature: DistrictGeoJSON, id: number) => {
       // eslint-disable-next-line
       feature.properties.color = getDistrictColor(id);
     });
 
-    const bounds = project.districts && (bbox(project.districts) as BBox2d);
+    const bounds = districts && (bbox(districts) as BBox2d);
     const map = new MapboxGL.Map({
       container: mapRef.current,
       style: {
@@ -75,10 +79,10 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
     });
 
     map.on("load", function() {
-      project.districts &&
+      districts &&
         map.addSource("districts", {
           type: "geojson",
-          data: project.districts
+          data: districts
         });
       map.addLayer({
         id: "districts",
@@ -93,7 +97,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
 
       setMapLoaded(true);
     });
-  }, [mapRef, project.districts]);
+  }, [mapRef, districts]);
 
   return (
     <Flex sx={style.featuredProject} onClick={() => goToProject(project)}>
@@ -116,7 +120,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: OrgProject }) => {
             mb: "1"
           }}
         >
-          {project.project.name}
+          {project.name}
         </Heading>
         <Text
           sx={{

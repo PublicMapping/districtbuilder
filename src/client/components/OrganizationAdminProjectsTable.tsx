@@ -1,14 +1,17 @@
 /** @jsx jsx */
 import { useMemo } from "react";
-import { Button, Flex, jsx, Styled } from "theme-ui";
-import store from "../store";
-import { toggleProjectFeatured } from "../actions/organizationProjects";
-import { OrganizationSlug } from "../../shared/entities";
 import { useTable, Row, HeaderGroup, Cell, useSortBy } from "react-table";
 import { Link } from "react-router-dom";
-import { OrgProject } from "../types";
+import { Button, Flex, jsx, Styled } from "theme-ui";
+
+import { OrganizationSlug, ProjectNest } from "../../shared/entities";
+
+import { toggleProjectFeatured } from "../actions/organizationProjects";
+import store from "../store";
+import { ProjectVisibility } from "../../shared/constants";
+
 interface ProjectsTableProps {
-  readonly projects: readonly OrgProject[];
+  readonly projects: readonly ProjectNest[];
   readonly organizationSlug: OrganizationSlug;
 }
 
@@ -29,7 +32,7 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
       {
         Header: "Map",
         accessor: "project", // accessor is the "key" in the data,
-        Cell: (p: Cell<OrgProject>) => {
+        Cell: (p: Cell<ProjectNest>) => {
           return (
             <Styled.a as={Link} to={`/projects/${p.value.id}`} target="_blank">
               {p.value.name}
@@ -48,7 +51,7 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
       {
         Header: "Creator email",
         accessor: "creator.email",
-        Cell: (p: Cell<OrgProject>) => {
+        Cell: (p: Cell<ProjectNest>) => {
           return <a href={`mailto:${p.value}`}>{p.value}</a>;
         }
       },
@@ -61,7 +64,9 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
   );
   const data = useMemo(() => projects, [projects]);
   // ts-ignore needed below bc react-table requires mutable types, even though it doesn't mutate them?
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable<OrgProject>(
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable<
+    ProjectNest
+  >(
     {
       // @ts-ignore
       columns,
@@ -71,7 +76,7 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
     useSortBy
   );
 
-  function projectFeaturedToggle(row: Row<OrgProject>) {
+  function projectFeaturedToggle(row: Row<ProjectNest>) {
     store.dispatch(
       toggleProjectFeatured({ project: row.original, organization: organizationSlug })
     );
@@ -84,9 +89,9 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
     <Flex sx={{ flexDirection: "column" }}>
       <table {...getTableProps()} style={{ border: "solid 1px blue" }}>
         <thead>
-          {headerGroups.map((headerGroup: HeaderGroup<OrgProject>) => (
+          {headerGroups.map((headerGroup: HeaderGroup<ProjectNest>) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column: HeaderGroup<OrgProject>) => (
+              {headerGroup.headers.map((column: HeaderGroup<ProjectNest>) => (
                 <th
                   {...column.getHeaderProps(column.getSortByToggleProps())}
                   sx={style.columnHeader}
@@ -100,11 +105,11 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.map((row: Row<OrgProject>) => {
+          {rows.map((row: Row<ProjectNest>) => {
             prepareRow(row);
             return (
               <tr {...row.getRowProps()}>
-                {row.cells.map((cell: Cell<OrgProject>) => {
+                {row.cells.map((cell: Cell<ProjectNest>) => {
                   return (
                     <td
                       {...cell.getCellProps()}
@@ -117,10 +122,14 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
                     </td>
                   );
                 })}
-                <td>
-                  <Button onClick={() => projectFeaturedToggle(row)}>
-                    {row.original.isFeatured ? "Unfeature" : "Feature"}
-                  </Button>
+                <td sx={{ textAlign: "center" }}>
+                  {row.original.visibility === ProjectVisibility.Published ? (
+                    <Button onClick={() => projectFeaturedToggle(row)}>
+                      {row.original.isFeatured ? "Unfeature" : "Feature"}
+                    </Button>
+                  ) : (
+                    "Unpublished"
+                  )}
                 </td>
               </tr>
             );
