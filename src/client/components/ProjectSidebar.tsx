@@ -295,7 +295,7 @@ const SidebarRow = memo(
     const toggleHover = () => setHover(!isHovered);
     const toggleLocked = (e: React.MouseEvent) => {
       e.stopPropagation();
-      store.dispatch(toggleDistrictLocked(districtId));
+      store.dispatch(toggleDistrictLocked(districtId - 1));
     };
     return (
       <Styled.tr
@@ -364,16 +364,18 @@ const SidebarRow = memo(
               </Button>
             </Tooltip>
           ) : (
-            <Tooltip content="Lock this district">
-              <Button
-                variant="icon"
-                style={{ visibility: isHovered ? "visible" : "hidden" }}
-                onClick={toggleLocked}
-                sx={style.lockButton}
-              >
-                <Icon name="lock-unlocked" size={0.75} />
-              </Button>
-            </Tooltip>
+            districtId > 0 && (
+              <Tooltip content="Lock this district">
+                <Button
+                  variant="icon"
+                  style={{ visibility: isHovered ? "visible" : "hidden" }}
+                  onClick={toggleLocked}
+                  sx={style.lockButton}
+                >
+                  <Icon name="lock-unlocked" size={0.75} />
+                </Button>
+              </Tooltip>
+            )
           )}
         </Styled.td>
       </Styled.tr>
@@ -484,7 +486,7 @@ const SidebarRows = ({
             demographics={feature.properties.demographics}
             deviation={deviation}
             key={districtId}
-            isDistrictLocked={lockedDistricts[districtId]}
+            isDistrictLocked={lockedDistricts[districtId - 1]}
             districtId={districtId}
             isReadOnly={isReadOnly}
           />

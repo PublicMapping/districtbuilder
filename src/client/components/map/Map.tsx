@@ -361,7 +361,7 @@ const DistrictsMap = ({
     map &&
       [...new Array(project.numberOfDistricts + 1).keys()].forEach(districtId =>
         map.setFeatureState(featureStateDistricts(districtId), {
-          locked: lockedDistricts[districtId]
+          locked: lockedDistricts[districtId - 1]
         })
       );
   }, [map, project, lockedDistricts]);
