@@ -23,12 +23,13 @@ interface StateProps {
   readonly regionConfigs: RegionConfigState;
 }
 
-const validate = (form: ConfigurableForm, importResource: ImportResource) => {
+const validate = (form: ConfigurableForm, importResource: ImportResource): ProjectForm => {
   const regionConfig = importResource.data;
   const districtsDefinition = "resource" in importResource ? importResource.resource : null;
-  return form.numberOfDistricts !== null && importResource.data && "resource" in importResource
-    ? ({ ...form, regionConfig, districtsDefinition, valid: true } as ValidForm)
-    : ({ ...form, regionConfig, districtsDefinition, valid: false } as InvalidForm);
+  const numberOfDistricts = form.numberOfDistricts;
+  return numberOfDistricts && regionConfig && districtsDefinition
+    ? { numberOfDistricts, regionConfig, districtsDefinition, valid: true }
+    : { numberOfDistricts, regionConfig, districtsDefinition, valid: false };
 };
 
 type ImportResource = WriteResource<IRegionConfig | null, DistrictsDefinition>;
@@ -36,6 +37,8 @@ type ImportResource = WriteResource<IRegionConfig | null, DistrictsDefinition>;
 interface ConfigurableForm {
   readonly numberOfDistricts: number | null;
 }
+
+type ProjectForm = ValidForm | InvalidForm;
 
 interface ValidForm {
   readonly regionConfig: IRegionConfig;
@@ -50,6 +53,10 @@ interface InvalidForm {
   readonly numberOfDistricts: number | null;
   readonly valid: false;
 }
+
+const blankForm: ConfigurableForm = {
+  numberOfDistricts: null
+};
 
 const style: ThemeUIStyleObject = {
   header: {
@@ -153,9 +160,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
   const [createProjectResource, setCreateProjectResource] = useState<
     WriteResource<ConfigurableForm, IProject>
   >({
-    data: {
-      numberOfDistricts: null
-    }
+    data: blankForm
   });
   const regionConfig = importResource.data;
   const formData = createProjectResource.data;
@@ -278,11 +283,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                       setImportResource({
                         data: null
                       });
-                      setCreateProjectResource({
-                        data: {
-                          numberOfDistricts: null
-                        }
-                      });
+                      setCreateProjectResource({ data: blankForm });
                     }}
                   >
                     <Icon name="undo" />
