@@ -202,7 +202,7 @@ export class ProjectsController implements CrudController<Project> {
     }
 
     // Update districts GeoJSON if the definition has changed or there is no cached value yet
-    const data =
+    const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
       (!existingProject.districts ||
@@ -216,6 +216,15 @@ export class ProjectsController implements CrudController<Project> {
             })
           }
         : dto;
+
+    // Update updatedDt field when non-whitelisted fields have changed
+    const whitelistedFields = ["isFeatured", "districts", "updatedDt"];
+    const data = _.isEqual(
+      _.omit(dataWithDefinitions, whitelistedFields),
+      _.omit(existingProject, whitelistedFields)
+    )
+      ? dataWithDefinitions
+      : { ...dataWithDefinitions, updatedDt: new Date() };
 
     return this.service.updateOne(req, data);
   }
