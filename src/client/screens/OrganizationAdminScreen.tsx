@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useParams, Link } from "react-router-dom";
 import { Box, Flex, Heading, jsx } from "theme-ui";
@@ -15,6 +15,8 @@ import { OrganizationProjectsState } from "../reducers/organizationProjects";
 import OrganizationAdminProjectsTable from "../components/OrganizationAdminProjectsTable";
 import { userFetch } from "../actions/user";
 import { formatDate } from "../functions";
+import { ProjectNest } from "../../shared/entities";
+import { isEqual } from "lodash";
 
 interface StateProps {
   readonly organization: OrganizationState;
@@ -85,25 +87,30 @@ const style = {
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {
   const { organizationSlug } = useParams();
-  const projects =
-    "resource" in organizationProjects.projectTemplates
-      ? organizationProjects.projectTemplates.resource
-          .map(pt => {
-            return pt.projects.map(p => {
-              return {
-                ...p,
-                project: { name: p.name, id: p.id },
-                updatedAgo: formatDate(p.updatedDt),
-                creator: { name: p.user.name, email: p.user.email },
-                id: p.id,
-                templateName: pt.name,
-                regionConfig: pt.regionConfig,
-                numberOfDistricts: pt.numberOfDistricts
-              };
-            });
-          })
-          .flat()
-      : undefined;
+  const [projects, setProjects] = useState<readonly ProjectNest[] | undefined>(undefined);
+  useEffect(() => {
+    if ("resource" in organizationProjects.projectTemplates) {
+      const resourceProjects = organizationProjects.projectTemplates.resource
+        .map(pt => {
+          return pt.projects.map(p => {
+            return {
+              ...p,
+              project: { name: p.name, id: p.id },
+              updatedAgo: formatDate(p.updatedDt),
+              creator: { name: p.user.name, email: p.user.email },
+              id: p.id,
+              templateName: pt.name,
+              regionConfig: pt.regionConfig,
+              numberOfDistricts: pt.numberOfDistricts
+            };
+          });
+        })
+        .flat();
+      if (!isEqual(projects, resourceProjects)) {
+        setProjects(resourceProjects);
+      }
+    }
+  }, [projects, organizationProjects]);
 
   const featuredProjects = projects?.reduce((total, x) => (x.isFeatured ? total + 1 : total), 0);
 

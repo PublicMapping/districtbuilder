@@ -22,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add paintbrush drawing tool [#611](https://github.com/PublicMapping/districtbuilder/pull/611)
 - Add verify and join link to user verification email [#616](https://github.com/PublicMapping/districtbuilder/pull/616)
 - Display organizations dropdown in header [#620](https://github.com/PublicMapping/districtbuilder/pull/620)
-- Organization Admin page and featured map workflow [#614](https://github.com/PublicMapping/districtbuilder/pull/614) &  [#671](https://github.com/PublicMapping/districtbuilder/pull/671)
+- Organization Admin page and featured map workflow [#614](https://github.com/PublicMapping/districtbuilder/pull/614), [#671](https://github.com/PublicMapping/districtbuilder/pull/671) & [#675](https://github.com/PublicMapping/districtbuilder/pull/675)
+
 - Build out scaffolding for Project Evaluate view [#623](https://github.com/PublicMapping/districtbuilder/pull/623)
 - Add flag on project templates to mark as active or inactive [#626](https://github.com/PublicMapping/districtbuilder/pull/626)
 - Display featured projects on Organization page [#633](https://github.com/PublicMapping/districtbuilder/pull/633)
