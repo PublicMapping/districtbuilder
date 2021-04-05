@@ -41,7 +41,11 @@ import {
   DISTRICTS_LAYER_ID,
   levelToSelectionLayerId,
   getChoroplethLabels,
-  getChoroplethStops
+  getChoroplethStops,
+  DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
+  CONTIGUITY_FILL_COLOR,
+  COUNTY_SPLIT_FILL_COLOR,
+  EVALUATE_GRAY_FILL_COLOR
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -76,28 +80,14 @@ interface Props {
 }
 
 const style: ThemeUIStyleObject = {
-  fillBox: {
-    height: "10px",
-    width: "10px",
-    background: "#fed8b1",
-    opacity: "0.5",
-    outline: "1px solid gray",
-    display: "inline-block"
-  },
-  unfilledBox: {
-    height: "10px",
-    width: "10px",
-    background: "none",
-    outline: "1px solid gray",
-    display: "inline-block"
-  },
   legendLabel: {
     display: "inline-block",
     ml: "5px"
   },
   legendItem: {
     display: "inline-block",
-    maxWidth: "150px",
+    minWidth: "150px",
+    maxWidth: "170px",
     mr: "20px"
   },
   legendTitle: {
@@ -109,9 +99,11 @@ const style: ThemeUIStyleObject = {
   legendBox: {
     position: "absolute",
     bottom: "20px",
-    left: "300px",
+    left: "100px",
+    right: "200px",
     height: "60px",
-    maxWidth: "1050px",
+    minWidth: "600px",
+    maxWidth: "1100px",
     fontSize: "14pt",
     display: "inline-block",
     outline: "1px solid gray",
@@ -122,7 +114,8 @@ const style: ThemeUIStyleObject = {
     mr: "10px",
     width: "20px",
     height: "20px",
-    opacity: "0.9"
+    opacity: "0.9",
+    outline: "1px solid lightgray"
   }
 };
 
@@ -300,6 +293,10 @@ const DistrictsMap = ({
           map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "visible");
           map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "visible");
         }
+        if (evaluateMetric.key === "contiguity") {
+          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
+          map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "visible");
+        }
       } else {
         // Reset map state to default
         map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
@@ -307,6 +304,7 @@ const DistrictsMap = ({
         map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
+        map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
         staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
           if (idx === staticMetadata.geoLevelHierarchy.length - 1) {
             map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "visible");
@@ -551,11 +549,21 @@ const DistrictsMap = ({
         <Box sx={style.legendBox}>
           <Box sx={style.legendTitle}>County splits</Box>
           <Box sx={style.legendItem}>
-            <Box sx={style.fillBox}></Box>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: COUNTY_SPLIT_FILL_COLOR
+              }}
+            />
             <Box sx={style.legendLabel}>Split</Box>
           </Box>
           <Box sx={style.legendItem}>
-            <Box sx={style.unfilledBox}></Box>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: "none"
+              }}
+            />
             <Box sx={style.legendLabel}>Not split</Box>
           </Box>
         </Box>
@@ -574,6 +582,29 @@ const DistrictsMap = ({
               <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
             </Box>
           ))}
+        </Box>
+      )}
+      {evaluateMetric && evaluateMetric.key === "contiguity" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>Contiguity</Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: CONTIGUITY_FILL_COLOR
+              }}
+            ></Box>
+            <Box sx={style.legendLabel}>Contiguous</Box>
+          </Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: EVALUATE_GRAY_FILL_COLOR
+              }}
+            ></Box>
+            <Box sx={style.legendLabel}>Non-contiguous</Box>
+          </Box>
         </Box>
       )}
     </Box>

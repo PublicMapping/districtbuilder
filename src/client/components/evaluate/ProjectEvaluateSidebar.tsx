@@ -132,14 +132,16 @@ const ProjectEvaluateSidebar = ({
     {
       key: "contiguity",
       name: "Contiguity",
-      status: true,
+      status:
+        geojson?.features.filter(f => f.properties.contiguity === "non-contiguous").length === 0,
       description: "are contiguous",
       longText:
         "A district must be in a single, unbroken shape. Two areas touching at the corners are typically not considered contiguous. An exception would be the inclusion of islands in a coastal district.",
       shortText:
         "All parts of a district must be in physical contact with some other part of the district",
       type: "fraction",
-      value: 18
+      total: geojson?.features.filter(f => f.id !== 0).length || 0,
+      value: geojson?.features.filter(f => f.properties.contiguity === "contiguous").length || 0
     }
   ];
   const optionalMetrics: readonly EvaluateMetric[] = [
@@ -177,7 +179,7 @@ const ProjectEvaluateSidebar = ({
       description: "are split",
       shortText: "Lorem ipsum",
       longText: "Lorem ipsum",
-      value: project?.districtsDefinition.filter(x => Array.isArray(x)).length,
+      value: project?.districtsDefinition.filter(x => Array.isArray(x)).length || 0,
       total: project ? project.districtsDefinition.length : 0,
       splitCounties: project?.districtsDefinition.map(c => {
         if (Array.isArray(c)) {
