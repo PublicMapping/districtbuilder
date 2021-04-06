@@ -1,12 +1,5 @@
 import { FeatureCollection, MultiPolygon } from "geojson";
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { ProjectVisibility } from "../../../../shared/constants";
 import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../shared/entities";
