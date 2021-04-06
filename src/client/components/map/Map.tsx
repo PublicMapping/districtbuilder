@@ -297,6 +297,9 @@ const DistrictsMap = ({
           map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
           map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "visible");
         }
+        DefaultSelectionTool.disable(map);
+        RectangleSelectionTool.disable(map);
+        PaintBrushSelectionTool.disable(map);
       } else {
         // Reset map state to default
         map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
@@ -305,15 +308,19 @@ const DistrictsMap = ({
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
+        const invertedGeoLevelIndex = staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1;
         staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
-          if (idx === staticMetadata.geoLevelHierarchy.length - 1) {
-            map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "visible");
-            map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "visible");
-          }
+          const geoLevelVisibility = idx >= invertedGeoLevelIndex ? "visible" : "none";
+          map.setLayoutProperty(
+            levelToSelectionLayerId(geoLevel.id),
+            "visibility",
+            geoLevelVisibility
+          );
+          map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", geoLevelVisibility);
         });
       }
     }
-  }, [evaluateMetric, evaluateMode, map, staticMetadata.geoLevelHierarchy]);
+  }, [evaluateMetric, evaluateMode, map, staticMetadata.geoLevelHierarchy, geoLevelIndex]);
 
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
@@ -498,34 +505,36 @@ const DistrictsMap = ({
       DefaultSelectionTool.disable(map);
       RectangleSelectionTool.disable(map);
       PaintBrushSelectionTool.disable(map);
-      // Enable appropriate tool
-      if (!isReadOnly && selectionTool === SelectionTool.Default) {
-        DefaultSelectionTool.enable(
-          map,
-          selectedGeolevel.id,
-          staticMetadata,
-          project.districtsDefinition,
-          lockedDistricts,
-          staticGeoLevels
-        );
-      } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
-        RectangleSelectionTool.enable(
-          map,
-          selectedGeolevel.id,
-          staticMetadata,
-          project.districtsDefinition,
-          lockedDistricts,
-          staticGeoLevels
-        );
-      } else if (!isReadOnly && selectionTool === SelectionTool.PaintBrush) {
-        PaintBrushSelectionTool.enable(
-          map,
-          selectedGeolevel.id,
-          staticMetadata,
-          project.districtsDefinition,
-          lockedDistricts,
-          staticGeoLevels
-        );
+      if (!evaluateMode) {
+        // Enable appropriate tool
+        if (!isReadOnly && selectionTool === SelectionTool.Default) {
+          DefaultSelectionTool.enable(
+            map,
+            selectedGeolevel.id,
+            staticMetadata,
+            project.districtsDefinition,
+            lockedDistricts,
+            staticGeoLevels
+          );
+        } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
+          RectangleSelectionTool.enable(
+            map,
+            selectedGeolevel.id,
+            staticMetadata,
+            project.districtsDefinition,
+            lockedDistricts,
+            staticGeoLevels
+          );
+        } else if (!isReadOnly && selectionTool === SelectionTool.PaintBrush) {
+          PaintBrushSelectionTool.enable(
+            map,
+            selectedGeolevel.id,
+            staticMetadata,
+            project.districtsDefinition,
+            lockedDistricts,
+            staticGeoLevels
+          );
+        }
       }
       /* eslint-enable */
     }
@@ -537,7 +546,8 @@ const DistrictsMap = ({
     staticGeoLevels,
     project,
     lockedDistricts,
-    isReadOnly
+    isReadOnly,
+    evaluateMode
   ]);
 
   return (
@@ -545,7 +555,7 @@ const DistrictsMap = ({
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
-      {evaluateMetric && evaluateMetric.key === "countySplits" && (
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
           <Box sx={style.legendTitle}>County splits</Box>
           <Box sx={style.legendItem}>
@@ -584,7 +594,7 @@ const DistrictsMap = ({
           ))}
         </Box>
       )}
-      {evaluateMetric && evaluateMetric.key === "contiguity" && (
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "contiguity" && (
         <Box sx={style.legendBox}>
           <Box sx={style.legendTitle}>Contiguity</Box>
           <Box sx={style.legendItem}>
