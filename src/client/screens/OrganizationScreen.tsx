@@ -186,6 +186,10 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
     }
   }
 
+  function handleCancelModal() {
+    setProjectTemplate(undefined);
+  }
+
   const joinButton = (
     <Flex
       sx={{
@@ -352,6 +356,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
         <JoinOrganizationModal
           organization={organization.resource}
           projectTemplate={projectTemplate}
+          onCancel={handleCancelModal}
         />
       )}
     </Flex>

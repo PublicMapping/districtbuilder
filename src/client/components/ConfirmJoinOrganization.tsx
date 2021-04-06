@@ -38,13 +38,14 @@ const style: ThemeUIStyleObject = {
 const ConfirmJoinOrganization = ({
   organization,
   user,
-  projectTemplate
+  projectTemplate,
+  onCancel
 }: {
   readonly organization: IOrganization;
   readonly user: Resource<IUser>;
   readonly projectTemplate?: CreateProjectData;
+  readonly onCancel: () => void;
 }) => {
-  const hideModal = () => store.dispatch(showCopyMapModal(false));
   const history = useHistory();
 
   function joinOrg() {
@@ -56,6 +57,11 @@ const ConfirmJoinOrganization = ({
       store.dispatch(showCopyMapModal(false));
 
     projectTemplate && createProjectFromTemplate();
+  }
+
+  function closeModal() {
+    onCancel();
+    store.dispatch(showCopyMapModal(false));
   }
 
   function createProjectFromTemplate() {
@@ -91,7 +97,7 @@ const ConfirmJoinOrganization = ({
           </Button>
           <Button
             id="cancel-copy-map-modal"
-            onClick={hideModal}
+            onClick={closeModal}
             sx={{ variant: "buttons.linkStyle", margin: "0 auto" }}
           >
             Go back
