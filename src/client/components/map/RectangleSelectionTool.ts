@@ -20,6 +20,7 @@ import store from "../../store";
 
 import {
   featuresToUnlockedGeoUnits,
+  filterGeoUnits,
   GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   levelToSelectionLayerId,
@@ -135,15 +136,6 @@ const RectangleSelectionTool: ISelectionTool = {
         lockedDistricts,
         staticGeoLevels
       );
-
-      // Helper for filtering matching geounits given an include function
-      const filterGeoUnits = (units: GeoUnits, includeFn: (id: number) => boolean) =>
-        Object.entries(units).reduce((newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
-          return {
-            ...newGeoUnits,
-            [geoLevelId]: new Map([...geoUnitsForLevel].filter(([id]) => includeFn(id)))
-          };
-        }, units);
 
       // Highlighted shouldn't include the geounits initially selected
       const highlightedGeoUnits = filterGeoUnits(

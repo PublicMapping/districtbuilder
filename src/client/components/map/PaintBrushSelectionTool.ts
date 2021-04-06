@@ -17,6 +17,7 @@ import store from "../../store";
 
 import {
   featuresToUnlockedGeoUnits,
+  filterGeoUnits,
   isFeatureSelected,
   levelToSelectionLayerId,
   ISelectionTool,
@@ -88,15 +89,6 @@ const PaintBrushSelectionTool: ISelectionTool = {
         lockedDistricts,
         staticGeoLevels
       );
-
-      // Helper for filtering matching geounits given an include function
-      const filterGeoUnits = (units: GeoUnits, includeFn: (id: number) => boolean) =>
-        Object.entries(units).reduce((newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
-          return {
-            ...newGeoUnits,
-            [geoLevelId]: new Map([...geoUnitsForLevel].filter(([id]) => includeFn(id)))
-          };
-        }, units);
 
       // New geounits (to select on map) are the highlighted ones that aren't already selected
       const newGeoUnits = filterGeoUnits(
