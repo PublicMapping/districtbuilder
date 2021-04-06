@@ -217,12 +217,13 @@ export class ProjectsController implements CrudController<Project> {
           }
         : dto;
 
-    // Update updatedDt field when non-whitelisted fields have changed
-    const whitelistedFields = ["isFeatured", "districts", "updatedDt"];
-    const data = _.isEqual(
-      _.omit(dataWithDefinitions, whitelistedFields),
-      _.omit(existingProject, whitelistedFields)
-    )
+    // Only change updatedDt field when whitelisted fields have changed
+    const whitelistedFields: ReadonlyArray<keyof UpdateProjectDto> = [
+      "districtsDefinition",
+      "name"
+    ];
+    const fields = whitelistedFields.filter(field => field in dto);
+    const data = _.isEqual(_.pick(dataWithDefinitions, fields), _.pick(existingProject, fields))
       ? dataWithDefinitions
       : { ...dataWithDefinitions, updatedDt: new Date() };
 
