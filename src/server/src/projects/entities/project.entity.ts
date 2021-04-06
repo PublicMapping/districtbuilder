@@ -1,12 +1,5 @@
 import { FeatureCollection, MultiPolygon } from "geojson";
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { ProjectVisibility } from "../../../../shared/constants";
 import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../shared/entities";
@@ -62,7 +55,7 @@ export class Project implements IProject {
   @Column({ type: "timestamp with time zone", name: "created_dt", default: () => "NOW()" })
   createdDt: Date;
 
-  @UpdateDateColumn({
+  @Column({
     type: "timestamp with time zone",
     name: "updated_dt",
     default: () => "NOW()"
