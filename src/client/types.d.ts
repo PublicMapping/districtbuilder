@@ -5,9 +5,7 @@ import {
   IStaticMetadata,
   UintArrays,
   GeoUnitHierarchy,
-  DistrictProperties,
-  DistrictsDefinition,
-  ProjectId
+  DistrictProperties
 } from "../shared/entities";
 
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;

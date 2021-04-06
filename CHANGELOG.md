@@ -49,6 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix bug where projects are created after closing Join Organization modal triggered from an organization's template [#673](https://github.com/PublicMapping/districtbuilder/pull/673)
 
 ### Fixed
+- Allow last district to be locked [#677](https://github.com/PublicMapping/districtbuilder/pull/677)
+
 
 ## [1.3.0] - 2021-01-26
 
