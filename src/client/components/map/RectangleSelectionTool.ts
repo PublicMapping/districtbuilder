@@ -90,8 +90,18 @@ const RectangleSelectionTool: ISelectionTool = {
       );
     }
 
-    function updateSelection(e: MouseEvent) {
-      // Find selected features before updating `current` to tell if any features were deselected
+    /*
+     * Update highlighting as box dimensions change.
+     *
+     * Note that highlighting is distinct from true selection (though highlighting a feature on the
+     * map involves changing the feature state to `selected: true` which is potentially confusing).
+     *
+     * Highlight = make the feature be selected (dark overlay) temporarily to reflect UI interaction
+     * (mouse move) which is used to recalculate stats dynamically without actually saving the
+     * selection. It can be though of as a preview of a potential selection.
+     */
+    function updateHighlighting(e: MouseEvent) {
+      // Find features before updating `current` to later tell if any features were unhighlighted
       const prevFeatures = current && getFeaturesInBoundingBox([start, current]);
 
       // Capture the ongoing xy coordinates
@@ -155,7 +165,7 @@ const RectangleSelectionTool: ISelectionTool = {
       );
       setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
 
-      // Set any features that were previously selected and just became unselected to unselected
+      // Deselect any features that were previously highlighted and just became unhighlighted
       // eslint-disable-next-line
       if (prevFeatures) {
         const prevGeoUnits = featuresToUnlockedGeoUnits(
@@ -190,11 +200,11 @@ const RectangleSelectionTool: ISelectionTool = {
 
       // Capture the first xy coordinates
       start = mousePos(e);
-      updateSelection(e);
+      updateHighlighting(e);
     }
 
     function onMouseMove(e: MouseEvent) {
-      updateSelection(e);
+      updateHighlighting(e);
     }
 
     function onMouseUp(e: MouseEvent) {
@@ -232,7 +242,9 @@ const RectangleSelectionTool: ISelectionTool = {
         .filter(feature => isFeatureSelected(map, feature));
     }
 
-    // eslint-disable-next-line
+    /*
+     * Select highlighted features and clean up.
+     */
     function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       // Remove these events now that finish has been called.
       document.removeEventListener("mousemove", onMouseMove);
