@@ -155,6 +155,7 @@ const ProjectHeader = ({
       ) : (
         <React.Fragment>
           <CopyMapButton invert={true} />
+          {project && <ExportMenu invert={true} project={project} />}
         </React.Fragment>
       )}
     </Flex>

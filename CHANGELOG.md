@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add project evaluate view for contiguity [#648](https://github.com/PublicMapping/districtbuilder/pull/648)
 - Add project evaluate view for County Splits [#644](https://github.com/PublicMapping/districtbuilder/pull/644)
 - Display Import Map button on home screen when a user has not created maps yet [#674](https://github.com/PublicMapping/districtbuilder/pull/674)
+- Display export button in project header for published projects from other users [#681](https://github.com/PublicMapping/districtbuilder/pull/681)
 
 ### Changed
 
