@@ -244,6 +244,7 @@ const RectangleSelectionTool: ISelectionTool = {
     /*
      * Select highlighted features and clean up.
      */
+    // eslint-disable-next-line
     function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       // Remove these events now that finish has been called.
       document.removeEventListener("mousemove", onMouseMove);
