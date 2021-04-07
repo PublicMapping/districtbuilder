@@ -16,7 +16,6 @@ import {
   setHighlightedGeounits,
   setSelectedDistrictId,
   setSelectionTool,
-  setSelectedGeounits,
   showAdvancedEditingModal,
   showCopyMapModal,
   toggleDistrictLocked,
@@ -191,10 +190,6 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           action.payload.add,
           action.payload.remove
         )
-      });
-    case getType(setSelectedGeounits):
-      return pushStateUpdate(state, {
-        selectedGeounits: action.payload
       });
     case getType(clearSelectedGeounits): {
       const clearedViaCancel = action.payload;

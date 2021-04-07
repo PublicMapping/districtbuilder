@@ -11,11 +11,10 @@ import {
 } from "../../../shared/entities";
 
 import {
-  setSelectedGeounits,
+  addSelectedGeounits,
   clearHighlightedGeounits,
   setHighlightedGeounits
 } from "../../actions/districtDrawing";
-import { mergeGeoUnits } from "../../functions";
 import store from "../../store";
 
 import {
@@ -268,7 +267,7 @@ const RectangleSelectionTool: ISelectionTool = {
           staticGeoLevels
         );
         deselectChildGeounits(map, geoUnits, staticMetadata, staticGeoLevels);
-        store.dispatch(setSelectedGeounits(mergeGeoUnits(geoUnits, initiallySelectedGeoUnits)));
+        store.dispatch(addSelectedGeounits(geoUnits));
       }
       store.dispatch(clearHighlightedGeounits());
     }
