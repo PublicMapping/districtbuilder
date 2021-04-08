@@ -96,6 +96,11 @@ export type DistrictProperties = {
   readonly contiguity: "contiguous" | "non-contiguous" | "";
   readonly compactness: number;
   readonly demographics: DemographicCounts;
+  /* eslint-disable */
+  // NOTE: These properties are set for styling purposes
+  color?: string;
+  outlineColor?: string;
+  /* eslint-enable */
 };
 
 export interface IStaticFile {

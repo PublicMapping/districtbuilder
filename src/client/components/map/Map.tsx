@@ -32,7 +32,6 @@ import {
   levelToLineLayerId,
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
-  DISTRICTS_OUTLINE_LAYER_ID,
   DISTRICTS_EVALUATE_LAYER_ID,
   setFeaturesSelectedFromGeoUnits,
   TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
@@ -219,23 +218,27 @@ const DistrictsMap = ({
   useEffect(() => {
     // Add a color property to the geojson, so it can be used for styling
     geojson.features.forEach((feature, id) => {
-      // @ts-ignore
+      const districtColor = getDistrictColor(id);
       // eslint-disable-next-line
       feature.properties.outlineColor =
-        (findTool === FindTool.Unassigned && id === 0) ||
-        (findTool === FindTool.NonContiguous &&
-          id !== 0 &&
-          feature.geometry.coordinates.length >= 2)
-          ? "#F25DFE"
+        findMenuOpen &&
+        ((findTool === FindTool.Unassigned && id === 0) ||
+          (findTool === FindTool.NonContiguous &&
+            id !== 0 &&
+            feature.geometry.coordinates.length >= 2))
+          ? // Set pink outline to make unassigned/non-contiguous districts stand out
+            "#F25DFE"
+          : id === selectedDistrictId
+          ? // District is selected so set outline to district color
+            districtColor
           : "transparent";
-      // @ts-ignore
       // eslint-disable-next-line
-      feature.properties.color = getDistrictColor(id);
+      feature.properties.color = districtColor;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findTool]);
+  }, [map, geojson, findMenuOpen, findTool, selectedDistrictId]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -353,16 +356,6 @@ const DistrictsMap = ({
       );
     }
   }, [map, label, staticMetadata, selectedGeolevel]);
-
-  // Toggle unassigned highlight when find menu is opened
-  useEffect(() => {
-    map &&
-      map.setLayoutProperty(
-        DISTRICTS_OUTLINE_LAYER_ID,
-        "visibility",
-        findMenuOpen ? "visible" : "none"
-      );
-  }, [map, findMenuOpen]);
 
   useEffect(() => {
     map &&
