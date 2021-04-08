@@ -241,7 +241,6 @@ export function generateMapLayers(
       id: DISTRICTS_OUTLINE_LAYER_ID,
       type: "line",
       source: DISTRICTS_SOURCE_ID,
-      layout: { visibility: "none" },
       paint: {
         "line-color": { type: "identity", property: "outlineColor" },
         "line-opacity": 1,

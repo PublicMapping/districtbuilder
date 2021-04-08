@@ -98,8 +98,13 @@ export type DistrictProperties = {
   readonly contiguity: "contiguous" | "non-contiguous" | "";
   readonly compactness: number;
   readonly demographics: DemographicCounts;
-  readonly percentDeviation?: number;
-  readonly populationDeviation?: number;
+  /* eslint-disable */
+  // NOTE: These properties are set for styling purposes
+  color?: string;
+  outlineColor?: string;
+  percentDeviation?: number;
+  populationDeviation?: number;
+  /* eslint-enable */
 };
 
 export interface IStaticFile {
