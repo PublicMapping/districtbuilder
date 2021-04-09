@@ -97,7 +97,7 @@ const RectangleSelectionTool: ISelectionTool = {
      *
      * Highlight = make the feature be selected (dark overlay) temporarily to reflect UI interaction
      * (mouse move) which is used to recalculate stats dynamically without actually saving the
-     * selection. It can be though of as a preview of a potential selection.
+     * selection. It can be thought of as a preview of a potential selection.
      */
     function updateHighlighting(e: MouseEvent) {
       // Find features before updating `current` to later tell if any features were unhighlighted
