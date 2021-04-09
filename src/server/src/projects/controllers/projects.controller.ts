@@ -224,10 +224,13 @@ export class ProjectsController implements CrudController<Project> {
     ];
     const fields = whitelistedFields.filter(field => field in dto);
     const data = _.isEqual(_.pick(dataWithDefinitions, fields), _.pick(existingProject, fields))
-      ? dataWithDefinitions
+      ? { ...dataWithDefinitions }
       : { ...dataWithDefinitions, updatedDt: new Date() };
 
-    return this.service.updateOne(req, data);
+    return this.service.updateOne(req, {
+      ...data,
+      isFeatured: dto.visibility === ProjectVisibility.Private ? false : existingProject?.isFeatured
+    });
   }
 
   @Override()
