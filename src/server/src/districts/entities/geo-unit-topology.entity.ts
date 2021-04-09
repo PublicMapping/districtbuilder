@@ -256,7 +256,9 @@ export class GeoUnitTopology {
           ...feature,
           geometry,
           properties: {
-            demographics: feature.properties,
+            demographics: {
+              ...feature.properties
+            },
             compactness,
             contiguity
           }

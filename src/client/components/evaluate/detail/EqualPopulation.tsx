@@ -3,7 +3,6 @@ import { Box, Flex, jsx, ThemeUIStyleObject, Heading } from "theme-ui";
 import { EvaluateMetricWithValue, DistrictProperties } from "../../../../shared/entities";
 import { getChoroplethStops } from "../../map/index";
 import { DistrictsGeoJSON } from "../../../types";
-import { getCompactnessDisplay } from "../../ProjectSidebar";
 
 const style: ThemeUIStyleObject = {
   tableElement: {
@@ -21,6 +20,7 @@ const style: ThemeUIStyleObject = {
     height: "10px",
     width: "10px",
     background: "orange",
+    opacity: "0.9",
     outline: "1px solid black"
   },
   unfilledBox: {
@@ -39,7 +39,7 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const CompactnessMetricDetail = ({
+const EqualPopulationMetricDetail = ({
   metric,
   geojson
 }: {
@@ -47,33 +47,41 @@ const CompactnessMetricDetail = ({
   readonly geojson?: DistrictsGeoJSON;
 }) => {
   function computeRowFill(row: DistrictProperties) {
-    const val = row.compactness;
+    const val = row.percentDeviation;
     const choroplethStops = getChoroplethStops(metric.key);
     // eslint-disable-next-line
-    let i = 0;
-    // eslint-disable-next-line
-    while (i < choroplethStops.length) {
+    for (let i = 0; i < choroplethStops.length; i++) {
       const r = choroplethStops[i];
-      if (val < r[0]) {
-        return r[1];
-      } else {
-        i++;
+      if (val && val >= r[0]) {
+        if (i < choroplethStops.length - 1) {
+          const r1 = choroplethStops[i + 1];
+          if (val < r1[0]) {
+            return r[1];
+          }
+        } else {
+          return r[1];
+        }
       }
     }
     return "#fff";
   }
+
   return (
     <Box sx={{ ml: "20px", overflowY: "scroll" }}>
       <Heading as="h4" sx={{ variant: "text.h4", display: "block", width: "100%" }}>
-        Average compactness of
-        {metric.value ? ` ${Math.floor(metric.value * 100)}%` : " "}
+        {metric.value || " "} of the {metric.total} districts are within{" "}
+        {"popThreshold" in metric &&
+          metric.popThreshold &&
+          ` ${Math.floor(metric.popThreshold * 100)}%`}{" "}
+        of {metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()}
       </Heading>
       <Flex sx={{ flexDirection: "column", width: "60%" }}>
         <table>
           <thead>
             <tr>
               <th sx={style.tableElement}>Number</th>
-              <th sx={style.tableElement}>Compactness</th>
+              <th sx={style.tableElement}>Deviation (%)</th>
+              <th sx={style.tableElement}>Deviation</th>
             </tr>
           </thead>
           <tbody>
@@ -90,14 +98,23 @@ const CompactnessMetricDetail = ({
                           width: "20px",
                           height: "20px",
                           opacity: "0.9",
-                          backgroundColor: feature.properties.compactness
+                          // @ts-ignore
+                          backgroundColor: feature.properties.percentDeviation
                             ? `${computeRowFill(feature.properties)}`
                             : "none"
                         }}
                       ></Box>
                       <Box sx={style.compactnessItem}>
-                        {getCompactnessDisplay(feature.properties)}
+                        {// @ts-ignore
+                        feature.properties.percentDeviation
+                          ? ` ${Math.floor(feature.properties.percentDeviation * 1000) / 10}%`
+                          : "-"}
                       </Box>
+                    </td>
+                    <td sx={style.tableElement}>
+                      {feature.properties.populationDeviation
+                        ? Math.round(feature.properties.populationDeviation).toLocaleString()
+                        : "-"}
                     </td>
                   </tr>
                 )
@@ -109,4 +126,4 @@ const CompactnessMetricDetail = ({
   );
 };
 
-export default CompactnessMetricDetail;
+export default EqualPopulationMetricDetail;

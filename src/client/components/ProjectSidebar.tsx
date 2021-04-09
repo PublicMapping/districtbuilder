@@ -15,8 +15,8 @@ import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
 import {
   areAnyGeoUnitsSelected,
   assertNever,
-  getTargetPopulation,
-  mergeGeoUnits
+  mergeGeoUnits,
+  getTargetPopulation
 } from "../functions";
 import {
   getSavedDistrictSelectedDemographics,
