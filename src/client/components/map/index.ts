@@ -426,6 +426,18 @@ export function setFeaturesSelectedFromGeoUnits(
   });
 }
 
+/*
+ * Filter matching geounits given an include function
+ */
+export function filterGeoUnits(units: GeoUnits, includeFn: (id: number) => boolean) {
+  return Object.entries(units).reduce((newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
+    return {
+      ...newGeoUnits,
+      [geoLevelId]: new Map([...geoUnitsForLevel].filter(([id]) => includeFn(id)))
+    };
+  }, units);
+}
+
 export function deselectChildGeounits(
   map: MapboxGL.Map,
   geoUnits: GeoUnits,

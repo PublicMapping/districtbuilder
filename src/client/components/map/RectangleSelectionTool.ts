@@ -11,15 +11,15 @@ import {
 } from "../../../shared/entities";
 
 import {
-  setSelectedGeounits,
+  addSelectedGeounits,
   clearHighlightedGeounits,
   setHighlightedGeounits
 } from "../../actions/districtDrawing";
-import { mergeGeoUnits } from "../../functions";
 import store from "../../store";
 
 import {
   featuresToUnlockedGeoUnits,
+  filterGeoUnits,
   GEOLEVELS_SOURCE_ID,
   isFeatureSelected,
   levelToSelectionLayerId,
@@ -89,8 +89,18 @@ const RectangleSelectionTool: ISelectionTool = {
       );
     }
 
-    function updateSelection(e: MouseEvent) {
-      // Find selected features before updating `current` to tell if any features were deselected
+    /*
+     * Update highlighting as box dimensions change.
+     *
+     * Note that highlighting is distinct from true selection (though highlighting a feature on the
+     * map involves changing the feature state to `selected: true` which is potentially confusing).
+     *
+     * Highlight = make the feature be selected (dark overlay) temporarily to reflect UI interaction
+     * (mouse move) which is used to recalculate stats dynamically without actually saving the
+     * selection. It can be thought of as a preview of a potential selection.
+     */
+    function updateHighlighting(e: MouseEvent) {
+      // Find features before updating `current` to later tell if any features were unhighlighted
       const prevFeatures = current && getFeaturesInBoundingBox([start, current]);
 
       // Capture the ongoing xy coordinates
@@ -136,15 +146,6 @@ const RectangleSelectionTool: ISelectionTool = {
         staticGeoLevels
       );
 
-      // Helper for filtering matching geounits given an include function
-      const filterGeoUnits = (units: GeoUnits, includeFn: (id: number) => boolean) =>
-        Object.entries(units).reduce((newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
-          return {
-            ...newGeoUnits,
-            [geoLevelId]: new Map([...geoUnitsForLevel].filter(([id]) => includeFn(id)))
-          };
-        }, units);
-
       // Highlighted shouldn't include the geounits initially selected
       const highlightedGeoUnits = filterGeoUnits(
         geoUnits,
@@ -163,7 +164,7 @@ const RectangleSelectionTool: ISelectionTool = {
       );
       setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
 
-      // Set any features that were previously selected and just became unselected to unselected
+      // Deselect any features that were previously highlighted and just became unhighlighted
       // eslint-disable-next-line
       if (prevFeatures) {
         const prevGeoUnits = featuresToUnlockedGeoUnits(
@@ -198,11 +199,11 @@ const RectangleSelectionTool: ISelectionTool = {
 
       // Capture the first xy coordinates
       start = mousePos(e);
-      updateSelection(e);
+      updateHighlighting(e);
     }
 
     function onMouseMove(e: MouseEvent) {
-      updateSelection(e);
+      updateHighlighting(e);
     }
 
     function onMouseUp(e: MouseEvent) {
@@ -240,6 +241,9 @@ const RectangleSelectionTool: ISelectionTool = {
         .filter(feature => isFeatureSelected(map, feature));
     }
 
+    /*
+     * Select highlighted features and clean up.
+     */
     // eslint-disable-next-line
     function finish(bbox?: [MapboxGL.PointLike, MapboxGL.PointLike]) {
       // Remove these events now that finish has been called.
@@ -264,7 +268,7 @@ const RectangleSelectionTool: ISelectionTool = {
           staticGeoLevels
         );
         deselectChildGeounits(map, geoUnits, staticMetadata, staticGeoLevels);
-        store.dispatch(setSelectedGeounits(mergeGeoUnits(geoUnits, initiallySelectedGeoUnits)));
+        store.dispatch(addSelectedGeounits(geoUnits));
       }
       store.dispatch(clearHighlightedGeounits());
     }

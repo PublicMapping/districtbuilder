@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Allow last district to be locked [#677](https://github.com/PublicMapping/districtbuilder/pull/677)
+- Fix off screen geounits deselected when using rectangle tool [#680](https://github.com/PublicMapping/districtbuilder/pull/680)
 
 
 ## [1.3.0] - 2021-01-26
