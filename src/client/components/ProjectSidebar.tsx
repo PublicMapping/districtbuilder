@@ -34,7 +34,11 @@ import Icon from "./Icon";
 import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
 
-import { setSelectedDistrictId, toggleDistrictLocked } from "../actions/districtDrawing";
+import {
+  setHoveredDistrictId,
+  setSelectedDistrictId,
+  toggleDistrictLocked
+} from "../actions/districtDrawing";
 import store from "../store";
 
 interface LoadingProps {
@@ -132,6 +136,7 @@ const ProjectSidebar = ({
   highlightedGeounits,
   geoUnitHierarchy,
   lockedDistricts,
+  hoveredDistrictId,
   saving,
   isReadOnly
 }: {
@@ -143,6 +148,7 @@ const ProjectSidebar = ({
   readonly highlightedGeounits: GeoUnits;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
+  readonly hoveredDistrictId: number | null;
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
@@ -192,6 +198,7 @@ const ProjectSidebar = ({
                 geojson={geojson}
                 staticMetadata={staticMetadata}
                 selectedDistrictId={selectedDistrictId}
+                hoveredDistrictId={hoveredDistrictId}
                 selectedGeounits={selectedGeounits}
                 highlightedGeounits={highlightedGeounits}
                 lockedDistricts={lockedDistricts}
@@ -261,6 +268,7 @@ const SidebarRow = memo(
     deviation,
     districtId,
     isDistrictLocked,
+    isDistrictHovered,
     isReadOnly
   }: {
     readonly district: DistrictGeoJSON;
@@ -270,9 +278,9 @@ const SidebarRow = memo(
     readonly deviation: number;
     readonly districtId: number;
     readonly isDistrictLocked?: boolean;
+    readonly isDistrictHovered: boolean;
     readonly isReadOnly: boolean;
   }) => {
-    const [isHovered, setHover] = useState(false);
     const selectedDifference = selectedPopulationDifference || 0;
     const showPopulationChange = selectedDifference !== 0;
     const textColor = showPopulationChange
@@ -292,7 +300,6 @@ const SidebarRow = memo(
       ) : (
         getCompactnessDisplay(district.properties)
       );
-    const toggleHover = () => setHover(!isHovered);
     const toggleLocked = (e: React.MouseEvent) => {
       e.stopPropagation();
       store.dispatch(toggleDistrictLocked(districtId - 1));
@@ -303,8 +310,12 @@ const SidebarRow = memo(
         onClick={() => {
           store.dispatch(setSelectedDistrictId(district.id as number));
         }}
-        onMouseOver={toggleHover}
-        onMouseOut={toggleHover}
+        onMouseOver={() => {
+          store.dispatch(setHoveredDistrictId(district.id as number));
+        }}
+        onMouseOut={() => {
+          store.dispatch(setHoveredDistrictId(null));
+        }}
         className={district.id ? null : "unassigned-row"}
       >
         <Styled.td sx={style.td}>
@@ -368,7 +379,7 @@ const SidebarRow = memo(
               <Tooltip content="Lock this district">
                 <Button
                   variant="icon"
-                  style={{ visibility: isHovered ? "visible" : "hidden" }}
+                  style={{ visibility: isDistrictHovered ? "visible" : "hidden" }}
                   onClick={toggleLocked}
                   sx={style.lockButton}
                 >
@@ -388,6 +399,7 @@ interface SidebarRowsProps {
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
   readonly selectedDistrictId: number;
+  readonly hoveredDistrictId: number | null;
   readonly selectedGeounits: GeoUnits;
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
@@ -400,6 +412,7 @@ const SidebarRows = ({
   geojson,
   staticMetadata,
   selectedDistrictId,
+  hoveredDistrictId,
   selectedGeounits,
   highlightedGeounits,
   lockedDistricts,
@@ -487,6 +500,7 @@ const SidebarRows = ({
             deviation={deviation}
             key={districtId}
             isDistrictLocked={lockedDistricts[districtId - 1]}
+            isDistrictHovered={districtId === hoveredDistrictId}
             districtId={districtId}
             isReadOnly={isReadOnly}
           />

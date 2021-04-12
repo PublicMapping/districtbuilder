@@ -145,6 +145,7 @@ const ProjectScreen = ({
             highlightedGeounits={districtDrawing.highlightedGeounits}
             geoUnitHierarchy={geoUnitHierarchy}
             lockedDistricts={presentDrawingState.lockedDistricts}
+            hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
             isReadOnly={isReadOnly}
           />
@@ -190,6 +191,7 @@ const ProjectScreen = ({
                 staticGeoLevels={staticGeoLevels}
                 selectedGeounits={presentDrawingState.selectedGeounits}
                 selectedDistrictId={districtDrawing.selectedDistrictId}
+                hoveredDistrictId={districtDrawing.hoveredDistrictId}
                 selectionTool={districtDrawing.selectionTool}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
                 lockedDistricts={presentDrawingState.lockedDistricts}
