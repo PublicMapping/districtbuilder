@@ -65,6 +65,7 @@ interface Props {
   readonly staticGeoLevels: UintArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
+  readonly hoveredDistrictId: number | null;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
@@ -126,6 +127,7 @@ const DistrictsMap = ({
   staticGeoLevels,
   selectedGeounits,
   selectedDistrictId,
+  hoveredDistrictId,
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
@@ -260,7 +262,7 @@ const DistrictsMap = ({
             feature.geometry.coordinates.length >= 2))
           ? // Set pink outline to make unassigned/non-contiguous districts stand out
             "#F25DFE"
-          : id === selectedDistrictId
+          : id === selectedDistrictId || id === hoveredDistrictId
           ? // District is selected so set outline to district color
             districtColor
           : "transparent";
@@ -278,7 +280,7 @@ const DistrictsMap = ({
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool, selectedDistrictId]);
+  }, [map, geojson, findMenuOpen, findTool, selectedDistrictId, hoveredDistrictId]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
