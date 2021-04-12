@@ -8,17 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
 ### Added
 
 - Add project evaluate view for Equal Population [#685](https://github.com/PublicMapping/districtbuilder/pull/685)
-
+- Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
 
 ### Changed
 
-
 ### Fixed
-
 
 ## [1.4.0] - 2021-04-12
 
@@ -66,11 +63,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix bug where projects are created after closing Join Organization modal triggered from an organization's template [#673](https://github.com/PublicMapping/districtbuilder/pull/673)
 
 ### Fixed
+
 - Allow last district to be locked [#677](https://github.com/PublicMapping/districtbuilder/pull/677)
 - Allow editing at lower geolevels after toggling evaluate mode [#679](https://github.com/PublicMapping/districtbuilder/pull/679)
 - Fix off screen geounits deselected when using rectangle tool [#680](https://github.com/PublicMapping/districtbuilder/pull/680)
 - Set project as unfeatured if private [#686](https://github.com/PublicMapping/districtbuilder/pull/686)
-
 
 ## [1.3.0] - 2021-01-26
 

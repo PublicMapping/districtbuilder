@@ -1,6 +1,5 @@
 import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
-
 import {
   DistrictsDefinition,
   FeatureId,
@@ -38,7 +37,8 @@ const PaintBrushSelectionTool: ISelectionTool = {
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
-    staticGeoLevels: UintArrays
+    staticGeoLevels: UintArrays,
+    setActive: (isActive: boolean) => void
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
@@ -117,7 +117,7 @@ const PaintBrushSelectionTool: ISelectionTool = {
       // Call functions for the following events
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
-
+      setActive(true);
       updateSelection(e);
     }
 
@@ -129,6 +129,7 @@ const PaintBrushSelectionTool: ISelectionTool = {
       // Remove these events now that finish has been called.
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      setActive(false);
     }
 
     function getFeaturesAtPoint(
