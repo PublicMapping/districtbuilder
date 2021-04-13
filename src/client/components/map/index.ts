@@ -244,7 +244,15 @@ export function generateMapLayers(
       paint: {
         "line-color": { type: "identity", property: "outlineColor" },
         "line-opacity": 1,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6,
+          ["*", ["get", "outlineWidthScaleFactor"], 2],
+          14,
+          ["*", ["get", "outlineWidthScaleFactor"], 5]
+        ]
       }
     },
     LABELS_PLACEHOLDER_LAYER_ID

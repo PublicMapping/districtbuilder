@@ -104,6 +104,7 @@ export type DistrictProperties = {
   outlineColor?: string;
   percentDeviation?: number;
   populationDeviation?: number;
+  outlineWidthScaleFactor?: number;
   /* eslint-enable */
 };
 

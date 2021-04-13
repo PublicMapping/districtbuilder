@@ -272,7 +272,7 @@ const DistrictsMap = ({
             districtColor
           : "transparent";
       // eslint-disable-next-line
-      feature.properties.color = getDistrictColor(id);
+      feature.properties.color = districtColor;
       const populationDeviation = feature.properties.demographics.population - avgPopulation;
       // eslint-disable-next-line
       feature.properties.percentDeviation =
@@ -281,6 +281,9 @@ const DistrictsMap = ({
           : undefined;
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
+      // eslint-disable-next-line
+      feature.properties.outlineWidthScaleFactor =
+        feature.properties.outlineColor === districtColor ? 2 : 1;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
