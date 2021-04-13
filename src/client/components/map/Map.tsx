@@ -241,6 +241,9 @@ const DistrictsMap = ({
           : "transparent";
       // eslint-disable-next-line
       feature.properties.color = districtColor;
+      // eslint-disable-next-line
+      feature.properties.outlineWidthScaleFactor =
+        feature.properties.outlineColor === districtColor ? 2 : 1;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);

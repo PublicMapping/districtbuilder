@@ -100,6 +100,7 @@ export type DistrictProperties = {
   // NOTE: These properties are set for styling purposes
   color?: string;
   outlineColor?: string;
+  outlineWidthScaleFactor?: number;
   /* eslint-enable */
 };
 
