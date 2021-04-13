@@ -192,6 +192,7 @@ const ProjectScreen = ({
                 selectedGeounits={presentDrawingState.selectedGeounits}
                 selectedDistrictId={districtDrawing.selectedDistrictId}
                 hoveredDistrictId={districtDrawing.hoveredDistrictId}
+                zoomToDistrictId={districtDrawing.zoomToDistrictId}
                 selectionTool={districtDrawing.selectionTool}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
                 lockedDistricts={presentDrawingState.lockedDistricts}
