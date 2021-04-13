@@ -1,6 +1,8 @@
 /** @jsx jsx */
 import { useEffect, useRef, useState } from "react";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
+import bbox from "@turf/bbox";
+import { BBox2d } from "@turf/helpers/lib/geojson";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -9,7 +11,8 @@ import {
   setGeoLevelVisibility,
   SelectionTool,
   replaceSelectedGeounits,
-  FindTool
+  FindTool,
+  setZoomToDistrictId
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -66,6 +69,7 @@ interface Props {
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
   readonly hoveredDistrictId: number | null;
+  readonly zoomToDistrictId: number | null;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
@@ -128,6 +132,7 @@ const DistrictsMap = ({
   selectedGeounits,
   selectedDistrictId,
   hoveredDistrictId,
+  zoomToDistrictId,
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
@@ -416,6 +421,18 @@ const DistrictsMap = ({
         })
       );
   }, [map, project, lockedDistricts]);
+
+  useEffect(() => {
+    if (map && zoomToDistrictId) {
+      const districtGeoJSON = geojson.features[zoomToDistrictId];
+      if (districtGeoJSON && districtGeoJSON.geometry.coordinates.length) {
+        // eslint-disable-next-line
+        const boundingBox = bbox(districtGeoJSON) as BBox2d;
+        map.fitBounds(boundingBox, { padding: 50 });
+        store.dispatch(setZoomToDistrictId(null));
+      }
+    }
+  }, [map, geojson, zoomToDistrictId]);
 
   // Update layer visibility when geolevel is selected
   useEffect(() => {

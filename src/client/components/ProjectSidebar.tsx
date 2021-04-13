@@ -30,6 +30,7 @@ import {
 } from "../constants/colors";
 import DemographicsChart from "./DemographicsChart";
 import DemographicsTooltip from "./DemographicsTooltip";
+import DistrictOptionsFlyout from "./DistrictOptionsFlyout";
 import Icon from "./Icon";
 import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
@@ -388,6 +389,9 @@ const SidebarRow = memo(
               </Tooltip>
             )
           )}
+        </Styled.td>
+        <Styled.td>
+          <DistrictOptionsFlyout districtId={district.id} isDistrictHovered={isDistrictHovered} />
         </Styled.td>
       </Styled.tr>
     );
