@@ -72,13 +72,13 @@ const HomeScreen = ({ projects, user }: StateProps) => {
             <Heading as="h1" sx={{ variant: "text.h3", mr: "auto" }}>
               Maps
             </Heading>
-            <Styled.a
+            {/* <Styled.a
               as={Link}
               to="/import-project"
               sx={{ variant: "links.secondaryButton", fontSize: 3, px: 4, py: 2, mr: 2 }}
             >
               Import
-            </Styled.a>
+            </Styled.a> */}
             <Styled.a
               as={Link}
               to="/create-project"
@@ -162,13 +162,13 @@ const HomeScreen = ({ projects, user }: StateProps) => {
                 <Icon name="plus-circle" />
                 Create a map
               </Styled.a>
-              <Styled.a
+              {/* <Styled.a
                 as={Link}
                 to="/import-project"
                 sx={{ variant: "links.secondaryButton", fontSize: 3, px: 6, py: 2, mt: 2 }}
               >
                 Import map
-              </Styled.a>
+              </Styled.a> */}
             </Flex>
           )
         ) : null}
