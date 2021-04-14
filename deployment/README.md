@@ -5,6 +5,8 @@
 - [Terraform](#terraform)
 - [Migrations](#migrations)
 
+**Note** when deploying a production release create a new issue using the [release issue template](../.github/ISSUE_TEMPLATE/release.md) and follow the checklist.
+
 ## AWS Credentials
 
 Using the AWS CLI, create an AWS profile named `district-builder`:
