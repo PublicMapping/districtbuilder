@@ -31,7 +31,7 @@ const DistrictOptionsFlyout = ({
           ...invertStyles({ invert: false })
         }}
       >
-        ...
+        ···
       </MenuButton>
       <Menu sx={{ ...style.menu, marginTop: "-35px", right: "-210px" }}>
         <ul sx={style.menuList}>
