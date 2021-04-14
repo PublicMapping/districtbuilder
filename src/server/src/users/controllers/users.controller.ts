@@ -11,7 +11,13 @@ import { UsersService } from "../services/users.service";
     type: User
   },
   query: {
-    exclude: ["passwordHash"]
+    exclude: ["passwordHash"],
+    join: {
+      organizations: {
+        allow: ["slug", "name", "logoUrl"],
+        eager: true
+      }
+    }
   },
   routes: {
     only: ["getOneBase", "updateOneBase"]
@@ -37,6 +43,7 @@ import { UsersService } from "../services/users.service";
 })
 @UseGuards(JwtAuthGuard)
 @Controller("api/user")
+// @ts-ignore
 export class UsersController implements CrudController<User> {
   constructor(public service: UsersService) {}
 }

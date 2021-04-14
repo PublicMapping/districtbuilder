@@ -22,7 +22,7 @@ const appButtonStyles = {
     mr: 1
   },
   "&:hover:not([disabled]):not(:active)": {
-    bg: "blue.5",
+    bg: "blue.6",
     color: "muted",
     textDecoration: "none"
   },
@@ -57,7 +57,7 @@ const theme: Theme & StyledSystemTheme = {
     heading: "#141414",
     text: "#595959",
     background: "#eef0f2",
-    primary: "#6d98ba",
+    primary: "#4B7AA0",
     secondary: "#6d6d6d",
     muted: "#fff",
     accent: "#ffc08e",
@@ -79,7 +79,7 @@ const theme: Theme & StyledSystemTheme = {
       "#bdd0e0",
       "#95b4cd",
       "#6d98ba",
-      "#4c7ba0",
+      "#4B7AA0",
       "#395c78",
       "#2c485e",
       "#131f28"
@@ -118,7 +118,7 @@ const theme: Theme & StyledSystemTheme = {
     medium: 500,
     bold: 700,
     body: 500,
-    heading: 300
+    heading: 500
   },
   lineHeights: {
     body: 1.65,
@@ -219,7 +219,7 @@ const theme: Theme & StyledSystemTheme = {
     ghost: {
       ...appButtonStyles,
       ...{
-        bg: "rgba(256,256,256,0.2)",
+        bg: "transparent",
         "&:hover:not([disabled]):not(:active)": {
           bg: "rgba(256,256,256,0.3)"
         },
@@ -452,6 +452,23 @@ const theme: Theme & StyledSystemTheme = {
       textDecoration: "none",
       px: 3,
       py: 2
+    },
+    secondaryButton: {
+      ...appButtonStyles,
+      backgroundColor: "secondary",
+      color: "muted",
+      textDecoration: "none",
+      px: 3,
+      py: 2,
+      "&:visited,&:active": {
+        bg: "secondary",
+        color: "muted"
+      },
+      "&:hover:not([disabled]):not(:active)": {
+        bg: darken("secondary", 0.1),
+        textDecoration: "none",
+        color: "muted"
+      }
     },
     alert: {
       color: "gray.0",

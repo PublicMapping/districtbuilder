@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { Alert, Box, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
-import { RegisterContent } from "../components/AuthComponents";
+import RegisterContent from "../components/RegisterContent";
 import CenteredContent from "../components/CenteredContent";
 import { IUser } from "../../shared/entities";
 import { State } from "../reducers";

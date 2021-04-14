@@ -3,13 +3,20 @@ import { saveAs } from "file-saver";
 
 import {
   CreateProjectData,
+  IOrganization,
   IProject,
+  IProjectTemplateWithProjects,
   IRegionConfig,
   IUser,
   JWT,
+  OrganizationSlug,
   ProjectId,
   UpdateProjectData,
-  UpdateUserData
+  UpdateUserData,
+  UserId,
+  DistrictsDefinition,
+  RegionConfigId,
+  ProjectNest
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -65,10 +72,16 @@ export async function patchUser(userData: Partial<UpdateUserData>): Promise<IUse
   });
 }
 
-export async function registerUser(name: string, email: string, password: string): Promise<JWT> {
+export async function registerUser(
+  name: string,
+  email: string,
+  password: string,
+  organization?: string
+): Promise<JWT> {
+  const data = organization ? { name, email, password, organization } : { name, email, password };
   return new Promise((resolve, reject) => {
     apiAxios
-      .post("/api/auth/email/register", { name, email, password })
+      .post("/api/auth/email/register", data)
       .then(response => resolve(saveJWT(response)))
       .catch(error => reject(error.response?.data || error));
   });
@@ -96,7 +109,7 @@ export async function activateAccount(token: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
       .post(`/api/auth/email/verify/${token}`)
-      .then(response => resolve(saveJWT(response)))
+      .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });
 }
@@ -113,12 +126,21 @@ export async function resetPassword(token: string, password: string): Promise<vo
 export async function createProject({
   name,
   numberOfDistricts,
+  chamber,
   regionConfig,
-  districtsDefinition
+  districtsDefinition,
+  projectTemplate
 }: CreateProjectData): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .post("/api/projects", { name, numberOfDistricts, regionConfig, districtsDefinition })
+      .post("/api/projects", {
+        name,
+        numberOfDistricts,
+        regionConfig,
+        districtsDefinition,
+        chamber,
+        projectTemplate
+      })
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));
   });
@@ -129,7 +151,9 @@ async function fetchProject(id: ProjectId): Promise<IProject> {
     apiAxios
       .get(`/api/projects/${id}`)
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error =>
+        reject({ errorMessage: error.response.data, statusCode: error.response.status })
+      );
   });
 }
 
@@ -138,7 +162,7 @@ export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJS
     apiAxios
       .get(`/api/projects/${id}/export/geojson`)
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 
@@ -147,7 +171,7 @@ export async function fetchProjects(): Promise<readonly IProject[]> {
     apiAxios
       .get("/api/projects?sort=updatedDt,DESC")
       .then(response => resolve(response.data))
-      .catch(error => reject(error.message));
+      .catch(error => reject(error.response.data));
   });
 }
 
@@ -163,6 +187,20 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
     apiAxios
       .get("/api/region-configs?sort=name,ASC")
       .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchRegionProperties(
+  region: RegionConfigId,
+  geoLevel: string
+): Promise<readonly Record<string, unknown>[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/region-configs/${region}/properties/${geoLevel}?fields=name`)
+      .then(response => {
+        resolve(response.data);
+      })
       .catch(error => reject(error.message));
   });
 }
@@ -221,5 +259,105 @@ export async function exportProjectShp(project: IProject): Promise<void> {
         );
       })
       .catch(error => reject(error.message));
+  });
+}
+
+export async function importCsv(file: Blob): Promise<DistrictsDefinition> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/districts/import/csv`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      })
+      .then(response => {
+        return resolve(response.data);
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrganization> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/organization/${slug}`)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject({ errorMessage: error.response.data, statusCode: error.response.status });
+      });
+  });
+}
+
+export async function fetchOrganizationProjects(
+  slug: OrganizationSlug
+): Promise<readonly IProjectTemplateWithProjects[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/${slug}`)
+      .then(response => {
+        resolve(response.data);
+      })
+      .catch(error => {
+        reject(error.response.data);
+      });
+  });
+}
+
+export async function fetchOrganizationFeaturedProjects(
+  slug: OrganizationSlug
+): Promise<readonly IProjectTemplateWithProjects[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/featured/${slug}`)
+      .then(response => {
+        resolve(response.data);
+      })
+      .catch(error => {
+        reject(error.response.data);
+      });
+  });
+}
+
+export async function saveProjectFeatured(project: ProjectNest): Promise<IOrganization> {
+  return new Promise((resolve, reject) => {
+    const projectPost = {
+      isFeatured: !project.isFeatured
+    };
+    apiAxios
+      .post(`/api/projects/${project.id}/toggleFeatured`, projectPost)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
+export async function addUserToOrganization(
+  slug: OrganizationSlug,
+  user: UserId
+): Promise<IOrganization> {
+  const userAdd = { userId: user };
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/organization/${slug}/join`, userAdd)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
+export async function removeUserFromOrganization(
+  slug: OrganizationSlug,
+  user: UserId
+): Promise<IOrganization> {
+  const userRemove = { userId: user };
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/organization/${slug}/leave`, userRemove)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
   });
 }

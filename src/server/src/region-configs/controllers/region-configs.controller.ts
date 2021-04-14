@@ -1,8 +1,11 @@
 import {
   BadRequestException,
   Controller,
+  Get,
   InternalServerErrorException,
   Logger,
+  Param,
+  Query,
   UseGuards
 } from "@nestjs/common";
 import {
@@ -13,11 +16,15 @@ import {
   ParsedBody,
   ParsedRequest
 } from "@nestjsx/crud";
+import { OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { TopologyService } from "../../districts/services/topology.service";
 import { QueryFailedError } from "typeorm";
-
+import { RegionLookupProperties } from "../../../../shared/entities";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { RegionConfig } from "../entities/region-config.entity";
 import { RegionConfigsService } from "../services/region-configs.service";
+import { GeometryCollection } from "topojson-specification";
+import * as _ from "lodash";
 
 @Crud({
   model: {
@@ -35,16 +42,17 @@ import { RegionConfigsService } from "../services/region-configs.service";
     only: ["createOneBase", "getManyBase"]
   }
 })
-@UseGuards(JwtAuthGuard)
 @Controller("api/region-configs")
+// @ts-ignore
 export class RegionConfigsController implements CrudController<RegionConfig> {
   get base(): CrudController<RegionConfig> {
     return this;
   }
   private readonly logger = new Logger(RegionConfigsController.name);
-  constructor(public service: RegionConfigsService) {}
+  constructor(public service: RegionConfigsService, public topologyService: TopologyService) {}
 
   @Override()
+  @UseGuards(JwtAuthGuard)
   async createOne(
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: RegionConfig
@@ -64,6 +72,35 @@ export class RegionConfigsController implements CrudController<RegionConfig> {
         this.logger.error(`Error creating region config: ${error}`);
         throw new InternalServerErrorException();
       }
+    }
+  }
+
+  @Get(":regionId/properties/:geounit")
+  @UseGuards(OptionalJwtAuthGuard)
+  async getRegionProperties(
+    @Param("regionId") regionId: string,
+    @Param("geounit") geounit: string,
+    @Query("fields") fields: string[]
+  ): Promise<RegionLookupProperties[]> {
+    const regionConfig = await this.service.findOne({ id: regionId });
+
+    const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
+    if (!geoCollection) {
+      throw new InternalServerErrorException();
+    }
+    const geoUnitLayer = geoCollection.topology.objects[geounit] as GeometryCollection;
+    if (fields) {
+      return geoUnitLayer.geometries.map(f => {
+        if (f.properties) {
+          return _.pick(f.properties, fields);
+        } else {
+          return {};
+        }
+      });
+    } else {
+      return geoUnitLayer.geometries.map(f => {
+        return f?.properties || {};
+      });
     }
   }
 }

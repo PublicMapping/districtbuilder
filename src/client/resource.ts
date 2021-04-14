@@ -11,6 +11,7 @@ export interface ResourceSuccess<T> {
 }
 export interface ResourceFailure {
   readonly errorMessage: string;
+  readonly statusCode?: number;
 }
 export interface ResourceRefreshing<T> {
   readonly isPending: true;

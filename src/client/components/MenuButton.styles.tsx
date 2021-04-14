@@ -78,7 +78,7 @@ export const invertStyles = ({ invert }: ButtonStyleProps): ThemeUIStyleObject =
       }
     : {
         color: "gray.7",
-        bg: "gray.1",
+        bg: "transparent",
         "&:hover:not([disabled]):not(:active)": {
           bg: "gray.2"
         }

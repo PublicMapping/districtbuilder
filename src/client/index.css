@@ -10,6 +10,7 @@ body {
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   font-feature-settings: "tnum";
   font-variant: tabular-nums;
+  min-width: 1080px;
 }
 
 code {

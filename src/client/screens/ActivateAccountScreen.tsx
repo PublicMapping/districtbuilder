@@ -1,17 +1,20 @@
 /** @jsx jsx */
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Box, Flex, Spinner, Card, Styled, jsx, Text } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 import { ReactComponent as SuccessIllustration } from "../media/successfully-registered-illustration.svg";
 
 import { activateAccount } from "../api";
+import { getJWT } from "../jwt";
 import CenteredContent from "../components/CenteredContent";
 import { Resource } from "../resource";
 
 const ActivateAccountScreen = () => {
-  const { token } = useParams();
+  const { token, organizationSlug } = useParams();
+  const isLoggedIn = getJWT() !== null;
+  const history = useHistory();
   const [activationResource, setActivationResource] = useState<Resource<void>>({
     isPending: false
   });
@@ -21,11 +24,17 @@ const ActivateAccountScreen = () => {
     // eslint-disable-next-line
     if (token !== undefined) {
       setActivationResource({ isPending: true });
-      activateAccount(token)
-        .then(() => setActivationResource({ resource: void 0 }))
-        .catch(errorMessage => setActivationResource({ errorMessage }));
+      organizationSlug
+        ? activateAccount(token)
+            .then(() => {
+              setActivationResource({ resource: void 0 });
+            })
+            .catch(errorMessage => setActivationResource({ errorMessage }))
+        : activateAccount(token)
+            .then(() => setActivationResource({ resource: void 0 }))
+            .catch(errorMessage => setActivationResource({ errorMessage }));
     }
-  }, [token]);
+  }, [token, organizationSlug, history]);
   return (
     <CenteredContent>
       {"resource" in activationResource ? (
@@ -54,8 +63,20 @@ const ActivateAccountScreen = () => {
               Thank you for activating your account!
             </Text>
 
-            <Styled.a as={Link} to="/login" sx={{ variant: "linkButton" }}>
-              Log in
+            <Styled.a
+              as={Link}
+              to={
+                !isLoggedIn && organizationSlug
+                  ? { pathname: "/login", state: { from: `/o/${organizationSlug}` } }
+                  : !isLoggedIn
+                  ? "/login"
+                  : organizationSlug
+                  ? `/o/${organizationSlug}`
+                  : "/"
+              }
+              sx={{ variant: "linkButton" }}
+            >
+              {!isLoggedIn ? "Log in" : "Start mapping!"}
             </Styled.a>
           </Card>
         </Box>

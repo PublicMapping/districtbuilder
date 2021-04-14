@@ -1,4 +1,4 @@
-import { HttpService, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import S3, { GetObjectRequest } from "aws-sdk/clients/s3";
 import { Topology } from "topojson-specification";

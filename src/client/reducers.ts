@@ -4,6 +4,14 @@ import { getType } from "typesafe-actions";
 import { Action } from "./actions";
 import { resetState } from "./actions/root";
 import authReducer, { AuthState, initialState as initialAuthState } from "./reducers/auth";
+import organizationReducer, {
+  OrganizationState,
+  initialState as initialOrganizationState
+} from "./reducers/organization";
+import organizationJoinReducer, {
+  OrganizationJoinState,
+  initialState as initialOrganizationJoinState
+} from "./reducers/organizationJoin";
 import projectsReducer, {
   initialState as initialProjectsState,
   ProjectsState
@@ -12,31 +20,44 @@ import regionConfigReducer, {
   initialState as initialRegionConfigState,
   RegionConfigState
 } from "./reducers/regionConfig";
+import organizationProjectsReducer, {
+  initialState as intialOrganizationProjectsState,
+  OrganizationProjectsState
+} from "./reducers/organizationProjects";
 import userReducer, { initialState as initialUserState, UserState } from "./reducers/user";
 import projectReducer, { ProjectState, initialProjectState } from "./reducers/project";
 
 export interface State {
   readonly auth: AuthState;
-  readonly user: UserState;
-  readonly regionConfig: RegionConfigState;
-  readonly projects: ProjectsState;
   readonly project: ProjectState;
+  readonly projects: ProjectsState;
+  readonly organization: OrganizationState;
+  readonly organizationJoin: OrganizationJoinState;
+  readonly organizationProjects: OrganizationProjectsState;
+  readonly regionConfig: RegionConfigState;
+  readonly user: UserState;
 }
 
 export const initialState: State = {
   auth: initialAuthState,
-  user: initialUserState,
-  regionConfig: initialRegionConfigState,
+  organization: initialOrganizationState,
+  organizationJoin: initialOrganizationJoinState,
+  organizationProjects: intialOrganizationProjectsState,
+  project: initialProjectState,
   projects: initialProjectsState,
-  project: initialProjectState
+  regionConfig: initialRegionConfigState,
+  user: initialUserState
 };
 
 const allReducers = combineReducers({
   auth: authReducer,
-  user: userReducer,
-  regionConfig: regionConfigReducer,
+  organization: organizationReducer,
+  organizationJoin: organizationJoinReducer,
+  organizationProjects: organizationProjectsReducer,
+  project: projectReducer,
   projects: projectsReducer,
-  project: projectReducer
+  regionConfig: regionConfigReducer,
+  user: userReducer
 });
 
 export default (state = initialState, action: Action) => {

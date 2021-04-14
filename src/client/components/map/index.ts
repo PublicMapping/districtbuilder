@@ -17,6 +17,7 @@ import {
   UintArrays
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
+import { isBaseGeoLevelAlwaysVisible } from "../../functions";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -26,6 +27,16 @@ export const DISTRICTS_SOURCE_ID = "districts";
 export const DISTRICTS_LAYER_ID = "districts";
 // Id for districts layer outline, used for Find
 export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
+// Id for districts fill outline used in evaluate mode
+export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
+// Id for topmost geolevel layer in Evaluate
+export const TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID = "topmost-geo-evaluate-split";
+// Id for topmost geolevel layer fill in Evaluate
+export const TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID = "topmost-geo-evaluate-split-fill";
 // Used only to make districts appear in the correct position in the layer stack
 export const DISTRICTS_PLACEHOLDER_LAYER_ID = "district-placeholder";
 // Used only to make highlights appear in the correct position in the layer stack
@@ -37,6 +48,9 @@ export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
 
 // Delay used to throttle calls to set the current feature(s), in milliseconds
 export const SET_FEATURE_DELAY = 300;
+export const CONTIGUITY_FILL_COLOR = "#9400D3";
+export const EVALUATE_GRAY_FILL_COLOR = "#D3D3D3";
+export const COUNTY_SPLIT_FILL_COLOR = "#fed8b1";
 
 // Layers in the Mapbox Studio project that we filter to only show the active region.
 const filteredLabelLayers = [
@@ -45,6 +59,32 @@ const filteredLabelLayers = [
   "settlement-subdivision-label",
   "poi-label"
 ];
+
+export function getChoroplethStops(metricKey: string) {
+  const compactnessSteps = [
+    [0.3, "#edf8fb"],
+    [0.4, "#b2e2e2"],
+    [0.5, "#66c2a4"],
+    [0.6, "#2ca25f"],
+    [1.0, "#006d2c"]
+  ];
+  switch (metricKey) {
+    case "compactness":
+      return compactnessSteps;
+    default:
+      return [];
+  }
+}
+
+export function getChoroplethLabels(metricKey: string) {
+  const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
+  switch (metricKey) {
+    case "compactness":
+      return compactnessLabels;
+    default:
+      return [];
+  }
+}
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
   const largeGeolevel = {
@@ -119,12 +159,45 @@ export function generateMapLayers(
 
   map.addLayer(
     {
+      id: DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": {
+          property: "compactness",
+          stops: getChoroplethStops("compactness")
+        },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
       id: DISTRICTS_OUTLINE_LAYER_ID,
       type: "line",
       source: DISTRICTS_SOURCE_ID,
       layout: { visibility: "none" },
       paint: {
         "line-color": { type: "identity", property: "outlineColor" },
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_EVALUATE_LAYER_ID,
+      type: "line",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      paint: {
+        "line-color": "#000",
         "line-opacity": 1,
         "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
       }
@@ -144,6 +217,60 @@ export function generateMapLayers(
       }
     },
     DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+  map.addLayer(
+    {
+      id: TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
+      type: "line",
+      source: GEOLEVELS_SOURCE_ID,
+      "source-layer": geoLevels[geoLevels.length - 1].id,
+      layout: { visibility: "none" },
+      paint: {
+        "line-color": "#D3D3D3",
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+      }
+    },
+    LINES_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID,
+      source: GEOLEVELS_SOURCE_ID,
+      type: "fill",
+      "source-layer": geoLevels[geoLevels.length - 1].id,
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": "#fed8b1",
+        "fill-opacity": ["case", ["boolean", ["feature-state", "split"], false], 0.5, 0.0],
+        "fill-antialias": false
+      }
+    },
+    LINES_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": [
+          "match",
+          ["get", "contiguity"],
+          "contiguous",
+          CONTIGUITY_FILL_COLOR,
+          "non-contiguous",
+          EVALUATE_GRAY_FILL_COLOR,
+          "black"
+        ],
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.66, 14, 0.45],
+        "fill-antialias": false
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
   );
 
   geoLevels.forEach(level => {
@@ -295,6 +422,44 @@ export function setFeaturesSelectedFromGeoUnits(
     [...geoUnitsForLevel.keys()].forEach(featureId => {
       const currentFeature = { id: featureId, sourceLayer: geoLevelId };
       map.setFeatureState(featureStateGeoLevel(currentFeature), { selected });
+    });
+  });
+}
+
+/*
+ * Filter matching geounits given an include function
+ */
+export function filterGeoUnits(units: GeoUnits, includeFn: (id: number) => boolean) {
+  return Object.entries(units).reduce((newGeoUnits, [geoLevelId, geoUnitsForLevel]) => {
+    return {
+      ...newGeoUnits,
+      [geoLevelId]: new Map([...geoUnitsForLevel].filter(([id]) => includeFn(id)))
+    };
+  }, units);
+}
+
+export function deselectChildGeounits(
+  map: MapboxGL.Map,
+  geoUnits: GeoUnits,
+  staticMetadata: IStaticMetadata,
+  staticGeoLevels: UintArrays
+) {
+  const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(staticMetadata.geoLevelHierarchy);
+
+  // Deselect any child features as appropriate (this comes into a play when, for example, a
+  // blockgroup is selected and then the county _containing_ that blockgroup is selected)
+  Object.values(geoUnits).forEach(geoUnitsForLevel => {
+    geoUnitsForLevel.forEach(geoUnitIndices => {
+      // Ignore bottom geolevel, because it can't have sub-features. And if the base geolevel
+      // is not always visible, we can also ignore one additional geolevel, because these base
+      // geounits can't be selected at the same time as features from one geolevel up).
+      const numLevelsToIgnore = isBaseLevelAlwaysVisible ? 1 : 2;
+
+      // eslint-disable-next-line
+      if (geoUnitIndices.length <= staticMetadata.geoLevelHierarchy.length - numLevelsToIgnore) {
+        const { childGeoUnits } = getChildGeoUnits(geoUnitIndices, staticMetadata, staticGeoLevels);
+        setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
+      }
     });
   });
 }

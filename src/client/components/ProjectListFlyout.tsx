@@ -4,11 +4,12 @@ import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubu
 import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
-import { exportCsv, exportGeoJson, exportShp } from "../actions/projectData";
+import { exportCsv, exportGeoJson, exportShp, duplicateProject } from "../actions/projectData";
 import { setDeleteProject } from "../actions/projects";
 
 enum UserMenuKeys {
   Delete = "delete",
+  CopyMap = "copy",
   ExportCsv = "csv",
   ExportShapefile = "shp",
   ExportGeoJson = "geojson"
@@ -34,6 +35,8 @@ const ProjectListFlyout = (props: FlyoutProps) => {
             ? exportCsv
             : userMenuKey === UserMenuKeys.ExportShapefile
             ? exportShp
+            : userMenuKey === UserMenuKeys.CopyMap
+            ? duplicateProject
             : exportGeoJson;
         store.dispatch(action(props.project));
       }}
@@ -60,6 +63,9 @@ const ProjectListFlyout = (props: FlyoutProps) => {
             </MenuItem>
             <MenuItem value={UserMenuKeys.ExportGeoJson}>
               <Box sx={style.menuListItem}>Export GeoJSON</Box>
+            </MenuItem>
+            <MenuItem value={UserMenuKeys.CopyMap}>
+              <Box sx={style.menuListItem}>Duplicate Map</Box>
             </MenuItem>
             <MenuItem value={UserMenuKeys.Delete}>
               <Box sx={style.menuListItem}>Delete Map</Box>

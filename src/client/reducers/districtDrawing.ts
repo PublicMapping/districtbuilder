@@ -16,23 +16,30 @@ import {
   setHighlightedGeounits,
   setSelectedDistrictId,
   setSelectionTool,
-  setSelectedGeounits,
   showAdvancedEditingModal,
   showCopyMapModal,
   toggleDistrictLocked,
   undo,
   replaceSelectedGeounits,
   toggleFind,
+  toggleEvaluate,
   setFindIndex,
   setFindType,
   saveDistrictsDefinition,
   setSavingState,
-  FindTool
+  FindTool,
+  selectEvaluationMetric
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import { DistrictId, GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
+import {
+  DistrictId,
+  EvaluateMetric,
+  GeoUnits,
+  GeoUnitsForLevel,
+  LockedDistricts
+} from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import {
   pushEffect,
@@ -99,6 +106,8 @@ export interface DistrictDrawingState {
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
   readonly findMenuOpen: boolean;
+  readonly evaluateMode: boolean;
+  readonly evaluateMetric: EvaluateMetric | undefined;
   readonly findIndex?: number;
   readonly findTool: FindTool;
   readonly saving: SavingState;
@@ -112,6 +121,8 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
   findMenuOpen: false,
+  evaluateMode: false,
+  evaluateMetric: undefined,
   findTool: FindTool.Unassigned,
   saving: "unsaved",
   undoHistory: {
@@ -180,10 +191,6 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           action.payload.remove
         )
       });
-    case getType(setSelectedGeounits):
-      return pushStateUpdate(state, {
-        selectedGeounits: action.payload
-      });
     case getType(clearSelectedGeounits): {
       const clearedViaCancel = action.payload;
       const func = clearedViaCancel ? pushStateUpdate : updateCurrentState;
@@ -250,6 +257,16 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         findMenuOpen: action.payload,
         findIndex: undefined
+      };
+    case getType(toggleEvaluate):
+      return {
+        ...state,
+        evaluateMode: action.payload
+      };
+    case getType(selectEvaluationMetric):
+      return {
+        ...state,
+        evaluateMetric: action.payload
       };
     case getType(setFindIndex):
       return {

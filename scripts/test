@@ -49,6 +49,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         ./scripts/yarn manage \
             test --watchAll=false
 
+        echo "Executing server test suite"
         if [[ -n "${CI}" ]]; then
             GIT_COMMIT="${GIT_COMMIT}" docker-compose \
                 -f docker-compose.yml \
@@ -57,10 +58,19 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 -e "CI=${CI}" \
                 server \
                 test --watchAll=false --passWithNoTests
+
+            GIT_COMMIT="${GIT_COMMIT}" docker-compose \
+                -f docker-compose.yml \
+                -f docker-compose.ci.yml \
+                run --rm --no-deps \
+                -e "CI=${CI}" \
+                server \
+                test:e2e --watchAll=false
         else
-            echo "Executing server test suite"
             ./scripts/yarn server \
                 test --watchAll=false --passWithNoTests
+            ./scripts/yarn server \
+                test:e2e --watchAll=false
         fi
     fi
 fi

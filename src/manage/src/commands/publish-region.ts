@@ -87,6 +87,7 @@ export default class PublishRegion extends Command {
 
     const connection = await createConnection(connectionOptions);
     const repo = connection.getRepository(RegionConfig);
+    // @ts-ignore
     await repo.save(regionConfig);
     this.log("Region config saved to database");
   }

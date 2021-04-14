@@ -21,7 +21,7 @@ $ npm install -g manage
 $ manage COMMAND
 running command...
 $ manage (-v|--version|version)
-manage/0.1.0 linux-x64 node-v12.20.0
+manage/0.1.0 linux-x64 node-v12.20.1
 $ manage --help [COMMAND]
 USAGE
   $ manage COMMAND
@@ -33,6 +33,7 @@ USAGE
 * [`manage help [COMMAND]`](#manage-help-command)
 * [`manage process-geojson FILE`](#manage-process-geojson-file)
 * [`manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME`](#manage-publish-region-staticdatadir-countrycode-regioncode-regionname)
+* [`manage update-organization CONFIG`](#manage-update-organization-config)
 * [`manage update-region STATICDATADIR UPDATES3DIR`](#manage-update-region-staticdatadir-updates3dir)
 
 ## `manage help [COMMAND]`
@@ -118,6 +119,18 @@ ARGUMENTS
 
 OPTIONS
   -b, --bucketName=bucketName  [default: global-districtbuilder-dev-us-east-1] Bucket to upload the files to
+```
+
+## `manage update-organization CONFIG`
+
+update or create organization information from a YAML configuration
+
+```
+USAGE
+  $ manage update-organization CONFIG
+
+ARGUMENTS
+  CONFIG  Path to YAML configuration file with organization details
 ```
 
 ## `manage update-region STATICDATADIR UPDATES3DIR`

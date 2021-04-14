@@ -18,6 +18,9 @@ import {
   setProjectNameEditing,
   staticDataFetchFailure,
   staticDataFetchSuccess,
+  duplicateProject,
+  duplicateProjectSuccess,
+  duplicateProjectFailure,
   updateDistrictLocks,
   updateDistrictLocksFailure,
   updateDistrictLocksSuccess,
@@ -26,13 +29,16 @@ import {
   updateDistrictsDefinitionSuccess,
   updateProjectFailed,
   updateProjectName,
-  updateProjectNameSuccess
+  updateProjectNameSuccess,
+  updateProjectVisibility,
+  updateProjectVisibilitySuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
+import { projectsFetch } from "../actions/projects";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
@@ -48,6 +54,7 @@ import {
   exportProjectShp,
   fetchProjectData,
   fetchProjectGeoJson,
+  createProject,
   patchProject
 } from "../api";
 import { fetchAllStaticData } from "../s3";
@@ -132,9 +139,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return loop(
         {
           ...state,
-          projectData: {
-            errorMessage: action.payload
-          }
+          projectData: action.payload
         },
         Cmd.run(showActionFailedToast)
       );
@@ -181,11 +186,11 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return loop(
         {
           ...state,
-          projectData: {
-            errorMessage: action.payload
-          }
+          projectData: action.payload
         },
-        Cmd.run(showResourceFailedToast)
+        action.payload.statusCode && action.payload.statusCode >= 500
+          ? Cmd.run(showResourceFailedToast)
+          : Cmd.none
       );
     case getType(staticDataFetchSuccess):
       return {
@@ -236,6 +241,38 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         projectNameSaving: "saved",
+        saving: "saved",
+        projectData: { resource: action.payload }
+      };
+    // eslint-disable-next-line
+    case getType(updateProjectVisibility): {
+      if ("resource" in state.projectData) {
+        const projectId = state.projectData.resource.project.id;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () =>
+              patchProject(projectId, { visibility: action.payload }).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: updateProjectVisibilitySuccess,
+              failActionCreator: updateProjectFailed
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(updateProjectVisibilitySuccess):
+      return {
+        ...state,
         saving: "saved",
         projectData: { resource: action.payload }
       };
@@ -367,6 +404,22 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         },
         Cmd.run(showActionFailedToast)
       );
+    case getType(duplicateProject): {
+      return loop(
+        state,
+        Cmd.run(
+          () => createProject({ ...action.payload, name: `Copy of ${action.payload.name}` }),
+          {
+            successActionCreator: duplicateProjectSuccess,
+            failActionCreator: duplicateProjectFailure
+          }
+        )
+      );
+    }
+    case getType(duplicateProjectSuccess):
+      return loop(state, Cmd.action(projectsFetch()));
+    case getType(duplicateProjectFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
     case getType(exportCsv):
       return loop(
         state,

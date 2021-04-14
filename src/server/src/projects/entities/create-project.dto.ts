@@ -1,14 +1,8 @@
-import {
-  Allow,
-  ArrayNotEmpty,
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsPositive
-} from "class-validator";
+import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsOptional, IsPositive } from "class-validator";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
+import { ChamberIdDto } from "../../chambers/entities/chamber-id.dto";
+import { ProjectTemplateIdDto } from "../../project-templates/entities/project-template-id.dto";
 import { RegionConfigIdDto } from "../../region-configs/entities/region-config-id.dto";
 
 export class CreateProjectDto implements CreateProjectData {
@@ -23,4 +17,8 @@ export class CreateProjectDto implements CreateProjectData {
   @ArrayNotEmpty()
   @IsOptional()
   readonly districtsDefinition: DistrictsDefinition;
+  @IsOptional()
+  readonly chamber: ChamberIdDto;
+  @IsOptional()
+  readonly projectTemplate: ProjectTemplateIdDto;
 }

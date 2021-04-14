@@ -1,10 +1,11 @@
 import { createAction } from "typesafe-actions";
-import { DistrictId, GeoUnits } from "../../shared/entities";
+import { DistrictId, EvaluateMetric, GeoUnits } from "../../shared/entities";
 import { SavingState } from "../types";
 
 export enum SelectionTool {
   Default = "DEFAULT",
-  Rectangle = "RECTANGLE"
+  Rectangle = "RECTANGLE",
+  PaintBrush = "PAINTBRUSH"
 }
 
 export enum FindTool {
@@ -29,7 +30,6 @@ export const replaceSelectedGeounits = createAction("Replace selected geounits")
   readonly add?: GeoUnits;
   readonly remove?: GeoUnits;
 }>();
-export const setSelectedGeounits = createAction("Set selected geounits")<GeoUnits>();
 
 export const setHighlightedGeounits = createAction("Add highlighted geounit ids")<GeoUnits>();
 export const clearHighlightedGeounits = createAction("Clear highlighted geounit ids")();
@@ -54,6 +54,11 @@ export const redo = createAction("Redo project action")();
 export const toggleFind = createAction("Toggle find menu visibility")<boolean>();
 export const setFindType = createAction("Set find menu search type")<FindTool>();
 export const setFindIndex = createAction("Set find menu polygon index")<number | undefined>();
+
+export const toggleEvaluate = createAction("Toggle evaluate mode")<boolean>();
+export const selectEvaluationMetric = createAction("Select evaluation metric")<
+  EvaluateMetric | undefined
+>();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();
 

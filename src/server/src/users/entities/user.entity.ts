@@ -1,29 +1,49 @@
 import bcrypt from "bcrypt";
 import { Exclude } from "class-transformer";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, ManyToMany, OneToMany } from "typeorm";
 import { IUser } from "../../../../shared/entities";
 import { BCRYPT_SALT_ROUNDS } from "../../common/constants";
+import { Organization } from "../../organizations/entities/organization.entity";
+import { Project } from "../../projects/entities/project.entity";
 
 @Entity()
 export class User implements IUser {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: "character varying" })
   email: string;
 
-  @Column()
+  @Column({ type: "character varying" })
   name: string;
 
-  @Column({ default: false })
+  @Column({ default: false, type: "boolean" })
   isEmailVerified: boolean;
 
-  @Column({ default: false })
+  @Column({ default: false, type: "boolean" })
   hasSeenTour: boolean;
+
+  @ManyToMany(
+    () => Organization,
+    organization => organization.users
+  )
+  organizations: Organization[];
+
+  @OneToMany(
+    () => Project,
+    project => project.user
+  )
+  projects: Project[];
+
+  @OneToMany(
+    () => Organization,
+    organization => organization.admin
+  )
+  adminOrganizations: Organization[];
 
   // TODO: Is it possible to make this private? I only want to allow
   // modification via setPassword
-  @Column()
+  @Column({ type: "character varying" })
   @Exclude()
   passwordHash: string;
 

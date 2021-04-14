@@ -5,18 +5,27 @@ import { Action } from "../actions";
 import {
   regionConfigsFetch,
   regionConfigsFetchFailure,
-  regionConfigsFetchSuccess
+  regionConfigsFetchSuccess,
+  regionPropertiesFetch,
+  regionPropertiesFetchFailure,
+  regionPropertiesFetchSuccess
 } from "../actions/regionConfig";
 
-import { IRegionConfig } from "../../shared/entities";
-import { fetchRegionConfigs } from "../api";
+import { IRegionConfig, RegionLookupProperties } from "../../shared/entities";
+import { fetchRegionConfigs, fetchRegionProperties } from "../api";
 import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
 
-export type RegionConfigState = Resource<readonly IRegionConfig[]>;
+export interface RegionConfigState {
+  readonly regionConfigs: Resource<readonly IRegionConfig[]>;
+  readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
+  readonly currentRegion: string | undefined;
+}
 
 export const initialState = {
-  isPending: false
+  regionConfigs: { isPending: false },
+  regionProperties: { isPending: false },
+  currentRegion: undefined
 };
 
 const regionConfigReducer: LoopReducer<RegionConfigState, Action> = (
@@ -27,7 +36,8 @@ const regionConfigReducer: LoopReducer<RegionConfigState, Action> = (
     case getType(regionConfigsFetch):
       return loop(
         {
-          isPending: true
+          ...state,
+          regionConfigs: { isPending: true }
         },
         Cmd.run(fetchRegionConfigs, {
           successActionCreator: regionConfigsFetchSuccess,
@@ -37,12 +47,46 @@ const regionConfigReducer: LoopReducer<RegionConfigState, Action> = (
       );
     case getType(regionConfigsFetchSuccess):
       return {
-        resource: action.payload
+        ...state,
+        regionConfigs: { resource: action.payload }
       };
     case getType(regionConfigsFetchFailure):
       return loop(
         {
-          errorMessage: action.payload
+          ...state,
+          regionConfigs: {
+            errorMessage: action.payload
+          }
+        },
+        Cmd.run(showResourceFailedToast)
+      );
+    case getType(regionPropertiesFetch):
+      return loop(
+        {
+          ...state,
+          currentRegion: action.payload.regionConfigId,
+          regionProperties: { isPending: true }
+        },
+        Cmd.run(fetchRegionProperties, {
+          successActionCreator: regionPropertiesFetchSuccess,
+          failActionCreator: regionPropertiesFetchFailure,
+          args: [action.payload.regionConfigId, action.payload.geoLevel] as Parameters<
+            typeof fetchRegionProperties
+          >
+        })
+      );
+    case getType(regionPropertiesFetchSuccess):
+      return {
+        ...state,
+        regionProperties: { resource: action.payload }
+      };
+    case getType(regionPropertiesFetchFailure):
+      return loop(
+        {
+          ...state,
+          regionProperties: {
+            errorMessage: action.payload
+          }
         },
         Cmd.run(showResourceFailedToast)
       );

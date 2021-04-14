@@ -13,6 +13,8 @@ import {
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
+import { isThisYear, isToday } from "date-fns";
+import format from "date-fns/format";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
@@ -109,7 +111,7 @@ export function assignGeounitsToDistrict(
 export function getTargetPopulation(geojson: DistrictsGeoJSON, project: IProject) {
   return (
     geojson.features.reduce(
-      (population, feature) => population + feature.properties.population,
+      (population, feature) => population + feature.properties.demographics.population,
       0
     ) / project.numberOfDistricts
   );
@@ -127,16 +129,19 @@ export function assertNever(x: never): never {
 
 export const geoLevelLabel = (id: string): string => {
   switch (id) {
-    case "block":
-      return "Blocks";
-    case "tract":
-      return "Tracts";
-    case "blockgroup":
-      return "Blockgroups";
     case "county":
       return "Counties";
     default:
-      return id;
+      return id[0].toUpperCase() + id.slice(1) + "s";
+  }
+};
+
+export const geoLevelLabelSingular = (id: string): string => {
+  switch (id) {
+    case "county":
+      return "County";
+    default:
+      return id[0].toUpperCase() + id.slice(1);
   }
 };
 
@@ -165,3 +170,14 @@ export function mergeGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
 export const showActionFailedToast = () => toast.error("Something went wrong, please try again.");
 export const showResourceFailedToast = () =>
   toast.error("Something went wrong, please refresh the page.");
+
+export const formatDate = (date: Date): string => {
+  const d = new Date(date);
+  return date
+    ? isToday(d)
+      ? format(d, "h:mm a")
+      : isThisYear(d)
+      ? format(d, "MMM d")
+      : format(d, "MMM d yyyy")
+    : "—";
+};

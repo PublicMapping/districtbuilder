@@ -9,7 +9,10 @@ import ActivateAccountScreen from "./screens/ActivateAccountScreen";
 import CreateProjectScreen from "./screens/CreateProjectScreen";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import HomeScreen from "./screens/HomeScreen";
+import ImportProjectScreen from "./screens/ImportProjectScreen";
 import LoginScreen from "./screens/LoginScreen";
+import OrganizationScreen from "./screens/OrganizationScreen";
+import OrganizationAdminScreen from "./screens/OrganizationAdminScreen";
 import ProjectScreen from "./screens/ProjectScreen";
 import RegistrationScreen from "./screens/RegistrationScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
@@ -43,17 +46,29 @@ const App = () => (
         <PrivateRoute path="/" exact={true}>
           <HomeScreen />
         </PrivateRoute>
+        <Route path="/o/:organizationSlug" exact={true} component={OrganizationScreen} />
+        <PrivateRoute path="/o/:organizationSlug/admin" exact={true}>
+          <OrganizationAdminScreen />
+        </PrivateRoute>
         <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
         <Route path="/register" exact={true} component={RegistrationScreen} />
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
+        <Route
+          path="/activate/:token/:organizationSlug"
+          exact={true}
+          component={ActivateAccountScreen}
+        />
         <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
         <PrivateRoute path="/create-project" exact={true}>
           <CreateProjectScreen />
         </PrivateRoute>
         <PrivateRoute path="/start-project" exact={true}>
           <StartProjectScreen />
+        </PrivateRoute>
+        <PrivateRoute path="/import-project" exact={true}>
+          <ImportProjectScreen />
         </PrivateRoute>
       </Switch>
     </Router>

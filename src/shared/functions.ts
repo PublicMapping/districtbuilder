@@ -39,20 +39,13 @@ export function getDemographics(
   staticDemographics: readonly UintArray[]
 ): DemographicCounts {
   // Aggregate demographic data for the IDs
-  return staticMetadata.demographics.reduce(
-    (data, demographic, ind) => {
-      let count: number = 0; // eslint-disable-line
-      baseIndices.forEach((v: number) => {
-        // eslint-disable-next-line
-        if (!isNaN(staticDemographics[ind][v])) {
-          count += staticDemographics[ind][v];
-        }
-      });
-      // eslint-disable-next-line
-      data[demographic.id] = count;
-      return data;
-    },
-    // eslint-disable-next-line
-    {} as DemographicCounts
-  );
+  return staticMetadata.demographics.reduce((data, demographic, ind) => {
+    let count: number = 0; // eslint-disable-line
+    baseIndices.forEach((v: number) => {
+      if (!isNaN(staticDemographics[ind][v])) {
+        count += staticDemographics[ind][v];
+      }
+    });
+    return { ...data, [demographic.id]: count };
+  }, {} as DemographicCounts);
 }

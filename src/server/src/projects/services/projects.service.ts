@@ -10,4 +10,8 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   constructor(@InjectRepository(Project) repo: Repository<Project>) {
     super(repo);
   }
+  save(project: Project): Promise<Project> {
+    // @ts-ignore
+    return this.repo.save(project);
+  }
 }

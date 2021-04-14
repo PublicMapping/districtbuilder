@@ -1,11 +1,12 @@
 /** @jsx jsx */
 import React, { useState } from "react";
 import { Box, Button, Flex, Heading, Text, jsx, ThemeUIStyleObject } from "theme-ui";
-import { toast } from "react-toastify";
 
-import { Login, JWT, Register } from "../../shared/entities";
-import { authenticateUser, registerUser } from "../api";
-import { InputField, PasswordField } from "../components/Field";
+import { Login, JWT, IOrganization } from "../../shared/entities";
+import RegisterContent from "./RegisterContent";
+
+import { authenticateUser } from "../api";
+import { InputField } from "../components/Field";
 import FormError from "../components/FormError";
 import { WriteResource } from "../resource";
 import { userFetch } from "../actions/user";
@@ -162,89 +163,13 @@ export const LoginContent = ({ children }: { readonly children: React.ReactNode 
   );
 };
 
-export const RegisterContent = ({ children }: { readonly children: React.ReactNode }) => {
-  const isFormInvalid = (form: Register): boolean =>
-    Object.values(form).some(value => value.trim() === "");
-
-  const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
-    data: {
-      email: "",
-      password: "",
-      name: ""
-    }
-  });
-  const { data } = registrationResource;
-
-  const setForm = (field: keyof Register) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setRegistrationResource({
-      data: { ...data, [field]: e.currentTarget.value }
-    });
-
-  return (
-    <Flex
-      as="form"
-      sx={{ flexDirection: "column" }}
-      onSubmit={(e: React.FormEvent) => {
-        e.preventDefault();
-        setRegistrationResource({ data, isPending: true });
-        registerUser(
-          registrationResource.data.name,
-          registrationResource.data.email,
-          registrationResource.data.password
-        )
-          .then(() => {
-            setRegistrationResource({ data, resource: void 0 });
-            store.dispatch(userFetch());
-            toast.success("Successfully registered");
-          })
-          .catch(errors => {
-            setRegistrationResource({ data, errors });
-          });
-      }}
-    >
-      {children}
-      <FormError resource={registrationResource} />
-      <Box sx={{ mb: 3 }}>
-        <InputField
-          field="name"
-          label="Name"
-          resource={registrationResource}
-          inputProps={{ onChange: setForm("name") }}
-        />
-      </Box>
-      <Box sx={{ mb: 3 }}>
-        <InputField
-          field="email"
-          label="Email"
-          resource={registrationResource}
-          inputProps={{ onChange: setForm("email") }}
-        />
-      </Box>
-      <Box sx={{ mb: 3 }}>
-        <PasswordField
-          field="password"
-          userAttributes={[data.email, data.name]}
-          password={data.password}
-          label="Password"
-          resource={registrationResource}
-          inputProps={{ onChange: setForm("password") }}
-        />
-      </Box>
-      <Button
-        id="primary-action"
-        type="submit"
-        disabled={
-          ("isPending" in registrationResource && registrationResource.isPending) ||
-          isFormInvalid(data)
-        }
-      >
-        Let’s go!
-      </Button>
-    </Flex>
-  );
-};
-
-export const AuthModalContent = ({ project }: { readonly project: IProject }) => {
+export const AuthModalContent = ({
+  project,
+  organization
+}: {
+  readonly project?: IProject;
+  readonly organization?: IOrganization | undefined;
+}) => {
   type ModalIntent = "initial" | "register" | "login";
 
   const [modalIntent, setModalIntent] = useState<ModalIntent>("initial");
@@ -253,7 +178,8 @@ export const AuthModalContent = ({ project }: { readonly project: IProject }) =>
     <React.Fragment>
       <Box sx={{ ...style.header, ...style.headerFancy }}>
         <Heading as="h1" sx={style.heading} id="modal-header">
-          {project.user.name} builds maps with DistrictBuilder
+          {project ? project.user.name : organization ? organization.name : ""} builds maps with
+          DistrictBuilder
         </Heading>
         <Text>
           DistrictBuilder is a <strong>free</strong> and <strong>open</strong> redistricting tool

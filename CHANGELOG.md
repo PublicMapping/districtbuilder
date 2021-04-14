@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
 
 
@@ -15,6 +16,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Fixed
+
+
+## [1.4.0] - 2021-04-12
+
+### Added
+
+- Share menu now controls map visibility (private/public/shared w link) [#560](https://github.com/PublicMapping/districtbuilder/pull/560)
+- Organization detail screen [#562](https://github.com/PublicMapping/districtbuilder/pull/562)
+- Organization templates [#581](https://github.com/PublicMapping/districtbuilder/pull/581)
+- Duplicate a map from home screen [#572](https://github.com/PublicMapping/districtbuilder/pull/572)
+- Add script to load region config and organization for testing [#575](https://github.com/PublicMapping/districtbuilder/pull/575) & [#632](https://github.com/PublicMapping/districtbuilder/pull/632)
+- Store chamber reference on project entity [#576](https://github.com/PublicMapping/districtbuilder/pull/576)
+- Display error page for 404 errors [#582](https://github.com/PublicMapping/districtbuilder/pull/582)
+- Allow users to join and leave an organization [#226](https://github.com/PublicMapping/districtbuilder/pull/578)
+- Require users to confirm before joining an organization [#593](https://github.com/PublicMapping/districtbuilder/pull/593) & [#615](https://github.com/PublicMapping/districtbuilder/pull/615)
+- Show not found page for missing projects and organizations [#613](https://github.com/PublicMapping/districtbuilder/pull/613)
+- Add paintbrush drawing tool [#611](https://github.com/PublicMapping/districtbuilder/pull/611)
+- Add verify and join link to user verification email [#616](https://github.com/PublicMapping/districtbuilder/pull/616)
+- Display organizations dropdown in header [#620](https://github.com/PublicMapping/districtbuilder/pull/620)
+- Organization Admin page and featured map workflow [#614](https://github.com/PublicMapping/districtbuilder/pull/614), [#671](https://github.com/PublicMapping/districtbuilder/pull/671) & [#675](https://github.com/PublicMapping/districtbuilder/pull/675)
+
+- Build out scaffolding for Project Evaluate view [#623](https://github.com/PublicMapping/districtbuilder/pull/623)
+- Add flag on project templates to mark as active or inactive [#626](https://github.com/PublicMapping/districtbuilder/pull/626)
+- Display featured projects on Organization page [#633](https://github.com/PublicMapping/districtbuilder/pull/633)
+- Add import plan page [#639](https://github.com/PublicMapping/districtbuilder/pull/639) & [#670](https://github.com/PublicMapping/districtbuilder/pull/670)
+- Add project evaluate view for compactness [#646](https://github.com/PublicMapping/districtbuilder/pull/646)
+- Allow user to create a project with an organization template from Create Project screen [#638](https://github.com/PublicMapping/districtbuilder/pull/638)
+- Add button to Organization page to link to Organization Admin page for admin users [#669](https://github.com/PublicMapping/districtbuilder/pull/669)
+- Add project evaluate view for contiguity [#648](https://github.com/PublicMapping/districtbuilder/pull/648)
+- Add project evaluate view for County Splits [#644](https://github.com/PublicMapping/districtbuilder/pull/644)
+- Display Import Map button on home screen when a user has not created maps yet [#674](https://github.com/PublicMapping/districtbuilder/pull/674)
+- Display export button in project header for published projects from other users [#681](https://github.com/PublicMapping/districtbuilder/pull/681)
+
+### Changed
+
+- Geounit label made more generic to support Dane County wards [#573](https://github.com/PublicMapping/districtbuilder/pull/573)
+- Update ESLint rules to prohibit console.log, allow conditional statements [#580](https://github.com/PublicMapping/districtbuilder/pull/580)
+- Prevent unverified users from joining an organization or using a template [#591](https://github.com/PublicMapping/districtbuilder/pull/591)
+- Project districts geojson is now cached in the project table when updated [#594](https://github.com/PublicMapping/districtbuilder/pull/594)
+- Upgrade NestJS deps [#637](https://github.com/PublicMapping/districtbuilder/pull/637)
+- Refactor project evaluate mode views [#642](https://github.com/PublicMapping/districtbuilder/pull/642)
+- Link featured projects in Organization screen to project detail pages [#657](https://github.com/PublicMapping/districtbuilder/pull/657)
+- Add creator email and project link to Org Admin screen [#664](https://github.com/PublicMapping/districtbuilder/pull/664)
+- Allow admins to view projects created from organization template [#672](https://github.com/PublicMapping/districtbuilder/pull/672)
+- Fix bug where projects are created after closing Join Organization modal triggered from an organization's template [#673](https://github.com/PublicMapping/districtbuilder/pull/673)
+
+### Fixed
+- Allow last district to be locked [#677](https://github.com/PublicMapping/districtbuilder/pull/677)
+- Allow editing at lower geolevels after toggling evaluate mode [#679](https://github.com/PublicMapping/districtbuilder/pull/679)
+- Fix off screen geounits deselected when using rectangle tool [#680](https://github.com/PublicMapping/districtbuilder/pull/680)
+- Set project as unfeatured if private [#686](https://github.com/PublicMapping/districtbuilder/pull/686)
 
 
 ## [1.3.0] - 2021-01-26
@@ -109,8 +161,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...HEAD
-[1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...HEAD
+[1.4.0]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...1.4.0
+[1.3.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/publicmapping/districtbuilder/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/publicmapping/districtbuilder/compare/0.1.0...1.0.0

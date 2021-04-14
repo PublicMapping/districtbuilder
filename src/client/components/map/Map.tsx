@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { useEffect, useRef } from "react";
-import { Box, jsx } from "theme-ui";
+import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -17,7 +17,8 @@ import {
   GeoUnits,
   IProject,
   IStaticMetadata,
-  LockedDistricts
+  LockedDistricts,
+  EvaluateMetric
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
 import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
@@ -32,16 +33,30 @@ import {
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
   DISTRICTS_OUTLINE_LAYER_ID,
-  setFeaturesSelectedFromGeoUnits
+  DISTRICTS_EVALUATE_LAYER_ID,
+  setFeaturesSelectedFromGeoUnits,
+  TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
+  TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID,
+  DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
+  DISTRICTS_LAYER_ID,
+  levelToSelectionLayerId,
+  getChoroplethLabels,
+  getChoroplethStops,
+  DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
+  CONTIGUITY_FILL_COLOR,
+  COUNTY_SPLIT_FILL_COLOR,
+  EVALUATE_GRAY_FILL_COLOR
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
 import MapMessage from "./MapMessage";
 import MapTooltip from "./MapTooltip";
+import PaintBrushSelectionTool from "./PaintBrushSelectionTool";
 import RectangleSelectionTool from "./RectangleSelectionTool";
 import store from "../../store";
 import { State } from "../../reducers";
 import { connect } from "react-redux";
+import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 
 interface Props {
   readonly project: IProject;
@@ -53,6 +68,8 @@ interface Props {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
+  readonly evaluateMetric?: EvaluateMetric;
+  readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
@@ -61,6 +78,46 @@ interface Props {
   // eslint-disable-next-line
   readonly setMap: (map: MapboxGL.Map) => void;
 }
+
+const style: ThemeUIStyleObject = {
+  legendLabel: {
+    display: "inline-block",
+    ml: "5px"
+  },
+  legendItem: {
+    display: "inline-block",
+    minWidth: "150px",
+    maxWidth: "170px",
+    mr: "20px"
+  },
+  legendTitle: {
+    display: "inline-block",
+    width: "120px",
+    fontWeight: "600",
+    mr: "50px"
+  },
+  legendBox: {
+    position: "absolute",
+    bottom: "20px",
+    left: "100px",
+    right: "200px",
+    height: "60px",
+    minWidth: "600px",
+    maxWidth: "1100px",
+    fontSize: "14pt",
+    display: "inline-block",
+    outline: "1px solid gray",
+    padding: "20px"
+  },
+  legendColorSwatch: {
+    display: "inline-block",
+    mr: "10px",
+    width: "20px",
+    height: "20px",
+    opacity: "0.9",
+    outline: "1px solid lightgray"
+  }
+};
 
 const DistrictsMap = ({
   project,
@@ -74,6 +131,8 @@ const DistrictsMap = ({
   lockedDistricts,
   isReadOnly,
   findMenuOpen,
+  evaluateMetric,
+  evaluateMode,
   findTool,
   label,
   map,
@@ -102,14 +161,13 @@ const DistrictsMap = ({
     }
 
     // eslint-disable-next-line
-    MapboxGL.accessToken =
-      "pk.eyJ1IjoiZGlzdHJpY3RidWlsZGVyIiwiYSI6ImNrZXZzeXlvMjIxb2QycW1yeGpuMDJ2ZGwifQ.FdOGNk3y1BPkGvF_yCjjGQ";
+    MapboxGL.accessToken = MAPBOX_TOKEN;
 
     const map = new MapboxGL.Map({
       container: mapRef.current,
-      style: "mapbox://styles/districtbuilder/ckexc26lz0d3k19owrswhxz9o",
+      style: MAPBOX_STYLE,
       bounds: [b0, b1, b2, b3],
-      fitBoundsOptions: { padding: 20 },
+      fitBoundsOptions: { padding: 75 },
       minZoom: minZoom,
       maxZoom: overZoom
     });
@@ -190,6 +248,80 @@ const DistrictsMap = ({
       );
   };
 
+  // Compute array of top geolevels split across multiple districts
+  const splitCountiesDistricts = project?.districtsDefinition.map(c => {
+    if (Array.isArray(c)) {
+      return c;
+    } else {
+      return undefined;
+    }
+  });
+
+  // Set features from topmost geolayer that are split across districts to be selected
+  map &&
+    staticMetadata &&
+    splitCountiesDistricts.forEach((c, id) => {
+      if (c !== undefined) {
+        map &&
+          map.setFeatureState(
+            {
+              source: GEOLEVELS_SOURCE_ID,
+              id,
+              sourceLayer:
+                staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id
+            },
+            { split: true }
+          );
+      }
+    });
+
+  // Handle evaluate mode map views
+  useEffect(() => {
+    if (map) {
+      if (evaluateMetric && evaluateMode) {
+        // Remove all geolayers from view
+        staticMetadata.geoLevelHierarchy.forEach(geoLevel => {
+          map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "none");
+          map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "none");
+        });
+        map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "none");
+        if (evaluateMetric.key === "compactness") {
+          map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "visible");
+        }
+        if (evaluateMetric.key === "countySplits") {
+          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
+          map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "visible");
+          map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "visible");
+        }
+        if (evaluateMetric.key === "contiguity") {
+          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
+          map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "visible");
+        }
+        DefaultSelectionTool.disable(map);
+        RectangleSelectionTool.disable(map);
+        PaintBrushSelectionTool.disable(map);
+      } else {
+        // Reset map state to default
+        map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
+        map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "none");
+        map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+        map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
+        map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
+        map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
+        const invertedGeoLevelIndex = staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1;
+        staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
+          const geoLevelVisibility = idx >= invertedGeoLevelIndex ? "visible" : "none";
+          map.setLayoutProperty(
+            levelToSelectionLayerId(geoLevel.id),
+            "visibility",
+            geoLevelVisibility
+          );
+          map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", geoLevelVisibility);
+        });
+      }
+    }
+  }, [evaluateMetric, evaluateMode, map, staticMetadata.geoLevelHierarchy, geoLevelIndex]);
+
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {
     map &&
@@ -236,7 +368,7 @@ const DistrictsMap = ({
     map &&
       [...new Array(project.numberOfDistricts + 1).keys()].forEach(districtId =>
         map.setFeatureState(featureStateDistricts(districtId), {
-          locked: lockedDistricts[districtId]
+          locked: lockedDistricts[districtId - 1]
         })
       );
   }, [map, project, lockedDistricts]);
@@ -372,25 +504,37 @@ const DistrictsMap = ({
       // Disable any existing selection tools
       DefaultSelectionTool.disable(map);
       RectangleSelectionTool.disable(map);
-      // Enable appropriate tool
-      if (!isReadOnly && selectionTool === SelectionTool.Default) {
-        DefaultSelectionTool.enable(
-          map,
-          selectedGeolevel.id,
-          staticMetadata,
-          project.districtsDefinition,
-          lockedDistricts,
-          staticGeoLevels
-        );
-      } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
-        RectangleSelectionTool.enable(
-          map,
-          selectedGeolevel.id,
-          staticMetadata,
-          project.districtsDefinition,
-          lockedDistricts,
-          staticGeoLevels
-        );
+      PaintBrushSelectionTool.disable(map);
+      if (!evaluateMode) {
+        // Enable appropriate tool
+        if (!isReadOnly && selectionTool === SelectionTool.Default) {
+          DefaultSelectionTool.enable(
+            map,
+            selectedGeolevel.id,
+            staticMetadata,
+            project.districtsDefinition,
+            lockedDistricts,
+            staticGeoLevels
+          );
+        } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
+          RectangleSelectionTool.enable(
+            map,
+            selectedGeolevel.id,
+            staticMetadata,
+            project.districtsDefinition,
+            lockedDistricts,
+            staticGeoLevels
+          );
+        } else if (!isReadOnly && selectionTool === SelectionTool.PaintBrush) {
+          PaintBrushSelectionTool.enable(
+            map,
+            selectedGeolevel.id,
+            staticMetadata,
+            project.districtsDefinition,
+            lockedDistricts,
+            staticGeoLevels
+          );
+        }
       }
       /* eslint-enable */
     }
@@ -402,7 +546,8 @@ const DistrictsMap = ({
     staticGeoLevels,
     project,
     lockedDistricts,
-    isReadOnly
+    isReadOnly,
+    evaluateMode
   ]);
 
   return (
@@ -410,6 +555,68 @@ const DistrictsMap = ({
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>County splits</Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: COUNTY_SPLIT_FILL_COLOR
+              }}
+            />
+            <Box sx={style.legendLabel}>Split</Box>
+          </Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: "none"
+              }}
+            />
+            <Box sx={style.legendLabel}>Not split</Box>
+          </Box>
+        </Box>
+      )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "compactness" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>Compactness</Box>
+          {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+            <Box sx={style.legendItem} key={i}>
+              <Box
+                sx={{
+                  ...style.legendColorSwatch,
+                  backgroundColor: `${step[1]}`
+                }}
+              ></Box>
+              <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "contiguity" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>Contiguity</Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: CONTIGUITY_FILL_COLOR
+              }}
+            ></Box>
+            <Box sx={style.legendLabel}>Contiguous</Box>
+          </Box>
+          <Box sx={style.legendItem}>
+            <Box
+              sx={{
+                ...style.legendColorSwatch,
+                backgroundColor: EVALUATE_GRAY_FILL_COLOR
+              }}
+            ></Box>
+            <Box sx={style.legendLabel}>Non-contiguous</Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };

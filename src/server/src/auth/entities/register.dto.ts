@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, Validate } from "class-validator";
+import { IsEmail, IsNotEmpty, Validate, IsOptional } from "class-validator";
 
 import { Register } from "../../../../shared/entities";
 import { PasswordValidator } from "../validators/password.validator";
@@ -12,4 +12,6 @@ export class RegisterDto implements Register {
   readonly password: string;
   @IsNotEmpty({ message: "Please enter a name" })
   readonly name: string;
+  @IsOptional()
+  readonly organization?: string;
 }

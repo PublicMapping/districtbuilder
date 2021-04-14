@@ -33,6 +33,7 @@ module.exports = {
           "allowTernary": true,
         }
       ],
+      "no-console": [ "error" ],
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
@@ -41,7 +42,7 @@ module.exports = {
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
       "@typescript-eslint/restrict-template-expressions": "off",
       "functional/immutable-data": [
           "error",
@@ -52,5 +53,6 @@ module.exports = {
       "functional/prefer-readonly-type": "off",
       "functional/no-let": "off",
       "functional/no-loop-statement": "error",
+      "functional/no-conditional-statement": ["off"],
     }
   };

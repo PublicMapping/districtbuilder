@@ -3,7 +3,8 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { TerminusModule } from "@nestjs/terminus";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { HandlebarsAdapter, MailerModule } from "@nestjs-modules/mailer";
+import { MailerModule } from "@nestjs-modules/mailer";
+import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
 import { SES } from "aws-sdk";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import * as StreamTransport from "nodemailer/lib/stream-transport";
@@ -11,7 +12,9 @@ import * as StreamTransport from "nodemailer/lib/stream-transport";
 import { DEBUG } from "./common/constants";
 import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
+import { OrganizationsModule } from "./organizations/organizations.module";
 import { ProjectsModule } from "./projects/projects.module";
+import { ProjectTemplatesModule } from "./project-templates/project-templates.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { RollbarModule } from "./rollbar/rollbar.module";
 import { UsersModule } from "./users/users.module";
@@ -61,9 +64,11 @@ if (DEBUG) {
     RollbarModule,
     AuthModule,
     HealthCheckModule,
-    UsersModule,
+    OrganizationsModule,
+    ProjectsModule,
+    ProjectTemplatesModule,
     RegionConfigsModule,
-    ProjectsModule
+    UsersModule
   ]
 })
 export class AppModule {}
