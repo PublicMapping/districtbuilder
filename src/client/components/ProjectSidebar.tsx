@@ -190,6 +190,7 @@ const ProjectSidebar = ({
                 </Tooltip>
               </Styled.th>
               <Styled.th sx={style.th}></Styled.th>
+              <Styled.th sx={style.th}></Styled.th>
             </Styled.tr>
           </thead>
           <tbody>
