@@ -129,7 +129,7 @@ const ProjectHeader = ({
               </Box>
             </Button>
           </Box>
-          {/* <Box sx={{ position: "relative" }}>
+          <Box sx={{ position: "relative" }}>
             <Button
               sx={{
                 ...{
@@ -150,7 +150,7 @@ const ProjectHeader = ({
                 Evaluate
               </Box>
             </Button>
-          </Box> */}
+          </Box>
         </React.Fragment>
       ) : (
         <React.Fragment>
