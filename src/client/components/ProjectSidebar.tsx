@@ -312,10 +312,10 @@ const SidebarRow = memo(
         onClick={() => {
           store.dispatch(setSelectedDistrictId(district.id as number));
         }}
-        onMouseOver={() => {
+        onMouseEnter={() => {
           store.dispatch(setHoveredDistrictId(district.id as number));
         }}
-        onMouseOut={() => {
+        onMouseLeave={() => {
           store.dispatch(setHoveredDistrictId(null));
         }}
         className={district.id ? null : "unassigned-row"}
