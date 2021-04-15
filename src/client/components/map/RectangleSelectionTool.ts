@@ -26,7 +26,9 @@ import {
   ISelectionTool,
   SET_FEATURE_DELAY,
   setFeaturesSelectedFromGeoUnits,
-  deselectChildGeounits
+  deselectChildGeounits,
+  filterGeoUnitsByCounty,
+  getCurrentCountyFromGeoUnits
 } from "./index";
 
 /*
@@ -48,7 +50,8 @@ const RectangleSelectionTool: ISelectionTool = {
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
     staticGeoLevels: UintArrays,
-    setActive: (isActive: boolean) => void
+    setActive: (isActive: boolean) => void,
+    limitSelectionToCounty: boolean
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
@@ -59,6 +62,8 @@ const RectangleSelectionTool: ISelectionTool = {
     // Variable to hold the starting xy coordinates
     // when `mousedown` occured.
     let start: MapboxGL.Point; // eslint-disable-line
+
+    let currentCounty: number | undefined = undefined; // eslint-disable-line
 
     // Variable to hold the current xy coordinates
     // when `mousemove` or `mouseup` occurs.
@@ -147,6 +152,10 @@ const RectangleSelectionTool: ISelectionTool = {
         staticGeoLevels
       );
 
+      if (!currentCounty && limitSelectionToCounty) {
+        currentCounty = getCurrentCountyFromGeoUnits(staticMetadata, geoUnits);
+      }
+
       // Highlighted shouldn't include the geounits initially selected
       const highlightedGeoUnits = filterGeoUnits(
         geoUnits,
@@ -163,7 +172,11 @@ const RectangleSelectionTool: ISelectionTool = {
             sourceLayer: geoLevelId
           })
       );
-      setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
+      const geoUnitsToAdd =
+        currentCounty && limitSelectionToCounty
+          ? filterGeoUnitsByCounty(newGeoUnits, currentCounty)
+          : newGeoUnits;
+      setFeaturesSelectedFromGeoUnits(map, geoUnitsToAdd, true);
 
       // Deselect any features that were previously highlighted and just became unhighlighted
       // eslint-disable-next-line
@@ -270,7 +283,13 @@ const RectangleSelectionTool: ISelectionTool = {
           staticGeoLevels
         );
         deselectChildGeounits(map, geoUnits, staticMetadata, staticGeoLevels);
-        store.dispatch(addSelectedGeounits(geoUnits));
+        if (currentCounty) {
+          const geoUnitsInCounty = filterGeoUnitsByCounty(geoUnits, currentCounty);
+          store.dispatch(addSelectedGeounits(geoUnitsInCounty));
+          currentCounty = undefined;
+        } else {
+          store.dispatch(addSelectedGeounits(geoUnits));
+        }
       }
       store.dispatch(clearHighlightedGeounits());
     }

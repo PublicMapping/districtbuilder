@@ -29,6 +29,7 @@ import {
   saveDistrictsDefinition,
   setSavingState,
   FindTool,
+  toggleLimitDrawingToWithinCounty,
   selectEvaluationMetric,
   setZoomToDistrictId
 } from "../actions/districtDrawing";
@@ -114,6 +115,7 @@ export interface DistrictDrawingState {
   readonly evaluateMetric: EvaluateMetric | undefined;
   readonly findIndex?: number;
   readonly findTool: FindTool;
+  readonly limitSelectionToCounty: boolean;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
 }
@@ -130,6 +132,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   evaluateMode: false,
   evaluateMetric: undefined,
   findTool: FindTool.Unassigned,
+  limitSelectionToCounty: false,
   saving: "unsaved",
   undoHistory: {
     past: [],
@@ -221,6 +224,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         saving: action.payload
+      };
+    case getType(toggleLimitDrawingToWithinCounty):
+      return {
+        ...state,
+        limitSelectionToCounty: !state.limitSelectionToCounty
       };
     case getType(setHighlightedGeounits):
       return {

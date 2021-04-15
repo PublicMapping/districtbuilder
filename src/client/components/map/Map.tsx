@@ -77,6 +77,7 @@ interface Props {
   readonly evaluateMetric?: EvaluateMetric;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
+  readonly limitSelectionToCounty: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
   readonly label?: string;
@@ -138,6 +139,7 @@ const DistrictsMap = ({
   geoLevelIndex,
   lockedDistricts,
   isReadOnly,
+  limitSelectionToCounty,
   findMenuOpen,
   evaluateMetric,
   evaluateMode,
@@ -231,6 +233,7 @@ const DistrictsMap = ({
     // eslint-disable-next-line
   }, [mapRef]);
 
+  // Keyboard handlers
   function downHandler({ key }: KeyboardEvent) {
     if (key === "Spacebar" || key === " ") {
       setTogglePan(true);
@@ -242,6 +245,7 @@ const DistrictsMap = ({
       setTogglePan(false);
     }
   };
+
   // Add event listeners
   useEffect(() => {
     window.addEventListener("keydown", downHandler);
@@ -617,7 +621,8 @@ const DistrictsMap = ({
             project.districtsDefinition,
             lockedDistricts,
             staticGeoLevels,
-            setSelectionInProgress
+            setSelectionInProgress,
+            limitSelectionToCounty
           );
         } else if (selectionTool === SelectionTool.PaintBrush) {
           PaintBrushSelectionTool.enable(
@@ -627,7 +632,9 @@ const DistrictsMap = ({
             project.districtsDefinition,
             lockedDistricts,
             staticGeoLevels,
-            setSelectionInProgress
+            setSelectionInProgress,
+            limitSelectionToCounty,
+            selectedGeounits
           );
         }
       }
@@ -643,7 +650,9 @@ const DistrictsMap = ({
     lockedDistricts,
     isReadOnly,
     evaluateMode,
-    isPanning
+    isPanning,
+    limitSelectionToCounty,
+    selectedGeounits
   ]);
 
   return (
