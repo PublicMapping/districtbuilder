@@ -19,6 +19,7 @@ import {
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible } from "../../functions";
+import { mapValues } from "lodash";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -447,6 +448,28 @@ export function isFeatureSelected(map: MapboxGL.Map, feature: FeatureLike): bool
   return featureState.selected === true;
 }
 
+export function getCurrentCountyFromGeoUnits(
+  staticMetadata: IStaticMetadata,
+  geoUnits: GeoUnits
+): number {
+  const mergedSubUnits =
+    geoUnits[staticMetadata.geoLevelHierarchy[0].id] &&
+    geoUnits[staticMetadata.geoLevelHierarchy[1].id]
+      ? new Map([
+          ...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[0].id]),
+          ...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[1].id])
+        ])
+      : geoUnits[staticMetadata.geoLevelHierarchy[0].id]
+      ? new Map([...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[0].id])])
+      : new Map([...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[1].id])]);
+  const counties = new Set();
+  // eslint-disable-next-line
+  for (const [key, value] of mergedSubUnits.entries()) {
+    counties.add(value[0]);
+  }
+  return Number(counties.values().next().value);
+}
+
 /*
  * Returns true if this geounit or any of its children are locked.
  */
@@ -484,6 +507,16 @@ export function setFeaturesSelectedFromGeoUnits(
       const currentFeature = { id: featureId, sourceLayer: geoLevelId };
       map.setFeatureState(featureStateGeoLevel(currentFeature), { selected });
     });
+  });
+}
+
+export function filterGeoUnitsByCounty(units: GeoUnits, county: number) {
+  return mapValues(units, function(o) {
+    return new Map([
+      ...Array.from(o).filter(g => {
+        return g[1][0] === county;
+      })
+    ]);
   });
 }
 

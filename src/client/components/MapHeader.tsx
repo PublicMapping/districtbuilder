@@ -2,6 +2,7 @@
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
+import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -150,7 +151,8 @@ const MapHeader = ({
   geoLevelIndex,
   selectedGeounits,
   advancedEditingEnabled,
-  isReadOnly
+  isReadOnly,
+  limitSelectionToCounty
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
@@ -160,6 +162,7 @@ const MapHeader = ({
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
   readonly isReadOnly: boolean;
+  readonly limitSelectionToCounty: boolean;
 }) => {
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
@@ -220,6 +223,7 @@ const MapHeader = ({
           </Flex>
         )}
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
+        <MapSelectionOptionsFlyout limitSelectionToCounty={limitSelectionToCounty} />
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
         <Flex sx={{ alignItems: "baseline" }}>

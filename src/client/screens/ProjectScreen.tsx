@@ -166,6 +166,7 @@ const ProjectScreen = ({
               selectionTool={districtDrawing.selectionTool}
               geoLevelIndex={presentDrawingState.geoLevelIndex}
               selectedGeounits={presentDrawingState.selectedGeounits}
+              limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
               advancedEditingEnabled={project?.advancedEditingEnabled}
               isReadOnly={isReadOnly}
             />
@@ -196,6 +197,7 @@ const ProjectScreen = ({
                 evaluateMode={evaluateMode}
                 evaluateMetric={evaluateMetric}
                 isReadOnly={isReadOnly}
+                limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
                 label={label}
                 map={map}
                 setMap={setMap}

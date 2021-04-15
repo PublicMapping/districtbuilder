@@ -10,7 +10,7 @@ import {
 } from "../../../shared/entities";
 
 import { editSelectedGeounits } from "../../actions/districtDrawing";
-import { mergeGeoUnits } from "../../functions";
+import { areAnyGeoUnitsSelected, mergeGeoUnits } from "../../functions";
 import paint from "../../media/paint.png";
 import store from "../../store";
 
@@ -22,7 +22,9 @@ import {
   ISelectionTool,
   setFeaturesSelectedFromGeoUnits,
   SET_FEATURE_DELAY,
-  getChildGeoUnits
+  getChildGeoUnits,
+  filterGeoUnitsByCounty,
+  getCurrentCountyFromGeoUnits
 } from "./index";
 
 /*
@@ -38,13 +40,16 @@ const PaintBrushSelectionTool: ISelectionTool = {
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
     staticGeoLevels: UintArrays,
-    setActive: (isActive: boolean) => void
+    setActive: (isActive: boolean) => void,
+    limitSelectionToCounty: boolean,
+    selectedGeounits: GeoUnits
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
     map.getCanvas().style.cursor = `url('${paint}') 0 14, default`; // eslint-disable-line
 
     const canvas = map.getCanvasContainer();
+    let currentCounty: number | undefined = undefined; // eslint-disable-line
 
     canvas.addEventListener("mousedown", mouseDown);
     // Save mouseDown for removal upon disabling
@@ -90,6 +95,15 @@ const PaintBrushSelectionTool: ISelectionTool = {
         staticGeoLevels
       );
 
+      if (
+        (geoUnits[staticMetadata.geoLevelHierarchy[0].id] ||
+          geoUnits[staticMetadata.geoLevelHierarchy[1].id]) &&
+        !currentCounty &&
+        limitSelectionToCounty
+      ) {
+        currentCounty = getCurrentCountyFromGeoUnits(staticMetadata, geoUnits);
+      }
+
       // New geounits (to select on map) are the highlighted ones that aren't already selected
       const newGeoUnits = filterGeoUnits(
         geoUnits,
@@ -99,7 +113,16 @@ const PaintBrushSelectionTool: ISelectionTool = {
             sourceLayer: geoLevelId
           })
       );
-      setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
+
+      if (currentCounty && limitSelectionToCounty) {
+        // Filter geounits to current county
+        const geoUnitsInCounty = filterGeoUnitsByCounty(newGeoUnits, currentCounty);
+        setFeaturesSelectedFromGeoUnits(map, geoUnitsInCounty, true);
+        throttledAddGeounits(geoUnitsInCounty);
+      } else {
+        setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
+        throttledAddGeounits(newGeoUnits);
+      }
       // Geounit is not selected, so select it, making sure to remove the selection on any child
       // geounits since the parent selection supercedes any child selections
       features.forEach(feature => {
@@ -110,7 +133,6 @@ const PaintBrushSelectionTool: ISelectionTool = {
         setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
         throttledRemoveGeounits(childGeoUnits);
       });
-      throttledAddGeounits(newGeoUnits);
     }
 
     function mouseDown(e: MouseEvent) {
@@ -129,6 +151,9 @@ const PaintBrushSelectionTool: ISelectionTool = {
       // Remove these events now that finish has been called.
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      if (!areAnyGeoUnitsSelected(selectedGeounits)) {
+        currentCounty = undefined;
+      }
       setActive(false);
     }
 
