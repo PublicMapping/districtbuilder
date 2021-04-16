@@ -48,7 +48,8 @@ import {
   CONTIGUITY_FILL_COLOR,
   COUNTY_SPLIT_FILL_COLOR,
   EVALUATE_GRAY_FILL_COLOR,
-  DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID
+  DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+  DISTRICTS_OUTLINE_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -267,9 +268,6 @@ const DistrictsMap = ({
             feature.geometry.coordinates.length >= 2))
           ? // Set pink outline to make unassigned/non-contiguous districts stand out
             "#F25DFE"
-          : id === selectedDistrictId || id === hoveredDistrictId
-          ? // District is selected so set outline to district color
-            districtColor
           : "transparent";
       // eslint-disable-next-line
       feature.properties.color = districtColor;
@@ -282,13 +280,43 @@ const DistrictsMap = ({
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
       // eslint-disable-next-line
-      feature.properties.outlineWidthScaleFactor =
-        feature.properties.outlineColor === districtColor ? 2 : 1;
+      feature.properties.outlineWidthScaleFactor = findMenuOpen ? 1 : 2;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool, selectedDistrictId, hoveredDistrictId]);
+  }, [map, geojson, findMenuOpen, findTool]);
+
+  // Update layer styles when district is selected/hovered
+  useEffect(() => {
+    if (map) {
+      // NOTE: It's important to fall back to the outline color set for 'Find Unassigned' so as not
+      // to loose line styles by falling back to "transparent"
+      const fallbackLineColor = ["get", "outlineColor"];
+      const selectedDistrictMatchExpression = [
+        "match",
+        ["id"],
+        selectedDistrictId,
+        getDistrictColor(selectedDistrictId),
+        fallbackLineColor
+      ];
+      map.setPaintProperty(
+        DISTRICTS_OUTLINE_LAYER_ID,
+        "line-color",
+        hoveredDistrictId
+          ? // Set both hovered district line color and selected district line color
+            [
+              "match",
+              ["id"],
+              hoveredDistrictId,
+              getDistrictColor(hoveredDistrictId),
+              selectedDistrictMatchExpression
+            ]
+          : // There's no hovered district so just set selected district line color
+            selectedDistrictMatchExpression
+      );
+    }
+  }, [map, selectedDistrictId, hoveredDistrictId]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
