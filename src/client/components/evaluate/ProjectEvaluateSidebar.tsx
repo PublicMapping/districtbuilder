@@ -166,7 +166,9 @@ const ProjectEvaluateSidebar = ({
         "All parts of a district must be in physical contact with some other part of the district",
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
-      value: geojson?.features.filter(f => f.properties.contiguity === "contiguous").length || 0
+      value:
+        geojson?.features.filter(f => f.properties.contiguity === "contiguous" && f.id !== 0)
+          .length || 0
     }
   ];
   const optionalMetrics: readonly EvaluateMetric[] = [

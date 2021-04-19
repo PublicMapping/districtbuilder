@@ -5,7 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
 
 ### Added
@@ -16,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+
+- Display unassigned areas as transparent fill in Evaluate mode map [#694](https://github.com/PublicMapping/districtbuilder/pull/699)
+
 
 ## [1.4.0] - 2021-04-12
 
@@ -47,7 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add project evaluate view for County Splits [#644](https://github.com/PublicMapping/districtbuilder/pull/644)
 - Display Import Map button on home screen when a user has not created maps yet [#674](https://github.com/PublicMapping/districtbuilder/pull/674)
 - Display export button in project header for published projects from other users [#681](https://github.com/PublicMapping/districtbuilder/pull/681)
-
 
 ### Changed
 
