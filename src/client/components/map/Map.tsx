@@ -582,8 +582,8 @@ const DistrictsMap = ({
             project.districtsDefinition,
             lockedDistricts,
             staticGeoLevels,
-            limitSelectionToCounty,
-            setSelectionInProgress
+            setSelectionInProgress,
+            limitSelectionToCounty
           );
         } else if (selectionTool === SelectionTool.PaintBrush) {
           PaintBrushSelectionTool.enable(
@@ -612,7 +612,8 @@ const DistrictsMap = ({
     isReadOnly,
     evaluateMode,
     isPanning,
-    limitSelectionToCounty
+    limitSelectionToCounty,
+    selectedGeounits
   ]);
 
   return (

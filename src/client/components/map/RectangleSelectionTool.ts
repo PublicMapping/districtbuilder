@@ -50,8 +50,8 @@ const RectangleSelectionTool: ISelectionTool = {
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
     staticGeoLevels: UintArrays,
-    limitSelectionToCounty?: boolean,
-    setActive: (isActive: boolean) => void
+    setActive: (isActive: boolean) => void,
+    limitSelectionToCounty: boolean
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
