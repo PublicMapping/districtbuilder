@@ -47,7 +47,8 @@ const RectangleSelectionTool: ISelectionTool = {
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
-    staticGeoLevels: UintArrays
+    staticGeoLevels: UintArrays,
+    setActive: (isActive: boolean) => void
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
@@ -188,7 +189,7 @@ const RectangleSelectionTool: ISelectionTool = {
       // Call functions for the following events
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
-
+      setActive(true);
       initiallySelectedGeoUnits = featuresToUnlockedGeoUnits(
         getAllSelectedFeatures(),
         staticMetadata,
@@ -207,6 +208,7 @@ const RectangleSelectionTool: ISelectionTool = {
     }
 
     function onMouseUp(e: MouseEvent) {
+      setActive(false);
       // Capture xy coordinates
       finish([start, mousePos(e)]);
     }

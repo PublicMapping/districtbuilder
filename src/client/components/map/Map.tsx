@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import MapboxGL from "mapbox-gl";
@@ -140,6 +140,13 @@ const DistrictsMap = ({
   setMap
 }: Props) => {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
+  const [panToggled, setTogglePan] = useState<boolean>(false);
+
+  const isPanning =
+    panToggled &&
+    !selectionInProgress &&
+    (selectionTool === SelectionTool.Rectangle || selectionTool === SelectionTool.PaintBrush);
 
   // Conversion from readonly -> mutable to match Mapbox interface
   const [b0, b1, b2, b3] = staticMetadata.bbox;
@@ -216,6 +223,28 @@ const DistrictsMap = ({
     // Everything in this effect should only happen on component load
     // eslint-disable-next-line
   }, [mapRef]);
+
+  function downHandler({ key }: KeyboardEvent) {
+    if (key === "Spacebar" || key === " ") {
+      setTogglePan(true);
+    }
+  }
+
+  const upHandler = ({ key }: KeyboardEvent) => {
+    if (key === "Spacebar" || key === " ") {
+      setTogglePan(false);
+    }
+  };
+  // Add event listeners
+  useEffect(() => {
+    window.addEventListener("keydown", downHandler);
+    window.addEventListener("keyup", upHandler);
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener("keydown", downHandler);
+      window.removeEventListener("keyup", upHandler);
+    };
+  }, []);
 
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
@@ -523,15 +552,16 @@ const DistrictsMap = ({
   ]);
 
   useEffect(() => {
+    // Handle enable and disable of selection tools in the map
     /* eslint-disable */
-    if (map) {
+    if (map && !isReadOnly) {
       // Disable any existing selection tools
       DefaultSelectionTool.disable(map);
       RectangleSelectionTool.disable(map);
       PaintBrushSelectionTool.disable(map);
-      if (!evaluateMode) {
+      if (!evaluateMode && !isPanning) {
         // Enable appropriate tool
-        if (!isReadOnly && selectionTool === SelectionTool.Default) {
+        if (selectionTool === SelectionTool.Default) {
           DefaultSelectionTool.enable(
             map,
             selectedGeolevel.id,
@@ -540,28 +570,30 @@ const DistrictsMap = ({
             lockedDistricts,
             staticGeoLevels
           );
-        } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
+        } else if (selectionTool === SelectionTool.Rectangle) {
           RectangleSelectionTool.enable(
             map,
             selectedGeolevel.id,
             staticMetadata,
             project.districtsDefinition,
             lockedDistricts,
-            staticGeoLevels
+            staticGeoLevels,
+            setSelectionInProgress
           );
-        } else if (!isReadOnly && selectionTool === SelectionTool.PaintBrush) {
+        } else if (selectionTool === SelectionTool.PaintBrush) {
           PaintBrushSelectionTool.enable(
             map,
             selectedGeolevel.id,
             staticMetadata,
             project.districtsDefinition,
             lockedDistricts,
-            staticGeoLevels
+            staticGeoLevels,
+            setSelectionInProgress
           );
         }
       }
-      /* eslint-enable */
     }
+    /* eslint-enable */
   }, [
     map,
     selectionTool,
@@ -571,7 +603,8 @@ const DistrictsMap = ({
     project,
     lockedDistricts,
     isReadOnly,
-    evaluateMode
+    evaluateMode,
+    isPanning
   ]);
 
   return (
