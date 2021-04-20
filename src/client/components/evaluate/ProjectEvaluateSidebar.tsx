@@ -15,7 +15,7 @@ import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
 import { useState, useEffect } from "react";
 import { Resource } from "../../resource";
-import { geoLevelLabelSingular } from "../../functions";
+import { geoLevelLabelSingular, getTargetPopulation } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
@@ -94,7 +94,9 @@ const ProjectEvaluateSidebar = ({
   readonly staticMetadata?: IStaticMetadata;
 }) => {
   const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
+  const [avgPopulation, setAvgPopulation] = useState<number | undefined>(undefined);
   const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
+  const popThreshold = 0.05;
   useEffect(() => {
     if (geojson && !avgCompactness) {
       const totalCompactness = geojson.features.reduce(function(accumulator, feature) {
@@ -103,6 +105,13 @@ const ProjectEvaluateSidebar = ({
       setAvgCompactness(totalCompactness / (geojson.features.length - 1));
     }
   }, [geojson, avgCompactness]);
+
+  useEffect(() => {
+    if (geojson && !avgPopulation && project) {
+      getTargetPopulation(geojson, project);
+      setAvgPopulation(getTargetPopulation(geojson, project));
+    }
+  }, [geojson, avgPopulation, project]);
 
   useEffect(() => {
     if (staticMetadata) {
@@ -125,9 +134,25 @@ const ProjectEvaluateSidebar = ({
       status: false,
       description: "have equal population",
       shortText: "Lorem ipsum",
-      longText: "Lorem ipsum",
+      longText: `This map has a goal of getting within ${Math.floor(
+        popThreshold * 100
+      )}% of ${avgPopulation?.toLocaleString()}`,
+      avgPopulation: avgPopulation || undefined,
+      popThreshold: popThreshold,
       type: "fraction",
-      value: 17
+      total: geojson?.features.filter(f => f.id !== 0).length || 0,
+      value:
+        avgPopulation && geojson
+          ? geojson?.features.filter(f => {
+              return (
+                f.id !== 0 &&
+                // @ts-ignore
+                f.properties.percentDeviation &&
+                // @ts-ignore
+                Math.abs(f.properties.percentDeviation) <= popThreshold
+              );
+            }).length
+          : 0
     },
     {
       key: "contiguity",

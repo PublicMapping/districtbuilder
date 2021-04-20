@@ -14,7 +14,8 @@ import {
   MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays
+  UintArrays,
+  EvaluateMetricWithValue
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible } from "../../functions";
@@ -31,6 +32,8 @@ export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
 export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID = "districts-equal-population";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
 // Id for topmost geolevel layer in Evaluate
@@ -60,7 +63,7 @@ const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getChoroplethStops(metricKey: string) {
+export function getChoroplethStops(metricKey: string, threshold?: number) {
   const compactnessSteps = [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
@@ -68,9 +71,21 @@ export function getChoroplethStops(metricKey: string) {
     [0.6, "#2ca25f"],
     [1.0, "#006d2c"]
   ];
+  const popThreshold = threshold || 0.05;
+  const equalPopulationSteps = [
+    [-1.0, "#D1E5F0"],
+    [-1 * (popThreshold + 0.02), "#66A9CF"],
+    [-1 * (popThreshold + 0.01), "#2166AC"],
+    [-1 * popThreshold, "#01665E"],
+    [popThreshold, "#EFBE60"],
+    [popThreshold + 0.01, "#F5D092"],
+    [popThreshold + 0.02, "#F7E1C3"]
+  ];
   switch (metricKey) {
     case "compactness":
       return compactnessSteps;
+    case "equalPopulation":
+      return equalPopulationSteps;
     default:
       return [];
   }
@@ -78,9 +93,33 @@ export function getChoroplethStops(metricKey: string) {
 
 export function getChoroplethLabels(metricKey: string) {
   const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
+  const steps = getChoroplethStops(metricKey);
   switch (metricKey) {
     case "compactness":
       return compactnessLabels;
+    case "equalPopulation":
+      return steps.map((step, i) => {
+        const stepVal = Number(step[0]);
+        if (i === 0) {
+          // Lower bound condition
+          return `< ${Math.ceil(Number(steps[1][0]) * 100)}%`;
+        } else if (i === steps.length - 1) {
+          // Upper bound condition
+          return `> ${Math.floor(stepVal * 100)}%`;
+        } else {
+          const nextStep = Number(steps[i + 1][0]);
+          if (stepVal < 0 && nextStep > 0) {
+            // Target condition
+            return `Target (+/- ${Math.floor(nextStep * 100)}%)`;
+          } else {
+            if (stepVal < 0) {
+              return `${Math.ceil(stepVal * 100)}% to ${Math.ceil(nextStep * 100)}%`;
+            } else {
+              return `${Math.floor(stepVal * 100)}% to ${Math.floor(nextStep * 100)}%`;
+            }
+          }
+        }
+      });
     default:
       return [];
   }
@@ -127,7 +166,8 @@ export function generateMapLayers(
   maxZoom: number,
   /* eslint-disable */
   map: any,
-  geojson: any
+  geojson: any,
+  metric?: EvaluateMetricWithValue
   /* eslint-enable */
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
@@ -163,10 +203,31 @@ export function generateMapLayers(
       type: "fill",
       source: DISTRICTS_SOURCE_ID,
       layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
         "fill-color": {
           property: "compactness",
           stops: getChoroplethStops("compactness")
+        },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
+      }
+    },
+    LABELS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
+      paint: {
+        "fill-color": {
+          property: "percentDeviation",
+          type: "interval",
+          stops: getChoroplethStops("equalPopulation")
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9

@@ -13,6 +13,7 @@ import { selectEvaluationMetric } from "../../actions/districtDrawing";
 import ContiguityMetricDetail from "./detail/Contiguity";
 import CompactnessMetricDetail from "./detail/Compactness";
 import CountySplitMetricDetail from "./detail/CountySplit";
+import EqualPopulationMetricDetail from "./detail/EqualPopulation";
 import { Resource } from "../../resource";
 
 const style: ThemeUIStyleObject = {
@@ -113,6 +114,8 @@ const ProjectEvaluateMetricDetail = ({
           <CompactnessMetricDetail metric={metric} geojson={geojson} />
         ) : metric && "type" in metric && metric.key === "contiguity" ? (
           <ContiguityMetricDetail metric={metric} geojson={geojson} />
+        ) : metric && "type" in metric && metric.key === "equalPopulation" ? (
+          <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
         ) : (
           <Box sx={{ ml: "20px" }}>
             <Heading as="h4" sx={{ variant: "text.h4", display: "block" }}>

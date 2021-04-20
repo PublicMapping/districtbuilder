@@ -35,6 +35,8 @@ export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   readonly type: "fraction" | "percent" | "count";
   readonly value: number;
   readonly total?: number;
+  readonly avgPopulation?: number;
+  readonly popThreshold?: number;
   readonly status?: boolean;
   // eslint-disable-next-line
   readonly [key: string]: any;
@@ -96,6 +98,8 @@ export type DistrictProperties = {
   readonly contiguity: "contiguous" | "non-contiguous" | "";
   readonly compactness: number;
   readonly demographics: DemographicCounts;
+  readonly percentDeviation?: number;
+  readonly populationDeviation?: number;
 };
 
 export interface IStaticFile {

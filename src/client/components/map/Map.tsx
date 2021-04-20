@@ -21,7 +21,7 @@ import {
   EvaluateMetric
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
-import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
+import { areAnyGeoUnitsSelected, getSelectedGeoLevel, getTargetPopulation } from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -45,7 +45,8 @@ import {
   DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
   CONTIGUITY_FILL_COLOR,
   COUNTY_SPLIT_FILL_COLOR,
-  EVALUATE_GRAY_FILL_COLOR
+  EVALUATE_GRAY_FILL_COLOR,
+  DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -86,7 +87,7 @@ const style: ThemeUIStyleObject = {
   },
   legendItem: {
     display: "inline-block",
-    minWidth: "150px",
+    minWidth: "120px",
     maxWidth: "170px",
     mr: "20px"
   },
@@ -94,16 +95,16 @@ const style: ThemeUIStyleObject = {
     display: "inline-block",
     width: "120px",
     fontWeight: "600",
-    mr: "50px"
+    mr: "35px"
   },
   legendBox: {
     position: "absolute",
     bottom: "20px",
     left: "100px",
-    right: "200px",
+    right: "40px",
     height: "60px",
     minWidth: "600px",
-    maxWidth: "1100px",
+    maxWidth: "1300px",
     fontSize: "14pt",
     display: "inline-block",
     outline: "1px solid gray",
@@ -194,7 +195,8 @@ const DistrictsMap = ({
         minZoom,
         maxZoom,
         map,
-        geojson
+        geojson,
+        evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined
       );
 
       setMap(map);
@@ -217,6 +219,7 @@ const DistrictsMap = ({
 
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
+    const avgPopulation = getTargetPopulation(geojson, project);
     // Add a color property to the geojson, so it can be used for styling
     geojson.features.forEach((feature, id) => {
       // @ts-ignore
@@ -231,11 +234,23 @@ const DistrictsMap = ({
       // @ts-ignore
       // eslint-disable-next-line
       feature.properties.color = getDistrictColor(id);
+      // @ts-ignore
+      const populationDeviation = feature.properties.demographics.population - avgPopulation;
+      // @ts-ignore
+      // eslint-disable-next-line
+      feature.properties.percentDeviation =
+        // @ts-ignore
+        feature.properties.demographics.population > 0 && feature.id !== 0
+          ? populationDeviation / avgPopulation
+          : undefined;
+      // @ts-ignore
+      // eslint-disable-next-line
+      feature.properties.populationDeviation = populationDeviation;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findTool]);
+  }, [map, geojson, findTool, project]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -297,6 +312,14 @@ const DistrictsMap = ({
           map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
           map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "visible");
         }
+        if (evaluateMetric.key === "equalPopulation") {
+          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
+          map.setLayoutProperty(
+            DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+            "visibility",
+            "visible"
+          );
+        }
         DefaultSelectionTool.disable(map);
         RectangleSelectionTool.disable(map);
         PaintBrushSelectionTool.disable(map);
@@ -305,6 +328,7 @@ const DistrictsMap = ({
         map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
         map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "none");
         map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+        map.setLayoutProperty(DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
@@ -581,6 +605,22 @@ const DistrictsMap = ({
       {evaluateMode && evaluateMetric && evaluateMetric.key === "compactness" && (
         <Box sx={style.legendBox}>
           <Box sx={style.legendTitle}>Compactness</Box>
+          {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+            <Box sx={style.legendItem} key={i}>
+              <Box
+                sx={{
+                  ...style.legendColorSwatch,
+                  backgroundColor: `${step[1]}`
+                }}
+              ></Box>
+              <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "equalPopulation" && (
+        <Box sx={style.legendBox}>
+          <Box sx={style.legendTitle}>Equal Population</Box>
           {getChoroplethStops(evaluateMetric.key).map((step, i) => (
             <Box sx={style.legendItem} key={i}>
               <Box
