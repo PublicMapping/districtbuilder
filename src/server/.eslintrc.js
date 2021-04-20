@@ -14,6 +14,7 @@ module.exports = {
       "jsdoc",
       "prefer-arrow",
       "functional",
+      "eslint-plugin-local-rules"
     ],
     extends: [
       "eslint:recommended",
@@ -54,5 +55,6 @@ module.exports = {
       "functional/no-let": "off",
       "functional/no-loop-statement": "error",
       "functional/no-conditional-statement": ["off"],
+      "local-rules/no-providing-services-out-of-module": "error"
     }
   };
