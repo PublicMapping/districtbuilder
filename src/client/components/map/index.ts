@@ -452,22 +452,14 @@ export function getCurrentCountyFromGeoUnits(
   staticMetadata: IStaticMetadata,
   geoUnits: GeoUnits
 ): number {
-  const mergedSubUnits =
-    geoUnits[staticMetadata.geoLevelHierarchy[0].id] &&
-    geoUnits[staticMetadata.geoLevelHierarchy[1].id]
-      ? new Map([
-          ...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[0].id]),
-          ...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[1].id])
-        ])
-      : geoUnits[staticMetadata.geoLevelHierarchy[0].id]
-      ? new Map([...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[0].id])])
-      : new Map([...Array.from(geoUnits[staticMetadata.geoLevelHierarchy[1].id])]);
-  const counties = new Set();
-  // eslint-disable-next-line
-  for (const [key, value] of mergedSubUnits.entries()) {
-    counties.add(value[0]);
+  const geoLevelIds = staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.id);
+  for (let i = 0; i < geoLevelIds.length; i++) {
+    const geoLevelId = geoLevelIds[i];
+    const value = geoUnits[geoLevelId]?.entries().next().value;
+    if (value) {
+      return value[1][0];
+    }
   }
-  return Number(counties.values().next().value);
 }
 
 /*
