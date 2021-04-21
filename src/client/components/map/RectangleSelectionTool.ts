@@ -152,10 +152,7 @@ const RectangleSelectionTool: ISelectionTool = {
         staticGeoLevels
       );
 
-      if (
-        !currentCounty &&
-        limitSelectionToCounty
-      ) {
+      if (!currentCounty && limitSelectionToCounty) {
         currentCounty = getCurrentCountyFromGeoUnits(staticMetadata, geoUnits);
       }
 
@@ -175,8 +172,11 @@ const RectangleSelectionTool: ISelectionTool = {
             sourceLayer: geoLevelId
           })
       );
-      const geoUnitsToAdd = currentCounty && limitSelectionToCounty ? filterGeoUnitsByCounty(newGeoUnits, currentCounty) : newGeoUnits;
-      setFeaturesSelectedFromGeoUnits(map, geoUnitsToAdd, true)
+      const geoUnitsToAdd =
+        currentCounty && limitSelectionToCounty
+          ? filterGeoUnitsByCounty(newGeoUnits, currentCounty)
+          : newGeoUnits;
+      setFeaturesSelectedFromGeoUnits(map, geoUnitsToAdd, true);
 
       // Deselect any features that were previously highlighted and just became unhighlighted
       // eslint-disable-next-line

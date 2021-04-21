@@ -453,11 +453,12 @@ export function getCurrentCountyFromGeoUnits(
   geoUnits: GeoUnits
 ): number | undefined {
   const geoLevelIds = staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.id);
+  // eslint-disable-next-line
   for (let i = 0; i < geoLevelIds.length; i++) {
     const geoLevelId = geoLevelIds[i];
     const value = geoUnits[geoLevelId]?.entries().next().value;
     if (value) {
-      return value[1][0];
+      return Number(value[1][0]);
     }
   }
 }
@@ -503,10 +504,10 @@ export function setFeaturesSelectedFromGeoUnits(
 }
 
 export function filterGeoUnitsByCounty(units: GeoUnits, county: number) {
-  return mapValues(units, function(o) {
+  return mapValues(units, function(geoUnitsForLevel) {
     return new Map([
-      ...Array.from(o).filter(g => {
-        return g[1][0] === county;
+      ...Array.from(geoUnitsForLevel).filter(geounit => {
+        return geounit[1][0] === county;
       })
     ]);
   });

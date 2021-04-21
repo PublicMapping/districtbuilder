@@ -95,10 +95,7 @@ const PaintBrushSelectionTool: ISelectionTool = {
         staticGeoLevels
       );
 
-      if (
-        !currentCounty &&
-        limitSelectionToCounty
-      ) {
+      if (!currentCounty && limitSelectionToCounty) {
         currentCounty = getCurrentCountyFromGeoUnits(staticMetadata, geoUnits);
       }
 
