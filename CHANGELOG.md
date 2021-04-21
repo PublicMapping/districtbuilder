@@ -10,12 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add project evaluate view for Equal Population [#685](https://github.com/PublicMapping/districtbuilder/pull/685)
 - Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
+<<<<<<< HEAD
 - Highlight selected/hovered districts and zoom to district [#688](https://github.com/PublicMapping/districtbuilder/pull/688)
+=======
+- Added unique index on region config table for country / region code [#702](https://github.com/PublicMapping/districtbuilder/pull/702)
+>>>>>>> Update changelog
 
 ### Changed
 - Change eslint config to detect misuse of NestJS services [#700](https://github.com/PublicMapping/districtbuilder/pull/700)
 
 ### Fixed
+- Fix import region detection to exclude hidden regions [#702](https://github.com/PublicMapping/districtbuilder/pull/702)
 
 - Display unassigned areas as transparent fill in Evaluate mode map [#694](https://github.com/PublicMapping/districtbuilder/pull/699)
 
