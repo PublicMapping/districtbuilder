@@ -114,15 +114,13 @@ const PaintBrushSelectionTool: ISelectionTool = {
           })
       );
 
-      if (currentCounty && limitSelectionToCounty) {
-        // Filter geounits to current county
-        const geoUnitsInCounty = filterGeoUnitsByCounty(newGeoUnits, currentCounty);
-        setFeaturesSelectedFromGeoUnits(map, geoUnitsInCounty, true);
-        throttledAddGeounits(geoUnitsInCounty);
-      } else {
-        setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
-        throttledAddGeounits(newGeoUnits);
-      }
+      const geoUnitsToAdd =
+        currentCounty && limitSelectionToCounty
+          ? // Filter geounits to current county
+            filterGeoUnitsByCounty(newGeoUnits, currentCounty)
+          : newGeoUnits;
+      setFeaturesSelectedFromGeoUnits(map, geoUnitsToAdd, true);
+      throttledAddGeounits(geoUnitsToAdd);
       // Geounit is not selected, so select it, making sure to remove the selection on any child
       // geounits since the parent selection supercedes any child selections
       features.forEach(feature => {
