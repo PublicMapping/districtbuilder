@@ -285,7 +285,7 @@ const DistrictsMap = ({
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool]);
+  }, [map, geojson, findMenuOpen, findTool, project]);
 
   // Update layer styles when district is selected/hovered
   useEffect(() => {

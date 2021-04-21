@@ -103,3 +103,6 @@ export const FIPS: { readonly [fips: string]: string } = {
   "08": "CO",
   "09": "CT"
 };
+
+// Maximum allowable upload size, in bytes
+export const MaxUploadFileSize = 25_000_000;
