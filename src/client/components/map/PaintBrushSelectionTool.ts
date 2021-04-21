@@ -96,8 +96,6 @@ const PaintBrushSelectionTool: ISelectionTool = {
       );
 
       if (
-        (geoUnits[staticMetadata.geoLevelHierarchy[0].id] ||
-          geoUnits[staticMetadata.geoLevelHierarchy[1].id]) &&
         !currentCounty &&
         limitSelectionToCounty
       ) {
