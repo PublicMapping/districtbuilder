@@ -21,8 +21,8 @@ import {
   IStaticMetadata
 } from "../../../../shared/entities";
 import { getAllBaseIndices, getDemographics } from "../../../../shared/functions";
+import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
-import { DistrictsGeoJSON } from "src/projects/entities/project.entity";
 
 interface GeoUnitHierarchy {
   geom: Polygon | MultiPolygon;

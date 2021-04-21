@@ -35,6 +35,10 @@ module.exports = {
         }
       ],
       "no-console": [ "error" ],
+      "no-restricted-imports": ["error", {
+        // manage commands can't import server modules unless we always use relative imports
+        "patterns": ["src/*"]
+      }],
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
