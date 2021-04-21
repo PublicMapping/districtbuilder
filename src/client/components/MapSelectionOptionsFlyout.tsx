@@ -11,9 +11,11 @@ import Icon from "./Icon";
 type MenuKeys = "limit-drawing-to-within-county";
 
 const MapSelectionOptionsFlyout = ({
-  limitSelectionToCounty
+  limitSelectionToCounty,
+  topGeoLevelName
 }: {
   readonly limitSelectionToCounty: boolean;
+  readonly topGeoLevelName?: string;
 }) => {
   return (
     <Wrapper
@@ -50,7 +52,7 @@ const MapSelectionOptionsFlyout = ({
           <li>
             <MenuItem value={"limit-drawing-to-within-county"}>
               <Box sx={style.menuListItem}>
-                Limit drawing to within county
+                Limit drawing to within {topGeoLevelName}
                 <Checkbox defaultChecked={limitSelectionToCounty} />
               </Box>
             </MenuItem>

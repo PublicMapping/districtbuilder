@@ -3,6 +3,7 @@ import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
 import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
+import { useState, useEffect } from "react";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -164,6 +165,12 @@ const MapHeader = ({
   readonly isReadOnly: boolean;
   readonly limitSelectionToCounty: boolean;
 }) => {
+  const [topGeoLevelName, setTopGeoLevelName] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (metadata) {
+      setTopGeoLevelName(metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id);
+    }
+  }, [metadata]);
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
         <option key={val.id} value={val.id}>
@@ -223,7 +230,10 @@ const MapHeader = ({
           </Flex>
         )}
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
-        <MapSelectionOptionsFlyout limitSelectionToCounty={limitSelectionToCounty} />
+        <MapSelectionOptionsFlyout
+          limitSelectionToCounty={limitSelectionToCounty}
+          topGeoLevelName={topGeoLevelName}
+        />
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
         <Flex sx={{ alignItems: "baseline" }}>
