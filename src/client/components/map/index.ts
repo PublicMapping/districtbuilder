@@ -451,7 +451,7 @@ export function isFeatureSelected(map: MapboxGL.Map, feature: FeatureLike): bool
 export function getCurrentCountyFromGeoUnits(
   staticMetadata: IStaticMetadata,
   geoUnits: GeoUnits
-): number {
+): number | undefined {
   const geoLevelIds = staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.id);
   for (let i = 0; i < geoLevelIds.length; i++) {
     const geoLevelId = geoLevelIds[i];
