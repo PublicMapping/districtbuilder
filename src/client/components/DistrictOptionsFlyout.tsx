@@ -40,7 +40,9 @@ const DistrictOptionsFlyout = ({
         styles={{
           fontSize: "14px"
         }}
-        value={"zoom-to-district"}
+        onClick={() => {
+          store.dispatch(setZoomToDistrictId(districtId));
+        }}
       >
         Zoom to District
       </MenuItem>
