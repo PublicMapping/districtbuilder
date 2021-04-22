@@ -165,12 +165,9 @@ const MapHeader = ({
   readonly isReadOnly: boolean;
   readonly limitSelectionToCounty: boolean;
 }) => {
-  const [topGeoLevelName, setTopGeoLevelName] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    if (metadata) {
-      setTopGeoLevelName(metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id);
-    }
-  }, [metadata]);
+  const topGeoLevelName = metadata
+    ? metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id
+    : undefined;
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
         <option key={val.id} value={val.id}>
