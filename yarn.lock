@@ -1763,6 +1763,11 @@
     "@svgr/plugin-svgo" "^4.3.1"
     loader-utils "^1.2.3"
 
+"@szhsin/react-menu@^1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@szhsin/react-menu/-/react-menu-1.9.1.tgz#e09f4bb8c15c681d4954063f30b4a5a8dc5513f2"
+  integrity sha512-Ib3zAarWocSbZ8N5I4k5EMVwQf3Tlc/WLvUdwB4U+c/1kTse5o7l6vBHRjCKC0N53JWl/N0yzGeNlBzN6fNzWg==
+
 "@theme-ui/color-modes@^0.4.0-rc.1":
   version "0.4.0-rc.1"
   resolved "https://registry.yarnpkg.com/@theme-ui/color-modes/-/color-modes-0.4.0-rc.1.tgz#c8c7e7297d22ffcf4a0b6db42def4527da26fdf2"

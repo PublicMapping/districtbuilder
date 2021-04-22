@@ -48,6 +48,8 @@ export const HIGHLIGHTS_PLACEHOLDER_LAYER_ID = "highlight-placeholder";
 export const LINES_PLACEHOLDER_LAYER_ID = "line-placeholder";
 // Used only to make labels appear in the correct position in the layer stack
 export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
+// Used only to make district lines appear in the correct position in the layer stack
+export const DISTRICT_LINES_PLACEHOLDER_LAYER_ID = "district-line-placeholder";
 
 // Delay used to throttle calls to set the current feature(s), in milliseconds
 export const SET_FEATURE_DELAY = 300;
@@ -255,7 +257,7 @@ export function generateMapLayers(
         ]
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICT_LINES_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(

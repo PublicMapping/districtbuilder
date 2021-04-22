@@ -54,15 +54,18 @@ const style: ThemeUIStyleObject = {
     flexDirection: "column",
     flexShrink: 0,
     height: "100%",
-    minWidth: "430px",
+    minWidth: "400px",
     position: "relative",
     color: "gray.8",
-    zIndex: 200
+    zIndex: 200,
+    ".rc-menu": {
+      left: "-139px !important"
+    }
   },
   table: {
-    width: "calc(100% - 16px)",
-    mx: 2,
-    mb: 2
+    mx: 0,
+    mb: 2,
+    width: "100%"
   },
   tooltip: {
     position: "absolute",
@@ -80,6 +83,7 @@ const style: ThemeUIStyleObject = {
     textAlign: "left",
     pt: 2,
     px: 2,
+    height: "32px",
     position: "sticky",
     top: "0",
     zIndex: 2,
@@ -105,7 +109,8 @@ const style: ThemeUIStyleObject = {
     fontSize: 1,
     p: 2,
     textAlign: "left",
-    verticalAlign: "bottom"
+    verticalAlign: "bottom",
+    position: "relative"
   },
   districtColor: {
     width: "10px",
