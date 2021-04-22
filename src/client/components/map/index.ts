@@ -317,6 +317,7 @@ export function generateMapLayers(
       type: "fill",
       source: DISTRICTS_SOURCE_ID,
       layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
         "fill-color": [
           "match",
