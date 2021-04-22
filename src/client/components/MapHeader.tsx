@@ -3,7 +3,6 @@ import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
 import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
-import { useState, useEffect } from "react";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -196,7 +195,7 @@ const MapHeader = ({
     <Flex sx={style.header}>
       <Flex>
         {!isReadOnly && (
-          <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
+          <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
             <Tooltip content="Point-and-click selection">
               <Button
                 sx={{ ...style.selectionButton }}
@@ -226,10 +225,12 @@ const MapHeader = ({
             </Tooltip>
           </Flex>
         )}
-        <MapSelectionOptionsFlyout
-          limitSelectionToCounty={limitSelectionToCounty}
-          topGeoLevelName={topGeoLevelName}
-        />
+        <Box sx={{ position: "relative", mr: 3, pt: "6px" }}>
+          <MapSelectionOptionsFlyout
+            limitSelectionToCounty={limitSelectionToCounty}
+            topGeoLevelName={topGeoLevelName}
+          />
+        </Box>
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
