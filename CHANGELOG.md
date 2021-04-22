@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
 
 ### Changed
+- Change eslint config to detect misuse of NestJS services [#700](https://github.com/PublicMapping/districtbuilder/pull/700)
 
 ### Fixed
 
