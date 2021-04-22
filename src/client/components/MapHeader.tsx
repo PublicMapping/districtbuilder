@@ -226,11 +226,11 @@ const MapHeader = ({
             </Tooltip>
           </Flex>
         )}
-        <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
         <MapSelectionOptionsFlyout
           limitSelectionToCounty={limitSelectionToCounty}
           topGeoLevelName={topGeoLevelName}
         />
+        <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
         <Flex sx={{ alignItems: "baseline" }}>
