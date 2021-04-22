@@ -18,48 +18,51 @@ const MapSelectionOptionsFlyout = ({
   readonly topGeoLevelName?: string;
 }) => {
   return (
-    <Wrapper
-      onSelection={(menuKey: MenuKeys) => {
-        const action =
-          menuKey === "limit-drawing-to-within-county"
-            ? toggleLimitDrawingToWithinCounty()
-            : assertNever(menuKey);
-        store.dispatch(action);
-      }}
-    >
-      <Tooltip content="More options">
-        <MenuButton
-          sx={{
-            ...{
-              variant: "icon",
-              fontWeight: "light",
-              px: 1,
-              py: 1,
-              color: "gray.8",
-              bg: "transparent",
-              "&:hover:not([disabled]):not(:active)": {
-                bg: "rgba(89,89,89,0.1)"
-              },
-              borderRadius: "100%"
-            }
-          }}
-        >
-          <Icon name="tools" />
-        </MenuButton>
-      </Tooltip>
-      <Menu sx={{ ...style.menu, position: "fixed", right: "58%" }}>
-        <ul sx={style.menuList}>
-          <li>
-            <MenuItem value={"limit-drawing-to-within-county"}>
-              <Box sx={style.menuListItem}>
-                Limit drawing to within {topGeoLevelName}
-                <Checkbox defaultChecked={limitSelectionToCounty} />
-              </Box>
-            </MenuItem>
-          </li>
-        </ul>
-      </Menu>
-    </Wrapper>
+    <Box sx={{ position: "relative" }}>
+      {" "}
+      <Wrapper
+        onSelection={(menuKey: MenuKeys) => {
+          const action =
+            menuKey === "limit-drawing-to-within-county"
+              ? toggleLimitDrawingToWithinCounty()
+              : assertNever(menuKey);
+          store.dispatch(action);
+        }}
+      >
+        <Tooltip content="Drawing options">
+          <MenuButton
+            sx={{
+              ...{
+                variant: "icon",
+                fontWeight: "light",
+                px: 1,
+                py: 1,
+                color: "gray.8",
+                bg: "transparent",
+                "&:hover:not([disabled]):not(:active)": {
+                  bg: "rgba(89,89,89,0.1)"
+                },
+                borderRadius: "100%"
+              }
+            }}
+          >
+            <Icon name="tools" />
+          </MenuButton>
+        </Tooltip>
+        <Menu sx={{ ...style.menu }}>
+          <ul sx={style.menuList}>
+            <li>
+              <MenuItem value={"limit-drawing-to-within-county"}>
+                <Box sx={style.menuListItem}>
+                  Limit drawing to within {topGeoLevelName}
+                  <Checkbox defaultChecked={limitSelectionToCounty} />
+                </Box>
+              </MenuItem>
+            </li>
+          </ul>
+        </Menu>
+      </Wrapper>
+    </Box>
   );
 };
 
