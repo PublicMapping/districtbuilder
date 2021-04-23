@@ -14,6 +14,7 @@ module.exports = {
       "jsdoc",
       "prefer-arrow",
       "functional",
+      "eslint-plugin-local-rules"
     ],
     extends: [
       "eslint:recommended",
@@ -34,6 +35,10 @@ module.exports = {
         }
       ],
       "no-console": [ "error" ],
+      "no-restricted-imports": ["error", {
+        // manage commands can't import server modules unless we always use relative imports
+        "patterns": ["src/*"]
+      }],
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
@@ -54,5 +59,6 @@ module.exports = {
       "functional/no-let": "off",
       "functional/no-loop-statement": "error",
       "functional/no-conditional-statement": ["off"],
+      "local-rules/no-providing-services-out-of-module": "error"
     }
   };
