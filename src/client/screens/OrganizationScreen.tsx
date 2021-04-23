@@ -53,7 +53,7 @@ const style = {
     ":not(:last-child)": {
       pr: 3
     },
-    maxWidth: "250px",
+    maxWidth: "220px",
     display: "inline-block",
     whiteSpace: "nowrap",
     overflow: "hidden",
