@@ -174,7 +174,10 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
           const importNumber = importNumberRef.current;
 
           const regionConfig =
-            regionConfigs.resource.find(config => config.regionCode === stateAbbrev) || null;
+            regionConfigs.resource.find(
+              config =>
+                !config.hidden && config.regionCode === stateAbbrev && config.countryCode === "US"
+            ) || null;
           if (regionConfig) {
             setImportResource({ data: regionConfig, isPending: true });
             const districtsDefinition = await importCsv(file);
