@@ -12,10 +12,11 @@ import store from "../store";
 import SiteHeader from "../components/SiteHeader";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import { OrganizationProjectsState } from "../reducers/organizationProjects";
-import OrganizationAdminProjectsTable from "../components/OrganizationAdminProjectsTable";
+import OrganizationAdminProjectsTable, {
+  ProjectRow
+} from "../components/OrganizationAdminProjectsTable";
 import { userFetch } from "../actions/user";
 import { formatDate } from "../functions";
-import { ProjectNest } from "../../shared/entities";
 import { isEqual } from "lodash";
 
 interface StateProps {
@@ -87,7 +88,7 @@ const style = {
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {
   const { organizationSlug } = useParams();
-  const [projects, setProjects] = useState<readonly ProjectNest[] | undefined>(undefined);
+  const [projects, setProjects] = useState<readonly ProjectRow[] | undefined>(undefined);
   useEffect(() => {
     if ("resource" in organizationProjects.projectTemplates) {
       const resourceProjects = organizationProjects.projectTemplates.resource
@@ -97,11 +98,7 @@ const OrganizationAdminScreen = ({ organization, user, organizationProjects }: S
               ...p,
               project: { name: p.name, id: p.id },
               updatedAgo: formatDate(p.updatedDt),
-              creator: { name: p.user.name, email: p.user.email },
-              id: p.id,
-              templateName: pt.name,
-              regionConfig: pt.regionConfig,
-              numberOfDistricts: pt.numberOfDistricts
+              templateName: pt.name
             };
           });
         })

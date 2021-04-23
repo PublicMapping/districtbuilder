@@ -1,10 +1,19 @@
-import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique
+} from "typeorm";
 import { IRegionConfig } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 @Entity()
 @Unique(["name", "countryCode", "regionCode", "version"])
+@Index("UQ_region_code", ["countryCode", "regionCode"], { unique: true, where: "hidden <> TRUE" })
 export class RegionConfig implements IRegionConfig {
   @PrimaryGeneratedColumn("uuid")
   id: string;
