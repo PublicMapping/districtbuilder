@@ -37,7 +37,7 @@ const RegistrationScreen = ({ user }: StateProps) => {
           <Card sx={{ variant: "card.floating" }}>
             <RegisterContent>
               <Heading as="h2" sx={{ mb: 5, textAlign: "left" }}>
-                Create an account
+                Create an account!
               </Heading>
               {showStartProjectAlert && (
                 <Alert sx={{ mb: 3 }}>
