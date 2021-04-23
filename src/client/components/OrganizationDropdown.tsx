@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx, Image } from "theme-ui";
+import { jsx } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import Icon from "../components/Icon";
 import { invertStyles, style } from "./MenuButton.styles";
@@ -20,22 +20,18 @@ const OrganizationDropdown = ({ organizations }: Props) => {
           ...{ variant: "buttons.ghost", fontWeight: "light" },
           ...style.menuButton,
           ...invertStyles({ invert: true }),
-          ...{ color: "black" }
+          ...{ color: "heading" }
         }}
         className="organization-menu"
       >
         My Organizations
-        <Icon name="chevron-down" />
+        <Icon name="angle-down" />
       </MenuButton>
       <Menu sx={style.menu}>
         <ul sx={style.menuList}>
           {organizations.map(o => (
             <li key={o.slug}>
               <MenuItem value={o.slug} sx={style.menuListItem}>
-                <Image
-                  src={o.logoUrl}
-                  sx={{ width: "25px", height: "25px", paddingRight: "5px" }}
-                />
                 {o.name}
               </MenuItem>
             </li>

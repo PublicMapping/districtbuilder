@@ -194,9 +194,9 @@ const SiteHeader = ({ user }: Props) => {
                   maxInitials={3}
                   sx={style.avatar}
                 />
-                <div sx={{ ml: 2 }}>
-                  <Icon name="chevron-down" />
-                </div>
+                <Box sx={{ ml: 2, color: "heading" }}>
+                  <Icon name="angle-down" />
+                </Box>
               </MenuButton>
               <Menu sx={style.menu}>
                 <ul sx={style.menuList}>
