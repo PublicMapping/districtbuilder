@@ -1,18 +1,12 @@
 /** @jsx jsx */
 import { jsx, Button } from "theme-ui";
 import { DistrictId } from "../../shared/entities";
-import { style } from "./MenuButton.styles";
 import store from "../store";
 import { setZoomToDistrictId } from "../actions/districtDrawing";
-import { assertNever } from "../functions";
-import Tooltip from "./Tooltip";
 import Icon from "./Icon";
 
-import React from "react";
 import { Menu, MenuItem } from "@szhsin/react-menu";
 import "@szhsin/react-menu/dist/index.css";
-
-type MenuKeys = "zoom-to-district";
 
 const DistrictOptionsFlyout = ({
   districtId,
