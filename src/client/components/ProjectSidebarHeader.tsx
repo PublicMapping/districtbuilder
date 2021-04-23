@@ -20,7 +20,8 @@ const style: ThemeUIStyleObject = {
   header: {
     variant: "header.app",
     borderBottom: "1px solid",
-    borderColor: "gray.2"
+    borderColor: "gray.2",
+    m: 0
   }
 };
 

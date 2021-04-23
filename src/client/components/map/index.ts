@@ -48,6 +48,8 @@ export const HIGHLIGHTS_PLACEHOLDER_LAYER_ID = "highlight-placeholder";
 export const LINES_PLACEHOLDER_LAYER_ID = "line-placeholder";
 // Used only to make labels appear in the correct position in the layer stack
 export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
+// Used only to make district lines appear in the correct position in the layer stack
+export const DISTRICT_LINES_PLACEHOLDER_LAYER_ID = "district-line-placeholder";
 
 // Delay used to throttle calls to set the current feature(s), in milliseconds
 export const SET_FEATURE_DELAY = 300;
@@ -241,14 +243,21 @@ export function generateMapLayers(
       id: DISTRICTS_OUTLINE_LAYER_ID,
       type: "line",
       source: DISTRICTS_SOURCE_ID,
-      layout: { visibility: "none" },
       paint: {
         "line-color": { type: "identity", property: "outlineColor" },
         "line-opacity": 1,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6,
+          ["*", ["get", "outlineWidthScaleFactor"], 2],
+          14,
+          ["*", ["get", "outlineWidthScaleFactor"], 5]
+        ]
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICT_LINES_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(

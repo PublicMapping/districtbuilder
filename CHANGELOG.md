@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
 - Add project evaluate view for Equal Population [#685](https://github.com/PublicMapping/districtbuilder/pull/685)
 - Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
+- Highlight selected/hovered districts and zoom to district [#688](https://github.com/PublicMapping/districtbuilder/pull/688)
 
 ### Changed
 

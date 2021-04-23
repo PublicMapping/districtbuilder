@@ -1,6 +1,8 @@
 /** @jsx jsx */
 import { useEffect, useRef, useState } from "react";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
+import bbox from "@turf/bbox";
+import { BBox2d } from "@turf/helpers/lib/geojson";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -9,7 +11,8 @@ import {
   setGeoLevelVisibility,
   SelectionTool,
   replaceSelectedGeounits,
-  FindTool
+  FindTool,
+  setZoomToDistrictId
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -32,7 +35,6 @@ import {
   levelToLineLayerId,
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
-  DISTRICTS_OUTLINE_LAYER_ID,
   DISTRICTS_EVALUATE_LAYER_ID,
   setFeaturesSelectedFromGeoUnits,
   TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
@@ -46,7 +48,8 @@ import {
   CONTIGUITY_FILL_COLOR,
   COUNTY_SPLIT_FILL_COLOR,
   EVALUATE_GRAY_FILL_COLOR,
-  DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID
+  DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+  DISTRICTS_OUTLINE_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -66,6 +69,8 @@ interface Props {
   readonly staticGeoLevels: UintArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
+  readonly hoveredDistrictId: number | null;
+  readonly zoomToDistrictId: number | null;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
@@ -127,6 +132,8 @@ const DistrictsMap = ({
   staticGeoLevels,
   selectedGeounits,
   selectedDistrictId,
+  hoveredDistrictId,
+  zoomToDistrictId,
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
@@ -251,35 +258,65 @@ const DistrictsMap = ({
     const avgPopulation = getTargetPopulation(geojson, project);
     // Add a color property to the geojson, so it can be used for styling
     geojson.features.forEach((feature, id) => {
-      // @ts-ignore
+      const districtColor = getDistrictColor(id);
       // eslint-disable-next-line
       feature.properties.outlineColor =
-        (findTool === FindTool.Unassigned && id === 0) ||
-        (findTool === FindTool.NonContiguous &&
-          id !== 0 &&
-          feature.geometry.coordinates.length >= 2)
-          ? "#F25DFE"
+        findMenuOpen &&
+        ((findTool === FindTool.Unassigned && id === 0) ||
+          (findTool === FindTool.NonContiguous &&
+            id !== 0 &&
+            feature.geometry.coordinates.length >= 2))
+          ? // Set pink outline to make unassigned/non-contiguous districts stand out
+            "#F25DFE"
           : "transparent";
-      // @ts-ignore
       // eslint-disable-next-line
-      feature.properties.color = getDistrictColor(id);
-      // @ts-ignore
+      feature.properties.color = districtColor;
       const populationDeviation = feature.properties.demographics.population - avgPopulation;
-      // @ts-ignore
       // eslint-disable-next-line
       feature.properties.percentDeviation =
-        // @ts-ignore
         feature.properties.demographics.population > 0 && feature.id !== 0
           ? populationDeviation / avgPopulation
           : undefined;
-      // @ts-ignore
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
+      // eslint-disable-next-line
+      feature.properties.outlineWidthScaleFactor = findMenuOpen ? 1 : 2;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findTool, project]);
+  }, [map, geojson, findMenuOpen, findTool]);
+
+  // Update layer styles when district is selected/hovered
+  useEffect(() => {
+    if (map) {
+      // NOTE: It's important to fall back to the outline color set for 'Find Unassigned' so as not
+      // to loose line styles by falling back to "transparent"
+      const fallbackLineColor = ["get", "outlineColor"];
+      const selectedDistrictMatchExpression = [
+        "match",
+        ["id"],
+        selectedDistrictId,
+        getDistrictColor(selectedDistrictId),
+        fallbackLineColor
+      ];
+      map.setPaintProperty(
+        DISTRICTS_OUTLINE_LAYER_ID,
+        "line-color",
+        hoveredDistrictId
+          ? // Set both hovered district line color and selected district line color
+            [
+              "match",
+              ["id"],
+              hoveredDistrictId,
+              getDistrictColor(hoveredDistrictId),
+              selectedDistrictMatchExpression
+            ]
+          : // There's no hovered district so just set selected district line color
+            selectedDistrictMatchExpression
+      );
+    }
+  }, [map, selectedDistrictId, hoveredDistrictId]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -407,16 +444,6 @@ const DistrictsMap = ({
     }
   }, [map, label, staticMetadata, selectedGeolevel]);
 
-  // Toggle unassigned highlight when find menu is opened
-  useEffect(() => {
-    map &&
-      map.setLayoutProperty(
-        DISTRICTS_OUTLINE_LAYER_ID,
-        "visibility",
-        findMenuOpen ? "visible" : "none"
-      );
-  }, [map, findMenuOpen]);
-
   useEffect(() => {
     map &&
       [...new Array(project.numberOfDistricts + 1).keys()].forEach(districtId =>
@@ -425,6 +452,18 @@ const DistrictsMap = ({
         })
       );
   }, [map, project, lockedDistricts]);
+
+  useEffect(() => {
+    if (map && zoomToDistrictId) {
+      const districtGeoJSON = geojson.features[zoomToDistrictId];
+      if (districtGeoJSON && districtGeoJSON.geometry.coordinates.length) {
+        // eslint-disable-next-line
+        const boundingBox = bbox(districtGeoJSON) as BBox2d;
+        map.fitBounds(boundingBox, { padding: 50 });
+        store.dispatch(setZoomToDistrictId(null));
+      }
+    }
+  }, [map, geojson, zoomToDistrictId]);
 
   // Update layer visibility when geolevel is selected
   useEffect(() => {

@@ -574,7 +574,7 @@ const theme: Theme & StyledSystemTheme = {
       justifyContent: "flex-start",
       alignItems: "center",
       flex: 1,
-      pl: 1
+      pl: 0
     },
     center: {
       justifyContent: "center",

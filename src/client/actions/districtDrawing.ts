@@ -14,6 +14,8 @@ export enum FindTool {
 }
 
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
+export const setHoveredDistrictId = createAction("Set hovered district id")<number | null>();
+export const setZoomToDistrictId = createAction("Set zoom to district id")<DistrictId | null>();
 
 export const addSelectedGeounits = createAction("Add selected geounits")<GeoUnits>();
 export const removeSelectedGeounits = createAction("Remove selected geounits")<GeoUnits>();

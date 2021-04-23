@@ -15,6 +15,7 @@ import {
   setGeoLevelVisibility,
   setHighlightedGeounits,
   setSelectedDistrictId,
+  setHoveredDistrictId,
   setSelectionTool,
   showAdvancedEditingModal,
   showCopyMapModal,
@@ -28,7 +29,8 @@ import {
   saveDistrictsDefinition,
   setSavingState,
   FindTool,
-  selectEvaluationMetric
+  selectEvaluationMetric,
+  setZoomToDistrictId
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -101,6 +103,8 @@ function toggleLock(id: DistrictId, locks: LockedDistricts): LockedDistricts {
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
+  readonly hoveredDistrictId: number | null;
+  readonly zoomToDistrictId: number | null;
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly showAdvancedEditingModal: boolean;
@@ -116,6 +120,8 @@ export interface DistrictDrawingState {
 
 export const initialDistrictDrawingState: DistrictDrawingState = {
   selectedDistrictId: 1,
+  hoveredDistrictId: null,
+  zoomToDistrictId: null,
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
   showAdvancedEditingModal: false,
@@ -155,6 +161,16 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         selectedDistrictId: action.payload
+      };
+    case getType(setHoveredDistrictId):
+      return {
+        ...state,
+        hoveredDistrictId: action.payload
+      };
+    case getType(setZoomToDistrictId):
+      return {
+        ...state,
+        zoomToDistrictId: action.payload
       };
     case getType(addSelectedGeounits):
       return loop(
