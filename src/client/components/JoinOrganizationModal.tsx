@@ -32,7 +32,7 @@ const style: ThemeUIStyleObject = {
     p: 5,
     width: "small",
     maxWidth: "90vw",
-    overflow: "hidden"
+    overflow: "visible"
   }
 };
 
