@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
@@ -12,7 +12,16 @@ import {
   SelectionTool,
   replaceSelectedGeounits,
   FindTool,
-  setZoomToDistrictId
+  setZoomToDistrictId,
+  undo,
+  redo,
+  setSelectionTool,
+  setSelectedDistrictId,
+  setGeoLevelIndex,
+  saveDistrictsDefinition,
+  clearSelectedGeounits,
+  toggleDistrictLocked,
+  toggleLimitDrawingToWithinCounty
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -233,12 +242,93 @@ const DistrictsMap = ({
     // eslint-disable-next-line
   }, [mapRef]);
 
+  const SelectionToolOrder = [
+    SelectionTool.Default,
+    SelectionTool.Rectangle,
+    SelectionTool.PaintBrush
+  ];
+
+  const downHandler = useCallback(
+    (key: KeyboardEvent) => {
+      function nextSelectionTool() {
+        const currentSelectionTool = SelectionToolOrder.indexOf(selectionTool);
+        const nextSelectionTool =
+          currentSelectionTool < SelectionToolOrder.length - 1 ? currentSelectionTool + 1 : 0;
+        store.dispatch(setSelectionTool(SelectionToolOrder[nextSelectionTool]));
+      }
+
+      function previousSelectionTool() {
+        const currentSelectionTool = SelectionToolOrder.indexOf(selectionTool);
+        const previousSelectionTool =
+          currentSelectionTool > 0 ? currentSelectionTool - 1 : SelectionToolOrder.length - 1;
+        store.dispatch(setSelectionTool(SelectionToolOrder[previousSelectionTool]));
+      }
+      function nextGeoLevel() {
+        const nextGeoLevelIndex =
+          geoLevelIndex < staticMetadata.geoLevelHierarchy.length
+            ? geoLevelIndex + 1
+            : geoLevelIndex;
+        store.dispatch(setGeoLevelIndex(nextGeoLevelIndex));
+      }
+
+      function previousGeoLevel() {
+        const previousGeoLevelIndex = geoLevelIndex > 0 ? geoLevelIndex - 1 : geoLevelIndex;
+        store.dispatch(setGeoLevelIndex(previousGeoLevelIndex));
+      }
+      function setNextDistrict() {
+        const nextDistrictId =
+          selectedDistrictId < geojson.features.length - 1 ? selectedDistrictId + 1 : 1;
+        store.dispatch(setSelectedDistrictId(nextDistrictId));
+      }
+
+      function setPreviousDistrict() {
+        const previousDistrictId =
+          selectedDistrictId > 1 ? selectedDistrictId - 1 : geojson.features.length - 1;
+        store.dispatch(setSelectedDistrictId(previousDistrictId));
+      }
+
+      if (!key.metaKey) {
+        // All keyboard actions not including CMD / CTRL
+        if (key.key === "Spacebar" || key.key === " ") {
+          setTogglePan(true);
+        }
+        key.key === "1" && store.dispatch(setSelectionTool(SelectionTool.Default));
+        key.key === "2" && store.dispatch(setSelectionTool(SelectionTool.Rectangle));
+        key.key === "3" && store.dispatch(setSelectionTool(SelectionTool.PaintBrush));
+        key.key === "e" && setPreviousDistrict();
+        key.key === "d" && setNextDistrict();
+        key.key === "r" && nextSelectionTool();
+        key.key === "w" && previousSelectionTool();
+        key.key === "f" && nextGeoLevel();
+        key.key === "s" && previousGeoLevel();
+        key.key === "g" && store.dispatch(saveDistrictsDefinition());
+        key.key === "a" && store.dispatch(clearSelectedGeounits(true));
+        key.key === "q" && store.dispatch(toggleDistrictLocked(selectedDistrictId - 1));
+        key.key === "c" && store.dispatch(toggleLimitDrawingToWithinCounty());
+      } else {
+        // All keyboard action with CMD + / CTRL +
+        if (!key.shiftKey) {
+          if (key.key === "z") {
+            store.dispatch(undo());
+          }
+        } else {
+          // CTRL + SHIFT + z
+          if (key.key === "z") {
+            store.dispatch(redo());
+          }
+        }
+      }
+    },
+    [
+      selectionTool,
+      geoLevelIndex,
+      selectedDistrictId,
+      SelectionToolOrder,
+      geojson.features.length,
+      staticMetadata.geoLevelHierarchy.length
+    ]
+  );
   // Keyboard handlers
-  function downHandler({ key }: KeyboardEvent) {
-    if (key === "Spacebar" || key === " ") {
-      setTogglePan(true);
-    }
-  }
 
   const upHandler = ({ key }: KeyboardEvent) => {
     if (key === "Spacebar" || key === " ") {
@@ -255,7 +345,8 @@ const DistrictsMap = ({
       window.removeEventListener("keydown", downHandler);
       window.removeEventListener("keyup", upHandler);
     };
-  }, []);
+    // Reload handlers when selected district changes
+  }, [selectedDistrictId, selectionTool, downHandler]);
 
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
