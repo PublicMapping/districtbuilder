@@ -57,6 +57,7 @@ const OrganizationAdminProjectsTable = ({ templates, organizationSlug }: Project
     }
   }, [projects, templates]);
 
+  const sort = useMemo<SortingRule<ProjectRow>>(() => ({ id: "updatedDt", desc: true }), []);
   // eslint-disable-next-line
   let columns = useMemo<Array<Column<ProjectRow>>>(
     () => [
@@ -122,8 +123,11 @@ const OrganizationAdminProjectsTable = ({ templates, organizationSlug }: Project
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable<ProjectRow>(
     {
       columns,
-      // @ts-ignore
-      data
+      data,
+      autoResetSortBy: false,
+      initialState: {
+        sortBy: [sort]
+      }
     },
     useSortBy
   );
