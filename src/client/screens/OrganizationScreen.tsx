@@ -262,7 +262,6 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                       textAlign: "right",
                       alignItems: "flex-end"
                     }}
-                    onClick={leaveOrg}
                   >
                     <Button
                       sx={{
@@ -276,6 +275,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                           borderColor: "#f06543 !important"
                         }
                       }}
+                      onClick={leaveOrg}
                     >
                       Leave organization
                     </Button>
