@@ -2,6 +2,7 @@
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
+import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -150,7 +151,8 @@ const MapHeader = ({
   geoLevelIndex,
   selectedGeounits,
   advancedEditingEnabled,
-  isReadOnly
+  isReadOnly,
+  limitSelectionToCounty
 }: {
   readonly label?: string;
   readonly setMapLabel: (label?: string) => void;
@@ -160,7 +162,11 @@ const MapHeader = ({
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
   readonly isReadOnly: boolean;
+  readonly limitSelectionToCounty: boolean;
 }) => {
+  const topGeoLevelName = metadata
+    ? metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id
+    : undefined;
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
         <option key={val.id} value={val.id}>
@@ -189,7 +195,7 @@ const MapHeader = ({
     <Flex sx={style.header}>
       <Flex>
         {!isReadOnly && (
-          <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
+          <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
             <Tooltip content="Point-and-click selection">
               <Button
                 sx={{ ...style.selectionButton }}
@@ -219,6 +225,12 @@ const MapHeader = ({
             </Tooltip>
           </Flex>
         )}
+        <Box sx={{ position: "relative", mr: 3, pt: "6px" }}>
+          <MapSelectionOptionsFlyout
+            limitSelectionToCounty={limitSelectionToCounty}
+            topGeoLevelName={topGeoLevelName}
+          />
+        </Box>
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>

@@ -19,6 +19,7 @@ import {
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible } from "../../functions";
+import { mapValues } from "lodash";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -457,6 +458,21 @@ export function isFeatureSelected(map: MapboxGL.Map, feature: FeatureLike): bool
   return featureState.selected === true;
 }
 
+export function getCurrentCountyFromGeoUnits(
+  staticMetadata: IStaticMetadata,
+  geoUnits: GeoUnits
+): number | undefined {
+  const geoLevelIds = staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.id);
+  // eslint-disable-next-line
+  for (let i = 0; i < geoLevelIds.length; i++) {
+    const geoLevelId = geoLevelIds[i];
+    const value = geoUnits[geoLevelId]?.entries().next().value;
+    if (value) {
+      return value[1][0] as number;
+    }
+  }
+}
+
 /*
  * Returns true if this geounit or any of its children are locked.
  */
@@ -494,6 +510,19 @@ export function setFeaturesSelectedFromGeoUnits(
       const currentFeature = { id: featureId, sourceLayer: geoLevelId };
       map.setFeatureState(featureStateGeoLevel(currentFeature), { selected });
     });
+  });
+}
+
+/*
+ * Filters geounits to only those contained within the specified top-level geounit (usually county, but potentially something else such as ward or block group)
+ */
+export function filterGeoUnitsByCounty(units: GeoUnits, county: number) {
+  return mapValues(units, function(geoUnitsForLevel) {
+    return new Map([
+      ...Array.from(geoUnitsForLevel).filter(geounit => {
+        return geounit[1][0] === county;
+      })
+    ]);
   });
 }
 
