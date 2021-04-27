@@ -21,6 +21,7 @@ import {
   saveDistrictsDefinition,
   clearSelectedGeounits,
   toggleDistrictLocked,
+  toggleEvaluate,
   toggleLimitDrawingToWithinCounty,
   setMapLabel
 } from "../../actions/districtDrawing";
@@ -166,7 +167,6 @@ const DistrictsMap = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
   const [panToggled, setTogglePan] = useState<boolean>(false);
-  const [startingZoom, setStartingZoom] = useState<number | undefined>(undefined);
 
   const isPanning =
     panToggled &&
@@ -219,7 +219,6 @@ const DistrictsMap = ({
 
     const setLevelVisibility = () => {
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
-      setStartingZoom(map.getZoom());
     };
 
     const onMapLoad = () => {
@@ -338,6 +337,8 @@ const DistrictsMap = ({
               ? "No longer limit selection to county"
               : "Limiting selection to county"
           );
+
+        key.key === "p" && store.dispatch(toggleEvaluate(!evaluateMode));
         // Toggle labels
         key.key === "1" && togglePopulationLabel();
       } else {
@@ -362,8 +363,8 @@ const DistrictsMap = ({
       label,
       geojson.features.length,
       staticMetadata.geoLevelHierarchy.length,
-      map,
-      limitSelectionToCounty
+      limitSelectionToCounty,
+      evaluateMode
     ]
   );
   // Keyboard handlers
