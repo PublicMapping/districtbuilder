@@ -161,6 +161,7 @@ const DistrictsMap = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
   const [panToggled, setTogglePan] = useState<boolean>(false);
+  const [startingZoom, setStartingZoom] = useState<number | undefined>(undefined);
 
   const isPanning =
     panToggled &&
@@ -211,8 +212,11 @@ const DistrictsMap = ({
     map.touchZoomRotate.disableRotation();
     map.doubleClickZoom.disable();
 
-    const setLevelVisibility = () =>
+    const setLevelVisibility = () => {
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
+      setStartingZoom(map.getZoom());
+    };
+
     const onMapLoad = () => {
       generateMapLayers(
         project.regionConfig.s3URI,
@@ -252,6 +256,7 @@ const DistrictsMap = ({
   const downHandler = useCallback(
     (key: KeyboardEvent) => {
       function nextSelectionTool() {
+        // Go to next selection tool, or first selection tool if at end of list
         const currentSelectionTool = SelectionToolOrder.indexOf(selectionTool);
         const nextSelectionTool =
           currentSelectionTool < SelectionToolOrder.length - 1 ? currentSelectionTool + 1 : 0;
@@ -259,12 +264,14 @@ const DistrictsMap = ({
       }
 
       function previousSelectionTool() {
+        // Go to previous selection tool, or last selection tool in list if at start
         const currentSelectionTool = SelectionToolOrder.indexOf(selectionTool);
         const previousSelectionTool =
           currentSelectionTool > 0 ? currentSelectionTool - 1 : SelectionToolOrder.length - 1;
         store.dispatch(setSelectionTool(SelectionToolOrder[previousSelectionTool]));
       }
       function nextGeoLevel() {
+        // Go to next geolevel if not already on smallest level
         const nextGeoLevelIndex =
           geoLevelIndex < staticMetadata.geoLevelHierarchy.length
             ? geoLevelIndex + 1
@@ -273,48 +280,55 @@ const DistrictsMap = ({
       }
 
       function previousGeoLevel() {
+        // Go to previous geolevel if not already at largest level
         const previousGeoLevelIndex = geoLevelIndex > 0 ? geoLevelIndex - 1 : geoLevelIndex;
         store.dispatch(setGeoLevelIndex(previousGeoLevelIndex));
       }
       function setNextDistrict() {
+        // Set the next district as currently selected, or first district if currently at end of list
         const nextDistrictId =
           selectedDistrictId < geojson.features.length - 1 ? selectedDistrictId + 1 : 1;
         store.dispatch(setSelectedDistrictId(nextDistrictId));
       }
 
       function setPreviousDistrict() {
+        // Set the previous district as currently selected, or last district if currently at start of list
         const previousDistrictId =
           selectedDistrictId > 1 ? selectedDistrictId - 1 : geojson.features.length - 1;
         store.dispatch(setSelectedDistrictId(previousDistrictId));
       }
 
-      function setPopulationLabel() {
+      function togglePopulationLabel() {
+        // Toggle population label
         if (label) {
           store.dispatch(setMapLabel(undefined));
         } else {
           store.dispatch(setMapLabel("population"));
         }
       }
-
+      // All keyboard actions not including CMD / CTRL
       if (!key.metaKey) {
-        // All keyboard actions not including CMD / CTRL
         if (key.key === "Spacebar" || key.key === " ") {
           setTogglePan(true);
         }
-        key.key === "1" && store.dispatch(setSelectionTool(SelectionTool.Default));
-        key.key === "2" && store.dispatch(setSelectionTool(SelectionTool.Rectangle));
-        key.key === "3" && store.dispatch(setSelectionTool(SelectionTool.PaintBrush));
+        // Switch between districts
         key.key === "e" && setPreviousDistrict();
         key.key === "d" && setNextDistrict();
+        // Switch between selection tools
         key.key === "r" && nextSelectionTool();
         key.key === "w" && previousSelectionTool();
+        // Switch between geolevels
         key.key === "f" && nextGeoLevel();
         key.key === "s" && previousGeoLevel();
+        // Accept or reject current selection
         key.key === "g" && store.dispatch(saveDistrictsDefinition());
         key.key === "a" && store.dispatch(clearSelectedGeounits(true));
+        // Lock districts
         key.key === "q" && store.dispatch(toggleDistrictLocked(selectedDistrictId - 1));
+        // Limit drawing to within starting county
         key.key === "c" && store.dispatch(toggleLimitDrawingToWithinCounty());
-        key.key === "1" && setPopulationLabel();
+        // Toggle labels
+        key.key === "1" && togglePopulationLabel();
       } else {
         // All keyboard action with CMD + / CTRL +
         if (!key.shiftKey) {
@@ -336,7 +350,8 @@ const DistrictsMap = ({
       SelectionToolOrder,
       label,
       geojson.features.length,
-      staticMetadata.geoLevelHierarchy.length
+      staticMetadata.geoLevelHierarchy.length,
+      map
     ]
   );
   // Keyboard handlers
