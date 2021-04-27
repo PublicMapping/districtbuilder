@@ -266,7 +266,6 @@ const DistrictsMap = ({
           currentSelectionTool < SelectionToolOrder.length - 1 ? currentSelectionTool + 1 : 0;
         store.dispatch(setSelectionTool(SelectionToolOrder[nextSelectionTool]));
       }
-
       function previousSelectionTool() {
         // Go to previous selection tool, or last selection tool in list if at start
         const currentSelectionTool = SelectionToolOrder.indexOf(selectionTool);
@@ -274,6 +273,7 @@ const DistrictsMap = ({
           currentSelectionTool > 0 ? currentSelectionTool - 1 : SelectionToolOrder.length - 1;
         store.dispatch(setSelectionTool(SelectionToolOrder[previousSelectionTool]));
       }
+
       function nextGeoLevel() {
         // Go to next geolevel if not already on smallest level
         const nextGeoLevelIndex =
@@ -282,19 +282,18 @@ const DistrictsMap = ({
             : geoLevelIndex;
         store.dispatch(setGeoLevelIndex(nextGeoLevelIndex));
       }
-
       function previousGeoLevel() {
         // Go to previous geolevel if not already at largest level
         const previousGeoLevelIndex = geoLevelIndex > 0 ? geoLevelIndex - 1 : geoLevelIndex;
         store.dispatch(setGeoLevelIndex(previousGeoLevelIndex));
       }
+
       function setNextDistrict() {
         // Set the next district as currently selected, or first district if currently at end of list
         const nextDistrictId =
           selectedDistrictId < geojson.features.length - 1 ? selectedDistrictId + 1 : 1;
         store.dispatch(setSelectedDistrictId(nextDistrictId));
       }
-
       function setPreviousDistrict() {
         // Set the previous district as currently selected, or last district if currently at start of list
         const previousDistrictId =
@@ -342,16 +341,12 @@ const DistrictsMap = ({
         // Toggle labels
         key.key === "1" && togglePopulationLabel();
       } else {
-        // All keyboard action with CMD + / CTRL +
         if (!key.shiftKey) {
-          if (key.key === "z") {
-            store.dispatch(undo());
-          }
+          // CTRL + Z : Undo
+          key.key === "z" && store.dispatch(undo());
         } else {
-          // CTRL + SHIFT + z
-          if (key.key === "z") {
-            store.dispatch(redo());
-          }
+          // CTRL + SHIFT + z : Redo
+          key.key === "z" && store.dispatch(redo());
         }
       }
     },
