@@ -21,7 +21,8 @@ import {
   saveDistrictsDefinition,
   clearSelectedGeounits,
   toggleDistrictLocked,
-  toggleLimitDrawingToWithinCounty
+  toggleLimitDrawingToWithinCounty,
+  setMapLabel
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -287,6 +288,14 @@ const DistrictsMap = ({
         store.dispatch(setSelectedDistrictId(previousDistrictId));
       }
 
+      function setPopulationLabel() {
+        if (label) {
+          store.dispatch(setMapLabel(undefined));
+        } else {
+          store.dispatch(setMapLabel("population"));
+        }
+      }
+
       if (!key.metaKey) {
         // All keyboard actions not including CMD / CTRL
         if (key.key === "Spacebar" || key.key === " ") {
@@ -305,6 +314,7 @@ const DistrictsMap = ({
         key.key === "a" && store.dispatch(clearSelectedGeounits(true));
         key.key === "q" && store.dispatch(toggleDistrictLocked(selectedDistrictId - 1));
         key.key === "c" && store.dispatch(toggleLimitDrawingToWithinCounty());
+        key.key === "1" && setPopulationLabel();
       } else {
         // All keyboard action with CMD + / CTRL +
         if (!key.shiftKey) {
@@ -324,6 +334,7 @@ const DistrictsMap = ({
       geoLevelIndex,
       selectedDistrictId,
       SelectionToolOrder,
+      label,
       geojson.features.length,
       staticMetadata.geoLevelHierarchy.length
     ]

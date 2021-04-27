@@ -51,6 +51,7 @@ interface StateProps {
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
   readonly isReadOnly: boolean;
+  readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
 }
 
@@ -77,12 +78,12 @@ const ProjectScreen = ({
   projectNotFound,
   geoUnitHierarchy,
   districtDrawing,
+  mapLabel,
   isLoading,
   isReadOnly,
   user
 }: StateProps) => {
   const { projectId } = useParams();
-  const [label, setMapLabel] = useState<string | undefined>(undefined);
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
@@ -161,8 +162,7 @@ const ProjectScreen = ({
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           {!evaluateMode ? (
             <MapHeader
-              label={label}
-              setMapLabel={setMapLabel}
+              label={mapLabel}
               metadata={staticMetadata}
               selectionTool={districtDrawing.selectionTool}
               geoLevelIndex={presentDrawingState.geoLevelIndex}
@@ -201,7 +201,7 @@ const ProjectScreen = ({
                 evaluateMetric={evaluateMetric}
                 isReadOnly={isReadOnly}
                 limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
-                label={label}
+                label={mapLabel}
                 map={map}
                 setMap={setMap}
               />
@@ -231,6 +231,7 @@ function mapStateToProps(state: State): StateProps {
     geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
     evaluateMode: state.project.evaluateMode,
     evaluateMetric: state.project.evaluateMetric,
+    mapLabel: state.project.mapLabel,
     districtDrawing: state.project,
     regionProperties: state.regionConfig.regionProperties,
     isLoading:

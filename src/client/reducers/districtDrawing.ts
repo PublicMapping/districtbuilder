@@ -32,7 +32,8 @@ import {
   FindTool,
   toggleLimitDrawingToWithinCounty,
   selectEvaluationMetric,
-  setZoomToDistrictId
+  setZoomToDistrictId,
+  setMapLabel
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -120,6 +121,7 @@ export interface DistrictDrawingState {
   readonly limitSelectionToCounty: boolean;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
+  readonly mapLabel: string | undefined;
 }
 
 export const initialDistrictDrawingState: DistrictDrawingState = {
@@ -137,6 +139,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   findTool: FindTool.Unassigned,
   limitSelectionToCounty: false,
   saving: "unsaved",
+  mapLabel: "undefined",
   undoHistory: {
     past: [],
     present: {
@@ -177,6 +180,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         zoomToDistrictId: action.payload
+      };
+    case getType(setMapLabel):
+      return {
+        ...state,
+        mapLabel: action.payload
       };
     case getType(addSelectedGeounits):
       return loop(
