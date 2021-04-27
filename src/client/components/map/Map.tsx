@@ -34,7 +34,12 @@ import {
   EvaluateMetric
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
-import { areAnyGeoUnitsSelected, getSelectedGeoLevel, getTargetPopulation } from "../../functions";
+import {
+  areAnyGeoUnitsSelected,
+  getSelectedGeoLevel,
+  getTargetPopulation,
+  showMapActionToast
+} from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -325,8 +330,14 @@ const DistrictsMap = ({
         key.key === "a" && store.dispatch(clearSelectedGeounits(true));
         // Lock districts
         key.key === "q" && store.dispatch(toggleDistrictLocked(selectedDistrictId - 1));
-        // Limit drawing to within starting county
-        key.key === "c" && store.dispatch(toggleLimitDrawingToWithinCounty());
+        // Limit drawing to within starting county and display toast
+        key.key === "c" &&
+          store.dispatch(toggleLimitDrawingToWithinCounty()) &&
+          showMapActionToast(
+            limitSelectionToCounty
+              ? "No longer limit selection to county"
+              : "Limiting selection to county"
+          );
         // Toggle labels
         key.key === "1" && togglePopulationLabel();
       } else {
@@ -351,7 +362,8 @@ const DistrictsMap = ({
       label,
       geojson.features.length,
       staticMetadata.geoLevelHierarchy.length,
-      map
+      map,
+      limitSelectionToCounty
     ]
   );
   // Keyboard handlers

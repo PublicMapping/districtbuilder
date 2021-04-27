@@ -176,6 +176,8 @@ export function mergeGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
 export const showActionFailedToast = () => toast.error("Something went wrong, please try again.");
 export const showResourceFailedToast = () =>
   toast.error("Something went wrong, please refresh the page.");
+export const showMapActionToast = (mapAction: string) =>
+  toast.info(mapAction);
 
 export const formatDate = (date: Date): string => {
   const d = new Date(date);
