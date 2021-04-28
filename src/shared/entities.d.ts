@@ -101,6 +101,7 @@ export type DistrictProperties = {
   readonly voting?: DemographicCounts;
   /* eslint-disable */
   // NOTE: These properties are set for styling purposes
+  id?: number;
   color?: string;
   outlineColor?: string;
   percentDeviation?: number;
