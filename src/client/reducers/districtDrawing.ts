@@ -33,7 +33,8 @@ import {
   toggleLimitDrawingToWithinCounty,
   selectEvaluationMetric,
   setZoomToDistrictId,
-  setMapLabel
+  setMapLabel,
+  showKeyboardShortcutsModal
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -112,6 +113,7 @@ export interface DistrictDrawingState {
   readonly selectionTool: SelectionTool;
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
+  readonly showKeyboardShortcutsModal: boolean;
   readonly showImportFlagsModal: boolean;
   readonly findMenuOpen: boolean;
   readonly evaluateMode: boolean;
@@ -133,6 +135,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
   showImportFlagsModal: false,
+  showKeyboardShortcutsModal: false,
   findMenuOpen: false,
   evaluateMode: false,
   evaluateMetric: undefined,
@@ -281,6 +284,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         showAdvancedEditingModal: action.payload
+      };
+    case getType(showKeyboardShortcutsModal):
+      return {
+        ...state,
+        showKeyboardShortcutsModal: action.payload
       };
     case getType(showCopyMapModal):
       return {

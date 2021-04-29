@@ -23,7 +23,8 @@ import {
   toggleDistrictLocked,
   toggleEvaluate,
   toggleLimitDrawingToWithinCounty,
-  setMapLabel
+  setMapLabel,
+  showKeyboardShortcutsModal
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -314,6 +315,7 @@ const DistrictsMap = ({
         if (key.key === "Spacebar" || key.key === " ") {
           setTogglePan(true);
         }
+        key.key === "?" && store.dispatch(showKeyboardShortcutsModal(true));
         // Switch between districts
         key.key === "e" && setPreviousDistrict();
         key.key === "d" && setNextDistrict();
@@ -337,7 +339,7 @@ const DistrictsMap = ({
               : "Limiting selection to county"
           );
 
-        key.key === "p" && store.dispatch(toggleEvaluate(!evaluateMode));
+        key.key === "t" && store.dispatch(toggleEvaluate(!evaluateMode));
         // Toggle labels
         key.key === "1" && togglePopulationLabel();
       } else {
@@ -870,7 +872,8 @@ const DistrictsMap = ({
 function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
-    findTool: state.project.findTool
+    findTool: state.project.findTool,
+    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal
   };
 }
 

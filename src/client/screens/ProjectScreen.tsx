@@ -24,6 +24,7 @@ import "../App.css";
 import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
 import CenteredContent from "../components/CenteredContent";
 import CopyMapModal from "../components/CopyMapModal";
+import KeyboardShortcutsModal from "../components/KeyboardShortcutsModal";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
@@ -212,6 +213,7 @@ const ProjectScreen = ({
                 />
               )}
               <CopyMapModal project={project} />
+              <KeyboardShortcutsModal />
               <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}
