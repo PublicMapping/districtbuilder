@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor style cleanup for organizations page and dropdown [#709](https://github.com/PublicMapping/districtbuilder/pull/709)
 - Make password validation visible in modal [#706](https://github.com/PublicMapping/districtbuilder/pull/706)
 - Sorting on organization admin table [#711](https://github.com/PublicMapping/districtbuilder/pull/711)
+- Fix joining/leaving organization with an inactive project template [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
+- Show maps for inactive project templates [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
 
 ## [1.4.0] - 2021-04-12
 
