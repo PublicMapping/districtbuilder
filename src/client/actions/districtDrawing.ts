@@ -51,6 +51,7 @@ export const showAdvancedEditingModal = createAction("Show advanced editing warn
 >();
 
 export const showCopyMapModal = createAction("Show copy map modal")<boolean>();
+export const setImportFlagsModal = createAction("Show import flags modal")<boolean>();
 
 export const undo = createAction("Undo project action")();
 export const redo = createAction("Redo project action")();

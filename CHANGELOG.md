@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
 - Highlight selected/hovered districts and zoom to district [#688](https://github.com/PublicMapping/districtbuilder/pull/688)
 - Added unique index on region config table for country / region code [#702](https://github.com/PublicMapping/districtbuilder/pull/702)
+- Display warnings and row-level flags for district import [#708](https://github.com/PublicMapping/districtbuilder/pull/708)
 
 ### Changed
 

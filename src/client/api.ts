@@ -14,9 +14,9 @@ import {
   UpdateProjectData,
   UpdateUserData,
   UserId,
-  DistrictsDefinition,
   RegionConfigId,
-  ProjectNest
+  ProjectNest,
+  DistrictsImportApiResponse
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -262,7 +262,7 @@ export async function exportProjectShp(project: IProject): Promise<void> {
   });
 }
 
-export async function importCsv(file: Blob): Promise<DistrictsDefinition> {
+export async function importCsv(file: Blob): Promise<DistrictsImportApiResponse> {
   const formData = new FormData();
   formData.append("file", file);
   return new Promise((resolve, reject) => {

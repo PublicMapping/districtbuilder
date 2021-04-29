@@ -277,3 +277,18 @@ export type LockedDistricts = readonly boolean[];
 export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 export type UintArrays = ReadonlyArray<UintArray>;
 export type RegionLookupProperties = Record<string, unknown>;
+
+export type DistrictImportField = "" | "BLOCKID" | "DISTRICT";
+
+export interface ImportRowFlag {
+  readonly rowNumber: number;
+  readonly errorText: string;
+  readonly field: DistrictImportField;
+  readonly rowValue: readonly string[];
+}
+
+export interface DistrictsImportApiResponse {
+  readonly districtsDefinition?: DistrictsDefinition;
+  readonly rowFlags?: readonly ImportRowFlag[];
+  readonly maxDistrictId: number;
+}

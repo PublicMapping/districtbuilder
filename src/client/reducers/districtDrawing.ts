@@ -19,6 +19,7 @@ import {
   setSelectionTool,
   showAdvancedEditingModal,
   showCopyMapModal,
+  setImportFlagsModal,
   toggleDistrictLocked,
   undo,
   replaceSelectedGeounits,
@@ -110,6 +111,7 @@ export interface DistrictDrawingState {
   readonly selectionTool: SelectionTool;
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
+  readonly showImportFlagsModal: boolean;
   readonly findMenuOpen: boolean;
   readonly evaluateMode: boolean;
   readonly evaluateMetric: EvaluateMetric | undefined;
@@ -128,6 +130,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   selectionTool: SelectionTool.Default,
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
+  showImportFlagsModal: false,
   findMenuOpen: false,
   evaluateMode: false,
   evaluateMetric: undefined,
@@ -275,6 +278,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         showCopyMapModal: action.payload
+      };
+    case getType(setImportFlagsModal):
+      return {
+        ...state,
+        showImportFlagsModal: action.payload
       };
     case getType(toggleFind):
       return {
