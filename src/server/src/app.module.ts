@@ -17,6 +17,7 @@ import { ProjectsModule } from "./projects/projects.module";
 import { ProjectTemplatesModule } from "./project-templates/project-templates.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { RollbarModule } from "./rollbar/rollbar.module";
+import { RoomserviceModule } from "./roomservice/roomservice.module";
 import { UsersModule } from "./users/users.module";
 
 import { join } from "path";
@@ -62,6 +63,7 @@ if (DEBUG) {
     }),
     TerminusModule,
     RollbarModule,
+    RoomserviceModule,
     AuthModule,
     HealthCheckModule,
     OrganizationsModule,
