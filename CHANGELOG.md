@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sorting on organization admin table [#711](https://github.com/PublicMapping/districtbuilder/pull/711)
 - Fix joining/leaving organization with an inactive project template [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
 - Show maps for inactive project templates [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
+- Only check file extension and not file type for CSV imports [#723](https://github.com/PublicMapping/districtbuilder/pull/723)
 
 ## [1.4.0] - 2021-04-12
 
