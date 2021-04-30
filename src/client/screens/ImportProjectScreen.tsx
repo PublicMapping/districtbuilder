@@ -210,7 +210,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
             return;
           }
 
-          const extension = file.type.split("/")[1] || file.name.split(".")[1];
+          const extension = file.name.split(".")[1];
 
           if (extension !== "csv") {
             setFileError("File must be a .csv");
