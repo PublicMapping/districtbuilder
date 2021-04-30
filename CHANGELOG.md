@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Style Evaluate Mode panel [#724](https://github.com/PublicMapping/districtbuilder/pull/724)
 - Change eslint config to detect misuse of NestJS services [#700](https://github.com/PublicMapping/districtbuilder/pull/700)
 
 ### Fixed
