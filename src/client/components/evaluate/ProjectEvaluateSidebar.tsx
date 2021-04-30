@@ -19,64 +19,13 @@ import { geoLevelLabelSingular, getTargetPopulation } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
-    bg: "muted",
-    boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
-    display: "flex",
     flexDirection: "column",
     flexShrink: 0,
     height: "100%",
     minWidth: "430px",
-    maxWidth: "35%",
+    maxWidth: "447px",
     position: "relative",
-    ml: "0",
-    color: "gray.8",
     zIndex: 200
-  },
-  td: {
-    fontWeight: "body",
-    color: "gray.8",
-    fontSize: 1,
-    p: 2,
-    textAlign: "left",
-    verticalAlign: "bottom"
-  },
-  header: {
-    variant: "header.app",
-    borderBottom: "1px solid",
-    borderColor: "gray.2",
-    paddingBottom: "20px",
-    flexDirection: "column",
-    m: "0"
-  },
-  closeBtn: {
-    position: "absolute",
-    right: "20px"
-  },
-  metricRow: {
-    p: 1,
-    width: "100%",
-    mb: "10px",
-    "&:hover": {
-      cursor: "pointer"
-    },
-    flexDirection: "row"
-  },
-  evaluateMetricsList: {
-    overflowY: "auto",
-    flex: 1,
-    flexDirection: "column",
-    mt: "50px"
-  },
-  metricValue: {
-    variant: "header.right",
-    position: "relative",
-    mr: "20px",
-    textAlign: "right"
-  },
-  metricText: {
-    fontSize: "10",
-    ml: "50px",
-    minHeight: "50px"
   }
 };
 
