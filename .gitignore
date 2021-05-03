@@ -25,6 +25,9 @@ src/cli/lib
 # Manage build
 src/manage/lib
 
+# Ansible
+deployment/ansible/roles/azavea.*
+
 # Terraform
 .terraform
 .terraform/

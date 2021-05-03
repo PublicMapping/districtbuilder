@@ -1,0 +1,10 @@
+---
+pip_version: "20.3.*"
+
+aws_cli_version: "1.18.*"
+aws_profile: "district-builder"
+
+docker_version: "5:19.*"
+docker_compose_version: "1.26.*"
+docker_users:
+  - "vagrant"
