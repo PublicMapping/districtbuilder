@@ -53,7 +53,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: ProjectNest }) => 
 
   // TODO #179 - the districts property can't be defined in the shared/entities.d.ts right now
   // @ts-ignore
-  const districts: DistrictGeoJSON | undefined = project.districts;
+  const districts: DistrictsGeoJSON | undefined = project.districts;
 
   useEffect(() => {
     if (mapRef.current === null) {

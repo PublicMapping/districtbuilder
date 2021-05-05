@@ -1,4 +1,4 @@
-import { FeatureCollection, MultiPolygon } from "geojson";
+import { Feature, FeatureCollection, MultiPolygon } from "geojson";
 import * as H from "history";
 import {
   IProject,
