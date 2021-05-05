@@ -98,6 +98,7 @@ export type DistrictProperties = {
   readonly contiguity: "contiguous" | "non-contiguous" | "";
   readonly compactness: number;
   readonly demographics: DemographicCounts;
+  readonly voting?: DemographicCounts;
   /* eslint-disable */
   // NOTE: These properties are set for styling purposes
   color?: string;
