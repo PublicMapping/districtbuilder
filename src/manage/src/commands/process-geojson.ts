@@ -73,6 +73,15 @@ it when necessary (file sizes ~1GB+).
       default: "population,white,black,asian,hispanic,other"
     }),
 
+    voting: flags.string({
+      char: "v",
+      description: `Comma-separated election data to select and aggregate
+      To use a different name for the layer property from the GeoJSON property, separate values by ':'
+      e.g. -v voterep:republican,votedem:democrat,voteoth:other
+      `,
+      default: ""
+    }),
+
     simplification: flags.string({
       char: "s",
       description: "Topojson simplification amount (minWeight)",
@@ -125,6 +134,10 @@ it when necessary (file sizes ~1GB+).
         level.includes(":") ? (level.split(":", 2) as [string, string]) : [level, level]
       );
     const geoLevelIds = geoLevels.map(([, id]) => id);
+    const voting: readonly [string, string][] = flags.voting
+      .split(",")
+      .map(prop => (prop.includes(":") ? (prop.split(":", 2) as [string, string]) : [prop, prop]));
+    const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
     const demographics = flags.demographics.split(",");
@@ -156,14 +169,16 @@ it when necessary (file sizes ~1GB+).
         return;
       }
     }
-    for (const [levelProp, levelId] of geoLevels) {
-      if (!(levelProp in firstFeature.properties)) {
-        this.log(`Geolevel: "${levelProp}" not present in features, exiting`);
-        return;
+    for (const mapping of [geoLevels, voting]) {
+      for (const [prop, _id] of mapping) {
+        if (!(prop in firstFeature.properties)) {
+          this.log(`Geolevel: "${prop}" not present in features, exiting`);
+          return;
+        }
       }
     }
 
-    this.renameProps(baseGeoJson, geoLevels);
+    this.renameProps(baseGeoJson, geoLevels, voting);
 
     if (flags.filterPrefix) {
       this.log(`Filtering to only prefixes of: ${flags.filterPrefix}`);
@@ -177,6 +192,7 @@ it when necessary (file sizes ~1GB+).
       baseGeoJson,
       geoLevelIds,
       demographics,
+      votingIds,
       simplification,
       quantization
     );
@@ -213,14 +229,22 @@ it when necessary (file sizes ~1GB+).
       geoLevelIds,
       minZooms,
       maxZooms,
-      demographics
+      demographics,
+      votingIds
     );
 
-    const demographicMetaData = this.writeDemographicData(
+    const demographicMetaData = this.writeNumericData(
       flags.outputDir,
       topoJsonHierarchy,
       geoLevelIds[0],
       demographics
+    );
+
+    const votingMetaData = this.writeNumericData(
+      flags.outputDir,
+      topoJsonHierarchy,
+      geoLevelIds[0],
+      votingIds
     );
 
     const geoLevelMetaData = this.writeGeoLevelIndices(
@@ -235,6 +259,7 @@ it when necessary (file sizes ~1GB+).
       flags.outputDir,
       demographicMetaData,
       geoLevelMetaData,
+      votingMetaData,
       bbox,
       geoLevelHierarchyInfo
     );
@@ -242,9 +267,11 @@ it when necessary (file sizes ~1GB+).
 
   renameProps(
     baseGeoJson: FeatureCollection<Polygon, any>,
-    geoLevels: readonly [string, string][]
+    geoLevels: readonly [string, string][],
+    voting: readonly [string, string][]
   ): void {
-    for (const [prop, id] of geoLevels) {
+    const props = [...geoLevels, ...voting];
+    for (const [prop, id] of props) {
       if (prop !== id) {
         this.log(`Renaming ${prop} to ${id} for ${baseGeoJson.features.length} features`);
         for (const feature of baseGeoJson.features) {
@@ -260,6 +287,7 @@ it when necessary (file sizes ~1GB+).
     baseGeoJson: FeatureCollection<Polygon, any>,
     geoLevelIds: readonly string[],
     demographics: readonly string[],
+    voting: readonly string[],
     simplification: number,
     quantization: number
   ): Topology<Objects<{}>> {
@@ -306,9 +334,11 @@ it when necessary (file sizes ~1GB+).
         // very against-the-grain with the topojson library, and would be less performant
         merged.properties = {};
 
-        // Aggregate all desired demographic data
-        for (const demo of demographics) {
-          merged.properties[demo] = this.aggProperty(geoms, demo);
+        // Aggregate all desired demographic and voting data
+        for (const ids of [demographics, voting]) {
+          for (const id of ids) {
+            merged.properties[id] = this.aggProperty(geoms, id);
+          }
         }
 
         // Set the geolevel keys for this level, as well as all larger levels
@@ -352,9 +382,11 @@ it when necessary (file sizes ~1GB+).
         geometry.id = index;
 
         // Add abbreviated label
-        for (const demo of demographics) {
-          // @ts-ignore
-          geometry.properties[`${demo}-abbrev`] = abbreviateNumber(geometry.properties[demo]);
+        for (const ids of [demographics, voting]) {
+          for (const id of ids) {
+            // @ts-ignore
+            geometry.properties[`${id}-abbrev`] = abbreviateNumber(geometry.properties[id]);
+          }
         }
       });
     }
@@ -426,24 +458,24 @@ it when necessary (file sizes ~1GB+).
       : new Uint32Array(data);
   }
 
-  // Create demographic static data and write to disk
-  writeDemographicData(
+  // Create demographic or voting static data and write to disk
+  writeNumericData(
     dir: string,
     topology: Topology<Objects<{}>>,
     geoLevel: string,
-    demographics: readonly string[]
+    ids: readonly string[]
   ): IStaticFile[] {
     const features: Feature[] = (topology.objects[geoLevel] as any).geometries;
-    return demographics.map(demographic => {
-      this.log(`Writing static data file for ${demographic}`);
-      const fileName = `${demographic}.buf`;
+    return ids.map(id => {
+      this.log(`Writing static data file for ${id}`);
+      const fileName = `${id}.buf`;
 
       // For demographic static data, we want an arraybuffer of base geounits where
       // each data element represents the demographic data contained in that geounit.
-      const data = this.mkTypedArray(features.map(f => f?.properties?.[demographic]));
+      const data = this.mkTypedArray(features.map(f => f?.properties?.[id]));
       writeFileSync(join(dir, fileName), data);
       return {
-        id: demographic,
+        id,
         fileName,
         bytesPerElement: data.BYTES_PER_ELEMENT
       };
@@ -490,6 +522,7 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     demographicMetadata: IStaticFile[],
     geoLevelMetadata: IStaticFile[],
+    votingMetadata: IStaticFile[],
     bbox: [number, number, number, number],
     geoLevelHierarchy: GeoLevelInfo[]
   ): void {
@@ -497,6 +530,7 @@ it when necessary (file sizes ~1GB+).
     const staticMetadata: IStaticMetadata = {
       demographics: demographicMetadata,
       geoLevels: geoLevelMetadata,
+      voting: votingMetadata,
       bbox,
       geoLevelHierarchy
     };
@@ -568,7 +602,8 @@ it when necessary (file sizes ~1GB+).
     geoLevels: readonly string[],
     minZooms: readonly string[],
     maxZooms: readonly string[],
-    demographics: readonly string[]
+    demographics: readonly string[],
+    voting: readonly string[]
   ): GeoLevelInfo[] {
     const joinedMbtiles = join(dir, "all-geounits.mbtiles");
     const inputs = geoLevels.map(geoLevel => join(dir, `${geoLevel}.geojson`));
@@ -630,7 +665,7 @@ it when necessary (file sizes ~1GB+).
       const labelOutput = labelsMbtiles[idx];
       geojsonPolygonLabels(input, { style: "largest" }, { outputPath: labelPath });
       tippecanoe(labelPath, {
-        include: [...demographics.map(id => `${id}-abbrev`)],
+        include: [...demographics.map(id => `${id}-abbrev`), ...voting.map(id => `${id}-abbrev`)],
         force: true,
         maximumZoom,
         minimumZoom,
