@@ -104,7 +104,7 @@ const CountySplitMetricDetail = ({
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
-            <Styled.th sx={style.th}>County</Styled.th>
+            <Styled.th sx={style.th}>{geoLevelLabel(geoLevel)}</Styled.th>
             <Styled.th sx={style.th}>Split</Styled.th>
           </Styled.tr>
         </thead>
