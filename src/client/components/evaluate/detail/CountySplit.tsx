@@ -9,7 +9,7 @@ import {
 import { useState, useEffect } from "react";
 import { getLabelLookup } from "../../map/labels";
 import { Resource } from "../../../resource";
-import { geoLevelLabel } from "../../../functions";
+import { geoLevelLabel, geoLevelLabelSingular } from "../../../functions";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -104,7 +104,7 @@ const CountySplitMetricDetail = ({
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
-            <Styled.th sx={style.th}>{geoLevelLabel(geoLevel)}</Styled.th>
+            <Styled.th sx={style.th}>{geoLevelLabelSingular(geoLevel)}</Styled.th>
             <Styled.th sx={style.th}>Split</Styled.th>
           </Styled.tr>
         </thead>

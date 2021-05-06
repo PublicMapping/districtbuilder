@@ -24,7 +24,12 @@ import {
   EvaluateMetric
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
-import { areAnyGeoUnitsSelected, getSelectedGeoLevel, getTargetPopulation } from "../../functions";
+import {
+  areAnyGeoUnitsSelected,
+  getSelectedGeoLevel,
+  getTargetPopulation,
+  geoLevelLabelSingular
+} from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -176,6 +181,10 @@ const DistrictsMap = ({
   // The ability to zoom this far in isn't needed in the typical use-case (+4 is fine for that),
   // but it's needed in order to allow the user to fix very tiny unassigned slivers that may arise.
   const overZoom = maxZoom + 8;
+
+  const legendLabel = geoLevelLabelSingular(
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id
+  );
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -669,7 +678,7 @@ const DistrictsMap = ({
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
           <Flex sx={{ alignItems: "center" }}>
-            <Text sx={style.legendTitle}>{geoLevelLabel(geoLevel)} splits</Text>
+            <Text sx={style.legendTitle}>{legendLabel} splits</Text>
             <Flex sx={style.legendItem}>
               <Box
                 sx={{
