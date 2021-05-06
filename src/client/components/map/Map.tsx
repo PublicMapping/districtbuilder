@@ -669,7 +669,7 @@ const DistrictsMap = ({
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
           <Flex sx={{ alignItems: "center" }}>
-            <Text sx={style.legendTitle}>County splits</Text>
+            <Text sx={style.legendTitle}>{geoLevelLabel(geoLevel)} splits</Text>
             <Flex sx={style.legendItem}>
               <Box
                 sx={{
