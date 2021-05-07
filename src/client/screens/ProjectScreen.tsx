@@ -24,7 +24,7 @@ import "../App.css";
 import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
 import CenteredContent from "../components/CenteredContent";
 import CopyMapModal from "../components/CopyMapModal";
-import KeyboardShortcutsModal from "../components/KeyboardShortcutsModal";
+import KeyboardShortcutsModal from "../components/map/KeyboardShortcutsModal";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
