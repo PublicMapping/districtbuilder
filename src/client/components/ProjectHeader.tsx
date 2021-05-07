@@ -137,7 +137,7 @@ const ProjectHeader = ({
                   fontWeight: "light",
                   maxHeight: "34px",
                   borderBottom: evaluateMode ? "solid 3px" : "none",
-                  borderBottomColor: "blue.2",
+                  borderBottomColor: "blue.2"
                 },
                 ...menuButtonStyle.menuButton
               }}
@@ -145,8 +145,9 @@ const ProjectHeader = ({
             >
               <span
                 sx={{
-                  mb: evaluateMode ? "-3px" : "0",
-                }}>
+                  mb: evaluateMode ? "-3px" : "0"
+                }}
+              >
                 Evaluate
               </span>
             </Button>
