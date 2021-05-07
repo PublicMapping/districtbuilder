@@ -64,7 +64,7 @@ function previousSelectionTool({ selectionTool }: MapContext) {
 
 function nextGeoLevel({ geoLevelIndex, numGeolevels }: MapContext) {
   // Go to next geolevel if not already on smallest level
-  const nextGeoLevelIndex = geoLevelIndex < numGeolevels ? geoLevelIndex + 1 : geoLevelIndex;
+  const nextGeoLevelIndex = geoLevelIndex < numGeolevels - 1 ? geoLevelIndex + 1 : geoLevelIndex;
   store.dispatch(setGeoLevelIndex(nextGeoLevelIndex));
 }
 function previousGeoLevel({ geoLevelIndex }: MapContext) {
@@ -100,19 +100,19 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     action: setPreviousDistrict
   },
   {
-    key: "D",
+    key: "d",
     text: "Next district",
     action: setNextDistrict
   },
   {
     key: "s",
     text: "Use bigger geolevels",
-    action: nextGeoLevel
+    action: previousGeoLevel
   },
   {
     key: "f",
     text: "Use smaller geolevels",
-    action: previousGeoLevel
+    action: nextGeoLevel
   },
   {
     key: "w",
@@ -166,7 +166,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     }
   },
   {
-    key: "z",
+    key: "Z",
     text: "Redo",
     meta: true,
     shift: true,

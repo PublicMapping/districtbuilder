@@ -238,11 +238,11 @@ const DistrictsMap = ({
 
   const downHandler = useCallback(
     (key: KeyboardEvent) => {
-      // All keyboard actions not including CMD / CTRL
+      const meta = navigator.appVersion.indexOf("Mac") !== -1 ? "metaKey" : "ctrlKey";
       const shortcut = KEYBOARD_SHORTCUTS.find(
         shortcut =>
           shortcut.key === key.key &&
-          !!shortcut.meta === key.metaKey &&
+          !!shortcut.meta === key[meta] &&
           !!shortcut.shift === key.shiftKey
       );
       if (shortcut) {
