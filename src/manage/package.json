@@ -33,7 +33,7 @@
     "topojson-server": "3.0.1",
     "topojson-simplify": "3.0.3",
     "tslib": "1.11.0",
-    "typeorm": "0.2.22"
+    "typeorm": "0.2.25"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",
