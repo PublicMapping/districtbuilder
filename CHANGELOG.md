@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Change eslint config to detect misuse of NestJS services [#700](https://github.com/PublicMapping/districtbuilder/pull/700)
+- Log non-HTTP errors to Rollbar [#725](https://github.com/PublicMapping/districtbuilder/pull/725)
 
 ### Fixed
 
