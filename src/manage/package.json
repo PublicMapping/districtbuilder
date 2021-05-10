@@ -25,7 +25,7 @@
     "js-yaml": "4.0.0",
     "json-stream-stringify": "^2.0.2",
     "kebab-case": "1.0.0",
-    "lodash": "4.17.19",
+    "lodash": "4.17.21",
     "pg": "7.17.1",
     "recursive-readdir": "2.2.2",
     "rxjs": "6.5.4",
