@@ -1,4 +1,4 @@
-import { ProjectVisibility } from "./constants";
+import { ProjectVisibility, REGION_LABELS } from "./constants";
 
 export type UserId = string;
 
@@ -98,6 +98,7 @@ export type DistrictProperties = {
   readonly contiguity: "contiguous" | "non-contiguous" | "";
   readonly compactness: number;
   readonly demographics: DemographicCounts;
+  readonly voting?: DemographicCounts;
   /* eslint-disable */
   // NOTE: These properties are set for styling purposes
   color?: string;
@@ -121,12 +122,15 @@ export interface GeoLevelInfo {
 }
 
 export type GeoLevelHierarchy = readonly GeoLevelInfo[];
+export type RegionLabels = Record<typeof REGION_LABELS[number], string>;
 
 export interface IStaticMetadata {
   readonly demographics: readonly IStaticFile[];
   readonly geoLevels: readonly IStaticFile[];
+  readonly voting?: readonly IStaticFile[];
   readonly bbox: readonly [number, number, number, number];
   readonly geoLevelHierarchy: GeoLevelHierarchy;
+  readonly labels?: RegionLabels;
 }
 
 export interface Login {

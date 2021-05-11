@@ -34,6 +34,12 @@ export function allGeoUnitIds(geoUnits: GeoUnits) {
   return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.keys()));
 }
 
+export const capitalizeFirstLetter = (s: string) =>
+  s.substring(0, 1).toUpperCase() + s.substring(1);
+
+export const getPartyColor = (party: string) =>
+  party === "republican" ? "#BF4E6A" : party === "democrat" ? "#4E56BF" : "#F7AD00";
+
 /*
  * Assign nested geounit to district.
  *

@@ -13,14 +13,15 @@ import length from "@turf/length";
 import polygonToLine from "@turf/polygon-to-line";
 
 import {
-  UintArrays,
   Contiguity,
+  DistrictProperties,
   GeoUnitCollection,
   GeoUnitDefinition,
   HierarchyDefinition,
-  IStaticMetadata
+  IStaticMetadata,
+  UintArrays
 } from "../../../../shared/entities";
-import { getAllBaseIndices, getDemographics } from "../../../../shared/functions";
+import { getAllBaseIndices, getDemographics, getVoting } from "../../../../shared/functions";
 import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
 
@@ -171,6 +172,8 @@ function getNodeForHierarchy(
       childGeoms.map((childGeom: any) => childGeom.id);
 }
 
+type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
+
 export class GeoUnitTopology {
   public readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
 
@@ -179,6 +182,7 @@ export class GeoUnitTopology {
     public readonly definition: GeoUnitDefinition,
     public readonly staticMetadata: IStaticMetadata,
     public readonly demographics: UintArrays,
+    public readonly voting: UintArrays,
     public readonly geoLevels: UintArrays
   ) {
     this.hierarchy = group(topology, definition);
@@ -239,8 +243,14 @@ export class GeoUnitTopology {
         return indices.concat(levelIndices);
       }, []);
       mutableGeom.id = idx;
-      mutableGeom.properties = getDemographics(baseIndices, this.staticMetadata, this.demographics);
-      return mutableGeom;
+      const geom: MultiPolygon<FeatureProperties> = {
+        ...mutableGeom,
+        properties: {
+          demographics: getDemographics(baseIndices, this.staticMetadata, this.demographics),
+          voting: getVoting(baseIndices, this.staticMetadata, this.voting)
+        }
+      };
+      return geom;
     });
     const featureCollection = topojson.feature(this.topology, {
       type: "GeometryCollection",
@@ -256,9 +266,7 @@ export class GeoUnitTopology {
           ...feature,
           geometry,
           properties: {
-            demographics: {
-              ...feature.properties
-            },
+            ...feature.properties,
             compactness,
             contiguity
           }

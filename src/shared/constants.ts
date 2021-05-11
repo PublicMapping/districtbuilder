@@ -106,3 +106,5 @@ export const FIPS: { readonly [fips: string]: string } = {
 
 // Maximum allowable upload size, in bytes
 export const MaxUploadFileSize = 25_000_000;
+
+export const REGION_LABELS = ["election"] as const;

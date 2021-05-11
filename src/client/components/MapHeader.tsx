@@ -1,7 +1,12 @@
 /** @jsx jsx */
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
+import {
+  areAnyGeoUnitsSelected,
+  geoLevelLabel,
+  isBaseGeoLevelAlwaysVisible,
+  capitalizeFirstLetter
+} from "../functions";
 import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
 import Icon from "./Icon";
@@ -140,8 +145,6 @@ const GeoLevelButton = ({
     </Box>
   );
 };
-
-const capitalizeFirstLetter = (s: string) => s.substring(0, 1).toUpperCase() + s.substring(1);
 
 const MapHeader = ({
   label,
