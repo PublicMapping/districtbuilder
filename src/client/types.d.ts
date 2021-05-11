@@ -5,7 +5,8 @@ import {
   IStaticMetadata,
   UintArrays,
   GeoUnitHierarchy,
-  DistrictProperties
+  DistrictProperties,
+  DemographicCounts
 } from "../shared/entities";
 
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;
@@ -24,7 +25,14 @@ export interface StaticProjectData {
 
 export interface WorkerProjectData {
   readonly staticDemographics: UintArrays;
+  readonly staticVotingData?: UintArrays;
   readonly geoUnitHierarchy: GeoUnitHierarchy;
+}
+
+export interface StaticCounts {
+  // nest demographics and voting data together
+  readonly demographics: DemographicCounts;
+  readonly voting?: DemographicCounts;
 }
 
 export type ProjectData = DynamicProjectData & StaticProjectData;

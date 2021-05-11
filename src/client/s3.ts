@@ -88,9 +88,11 @@ export async function fetchWorkerStaticData(
 ): Promise<WorkerProjectData> {
   return Promise.all([
     fetchGeoUnitHierarchy(path),
-    fetchStaticFiles(path, staticMetadata.demographics)
-  ]).then(([geoUnitHierarchy, staticDemographics]) => ({
+    fetchStaticFiles(path, staticMetadata.demographics),
+    staticMetadata.voting && fetchStaticFiles(path, staticMetadata.voting)
+  ]).then(([geoUnitHierarchy, staticDemographics, staticVotingData]) => ({
     geoUnitHierarchy,
-    staticDemographics
+    staticDemographics,
+    staticVotingData
   }));
 }

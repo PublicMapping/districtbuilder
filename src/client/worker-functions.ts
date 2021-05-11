@@ -2,6 +2,7 @@ import stringify from "json-stable-stringify";
 import memoize from "memoizee";
 
 import { DemographicCounts, GeoUnits, IProject, IStaticMetadata, S3URI } from "../shared/entities";
+import { StaticCounts } from "../client/types";
 /* eslint import/no-webpack-loader-syntax: off */
 import createWorker from "workerize-loader!./worker";
 import * as WorkerType from "./worker";
@@ -26,7 +27,7 @@ export const getTotalSelectedDemographics = memoize(
     staticMetadata: IStaticMetadata,
     regionURI: S3URI,
     selectedGeounits: GeoUnits
-  ): Promise<DemographicCounts> => {
+  ): Promise<StaticCounts> => {
     return worker.getTotalSelectedDemographics(staticMetadata, regionURI, selectedGeounits);
   },
   {
