@@ -335,7 +335,7 @@ const SidebarRow = memo(
     const color = winningParty && getPartyColor(winningParty);
     const votesTotal = voting ? Object.values(voting).reduce((a, b) => a + b) : 0;
     const marginPct =
-      voting && winningParty && ((votesTotal - voting[winningParty]) / votesTotal) * 100;
+      voting && winningParty && votesTotal && ((votesTotal - voting[winningParty]) / votesTotal) * 100;
     const votingDisplay =
       voting && winningParty && voting[winningParty] !== 0 ? (
         <Box sx={{ color }}>{`${winningParty[0].toUpperCase()}+${marginPct?.toLocaleString(
