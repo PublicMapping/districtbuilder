@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import mapValues from "lodash/mapValues";
+import { mapValues, sum } from "lodash";
 import { Box, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import { getPartyColor, capitalizeFirstLetter } from "../functions";
@@ -67,7 +67,7 @@ const VotingTooltip = ({
   readonly voting: { readonly [id: string]: number };
   readonly votingIds: readonly string[];
 }) => {
-  const total = Object.values(voting).reduce((a, b) => a + b, 0);
+  const total = sum(Object.values(voting));
   const percentages = mapValues(voting, (votes: number) => (total ? votes / total : 0) * 100);
   const rows = votingIds.map(party => (
     <Row

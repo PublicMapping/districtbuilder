@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import { sum } from "lodash";
 import React, { Fragment, memo, useEffect, useMemo, useState } from "react";
 import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
@@ -333,12 +334,15 @@ const SidebarRow = memo(
     const winningParty =
       voting && Object.keys(voting).reduce((a, b) => (voting[a] > voting[b] ? a : b));
     const color = winningParty && getPartyColor(winningParty);
-    const votesTotal = voting ? Object.values(voting).reduce((a, b) => a + b) : 0;
+    const votesTotal = voting ? sum(Object.values(voting)) : 0;
     const marginPct =
-      voting && winningParty && votesTotal && ((votesTotal - voting[winningParty]) / votesTotal) * 100;
+      voting &&
+      winningParty &&
+      votesTotal &&
+      ((votesTotal - voting[winningParty]) / votesTotal) * 100;
     const votingDisplay =
-      voting && winningParty && voting[winningParty] !== 0 ? (
-        <Box sx={{ color }}>{`${winningParty[0].toUpperCase()}+${marginPct?.toLocaleString(
+      voting && winningParty && marginPct !== undefined && voting[winningParty] !== 0 ? (
+        <Box sx={{ color }}>{`${winningParty[0].toUpperCase()}+${marginPct.toLocaleString(
           undefined,
           {
             maximumFractionDigits: 0

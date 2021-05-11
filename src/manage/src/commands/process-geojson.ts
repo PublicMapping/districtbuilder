@@ -27,6 +27,14 @@ import {
 } from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 
+// Takes a comma-separated list of items, optionally as a pair separated by a ':'
+// and returns an array
+function splitPairs(input: string): readonly [string, string][] {
+  return input
+    .split(",")
+    .map(item => (item.includes(":") ? (item.split(":", 2) as [string, string]) : [item, item]));
+}
+
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
 
@@ -137,20 +145,10 @@ it when necessary (file sizes ~1GB+).
       return;
     }
 
-    const geoLevels: readonly [string, string][] = flags.levels
-      .split(",")
-      .map(level =>
-        level.includes(":") ? (level.split(":", 2) as [string, string]) : [level, level]
-      );
+    const geoLevels = splitPairs(flags.levels);
     const geoLevelIds = geoLevels.map(([, id]) => id);
-    const voting: readonly [string, string][] = flags.voting
-      .split(",")
-      .map(prop => (prop.includes(":") ? (prop.split(":", 2) as [string, string]) : [prop, prop]));
-    const labelsOpts = Object.fromEntries(
-      flags.labels
-        .split(",")
-        .map(prop => (prop.includes(":") ? (prop.split(":", 2) as [string, string]) : [prop, prop]))
-    );
+    const voting = splitPairs(flags.voting);
+    const labelsOpts = Object.fromEntries(splitPairs(flags.labels));
     const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
