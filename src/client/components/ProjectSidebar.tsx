@@ -332,7 +332,7 @@ const SidebarRow = memo(
 
     const { voting } = district.properties;
     const winningParty =
-      voting && Object.keys(voting).reduce((a, b) => (voting[a] > voting[b] ? a : b));
+      voting && Object.keys(voting).reduce((a, b) => (voting[a] > voting[b] ? a : b), "");
     const color = winningParty && getPartyColor(winningParty);
     const votesTotal = voting ? sum(Object.values(voting)) : 0;
     const marginPct =
