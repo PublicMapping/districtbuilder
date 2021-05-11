@@ -241,7 +241,7 @@ const DistrictsMap = ({
       const meta = navigator.appVersion.indexOf("Mac") !== -1 ? "metaKey" : "ctrlKey";
       const shortcut = KEYBOARD_SHORTCUTS.find(
         shortcut =>
-          shortcut.key === key.key &&
+          (shortcut.key === key.key || shortcut.key.toLowerCase() === key.key) &&
           !!shortcut.meta === key[meta] &&
           !!shortcut.shift === key.shiftKey
       );
