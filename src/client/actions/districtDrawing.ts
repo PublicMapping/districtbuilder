@@ -40,11 +40,15 @@ export const setSelectionTool = createAction("Set selection tool")<SelectionTool
 
 export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();
 
+export const setMapLabel = createAction("Set map label")<string | undefined>();
+
 export const setGeoLevelVisibility = createAction("Set geolevel visibility")<readonly boolean[]>();
 
 export const toggleDistrictLocked = createAction("Toggle district locked")<DistrictId>();
 
 export const toggleLimitDrawingToWithinCounty = createAction("Limit drawing to within county")();
+
+export const showKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")<boolean>();
 
 export const showAdvancedEditingModal = createAction("Show advanced editing warning modal")<
   boolean

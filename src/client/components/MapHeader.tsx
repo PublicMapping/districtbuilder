@@ -15,7 +15,8 @@ import {
   setGeoLevelIndex,
   setSelectionTool,
   SelectionTool,
-  showAdvancedEditingModal
+  showAdvancedEditingModal,
+  setMapLabel
 } from "../actions/districtDrawing";
 import store from "../store";
 
@@ -148,7 +149,6 @@ const GeoLevelButton = ({
 
 const MapHeader = ({
   label,
-  setMapLabel,
   metadata,
   selectionTool,
   geoLevelIndex,
@@ -158,7 +158,6 @@ const MapHeader = ({
   limitSelectionToCounty
 }: {
   readonly label?: string;
-  readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
@@ -246,10 +245,10 @@ const MapHeader = ({
           </Label>
           <Select
             id="population-dropdown"
-            value={label}
+            value={label || "Select..."}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               const label = e.currentTarget.value;
-              setMapLabel(label);
+              store.dispatch(setMapLabel(label));
             }}
             sx={{ width: "150px" }}
           >

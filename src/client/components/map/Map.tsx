@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
@@ -61,6 +61,7 @@ import store from "../../store";
 import { State } from "../../reducers";
 import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
+import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
 
 interface Props {
   readonly project: IProject;
@@ -201,8 +202,10 @@ const DistrictsMap = ({
     map.touchZoomRotate.disableRotation();
     map.doubleClickZoom.disable();
 
-    const setLevelVisibility = () =>
+    const setLevelVisibility = () => {
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
+    };
+
     const onMapLoad = () => {
       generateMapLayers(
         project.regionConfig.s3URI,
@@ -233,12 +236,41 @@ const DistrictsMap = ({
     // eslint-disable-next-line
   }, [mapRef]);
 
+  const downHandler = useCallback(
+    (key: KeyboardEvent) => {
+      const meta = navigator.appVersion.indexOf("Mac") !== -1 ? "metaKey" : "ctrlKey";
+      const shortcut = KEYBOARD_SHORTCUTS.find(
+        shortcut =>
+          (shortcut.key === key.key || shortcut.key.toLowerCase() === key.key) &&
+          !!shortcut.meta === key[meta] &&
+          !!shortcut.shift === key.shiftKey
+      );
+      if (shortcut) {
+        shortcut.action({
+          selectionTool,
+          geoLevelIndex,
+          selectedDistrictId,
+          label,
+          numFeatures: geojson.features.length,
+          numGeolevels: staticMetadata.geoLevelHierarchy.length,
+          limitSelectionToCounty,
+          evaluateMode,
+          setTogglePan
+        });
+      }
+    },
+    [
+      selectionTool,
+      geoLevelIndex,
+      selectedDistrictId,
+      label,
+      geojson.features.length,
+      staticMetadata.geoLevelHierarchy.length,
+      limitSelectionToCounty,
+      evaluateMode
+    ]
+  );
   // Keyboard handlers
-  function downHandler({ key }: KeyboardEvent) {
-    if (key === "Spacebar" || key === " ") {
-      setTogglePan(true);
-    }
-  }
 
   const upHandler = ({ key }: KeyboardEvent) => {
     if (key === "Spacebar" || key === " ") {
@@ -255,7 +287,8 @@ const DistrictsMap = ({
       window.removeEventListener("keydown", downHandler);
       window.removeEventListener("keyup", upHandler);
     };
-  }, []);
+    // Reload handlers when selected district changes
+  }, [selectedDistrictId, selectionTool, downHandler]);
 
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
@@ -745,7 +778,8 @@ const DistrictsMap = ({
 function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
-    findTool: state.project.findTool
+    findTool: state.project.findTool,
+    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal
   };
 }
 
