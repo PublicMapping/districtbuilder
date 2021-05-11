@@ -489,12 +489,12 @@ function isGeoUnitLocked(
       )
     : typeof districtsDefinition === "number"
     ? // Check if this specific district is locked
-      lockedDistricts[districtsDefinition]
+      lockedDistricts[districtsDefinition - 1]
     : // Check if any district at this geolevel is locked
       districtsDefinition.some(districtId =>
         typeof districtId === "number"
           ? // Whole district is assigned so it can be looked up directly
-            lockedDistricts[districtId]
+            lockedDistricts[districtId - 1]
           : // District definition has more nesting so it must be followed further
             isGeoUnitLocked(districtId, lockedDistricts, geoUnitIndices)
       );
