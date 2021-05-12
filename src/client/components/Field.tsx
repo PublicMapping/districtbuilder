@@ -7,7 +7,7 @@ import { ErrorMap } from "../../shared/types";
 import { WriteResource } from "../resource";
 
 function getFieldErrors<D, T>(resource: WriteResource<D, T>): ErrorMap<D> {
-  return "errors" in resource && typeof resource.errors.message !== "string"
+  return "errors" in resource && resource.errors && typeof resource.errors.message !== "string"
     ? resource.errors.message
     : {};
 }

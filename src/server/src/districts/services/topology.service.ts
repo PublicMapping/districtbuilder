@@ -75,9 +75,10 @@ export class TopologyService {
           this.logger.error(`geoLevelHierarchy missing from static metadata for ${s3URI}`);
         }
         const topology = JSON.parse(topojsonBody) as Topology;
-        const [demographics, geoLevels] = await Promise.all([
+        const [demographics, geoLevels, voting] = await Promise.all([
           this.fetchStaticFiles(s3URI, staticMetadata.demographics),
-          this.fetchStaticFiles(s3URI, staticMetadata.geoLevels)
+          this.fetchStaticFiles(s3URI, staticMetadata.geoLevels),
+          this.fetchStaticFiles(s3URI, staticMetadata.voting || [])
         ]);
 
         this.logger.debug(`downloaded data for s3URI ${s3URI}`);
@@ -86,6 +87,7 @@ export class TopologyService {
           { groups: geoLevelHierarchy.slice().reverse() },
           staticMetadata,
           demographics,
+          voting,
           geoLevels
         );
       } else {

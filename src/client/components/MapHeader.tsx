@@ -1,7 +1,12 @@
 /** @jsx jsx */
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
+import {
+  areAnyGeoUnitsSelected,
+  geoLevelLabel,
+  isBaseGeoLevelAlwaysVisible,
+  capitalizeFirstLetter
+} from "../functions";
 import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
 import Icon from "./Icon";
@@ -10,7 +15,8 @@ import {
   setGeoLevelIndex,
   setSelectionTool,
   SelectionTool,
-  showAdvancedEditingModal
+  showAdvancedEditingModal,
+  setMapLabel
 } from "../actions/districtDrawing";
 import store from "../store";
 
@@ -141,11 +147,8 @@ const GeoLevelButton = ({
   );
 };
 
-const capitalizeFirstLetter = (s: string) => s.substring(0, 1).toUpperCase() + s.substring(1);
-
 const MapHeader = ({
   label,
-  setMapLabel,
   metadata,
   selectionTool,
   geoLevelIndex,
@@ -155,7 +158,6 @@ const MapHeader = ({
   limitSelectionToCounty
 }: {
   readonly label?: string;
-  readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
@@ -243,10 +245,10 @@ const MapHeader = ({
           </Label>
           <Select
             id="population-dropdown"
-            value={label}
+            value={label || "Select..."}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               const label = e.currentTarget.value;
-              setMapLabel(label);
+              store.dispatch(setMapLabel(label));
             }}
             sx={{ width: "150px" }}
           >

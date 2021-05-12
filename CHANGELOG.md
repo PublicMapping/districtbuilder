@@ -14,11 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
 - Highlight selected/hovered districts and zoom to district [#688](https://github.com/PublicMapping/districtbuilder/pull/688)
 - Added unique index on region config table for country / region code [#702](https://github.com/PublicMapping/districtbuilder/pull/702)
+- Display warnings and row-level flags for district import [#708](https://github.com/PublicMapping/districtbuilder/pull/708)
+- Add keyboard shortcuts for map functions [#718](https://github.com/PublicMapping/districtbuilder/pull/718)
+- Added voting info to sidebar [#730](https://github.com/PublicMapping/districtbuilder/pull/730)
 
 ### Changed
 
 - Style Evaluate Mode panel [#724](https://github.com/PublicMapping/districtbuilder/pull/724)
 - Change eslint config to detect misuse of NestJS services [#700](https://github.com/PublicMapping/districtbuilder/pull/700)
+- Log non-HTTP errors to Rollbar [#725](https://github.com/PublicMapping/districtbuilder/pull/725)
 
 ### Fixed
 
@@ -27,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor style cleanup for organizations page and dropdown [#709](https://github.com/PublicMapping/districtbuilder/pull/709)
 - Make password validation visible in modal [#706](https://github.com/PublicMapping/districtbuilder/pull/706)
 - Sorting on organization admin table [#711](https://github.com/PublicMapping/districtbuilder/pull/711)
+- Fix joining/leaving organization with an inactive project template [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
+- Show maps for inactive project templates [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
+- Only check file extension and not file type for CSV imports [#723](https://github.com/PublicMapping/districtbuilder/pull/723)
+- Fix off-by-one error in district lock handling [#741](https://github.com/PublicMapping/districtbuilder/pull/741)
 
 ## [1.4.0] - 2021-04-12
 

@@ -1,5 +1,6 @@
 /** @jsx jsx */
-import React, { memo, useEffect, useState, Fragment } from "react";
+import { sum } from "lodash";
+import React, { Fragment, memo, useEffect, useMemo, useState } from "react";
 import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
@@ -11,36 +12,39 @@ import {
   IStaticMetadata,
   LockedDistricts
 } from "../../shared/entities";
-import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
-import {
-  areAnyGeoUnitsSelected,
-  assertNever,
-  mergeGeoUnits,
-  getTargetPopulation
-} from "../functions";
-import {
-  getSavedDistrictSelectedDemographics,
-  getTotalSelectedDemographics
-} from "../worker-functions";
-import {
-  getDistrictColor,
-  negativeChangeColor,
-  positiveChangeColor,
-  selectedDistrictColor
-} from "../constants/colors";
-import DemographicsChart from "./DemographicsChart";
-import DemographicsTooltip from "./DemographicsTooltip";
-import DistrictOptionsFlyout from "./DistrictOptionsFlyout";
-import Icon from "./Icon";
-import ProjectSidebarHeader from "./ProjectSidebarHeader";
-import Tooltip from "./Tooltip";
 
 import {
   setHoveredDistrictId,
   setSelectedDistrictId,
   toggleDistrictLocked
 } from "../actions/districtDrawing";
+import {
+  getDistrictColor,
+  negativeChangeColor,
+  positiveChangeColor,
+  selectedDistrictColor
+} from "../constants/colors";
+import {
+  areAnyGeoUnitsSelected,
+  assertNever,
+  getPartyColor,
+  getTargetPopulation,
+  mergeGeoUnits
+} from "../functions";
 import store from "../store";
+import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
+import {
+  getSavedDistrictSelectedDemographics,
+  getTotalSelectedDemographics
+} from "../worker-functions";
+
+import DemographicsChart from "./DemographicsChart";
+import DemographicsTooltip from "./DemographicsTooltip";
+import DistrictOptionsFlyout from "./DistrictOptionsFlyout";
+import Icon from "./Icon";
+import ProjectSidebarHeader from "./ProjectSidebarHeader";
+import Tooltip from "./Tooltip";
+import VotingTooltip from "./VotingTooltip";
 
 interface LoadingProps {
   readonly isLoading: boolean;
@@ -180,6 +184,18 @@ const ProjectSidebar = ({
                   <span>Race</span>
                 </Tooltip>
               </Styled.th>
+              {staticMetadata?.voting && (
+                <Styled.th sx={{ ...style.th, ...style.number }}>
+                  <Tooltip
+                    content={
+                      "Political lean" +
+                      (staticMetadata.labels ? ` (${staticMetadata.labels.election})` : "")
+                    }
+                  >
+                    <span>Pol.</span>
+                  </Tooltip>
+                </Styled.th>
+              )}
               <Styled.th sx={{ ...style.th, ...style.number }}>
                 <Tooltip content="Compactness score (Polsby-Popper)">
                   <span>Comp.</span>
@@ -219,7 +235,7 @@ export function getCompactnessDisplay(properties: DistrictProperties) {
       placement="top-start"
       content={
         <em>
-          <strong>Empty district.</strong> Add people to this district to view compute compactness.
+          <strong>Empty district.</strong> Add people to this district to view computed compactness.
         </em>
       }
     >
@@ -263,6 +279,7 @@ const SidebarRow = memo(
     selected,
     selectedPopulationDifference,
     demographics,
+    votingIds,
     deviation,
     districtId,
     isDistrictLocked,
@@ -273,6 +290,7 @@ const SidebarRow = memo(
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
     readonly demographics: DemographicCounts;
+    readonly votingIds: readonly string[];
     readonly deviation: number;
     readonly districtId: number;
     readonly isDistrictLocked?: boolean;
@@ -302,6 +320,29 @@ const SidebarRow = memo(
       e.stopPropagation();
       store.dispatch(toggleDistrictLocked(districtId - 1));
     };
+
+    const { voting } = district.properties;
+    const winningParty =
+      voting && Object.keys(voting).reduce((a, b) => (voting[a] > voting[b] ? a : b), "");
+    const color = winningParty && getPartyColor(winningParty);
+    const votesTotal = voting ? sum(Object.values(voting)) : 0;
+    const marginPct =
+      voting &&
+      winningParty &&
+      votesTotal &&
+      ((votesTotal - voting[winningParty]) / votesTotal) * 100;
+    const votingDisplay =
+      voting && winningParty && marginPct !== undefined && voting[winningParty] !== 0 ? (
+        <Box sx={{ color }}>{`${winningParty[0].toUpperCase()}+${marginPct.toLocaleString(
+          undefined,
+          {
+            maximumFractionDigits: 0
+          }
+        )}%`}</Box>
+      ) : (
+        <span sx={{ color: "gray.2" }}>{BLANK_VALUE}</span>
+      );
+
     return (
       <Styled.tr
         sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
@@ -358,6 +399,25 @@ const SidebarRow = memo(
             </span>
           </Tooltip>
         </Styled.td>
+        {voting ? (
+          <Styled.td sx={{ ...style.td, ...style.number }}>
+            <Tooltip
+              placement="top-start"
+              content={
+                votesTotal !== 0 ? (
+                  <VotingTooltip voting={voting} votingIds={votingIds} />
+                ) : (
+                  <em>
+                    <strong>Empty district.</strong> Add people to this district to view the vote
+                    totals
+                  </em>
+                )
+              }
+            >
+              <span>{votingDisplay}</span>
+            </Tooltip>
+          </Styled.td>
+        ) : null}
         <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
         <Styled.td>
           {isReadOnly ? null : isDistrictLocked ? (
@@ -388,7 +448,7 @@ const SidebarRow = memo(
           )}
         </Styled.td>
         <Styled.td>
-          <DistrictOptionsFlyout districtId={district.id} isDistrictHovered={isDistrictHovered} />
+          <DistrictOptionsFlyout districtId={districtId} isDistrictHovered={isDistrictHovered} />
         </Styled.td>
       </Styled.tr>
     );
@@ -426,6 +486,12 @@ const SidebarRows = ({
     | { readonly total: DemographicCounts; readonly savedDistrict: readonly DemographicCounts[] }
     | undefined
   >(undefined);
+
+  const votingIds = useMemo(
+    () =>
+      staticMetadata && staticMetadata.voting ? staticMetadata.voting.map(props => props.id) : [],
+    [staticMetadata]
+  );
 
   // Asynchronously recalculate demographics on state changes with web workers
   useEffect(() => {
@@ -504,6 +570,7 @@ const SidebarRows = ({
             isDistrictHovered={districtId === hoveredDistrictId}
             districtId={districtId}
             isReadOnly={isReadOnly}
+            votingIds={votingIds}
           />
         );
       })}

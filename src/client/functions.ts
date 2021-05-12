@@ -34,6 +34,12 @@ export function allGeoUnitIds(geoUnits: GeoUnits) {
   return Object.values(geoUnits).flatMap(geoUnitForLevel => Array.from(geoUnitForLevel.keys()));
 }
 
+export const capitalizeFirstLetter = (s: string) =>
+  s.substring(0, 1).toUpperCase() + s.substring(1);
+
+export const getPartyColor = (party: string) =>
+  party === "republican" ? "#BF4E6A" : party === "democrat" ? "#4E56BF" : "#F7AD00";
+
 /*
  * Assign nested geounit to district.
  *
@@ -170,6 +176,7 @@ export function mergeGeoUnits(a: GeoUnits, b: GeoUnits): GeoUnits {
 export const showActionFailedToast = () => toast.error("Something went wrong, please try again.");
 export const showResourceFailedToast = () =>
   toast.error("Something went wrong, please refresh the page.");
+export const showMapActionToast = (mapAction: string) => toast.info(mapAction);
 
 export const formatDate = (date: Date): string => {
   const d = new Date(date);
