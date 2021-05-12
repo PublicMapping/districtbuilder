@@ -30,9 +30,13 @@ import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 // Takes a comma-separated list of items, optionally as a pair separated by a ':'
 // and returns an array
 function splitPairs(input: string): readonly [string, string][] {
-  return input
-    .split(",")
-    .map(item => (item.includes(":") ? (item.split(":", 2) as [string, string]) : [item, item]));
+  return input.length === 0
+    ? []
+    : input
+        .split(",")
+        .map(item =>
+          item.includes(":") ? (item.split(":", 2) as [string, string]) : [item, item]
+        );
 }
 
 export default class ProcessGeojson extends Command {
@@ -188,12 +192,16 @@ it when necessary (file sizes ~1GB+).
         return;
       }
     }
-    for (const mapping of [geoLevels, voting]) {
-      for (const [prop, _id] of mapping) {
-        if (!(prop in firstFeature.properties)) {
-          this.log(`Geolevel: "${prop}" not present in features, exiting`);
-          return;
-        }
+    for (const [prop, _id] of geoLevels) {
+      if (!(prop in firstFeature.properties)) {
+        this.log(`Geolevel: "${prop}" not present in features, exiting`);
+        return;
+      }
+    }
+    for (const [prop, _id] of voting) {
+      if (!(prop in firstFeature.properties)) {
+        this.log(`Voting data: "${prop}" not present in features, exiting`);
+        return;
       }
     }
 
