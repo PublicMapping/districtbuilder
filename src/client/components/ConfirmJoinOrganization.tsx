@@ -79,7 +79,7 @@ const ConfirmJoinOrganization = ({
         </Heading>
       </Box>
       <Flex sx={{ flexDirection: "column" }}>
-        <Box>
+        <Box sx={{ marginBottom: 2 }}>
           Joining an organization allows you to participate their public mapping activities. You can
           create maps from their templates and have your maps featured on the organization&#39;s
           page.
