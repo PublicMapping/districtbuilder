@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.5.0] - 2021-05-13
+
+### Added
+
 - Add toggle to limit drawing to within starting county [#698](https://github.com/PublicMapping/districtbuilder/pull/698)
 - Add project evaluate view for Equal Population [#685](https://github.com/PublicMapping/districtbuilder/pull/685)
 - Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
@@ -180,7 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.1.0...1.2.0
