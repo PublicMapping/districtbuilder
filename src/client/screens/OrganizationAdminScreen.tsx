@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { connect } from "react-redux";
 import { useParams, Link } from "react-router-dom";
 import { Box, Flex, Heading, jsx } from "theme-ui";
@@ -14,9 +14,6 @@ import PageNotFoundScreen from "./PageNotFoundScreen";
 import { OrganizationProjectsState } from "../reducers/organizationProjects";
 import OrganizationAdminProjectsTable from "../components/OrganizationAdminProjectsTable";
 import { userFetch } from "../actions/user";
-import { formatDate } from "../functions";
-import { ProjectNest } from "../../shared/entities";
-import { isEqual } from "lodash";
 
 interface StateProps {
   readonly organization: OrganizationState;
@@ -87,32 +84,14 @@ const style = {
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {
   const { organizationSlug } = useParams();
-  const [projects, setProjects] = useState<readonly ProjectNest[] | undefined>(undefined);
-  useEffect(() => {
-    if ("resource" in organizationProjects.projectTemplates) {
-      const resourceProjects = organizationProjects.projectTemplates.resource
-        .map(pt => {
-          return pt.projects.map(p => {
-            return {
-              ...p,
-              project: { name: p.name, id: p.id },
-              updatedAgo: formatDate(p.updatedDt),
-              creator: { name: p.user.name, email: p.user.email },
-              id: p.id,
-              templateName: pt.name,
-              regionConfig: pt.regionConfig,
-              numberOfDistricts: pt.numberOfDistricts
-            };
-          });
-        })
-        .flat();
-      if (!isEqual(projects, resourceProjects)) {
-        setProjects(resourceProjects);
-      }
-    }
-  }, [projects, organizationProjects]);
+  const templates =
+    "resource" in organizationProjects.projectTemplates
+      ? organizationProjects.projectTemplates.resource
+      : undefined;
 
-  const featuredProjects = projects?.reduce((total, x) => (x.isFeatured ? total + 1 : total), 0);
+  const featuredProjects = templates
+    ?.flatMap(pt => pt.projects)
+    .reduce((total, x) => (x.isFeatured ? total + 1 : total), 0);
 
   const userIsAdmin =
     "resource" in organization && "resource" in user
@@ -143,25 +122,21 @@ const OrganizationAdminScreen = ({ organization, user, organizationProjects }: S
                 </Box>
               </Box>
             </Flex>
-            {projects ? (
-              <Box sx={{ p: 5 }}>
-                <OrganizationAdminProjectsTable
-                  projects={projects}
-                  organizationSlug={organizationSlug}
-                />
-                <Box>
-                  {featuredProjects ? (
-                    <Box sx={style.projectCount}>
-                      <strong>{featuredProjects}</strong> / 12 projects currently featured
-                    </Box>
-                  ) : (
-                    <Box sx={style.projectCount}>0 / 12 projects currently featured</Box>
-                  )}
-                </Box>
+            <Box sx={{ p: 5 }}>
+              <OrganizationAdminProjectsTable
+                templates={templates}
+                organizationSlug={organizationSlug}
+              />
+              <Box>
+                {featuredProjects ? (
+                  <Box sx={style.projectCount}>
+                    <strong>{featuredProjects}</strong> / 12 projects currently featured
+                  </Box>
+                ) : (
+                  <Box sx={style.projectCount}>0 / 12 projects currently featured</Box>
+                )}
               </Box>
-            ) : (
-              <div>Loading</div>
-            )}
+            </Box>
           </Box>
         ) : ("statusCode" in organization && organization.statusCode === 404) ||
           userIsAdmin === false ? (

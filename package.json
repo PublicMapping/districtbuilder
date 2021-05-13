@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@redux-beacon/google-tag-manager": "1.0.1",
+    "@szhsin/react-menu": "^1.9.1",
     "@theme-ui/color": "0.4.0-rc.1",
     "@tippyjs/react": "^4.1.0",
     "@turf/bbox": "^6.0.1",
@@ -26,7 +27,7 @@
     "file-saver": "2.0.1",
     "json-stable-stringify": "^1.0.1",
     "jwt-decode": "2.2.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "mapbox-gl": "1.6.1",
     "memoizee": "0.4.14",
     "prop-types": "15.7.2",

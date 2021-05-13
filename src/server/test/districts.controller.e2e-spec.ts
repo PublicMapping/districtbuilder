@@ -49,7 +49,28 @@ describe("DistrictsController", () => {
         .post("/api/districts/import/csv")
         .attach("file", `${__dirname}/data/de.csv`)
         .expect(200)
-        .expect([2, 1, 3]);
+        .expect({ districtsDefinition: [2, 1, 3], maxDistrictId: 3 });
+    });
+  });
+
+  describe("import plan from block equivalency CSV with invalid block id in first row", () => {
+    it("should return a flag", () => {
+      return request(app.getHttpServer())
+        .post("/api/districts/import/csv")
+        .attach("file", `${__dirname}/data/bad_blockid.csv`)
+        .expect(200)
+        .expect({
+          districtsDefinition: [2, 1, 3],
+          rowFlags: [
+            {
+              rowNumber: 0,
+              errorText: "Invalid block ID",
+              rowValue: ["100059900000024", "3"],
+              field: "BLOCKID"
+            }
+          ],
+          maxDistrictId: 3
+        });
     });
   });
 });

@@ -15,8 +15,16 @@ import { OrganizationsService } from "../services/organizations.service";
 export class OrganizationsController {
   constructor(public service: OrganizationsService, private readonly usersService: UsersService) {}
 
-  async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
+  async getOrgAndTemplates(organizationSlug: OrganizationSlug): Promise<Organization> {
     const org = await this.service.getOrgAndProjectTemplates(organizationSlug);
+    if (!org) {
+      throw new NotFoundException(`Organization ${organizationSlug} not found`);
+    }
+    return org;
+  }
+
+  async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
+    const org = await this.service.findOne({ slug: organizationSlug });
     if (!org) {
       throw new NotFoundException(`Organization ${organizationSlug} not found`);
     }
@@ -37,7 +45,7 @@ export class OrganizationsController {
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":slug/")
   async getOne(@Param("slug") slug: OrganizationSlug): Promise<Organization> {
-    return this.getOrg(slug);
+    return this.getOrgAndTemplates(slug);
   }
 
   @UseGuards(JwtAuthGuard)

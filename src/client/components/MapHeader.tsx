@@ -1,7 +1,13 @@
 /** @jsx jsx */
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import { areAnyGeoUnitsSelected, geoLevelLabel, isBaseGeoLevelAlwaysVisible } from "../functions";
+import {
+  areAnyGeoUnitsSelected,
+  geoLevelLabel,
+  isBaseGeoLevelAlwaysVisible,
+  capitalizeFirstLetter
+} from "../functions";
+import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
@@ -9,7 +15,8 @@ import {
   setGeoLevelIndex,
   setSelectionTool,
   SelectionTool,
-  showAdvancedEditingModal
+  showAdvancedEditingModal,
+  setMapLabel
 } from "../actions/districtDrawing";
 import store from "../store";
 
@@ -140,27 +147,28 @@ const GeoLevelButton = ({
   );
 };
 
-const capitalizeFirstLetter = (s: string) => s.substring(0, 1).toUpperCase() + s.substring(1);
-
 const MapHeader = ({
   label,
-  setMapLabel,
   metadata,
   selectionTool,
   geoLevelIndex,
   selectedGeounits,
   advancedEditingEnabled,
-  isReadOnly
+  isReadOnly,
+  limitSelectionToCounty
 }: {
   readonly label?: string;
-  readonly setMapLabel: (label?: string) => void;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
   readonly isReadOnly: boolean;
+  readonly limitSelectionToCounty: boolean;
 }) => {
+  const topGeoLevelName = metadata
+    ? metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id
+    : undefined;
   const labelOptions = metadata
     ? metadata.demographics.map(val => (
         <option key={val.id} value={val.id}>
@@ -189,7 +197,7 @@ const MapHeader = ({
     <Flex sx={style.header}>
       <Flex>
         {!isReadOnly && (
-          <Flex sx={{ ...style.buttonGroup, mr: 3 }}>
+          <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
             <Tooltip content="Point-and-click selection">
               <Button
                 sx={{ ...style.selectionButton }}
@@ -219,6 +227,12 @@ const MapHeader = ({
             </Tooltip>
           </Flex>
         )}
+        <Box sx={{ position: "relative", mr: 3, pt: "6px" }}>
+          <MapSelectionOptionsFlyout
+            limitSelectionToCounty={limitSelectionToCounty}
+            topGeoLevelName={topGeoLevelName}
+          />
+        </Box>
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
@@ -231,10 +245,10 @@ const MapHeader = ({
           </Label>
           <Select
             id="population-dropdown"
-            value={label}
+            value={label || "Select..."}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               const label = e.currentTarget.value;
-              setMapLabel(label);
+              store.dispatch(setMapLabel(label));
             }}
             sx={{ width: "150px" }}
           >

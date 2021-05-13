@@ -6,13 +6,16 @@ import { connect } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
-import { FIPS } from "../../shared/constants";
-import { DistrictsDefinition, IProject, IRegionConfig } from "../../shared/entities";
+import { FIPS, MaxUploadFileSize } from "../../shared/constants";
+import { DistrictsDefinition, ImportRowFlag, IProject, IRegionConfig } from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
+import { setImportFlagsModal } from "../actions/districtDrawing";
+
 import { createProject, importCsv } from "../api";
 import { InputField } from "../components/Field";
 import Icon from "../components/Icon";
+import ImportFlagsModal from "../components/ImportFlagsModal";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 import { State } from "../reducers";
 import { WriteResource, Resource } from "../resource";
@@ -22,11 +25,19 @@ interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
 }
 
-const validate = (form: ConfigurableForm, importResource: ImportResource): ProjectForm => {
+const validate = (
+  form: ConfigurableForm,
+  importResource: ImportResource,
+  maxDistrictId?: number
+): ProjectForm => {
   const regionConfig = importResource.data;
   const districtsDefinition = "resource" in importResource ? importResource.resource : null;
   const numberOfDistricts = form.numberOfDistricts;
-  return numberOfDistricts && regionConfig && districtsDefinition
+  return numberOfDistricts &&
+    maxDistrictId &&
+    regionConfig &&
+    districtsDefinition &&
+    numberOfDistricts >= maxDistrictId
     ? { numberOfDistricts, regionConfig, districtsDefinition, valid: true }
     : { numberOfDistricts, regionConfig, districtsDefinition, valid: false };
 };
@@ -135,6 +146,28 @@ const style: ThemeUIStyleObject = {
     display: "flex",
     justifyContent: "space-between",
     p: 4
+  },
+  uploadSuccessWithFlags: {
+    bg: "warning",
+    opacity: "0.9",
+    border: "2px solid",
+    borderColor: "warning",
+    display: "flex",
+    justifyContent: "space-between",
+    p: 4
+  },
+  uploadError: {
+    bg: "error",
+    opacity: "0.9",
+    border: "2px solid",
+    borderColor: "error",
+    display: "flex",
+    justifyContent: "space-between",
+    p: 4
+  },
+  rowFlagsLink: {
+    textDecoration: "underline",
+    cursor: "pointer"
   }
 };
 
@@ -156,34 +189,62 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
   const [importResource, setImportResource] = useState<ImportResource>({
     data: null
   });
+  const [rowFlags, setRowFlags] = useState<readonly ImportRowFlag[] | undefined>(undefined);
+  const [maxDistrictId, setMaxDistrictId] = useState<number | undefined>(undefined);
   const [createProjectResource, setCreateProjectResource] = useState<
     WriteResource<ConfigurableForm, IProject>
   >({
     data: blankForm
   });
+  const [fileError, setFileError] = useState<string | undefined>();
   const regionConfig = importResource.data;
   const formData = createProjectResource.data;
 
   const setFile = useCallback(
-    (file: Blob) => {
+    (file: File) => {
       async function setConfigFromFile() {
         if (file && "resource" in regionConfigs) {
-          const stateAbbrev = await getStateFromCsv(file);
-          // eslint-disable-next-line
-          importNumberRef.current = importNumberRef.current + 1;
-          const importNumber = importNumberRef.current;
+          // Check file size (must be less than MaxUploadFileSize)
+          if (file.size > MaxUploadFileSize) {
+            setFileError("File must be less than 25mb");
+            return;
+          }
 
-          const regionConfig =
-            regionConfigs.resource.find(config => config.regionCode === stateAbbrev) || null;
-          if (regionConfig) {
-            setImportResource({ data: regionConfig, isPending: true });
-            const districtsDefinition = await importCsv(file);
-            // Don't set the districtsDefinition if upload was cancelled while we were fetching it
-            if (importNumberRef.current === importNumber) {
-              setImportResource({ data: regionConfig, resource: districtsDefinition });
+          const extension = file.name.split(".")[1];
+
+          if (extension !== "csv") {
+            setFileError("File must be a .csv");
+            return;
+          }
+
+          // Check file is not empty
+          const stateAbbrev = await getStateFromCsv(file);
+          if (stateAbbrev) {
+            // eslint-disable-next-line
+            importNumberRef.current = importNumberRef.current + 1;
+            const importNumber = importNumberRef.current;
+            const regionConfig =
+              regionConfigs.resource.find(
+                config =>
+                  !config.hidden && config.regionCode === stateAbbrev && config.countryCode === "US"
+              ) || null;
+            if (regionConfig) {
+              setImportResource({ data: regionConfig, isPending: true });
+              const importResponse = await importCsv(file);
+              // Don't set the districtsDefinition if upload was cancelled while we were fetching it
+              if (importNumberRef.current === importNumber && importResponse.districtsDefinition) {
+                setImportResource({
+                  data: regionConfig,
+                  resource: importResponse.districtsDefinition
+                });
+                importResponse.rowFlags && setRowFlags(importResponse.rowFlags);
+                importResponse.maxDistrictId && setMaxDistrictId(importResponse.maxDistrictId);
+              }
+            } else {
+              setImportResource({ data: null });
             }
           } else {
-            setImportResource({ data: null });
+            setFileError("File must have at least one record");
           }
         }
       }
@@ -191,6 +252,44 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
     },
     [regionConfigs, importNumberRef]
   );
+
+  useEffect(() => {
+    // Set error if number of districts less than max district ID
+    if (
+      formData.numberOfDistricts !== null &&
+      maxDistrictId !== undefined &&
+      formData.numberOfDistricts < maxDistrictId
+    ) {
+      setCreateProjectResource({
+        data: formData,
+        errors: {
+          error: "Invalid number of districts",
+          message: {
+            numberOfDistricts: [
+              `Number of districts must be at least the maximum district ID in the CSV, ${maxDistrictId} `
+            ]
+          }
+        }
+      });
+    }
+  }, [formData, maxDistrictId]);
+
+  function resetForm() {
+    // eslint-disable-next-line
+    importNumberRef.current += 1;
+    if (fileInputRef.current) {
+      // eslint-disable-next-line
+      fileInputRef.current.value = "";
+    }
+    setImportResource({
+      data: null
+    });
+    setImportFlagsModal(false);
+    setRowFlags(undefined);
+    setFileError(undefined);
+    setCreateProjectResource({ data: blankForm });
+    setMaxDistrictId(undefined);
+  }
 
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
@@ -228,7 +327,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
             sx={{ flexDirection: "column" }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              const validatedForm = validate(formData, importResource);
+              const validatedForm = validate(formData, importResource, maxDistrictId);
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data: formData, isPending: true });
                 createProject({
@@ -261,30 +360,36 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                 accept=".csv"
                 style={{ display: "none" }}
               />
-              {regionConfig ? (
-                <Box sx={style.uploadSuccess}>
-                  {"resource" in importResource ? (
+              {regionConfig || fileError ? (
+                <Box
+                  sx={
+                    !rowFlags && !fileError
+                      ? style.uploadSuccess
+                      : fileError
+                      ? style.uploadError
+                      : style.uploadSuccessWithFlags
+                  }
+                >
+                  {"resource" in importResource && !rowFlags && !fileError ? (
                     <b>Upload success</b>
+                  ) : "resource" in importResource && rowFlags ? (
+                    <b>
+                      Upload success, with
+                      <span
+                        sx={style.rowFlagsLink}
+                        onClick={() => rowFlags && store.dispatch(setImportFlagsModal(true))}
+                      >
+                        &nbsp;{rowFlags.length} flags
+                      </span>
+                    </b>
+                  ) : fileError ? (
+                    <b>Error: {fileError}</b>
                   ) : (
                     <span>
                       <Spinner variant="spinner.small" /> Uploading
                     </span>
                   )}
-                  <Button
-                    sx={{ variant: "buttons.linkStyle" }}
-                    onClick={() => {
-                      // eslint-disable-next-line
-                      importNumberRef.current += 1;
-                      if (fileInputRef.current) {
-                        // eslint-disable-next-line
-                        fileInputRef.current.value = "";
-                      }
-                      setImportResource({
-                        data: null
-                      });
-                      setCreateProjectResource({ data: blankForm });
-                    }}
-                  >
+                  <Button sx={{ variant: "buttons.linkStyle" }} onClick={() => resetForm()}>
                     <Icon name="undo" />
                     Redo
                   </Button>
@@ -331,6 +436,8 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                             onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                               const value = parseInt(e.currentTarget.value, 10);
                               const numberOfDistricts = isNaN(value) ? null : value;
+                              // Set error if number of districts less than max district ID
+
                               setCreateProjectResource({
                                 data: {
                                   ...formData,
@@ -348,7 +455,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                   <Button
                     type="submit"
                     disabled={
-                      !validate(formData, importResource).valid &&
+                      !validate(formData, importResource, maxDistrictId).valid &&
                       !("errorMessage" in createProjectResource)
                     }
                   >
@@ -360,6 +467,13 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
           </Flex>
         </Flex>
       </Flex>
+      {rowFlags && (
+        <ImportFlagsModal
+          importFlags={rowFlags}
+          onContinue={() => store.dispatch(setImportFlagsModal(false))}
+          onCancel={() => resetForm()}
+        ></ImportFlagsModal>
+      )}
     </Flex>
   ) : (
     <Box>Loading...</Box>

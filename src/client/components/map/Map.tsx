@@ -1,6 +1,8 @@
 /** @jsx jsx */
-import { useEffect, useRef } from "react";
-import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Box, Flex, Text, jsx, ThemeUIStyleObject } from "theme-ui";
+import bbox from "@turf/bbox";
+import { BBox2d } from "@turf/helpers/lib/geojson";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -9,7 +11,8 @@ import {
   setGeoLevelVisibility,
   SelectionTool,
   replaceSelectedGeounits,
-  FindTool
+  FindTool,
+  setZoomToDistrictId
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -21,7 +24,12 @@ import {
   EvaluateMetric
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
-import { areAnyGeoUnitsSelected, getSelectedGeoLevel } from "../../functions";
+import {
+  areAnyGeoUnitsSelected,
+  getSelectedGeoLevel,
+  getTargetPopulation,
+  geoLevelLabelSingular
+} from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -32,7 +40,6 @@ import {
   levelToLineLayerId,
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
-  DISTRICTS_OUTLINE_LAYER_ID,
   DISTRICTS_EVALUATE_LAYER_ID,
   setFeaturesSelectedFromGeoUnits,
   TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
@@ -45,7 +52,9 @@ import {
   DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
   CONTIGUITY_FILL_COLOR,
   COUNTY_SPLIT_FILL_COLOR,
-  EVALUATE_GRAY_FILL_COLOR
+  EVALUATE_GRAY_FILL_COLOR,
+  DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+  DISTRICTS_OUTLINE_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -57,6 +66,7 @@ import store from "../../store";
 import { State } from "../../reducers";
 import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
+import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
 
 interface Props {
   readonly project: IProject;
@@ -65,12 +75,15 @@ interface Props {
   readonly staticGeoLevels: UintArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
+  readonly hoveredDistrictId: number | null;
+  readonly zoomToDistrictId: number | null;
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly evaluateMetric?: EvaluateMetric;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
+  readonly limitSelectionToCounty: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
   readonly label?: string;
@@ -80,42 +93,48 @@ interface Props {
 }
 
 const style: ThemeUIStyleObject = {
-  legendLabel: {
-    display: "inline-block",
-    ml: "5px"
-  },
-  legendItem: {
-    display: "inline-block",
-    minWidth: "150px",
-    maxWidth: "170px",
-    mr: "20px"
-  },
-  legendTitle: {
-    display: "inline-block",
-    width: "120px",
-    fontWeight: "600",
-    mr: "50px"
-  },
   legendBox: {
     position: "absolute",
-    bottom: "20px",
-    left: "100px",
-    right: "200px",
-    height: "60px",
-    minWidth: "600px",
-    maxWidth: "1100px",
-    fontSize: "14pt",
+    bg: "muted",
+    bottom: 6,
+    width: "auto",
+    left: "50%",
+    transform: "translateX(-50%)",
+    border: "1px solid",
+    borderColor: "gray.2",
+    borderRadius: "small",
+    boxShadow: "large",
+    p: 3,
     display: "inline-block",
-    outline: "1px solid gray",
-    padding: "20px"
+    minWidth: "fit-content",
+    zIndex: "200"
+  },
+  legendTitle: {
+    fontSize: 1,
+    color: "gray.8",
+    fontWeight: "medium",
+    mr: 4,
+    display: "inline-block"
+  },
+  legendItem: {
+    display: "inline-flex",
+    mr: 3,
+    alignItems: "center"
   },
   legendColorSwatch: {
-    display: "inline-block",
-    mr: "10px",
-    width: "20px",
-    height: "20px",
-    opacity: "0.9",
-    outline: "1px solid lightgray"
+    mr: 2,
+    height: "15px",
+    width: "15px",
+    flex: "0 0 15px",
+    borderRadius: "small",
+    border: "1px solid",
+    borderColor: "gray.2",
+    display: "inline-block"
+  },
+  legendLabel: {
+    color: "gray.8",
+    flex: "0 0 auto",
+    display: "inline-block"
   }
 };
 
@@ -126,10 +145,13 @@ const DistrictsMap = ({
   staticGeoLevels,
   selectedGeounits,
   selectedDistrictId,
+  hoveredDistrictId,
+  zoomToDistrictId,
   selectionTool,
   geoLevelIndex,
   lockedDistricts,
   isReadOnly,
+  limitSelectionToCounty,
   findMenuOpen,
   evaluateMetric,
   evaluateMode,
@@ -139,6 +161,13 @@ const DistrictsMap = ({
   setMap
 }: Props) => {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
+  const [panToggled, setTogglePan] = useState<boolean>(false);
+
+  const isPanning =
+    panToggled &&
+    !selectionInProgress &&
+    (selectionTool === SelectionTool.Rectangle || selectionTool === SelectionTool.PaintBrush);
 
   // Conversion from readonly -> mutable to match Mapbox interface
   const [b0, b1, b2, b3] = staticMetadata.bbox;
@@ -153,6 +182,10 @@ const DistrictsMap = ({
   // The ability to zoom this far in isn't needed in the typical use-case (+4 is fine for that),
   // but it's needed in order to allow the user to fix very tiny unassigned slivers that may arise.
   const overZoom = maxZoom + 8;
+
+  const legendLabel = geoLevelLabelSingular(
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id
+  );
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -184,8 +217,10 @@ const DistrictsMap = ({
     map.touchZoomRotate.disableRotation();
     map.doubleClickZoom.disable();
 
-    const setLevelVisibility = () =>
+    const setLevelVisibility = () => {
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
+    };
+
     const onMapLoad = () => {
       generateMapLayers(
         project.regionConfig.s3URI,
@@ -194,7 +229,8 @@ const DistrictsMap = ({
         minZoom,
         maxZoom,
         map,
-        geojson
+        geojson,
+        evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined
       );
 
       setMap(map);
@@ -215,27 +251,124 @@ const DistrictsMap = ({
     // eslint-disable-next-line
   }, [mapRef]);
 
+  const downHandler = useCallback(
+    (key: KeyboardEvent) => {
+      const meta = navigator.appVersion.indexOf("Mac") !== -1 ? "metaKey" : "ctrlKey";
+      const shortcut = KEYBOARD_SHORTCUTS.find(
+        shortcut =>
+          (shortcut.key === key.key || shortcut.key.toLowerCase() === key.key) &&
+          !!shortcut.meta === key[meta] &&
+          !!shortcut.shift === key.shiftKey
+      );
+      if (shortcut) {
+        shortcut.action({
+          selectionTool,
+          geoLevelIndex,
+          selectedDistrictId,
+          label,
+          numFeatures: geojson.features.length,
+          numGeolevels: staticMetadata.geoLevelHierarchy.length,
+          limitSelectionToCounty,
+          evaluateMode,
+          setTogglePan
+        });
+      }
+    },
+    [
+      selectionTool,
+      geoLevelIndex,
+      selectedDistrictId,
+      label,
+      geojson.features.length,
+      staticMetadata.geoLevelHierarchy.length,
+      limitSelectionToCounty,
+      evaluateMode
+    ]
+  );
+  // Keyboard handlers
+
+  const upHandler = ({ key }: KeyboardEvent) => {
+    if (key === "Spacebar" || key === " ") {
+      setTogglePan(false);
+    }
+  };
+
+  // Add event listeners
+  useEffect(() => {
+    window.addEventListener("keydown", downHandler);
+    window.addEventListener("keyup", upHandler);
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener("keydown", downHandler);
+      window.removeEventListener("keyup", upHandler);
+    };
+    // Reload handlers when selected district changes
+  }, [selectedDistrictId, selectionTool, downHandler]);
+
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
+    const avgPopulation = getTargetPopulation(geojson, project);
     // Add a color property to the geojson, so it can be used for styling
     geojson.features.forEach((feature, id) => {
-      // @ts-ignore
+      const districtColor = getDistrictColor(id);
       // eslint-disable-next-line
       feature.properties.outlineColor =
-        (findTool === FindTool.Unassigned && id === 0) ||
-        (findTool === FindTool.NonContiguous &&
-          id !== 0 &&
-          feature.geometry.coordinates.length >= 2)
-          ? "#F25DFE"
+        findMenuOpen &&
+        ((findTool === FindTool.Unassigned && id === 0) ||
+          (findTool === FindTool.NonContiguous &&
+            id !== 0 &&
+            feature.geometry.coordinates.length >= 2))
+          ? // Set pink outline to make unassigned/non-contiguous districts stand out
+            "#F25DFE"
           : "transparent";
-      // @ts-ignore
       // eslint-disable-next-line
-      feature.properties.color = getDistrictColor(id);
+      feature.properties.color = districtColor;
+      const populationDeviation = feature.properties.demographics.population - avgPopulation;
+      // eslint-disable-next-line
+      feature.properties.percentDeviation =
+        feature.properties.demographics.population > 0 && feature.id !== 0
+          ? populationDeviation / avgPopulation
+          : undefined;
+      // eslint-disable-next-line
+      feature.properties.populationDeviation = populationDeviation;
+      // eslint-disable-next-line
+      feature.properties.outlineWidthScaleFactor = findMenuOpen ? 1 : 2;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findTool]);
+  }, [map, geojson, findMenuOpen, findTool, project]);
+
+  // Update layer styles when district is selected/hovered
+  useEffect(() => {
+    if (map) {
+      // NOTE: It's important to fall back to the outline color set for 'Find Unassigned' so as not
+      // to loose line styles by falling back to "transparent"
+      const fallbackLineColor = ["get", "outlineColor"];
+      const selectedDistrictMatchExpression = [
+        "match",
+        ["id"],
+        selectedDistrictId,
+        getDistrictColor(selectedDistrictId),
+        fallbackLineColor
+      ];
+      map.setPaintProperty(
+        DISTRICTS_OUTLINE_LAYER_ID,
+        "line-color",
+        hoveredDistrictId
+          ? // Set both hovered district line color and selected district line color
+            [
+              "match",
+              ["id"],
+              hoveredDistrictId,
+              getDistrictColor(hoveredDistrictId),
+              selectedDistrictMatchExpression
+            ]
+          : // There's no hovered district so just set selected district line color
+            selectedDistrictMatchExpression
+      );
+    }
+  }, [map, selectedDistrictId, hoveredDistrictId]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -297,6 +430,14 @@ const DistrictsMap = ({
           map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
           map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "visible");
         }
+        if (evaluateMetric.key === "equalPopulation") {
+          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
+          map.setLayoutProperty(
+            DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+            "visibility",
+            "visible"
+          );
+        }
         DefaultSelectionTool.disable(map);
         RectangleSelectionTool.disable(map);
         PaintBrushSelectionTool.disable(map);
@@ -305,6 +446,7 @@ const DistrictsMap = ({
         map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
         map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "none");
         map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+        map.setLayoutProperty(DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
         map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
@@ -354,16 +496,6 @@ const DistrictsMap = ({
     }
   }, [map, label, staticMetadata, selectedGeolevel]);
 
-  // Toggle unassigned highlight when find menu is opened
-  useEffect(() => {
-    map &&
-      map.setLayoutProperty(
-        DISTRICTS_OUTLINE_LAYER_ID,
-        "visibility",
-        findMenuOpen ? "visible" : "none"
-      );
-  }, [map, findMenuOpen]);
-
   useEffect(() => {
     map &&
       [...new Array(project.numberOfDistricts + 1).keys()].forEach(districtId =>
@@ -372,6 +504,18 @@ const DistrictsMap = ({
         })
       );
   }, [map, project, lockedDistricts]);
+
+  useEffect(() => {
+    if (map && zoomToDistrictId) {
+      const districtGeoJSON = geojson.features[zoomToDistrictId];
+      if (districtGeoJSON && districtGeoJSON.geometry.coordinates.length) {
+        // eslint-disable-next-line
+        const boundingBox = bbox(districtGeoJSON) as BBox2d;
+        map.fitBounds(boundingBox, { padding: 50 });
+        store.dispatch(setZoomToDistrictId(null));
+      }
+    }
+  }, [map, geojson, zoomToDistrictId]);
 
   // Update layer visibility when geolevel is selected
   useEffect(() => {
@@ -499,15 +643,16 @@ const DistrictsMap = ({
   ]);
 
   useEffect(() => {
+    // Handle enable and disable of selection tools in the map
     /* eslint-disable */
-    if (map) {
+    if (map && !isReadOnly) {
       // Disable any existing selection tools
       DefaultSelectionTool.disable(map);
       RectangleSelectionTool.disable(map);
       PaintBrushSelectionTool.disable(map);
-      if (!evaluateMode) {
+      if (!evaluateMode && !isPanning) {
         // Enable appropriate tool
-        if (!isReadOnly && selectionTool === SelectionTool.Default) {
+        if (selectionTool === SelectionTool.Default) {
           DefaultSelectionTool.enable(
             map,
             selectedGeolevel.id,
@@ -516,28 +661,33 @@ const DistrictsMap = ({
             lockedDistricts,
             staticGeoLevels
           );
-        } else if (!isReadOnly && selectionTool === SelectionTool.Rectangle) {
+        } else if (selectionTool === SelectionTool.Rectangle) {
           RectangleSelectionTool.enable(
             map,
             selectedGeolevel.id,
             staticMetadata,
             project.districtsDefinition,
             lockedDistricts,
-            staticGeoLevels
+            staticGeoLevels,
+            setSelectionInProgress,
+            limitSelectionToCounty
           );
-        } else if (!isReadOnly && selectionTool === SelectionTool.PaintBrush) {
+        } else if (selectionTool === SelectionTool.PaintBrush) {
           PaintBrushSelectionTool.enable(
             map,
             selectedGeolevel.id,
             staticMetadata,
             project.districtsDefinition,
             lockedDistricts,
-            staticGeoLevels
+            staticGeoLevels,
+            setSelectionInProgress,
+            limitSelectionToCounty,
+            selectedGeounits
           );
         }
       }
-      /* eslint-enable */
     }
+    /* eslint-enable */
   }, [
     map,
     selectionTool,
@@ -547,7 +697,10 @@ const DistrictsMap = ({
     project,
     lockedDistricts,
     isReadOnly,
-    evaluateMode
+    evaluateMode,
+    isPanning,
+    limitSelectionToCounty,
+    selectedGeounits
   ]);
 
   return (
@@ -557,64 +710,94 @@ const DistrictsMap = ({
       <FindMenu map={map} />
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
-          <Box sx={style.legendTitle}>County splits</Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: COUNTY_SPLIT_FILL_COLOR
-              }}
-            />
-            <Box sx={style.legendLabel}>Split</Box>
-          </Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: "none"
-              }}
-            />
-            <Box sx={style.legendLabel}>Not split</Box>
-          </Box>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>{legendLabel} splits</Text>
+            <Flex sx={style.legendItem}>
+              <Box
+                sx={{
+                  ...style.legendColorSwatch,
+                  backgroundColor: COUNTY_SPLIT_FILL_COLOR
+                }}
+              />
+              <Text sx={style.legendLabel}>Split</Text>
+            </Flex>
+            <Flex sx={style.legendItem}>
+              <Box
+                sx={{
+                  ...style.legendColorSwatch,
+                  backgroundColor: "transparent"
+                }}
+              />
+              <Text sx={style.legendLabel}>Not split</Text>
+            </Flex>
+          </Flex>
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "compactness" && (
         <Box sx={style.legendBox}>
-          <Box sx={style.legendTitle}>Compactness</Box>
-          {getChoroplethStops(evaluateMetric.key).map((step, i) => (
-            <Box sx={style.legendItem} key={i}>
-              <Box
-                sx={{
-                  ...style.legendColorSwatch,
-                  backgroundColor: `${step[1]}`
-                }}
-              ></Box>
-              <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Compactness</Text>
+            <Box sx={{ display: "inline-block" }}>
+              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+                <Flex sx={style.legendItem} key={i}>
+                  <Box
+                    sx={{
+                      ...style.legendColorSwatch,
+                      backgroundColor: `${step[1]}`
+                    }}
+                  ></Box>
+                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
+                </Flex>
+              ))}
             </Box>
-          ))}
+          </Flex>
+        </Box>
+      )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "equalPopulation" && (
+        <Box sx={style.legendBox}>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Equal Population</Text>
+            <Box sx={{ display: "inline-block" }}>
+              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+                <Flex sx={style.legendItem} key={i}>
+                  <Box
+                    sx={{
+                      ...style.legendColorSwatch,
+                      backgroundColor: `${step[1]}`
+                    }}
+                  ></Box>
+                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
+                </Flex>
+              ))}
+            </Box>
+          </Flex>
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "contiguity" && (
         <Box sx={style.legendBox}>
-          <Box sx={style.legendTitle}>Contiguity</Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: CONTIGUITY_FILL_COLOR
-              }}
-            ></Box>
-            <Box sx={style.legendLabel}>Contiguous</Box>
-          </Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: EVALUATE_GRAY_FILL_COLOR
-              }}
-            ></Box>
-            <Box sx={style.legendLabel}>Non-contiguous</Box>
-          </Box>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Contiguity</Text>
+            <Box sx={{ display: "inline-block" }}>
+              <Flex sx={style.legendItem}>
+                <Box
+                  sx={{
+                    ...style.legendColorSwatch,
+                    backgroundColor: CONTIGUITY_FILL_COLOR
+                  }}
+                ></Box>
+                <Box sx={style.legendLabel}>Contiguous</Box>
+              </Flex>
+              <Flex sx={style.legendItem}>
+                <Box
+                  sx={{
+                    ...style.legendColorSwatch,
+                    backgroundColor: EVALUATE_GRAY_FILL_COLOR
+                  }}
+                ></Box>
+                <Box sx={style.legendLabel}>Non-contiguous</Box>
+              </Flex>
+            </Box>
+          </Flex>
         </Box>
       )}
     </Box>
@@ -624,7 +807,8 @@ const DistrictsMap = ({
 function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
-    findTool: state.project.findTool
+    findTool: state.project.findTool,
+    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal
   };
 }
 

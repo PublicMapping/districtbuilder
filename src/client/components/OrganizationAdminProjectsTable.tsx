@@ -1,17 +1,25 @@
 /** @jsx jsx */
-import { useMemo } from "react";
-import { useTable, Row, HeaderGroup, Cell, useSortBy } from "react-table";
+import { useMemo, useEffect, useState } from "react";
+import { useTable, Row, HeaderGroup, Cell, useSortBy, SortingRule, Column } from "react-table";
 import { Link } from "react-router-dom";
 import { Button, Flex, jsx, Styled } from "theme-ui";
 
-import { OrganizationSlug, ProjectNest } from "../../shared/entities";
+import { ProjectVisibility } from "../../shared/constants";
+import { OrganizationSlug, ProjectNest, IProjectTemplateWithProjects } from "../../shared/entities";
 
 import { toggleProjectFeatured } from "../actions/organizationProjects";
+import { formatDate } from "../functions";
 import store from "../store";
-import { ProjectVisibility } from "../../shared/constants";
+import { isEqual } from "lodash";
+
+export interface ProjectRow extends ProjectNest {
+  readonly project: { readonly name: string; readonly id: string };
+  readonly updatedAgo: string;
+  readonly templateName: string;
+}
 
 interface ProjectsTableProps {
-  readonly projects: readonly ProjectNest[];
+  readonly templates?: readonly IProjectTemplateWithProjects[];
   readonly organizationSlug: OrganizationSlug;
 }
 
@@ -26,13 +34,37 @@ const style = {
   columnRow: { padding: "10px", border: "solid 1px gray" }
 } as const;
 
-const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: ProjectsTableProps) => {
-  const columns = useMemo(
+const OrganizationAdminProjectsTable = ({ templates, organizationSlug }: ProjectsTableProps) => {
+  // eslint-disable-next-line
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  useEffect(() => {
+    if (templates) {
+      const resourceProjects = templates
+        .map(pt => {
+          return pt.projects.map(p => {
+            return {
+              ...p,
+              project: { name: p.name, id: p.id },
+              updatedAgo: formatDate(p.updatedDt),
+              templateName: pt.name
+            };
+          });
+        })
+        .flat();
+      if (!isEqual(projects, resourceProjects)) {
+        setProjects(resourceProjects);
+      }
+    }
+  }, [projects, templates]);
+
+  const sort = useMemo<SortingRule<ProjectRow>>(() => ({ id: "updatedDt", desc: true }), []);
+  // eslint-disable-next-line
+  let columns = useMemo<Array<Column<ProjectRow>>>(
     () => [
       {
         Header: "Map",
-        accessor: "project", // accessor is the "key" in the data,
-        Cell: (p: Cell<ProjectNest>) => {
+        accessor: "project" as const,
+        Cell: (p: Cell<ProjectRow>) => {
           return (
             <Styled.a as={Link} to={`/projects/${p.value.id}`} target="_blank">
               {p.value.name}
@@ -42,45 +74,63 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
       },
       {
         Header: "Template",
-        accessor: "templateName"
+        accessor: "templateName" as const
       },
       {
         Header: "Creator",
-        accessor: "creator.name"
+        accessor: row => row.user.name
       },
       {
         Header: "Creator email",
-        accessor: "creator.email",
-        Cell: (p: Cell<ProjectNest>) => {
+        accessor: row => row.user.email,
+        Cell: (p: Cell<ProjectRow>) => {
           return <a href={`mailto:${p.value}`}>{p.value}</a>;
         }
       },
+
       {
         Header: "Updated on",
-        accessor: "updatedAgo"
+        accessor: "updatedDt" as const,
+        Cell: (p: Cell<ProjectRow>) => {
+          return p.row.original.updatedAgo;
+        }
+      },
+      {
+        Header: "",
+        accessor: "visibility" as const,
+        disableSortBy: true,
+        Cell: ({ row }: Cell<ProjectRow>) => {
+          return row.original.visibility === ProjectVisibility.Published ? (
+            <Button
+              onClick={() =>
+                store.dispatch(
+                  toggleProjectFeatured({ project: row.original, organization: organizationSlug })
+                )
+              }
+            >
+              {row.original.isFeatured ? "Unfeature" : "Feature"}
+            </Button>
+          ) : (
+            "Unpublished"
+          );
+        }
       }
     ],
-    []
+    [organizationSlug]
   );
-  const data = useMemo(() => projects, [projects]);
-  // ts-ignore needed below bc react-table requires mutable types, even though it doesn't mutate them?
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable<
-    ProjectNest
-  >(
+  // eslint-disable-next-line
+  let data = useMemo(() => projects, [projects]);
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable<ProjectRow>(
     {
-      // @ts-ignore
       columns,
-      // @ts-ignore
-      data
+      data,
+      autoResetSortBy: false,
+      initialState: {
+        sortBy: [sort]
+      }
     },
     useSortBy
   );
-
-  function projectFeaturedToggle(row: Row<ProjectNest>) {
-    store.dispatch(
-      toggleProjectFeatured({ project: row.original, organization: organizationSlug })
-    );
-  }
 
   // The 'key' is provided by react-table - note that if you try to add one there is a separate
   // error about duplicate props. It seems eslint can't figure it out.
@@ -89,9 +139,9 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
     <Flex sx={{ flexDirection: "column" }}>
       <table {...getTableProps()} style={{ border: "solid 1px blue" }}>
         <thead>
-          {headerGroups.map((headerGroup: HeaderGroup<ProjectNest>) => (
+          {headerGroups.map((headerGroup: HeaderGroup<ProjectRow>) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column: HeaderGroup<ProjectNest>) => (
+              {headerGroup.headers.map((column: HeaderGroup<ProjectRow>) => (
                 <th
                   {...column.getHeaderProps(column.getSortByToggleProps())}
                   sx={style.columnHeader}
@@ -100,16 +150,15 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
                   <span>{column.isSorted ? (column.isSortedDesc ? " 🔽" : " 🔼") : ""}</span>
                 </th>
               ))}
-              <th sx={style.columnHeader}></th>
             </tr>
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.map((row: Row<ProjectNest>) => {
+          {rows.map((row: Row<ProjectRow>) => {
             prepareRow(row);
             return (
               <tr {...row.getRowProps()}>
-                {row.cells.map((cell: Cell<ProjectNest>) => {
+                {row.cells.map((cell: Cell<ProjectRow>) => {
                   return (
                     <td
                       {...cell.getCellProps()}
@@ -122,15 +171,6 @@ const OrganizationAdminProjectsTable = ({ projects, organizationSlug }: Projects
                     </td>
                   );
                 })}
-                <td sx={{ textAlign: "center" }}>
-                  {row.original.visibility === ProjectVisibility.Published ? (
-                    <Button onClick={() => projectFeaturedToggle(row)}>
-                      {row.original.isFeatured ? "Unfeature" : "Feature"}
-                    </Button>
-                  ) : (
-                    "Unpublished"
-                  )}
-                </td>
               </tr>
             );
           })}

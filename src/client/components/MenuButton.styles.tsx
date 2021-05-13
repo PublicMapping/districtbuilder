@@ -27,7 +27,8 @@ export const style = {
   menuList: {
     p: "0",
     m: "0",
-    listStyleType: "none"
+    listStyleType: "none",
+    fontSize: "14px"
   } as ThemeUIStyleObject,
   menuListItem: {
     textDecoration: "none",

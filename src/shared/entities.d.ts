@@ -1,4 +1,4 @@
-import { ProjectVisibility } from "./constants";
+import { ProjectVisibility, REGION_LABELS } from "./constants";
 
 export type UserId = string;
 
@@ -35,6 +35,8 @@ export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   readonly type: "fraction" | "percent" | "count";
   readonly value: number;
   readonly total?: number;
+  readonly avgPopulation?: number;
+  readonly popThreshold?: number;
   readonly status?: boolean;
   // eslint-disable-next-line
   readonly [key: string]: any;
@@ -96,6 +98,15 @@ export type DistrictProperties = {
   readonly contiguity: "contiguous" | "non-contiguous" | "";
   readonly compactness: number;
   readonly demographics: DemographicCounts;
+  readonly voting?: DemographicCounts;
+  /* eslint-disable */
+  // NOTE: These properties are set for styling purposes
+  color?: string;
+  outlineColor?: string;
+  percentDeviation?: number;
+  populationDeviation?: number;
+  outlineWidthScaleFactor?: number;
+  /* eslint-enable */
 };
 
 export interface IStaticFile {
@@ -111,12 +122,15 @@ export interface GeoLevelInfo {
 }
 
 export type GeoLevelHierarchy = readonly GeoLevelInfo[];
+export type RegionLabels = Record<typeof REGION_LABELS[number], string>;
 
 export interface IStaticMetadata {
   readonly demographics: readonly IStaticFile[];
   readonly geoLevels: readonly IStaticFile[];
+  readonly voting?: readonly IStaticFile[];
   readonly bbox: readonly [number, number, number, number];
   readonly geoLevelHierarchy: GeoLevelHierarchy;
+  readonly labels?: RegionLabels;
 }
 
 export interface Login {
@@ -267,3 +281,18 @@ export type LockedDistricts = readonly boolean[];
 export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 export type UintArrays = ReadonlyArray<UintArray>;
 export type RegionLookupProperties = Record<string, unknown>;
+
+export type DistrictImportField = "" | "BLOCKID" | "DISTRICT";
+
+export interface ImportRowFlag {
+  readonly rowNumber: number;
+  readonly errorText: string;
+  readonly field: DistrictImportField;
+  readonly rowValue: readonly string[];
+}
+
+export interface DistrictsImportApiResponse {
+  readonly districtsDefinition?: DistrictsDefinition;
+  readonly rowFlags?: readonly ImportRowFlag[];
+  readonly maxDistrictId: number;
+}

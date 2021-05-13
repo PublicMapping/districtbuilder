@@ -14,10 +14,12 @@ import {
   MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays
+  UintArrays,
+  EvaluateMetricWithValue
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible } from "../../functions";
+import { mapValues } from "lodash";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -32,6 +34,8 @@ export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
 // Id for districts layer outline used in evaluate mode
+export const DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID = "districts-equal-population";
+// Id for districts layer outline used in evaluate mode
 export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
 // Id for topmost geolevel layer in Evaluate
 export const TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID = "topmost-geo-evaluate-split";
@@ -45,6 +49,8 @@ export const HIGHLIGHTS_PLACEHOLDER_LAYER_ID = "highlight-placeholder";
 export const LINES_PLACEHOLDER_LAYER_ID = "line-placeholder";
 // Used only to make labels appear in the correct position in the layer stack
 export const LABELS_PLACEHOLDER_LAYER_ID = "label-placeholder";
+// Used only to make district lines appear in the correct position in the layer stack
+export const DISTRICT_LINES_PLACEHOLDER_LAYER_ID = "district-line-placeholder";
 
 // Delay used to throttle calls to set the current feature(s), in milliseconds
 export const SET_FEATURE_DELAY = 300;
@@ -60,7 +66,7 @@ const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getChoroplethStops(metricKey: string) {
+export function getChoroplethStops(metricKey: string, threshold?: number) {
   const compactnessSteps = [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
@@ -68,9 +74,21 @@ export function getChoroplethStops(metricKey: string) {
     [0.6, "#2ca25f"],
     [1.0, "#006d2c"]
   ];
+  const popThreshold = threshold || 0.05;
+  const equalPopulationSteps = [
+    [-1.0, "#D1E5F0"],
+    [-1 * (popThreshold + 0.02), "#66A9CF"],
+    [-1 * (popThreshold + 0.01), "#2166AC"],
+    [-1 * popThreshold, "#01665E"],
+    [popThreshold, "#EFBE60"],
+    [popThreshold + 0.01, "#F5D092"],
+    [popThreshold + 0.02, "#F7E1C3"]
+  ];
   switch (metricKey) {
     case "compactness":
       return compactnessSteps;
+    case "equalPopulation":
+      return equalPopulationSteps;
     default:
       return [];
   }
@@ -78,9 +96,33 @@ export function getChoroplethStops(metricKey: string) {
 
 export function getChoroplethLabels(metricKey: string) {
   const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
+  const steps = getChoroplethStops(metricKey);
   switch (metricKey) {
     case "compactness":
       return compactnessLabels;
+    case "equalPopulation":
+      return steps.map((step, i) => {
+        const stepVal = Number(step[0]);
+        if (i === 0) {
+          // Lower bound condition
+          return `< ${Math.ceil(Number(steps[1][0]) * 100)}%`;
+        } else if (i === steps.length - 1) {
+          // Upper bound condition
+          return `> ${Math.floor(stepVal * 100)}%`;
+        } else {
+          const nextStep = Number(steps[i + 1][0]);
+          if (stepVal < 0 && nextStep > 0) {
+            // Target condition
+            return `Target (+/- ${Math.floor(nextStep * 100)}%)`;
+          } else {
+            if (stepVal < 0) {
+              return `${Math.ceil(stepVal * 100)}% to ${Math.ceil(nextStep * 100)}%`;
+            } else {
+              return `${Math.floor(stepVal * 100)}% to ${Math.floor(nextStep * 100)}%`;
+            }
+          }
+        }
+      });
     default:
       return [];
   }
@@ -127,7 +169,8 @@ export function generateMapLayers(
   maxZoom: number,
   /* eslint-disable */
   map: any,
-  geojson: any
+  geojson: any,
+  metric?: EvaluateMetricWithValue
   /* eslint-enable */
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
@@ -163,6 +206,7 @@ export function generateMapLayers(
       type: "fill",
       source: DISTRICTS_SOURCE_ID,
       layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
         "fill-color": {
           property: "compactness",
@@ -177,17 +221,44 @@ export function generateMapLayers(
 
   map.addLayer(
     {
-      id: DISTRICTS_OUTLINE_LAYER_ID,
-      type: "line",
+      id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+      type: "fill",
       source: DISTRICTS_SOURCE_ID,
       layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
-        "line-color": { type: "identity", property: "outlineColor" },
-        "line-opacity": 1,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+        "fill-color": {
+          property: "percentDeviation",
+          type: "interval",
+          stops: getChoroplethStops("equalPopulation")
+        },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
       }
     },
     LABELS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_OUTLINE_LAYER_ID,
+      type: "line",
+      source: DISTRICTS_SOURCE_ID,
+      paint: {
+        "line-color": { type: "identity", property: "outlineColor" },
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6,
+          ["*", ["get", "outlineWidthScaleFactor"], 2],
+          14,
+          ["*", ["get", "outlineWidthScaleFactor"], 5]
+        ]
+      }
+    },
+    DISTRICT_LINES_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(
@@ -256,6 +327,7 @@ export function generateMapLayers(
       type: "fill",
       source: DISTRICTS_SOURCE_ID,
       layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
         "fill-color": [
           "match",
@@ -386,6 +458,21 @@ export function isFeatureSelected(map: MapboxGL.Map, feature: FeatureLike): bool
   return featureState.selected === true;
 }
 
+export function getCurrentCountyFromGeoUnits(
+  staticMetadata: IStaticMetadata,
+  geoUnits: GeoUnits
+): number | undefined {
+  const geoLevelIds = staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.id);
+  // eslint-disable-next-line
+  for (let i = 0; i < geoLevelIds.length; i++) {
+    const geoLevelId = geoLevelIds[i];
+    const value = geoUnits[geoLevelId]?.entries().next().value;
+    if (value) {
+      return value[1][0] as number;
+    }
+  }
+}
+
 /*
  * Returns true if this geounit or any of its children are locked.
  */
@@ -402,12 +489,12 @@ function isGeoUnitLocked(
       )
     : typeof districtsDefinition === "number"
     ? // Check if this specific district is locked
-      lockedDistricts[districtsDefinition]
+      lockedDistricts[districtsDefinition - 1]
     : // Check if any district at this geolevel is locked
       districtsDefinition.some(districtId =>
         typeof districtId === "number"
           ? // Whole district is assigned so it can be looked up directly
-            lockedDistricts[districtId]
+            lockedDistricts[districtId - 1]
           : // District definition has more nesting so it must be followed further
             isGeoUnitLocked(districtId, lockedDistricts, geoUnitIndices)
       );
@@ -423,6 +510,19 @@ export function setFeaturesSelectedFromGeoUnits(
       const currentFeature = { id: featureId, sourceLayer: geoLevelId };
       map.setFeatureState(featureStateGeoLevel(currentFeature), { selected });
     });
+  });
+}
+
+/*
+ * Filters geounits to only those contained within the specified top-level geounit (usually county, but potentially something else such as ward or block group)
+ */
+export function filterGeoUnitsByCounty(units: GeoUnits, county: number) {
+  return mapValues(units, function(geoUnitsForLevel) {
+    return new Map([
+      ...Array.from(geoUnitsForLevel).filter(geounit => {
+        return geounit[1][0] === county;
+      })
+    ]);
   });
 }
 

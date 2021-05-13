@@ -1,4 +1,4 @@
-import { UintArray, DemographicCounts, IStaticMetadata } from "../shared/entities";
+import { UintArray, DemographicCounts, IStaticMetadata, IStaticFile } from "../shared/entities";
 
 // Helper for finding all indices in an array buffer matching a value.
 // Note: mutation is used, because the union type of array buffers proved
@@ -38,14 +38,38 @@ export function getDemographics(
   staticMetadata: IStaticMetadata,
   staticDemographics: readonly UintArray[]
 ): DemographicCounts {
-  // Aggregate demographic data for the IDs
-  return staticMetadata.demographics.reduce((data, demographic, ind) => {
+  return getAggregatedCounts(
+    baseIndices,
+    staticMetadata,
+    staticDemographics,
+    staticMetadata.demographics
+  );
+}
+
+export function getVoting(
+  baseIndices: readonly number[] | ReadonlySet<number>,
+  staticMetadata: IStaticMetadata,
+  staticVoting: readonly UintArray[]
+): DemographicCounts {
+  return staticMetadata.voting
+    ? getAggregatedCounts(baseIndices, staticMetadata, staticVoting, staticMetadata.voting)
+    : {};
+}
+
+export function getAggregatedCounts(
+  baseIndices: readonly number[] | ReadonlySet<number>,
+  staticMetadata: IStaticMetadata,
+  staticFiles: readonly UintArray[],
+  fileProperties: readonly IStaticFile[]
+): DemographicCounts {
+  // Aggregate numeric data for the IDs
+  return fileProperties.reduce((data, props, ind) => {
     let count: number = 0; // eslint-disable-line
     baseIndices.forEach((v: number) => {
-      if (!isNaN(staticDemographics[ind][v])) {
-        count += staticDemographics[ind][v];
+      if (!isNaN(staticFiles[ind][v])) {
+        count += staticFiles[ind][v];
       }
     });
-    return { ...data, [demographic.id]: count };
+    return { ...data, [props.id]: count };
   }, {} as DemographicCounts);
 }

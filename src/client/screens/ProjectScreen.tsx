@@ -24,6 +24,7 @@ import "../App.css";
 import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
 import CenteredContent from "../components/CenteredContent";
 import CopyMapModal from "../components/CopyMapModal";
+import KeyboardShortcutsModal from "../components/map/KeyboardShortcutsModal";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
@@ -51,6 +52,7 @@ interface StateProps {
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
   readonly isReadOnly: boolean;
+  readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
 }
 
@@ -77,12 +79,12 @@ const ProjectScreen = ({
   projectNotFound,
   geoUnitHierarchy,
   districtDrawing,
+  mapLabel,
   isLoading,
   isReadOnly,
   user
 }: StateProps) => {
   const { projectId } = useParams();
-  const [label, setMapLabel] = useState<string | undefined>(undefined);
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
@@ -145,6 +147,7 @@ const ProjectScreen = ({
             highlightedGeounits={districtDrawing.highlightedGeounits}
             geoUnitHierarchy={geoUnitHierarchy}
             lockedDistricts={presentDrawingState.lockedDistricts}
+            hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
             isReadOnly={isReadOnly}
           />
@@ -160,12 +163,12 @@ const ProjectScreen = ({
         <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
           {!evaluateMode ? (
             <MapHeader
-              label={label}
-              setMapLabel={setMapLabel}
+              label={mapLabel}
               metadata={staticMetadata}
               selectionTool={districtDrawing.selectionTool}
               geoLevelIndex={presentDrawingState.geoLevelIndex}
               selectedGeounits={presentDrawingState.selectedGeounits}
+              limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
               advancedEditingEnabled={project?.advancedEditingEnabled}
               isReadOnly={isReadOnly}
             />
@@ -190,13 +193,16 @@ const ProjectScreen = ({
                 staticGeoLevels={staticGeoLevels}
                 selectedGeounits={presentDrawingState.selectedGeounits}
                 selectedDistrictId={districtDrawing.selectedDistrictId}
+                hoveredDistrictId={districtDrawing.hoveredDistrictId}
+                zoomToDistrictId={districtDrawing.zoomToDistrictId}
                 selectionTool={districtDrawing.selectionTool}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
                 lockedDistricts={presentDrawingState.lockedDistricts}
                 evaluateMode={evaluateMode}
                 evaluateMetric={evaluateMetric}
                 isReadOnly={isReadOnly}
-                label={label}
+                limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
+                label={mapLabel}
                 map={map}
                 setMap={setMap}
               />
@@ -207,6 +213,7 @@ const ProjectScreen = ({
                 />
               )}
               <CopyMapModal project={project} />
+              <KeyboardShortcutsModal />
               <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}
@@ -226,6 +233,7 @@ function mapStateToProps(state: State): StateProps {
     geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
     evaluateMode: state.project.evaluateMode,
     evaluateMetric: state.project.evaluateMetric,
+    mapLabel: state.project.mapLabel,
     districtDrawing: state.project,
     regionProperties: state.regionConfig.regionProperties,
     isLoading:

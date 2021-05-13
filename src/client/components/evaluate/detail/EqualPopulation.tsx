@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
-import { DistrictProperties, EvaluateMetricWithValue } from "../../../../shared/entities";
+import { EvaluateMetricWithValue, DistrictProperties } from "../../../../shared/entities";
+import { getChoroplethStops } from "../../map/index";
 import { DistrictsGeoJSON } from "../../../types";
-import { CONTIGUITY_FILL_COLOR, EVALUATE_GRAY_FILL_COLOR } from "../../map/index";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -52,10 +52,13 @@ const style: ThemeUIStyleObject = {
   },
   blankValue: {
     color: "gray.2"
+  },
+  number: {
+    textAlign: "right"
   }
 };
 
-const ContiguityMetricDetail = ({
+const EqualPopulationMetricDetail = ({
   metric,
   geojson
 }: {
@@ -63,18 +66,40 @@ const ContiguityMetricDetail = ({
   readonly geojson?: DistrictsGeoJSON;
 }) => {
   function computeRowFill(row: DistrictProperties) {
-    return row.contiguity === "contiguous" ? CONTIGUITY_FILL_COLOR : EVALUATE_GRAY_FILL_COLOR;
+    const val = row.percentDeviation;
+    const choroplethStops = getChoroplethStops(metric.key);
+    // eslint-disable-next-line
+    for (let i = 0; i < choroplethStops.length; i++) {
+      const r = choroplethStops[i];
+      if (val && val >= r[0]) {
+        if (i < choroplethStops.length - 1) {
+          const r1 = choroplethStops[i + 1];
+          if (val < r1[0]) {
+            return r[1];
+          }
+        } else {
+          return r[1];
+        }
+      }
+    }
+    return "#fff";
   }
+
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-        {metric.value} of {metric.total} districts are contiguous
+        {metric.value || " "} of the {metric.total} districts are within{" "}
+        {"popThreshold" in metric &&
+          metric.popThreshold &&
+          ` ${Math.floor(metric.popThreshold * 100)}%`}{" "}
+        of {metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()}
       </Heading>
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
             <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.colLast }}>Contiguity</Styled.th>
+            <Styled.th sx={style.th}>Deviation (%)</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.number, ...style.colLast }}>Deviation</Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
@@ -83,10 +108,11 @@ const ContiguityMetricDetail = ({
               id > 0 && (
                 <Styled.tr key={id}>
                   <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
-                  <Styled.td sx={{ ...style.td, ...style.colLast }}>
-                    {feature.properties.contiguity ? (
+
+                  <Styled.td sx={style.td}>
+                    {feature.properties.percentDeviation ? (
                       <Flex sx={{ alignItems: "center" }}>
-                        <Box
+                        <Styled.div
                           sx={{
                             mr: 2,
                             width: "15px",
@@ -94,15 +120,19 @@ const ContiguityMetricDetail = ({
                             borderRadius: "small",
                             bg: computeRowFill(feature.properties)
                           }}
-                        ></Box>
-                        <Box>
-                          {feature.properties.contiguity === "contiguous"
-                            ? "Contiguous"
-                            : "Non-contiguous"}
-                        </Box>
+                        ></Styled.div>
+                        <Box>{Math.floor(feature.properties.percentDeviation * 1000) / 10}%</Box>
                       </Flex>
                     ) : (
-                      <Box sx={style.blankValue}>–</Box>
+                      <Box sx={style.blankValue}>-</Box>
+                    )}
+                  </Styled.td>
+
+                  <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
+                    {feature.properties.populationDeviation ? (
+                      Math.round(feature.properties.populationDeviation).toLocaleString()
+                    ) : (
+                      <Box sx={style.blankValue}>-</Box>
                     )}
                   </Styled.td>
                 </Styled.tr>
@@ -114,4 +144,4 @@ const ContiguityMetricDetail = ({
   );
 };
 
-export default ContiguityMetricDetail;
+export default EqualPopulationMetricDetail;

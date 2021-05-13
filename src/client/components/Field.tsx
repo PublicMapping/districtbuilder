@@ -7,7 +7,7 @@ import { ErrorMap } from "../../shared/types";
 import { WriteResource } from "../resource";
 
 function getFieldErrors<D, T>(resource: WriteResource<D, T>): ErrorMap<D> {
-  return "errors" in resource && typeof resource.errors.message !== "string"
+  return "errors" in resource && resource.errors && typeof resource.errors.message !== "string"
     ? resource.errors.message
     : {};
 }
@@ -136,8 +136,10 @@ const PasswordConstraint = ({
 }) => {
   const color = invalid ? "warning" : "inherit";
   return (
-    <Flex sx={{ flexDirection: "row", flex: 1 }}>
-      <Box sx={{ color: "success.4", width: "1rem", height: "1rem" }}>{!invalid && "✓"}</Box>
+    <Flex sx={{ flexDirection: "row", flex: 1, "&:not(:last-child)": { mb: "2" } }}>
+      <Box sx={{ color: "success.4", flexShrink: 0, width: "1rem", height: "1rem" }}>
+        {!invalid && "✓"}
+      </Box>
       <Box sx={{ flex: "auto", color }}>{children}</Box>
     </Flex>
   );
@@ -186,6 +188,8 @@ export function PasswordField<D, R>({
                 borderColor: "gray.2",
                 boxShadow: "small",
                 borderRadius: "small",
+                textTransform: "none",
+                lineHeight: "1.2",
                 "@media screen and (min-width: 1040px)": {
                   transform: "translateY(-50%)",
                   left: "100%",
@@ -193,7 +197,7 @@ export function PasswordField<D, R>({
                   top: "50%",
                   mb: "0",
                   ml: 2,
-                  width: "350px"
+                  width: "200px"
                 }
               }}
             >

@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, Button, Flex, jsx, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, IconButton, Flex, jsx, ThemeUIStyleObject, Heading, Text } from "theme-ui";
 
 import { EvaluateMetric, EvaluateMetricWithValue } from "../../../shared/entities";
 import Icon from "../Icon";
@@ -7,28 +7,6 @@ import store from "../../store";
 import { selectEvaluationMetric, toggleEvaluate } from "../../actions/districtDrawing";
 
 const style: ThemeUIStyleObject = {
-  sidebar: {
-    bg: "muted",
-    boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
-    display: "flex",
-    flexDirection: "column",
-    flexShrink: 0,
-    height: "100%",
-    minWidth: "430px",
-    maxWidth: "35%",
-    position: "relative",
-    ml: "0",
-    color: "gray.8",
-    zIndex: 200
-  },
-  td: {
-    fontWeight: "body",
-    color: "gray.8",
-    fontSize: 1,
-    p: 2,
-    textAlign: "left",
-    verticalAlign: "bottom"
-  },
   header: {
     variant: "header.app",
     borderBottom: "1px solid",
@@ -37,37 +15,40 @@ const style: ThemeUIStyleObject = {
     flexDirection: "column",
     m: "0"
   },
-  closeBtn: {
-    position: "absolute",
-    right: "20px"
+  evaluateMetricsList: {
+    p: 2,
+    flex: 1,
+    flexDirection: "column"
   },
   metricRow: {
-    p: 1,
+    p: 3,
+    bg: "muted",
+    border: "1px solid",
+    borderColor: "gray.2",
+    borderRadius: "small",
     width: "100%",
     mb: "10px",
     "&:hover": {
-      cursor: "pointer"
+      cursor: "pointer",
+      boxShadow: "small"
+    },
+    "&:focus": {
+      boxShadow: "focus",
+      outline: "none"
     },
     flexDirection: "row"
   },
-  evaluateMetricsList: {
-    overflowY: "auto",
-    flex: 1,
-    flexDirection: "column",
-    mt: "50px"
-  },
   metricValue: {
     variant: "header.right",
-    position: "relative",
-    mr: "20px",
     textAlign: "right"
   },
+  metricTitle: {
+    fontWeight: "500"
+  },
   metricText: {
-    fontSize: "10",
-    ml: "50px",
-    minHeight: "50px",
-    maxWidth: "50%",
-    fontWeight: "300"
+    fontSize: 1,
+    color: "gray.7",
+    mt: 1
   }
 };
 
@@ -92,69 +73,87 @@ const ProjectEvaluateView = ({
     }
   }
   return (
-    <Flex sx={{ flexDirection: "column", height: "100vh" }}>
+    <Flex sx={{ variant: "sidebar.gray", maxWidth: "447px" }}>
       <Flex sx={style.header} className="evaluate-header">
-        <Flex sx={{ variant: "header.left" }}>
-          <Flex>
-            <Heading as="h2" sx={{ variant: "text.h4" }}>
-              Evaluate
-            </Heading>
-          </Flex>
-          <Flex sx={style.closeBtn}>
-            <Button onClick={() => store.dispatch(toggleEvaluate(false))}>X</Button>
-          </Flex>
+        <Flex sx={{ variant: "header.left", justifyContent: "space-between" }}>
+          <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
+            Evaluate
+          </Heading>
+          <Box>
+            <IconButton variant="icon" onClick={() => store.dispatch(toggleEvaluate(false))}>
+              <Icon name={"times"} />
+            </IconButton>
+          </Box>
         </Flex>
       </Flex>
-      <Flex sx={style.evaluateMetricsList}>
-        <Heading as="h4" sx={{ variant: "text.h4", ml: "15px" }}>
-          Required
-        </Heading>
-        {requiredMetrics.map(metric => (
-          <Box
-            sx={style.metricRow}
-            onClick={() => store.dispatch(selectEvaluationMetric(metric))}
-            key={metric.key}
-          >
-            <Flex sx={style.metricRow}>
-              <Box sx={{ mr: "50px" }}>
-                {"status" in metric ? (
-                  metric.status ? (
-                    <Icon name={"check"} />
-                  ) : (
-                    <Icon name={"question-circle"} />
-                  )
-                ) : (
-                  <Box></Box>
-                )}
-              </Box>
-              <Box>{metric.name}</Box>
-              <Box sx={style.metricValue}>{"type" in metric ? formatMetricValue(metric) : ""}</Box>
-            </Flex>
-            <Flex sx={style.metricText}>{metric.shortText}</Flex>
-          </Box>
-        ))}
-      </Flex>
-      <Flex sx={style.evaluateMetricsList}>
-        <Heading as="h4" sx={{ variant: "text.h4", ml: "15px" }}>
-          Optional
-        </Heading>
-        {optionalMetrics.map(metric => (
-          <Flex key={metric.key}>
+      <Box sx={{ overflowY: "auto", flex: 1 }}>
+        <Box sx={style.evaluateMetricsList}>
+          <Heading as="h3" sx={{ variant: "text.h5", mt: 2 }}>
+            Required
+          </Heading>
+          {requiredMetrics.map(metric => (
             <Box
+              as="article"
               sx={style.metricRow}
               onClick={() => store.dispatch(selectEvaluationMetric(metric))}
+              key={metric.key}
+              tabIndex={0}
             >
-              <Flex sx={style.metricRow}>
-                <Box sx={{ ml: "50px", textTransform: "capitalize" }}>{metric.name}</Box>
+              <Flex>
+                <Flex sx={{ alignItems: "center" }}>
+                  {"status" in metric ? (
+                    metric.status ? (
+                      <Box sx={{ lineHeight: "body", mr: 2 }}>
+                        <Icon name={"check-circle-solid"} color="success.3" />
+                      </Box>
+                    ) : (
+                      <Box sx={{ lineHeight: "body", mr: 2 }}>
+                        <Icon name={"times-circle-solid"} color="error" />
+                      </Box>
+                    )
+                  ) : (
+                    <Box></Box>
+                  )}
+                  <Heading as="h4" sx={{ ...style.metricTitle, mb: 0 }}>
+                    {metric.name}
+                  </Heading>
+                </Flex>
                 <Box sx={style.metricValue}>
                   {"type" in metric ? formatMetricValue(metric) : ""}
                 </Box>
               </Flex>
-              <Flex sx={style.metricText}>{metric.shortText || "Lorem ipsum lorem ipsum"}</Flex>
+              <Text as="p" sx={style.metricText}>
+                {metric.shortText}
+              </Text>
             </Box>
-          </Flex>
-        ))}
-      </Flex>
+          ))}
+        </Box>
+        <Box sx={style.evaluateMetricsList}>
+          <Heading as="h3" sx={{ variant: "text.h5", mt: 2 }}>
+            Optional
+          </Heading>
+          {optionalMetrics.map(metric => (
+            <Flex key={metric.key}>
+              <Box
+                as="article"
+                sx={style.metricRow}
+                onClick={() => store.dispatch(selectEvaluationMetric(metric))}
+                tabIndex={0}
+              >
+                <Flex>
+                  <Heading as="h4" sx={{ ...style.metricTitle, textTransform: "capitalize" }}>
+                    {metric.name}
+                  </Heading>
+                  <Box sx={style.metricValue}>
+                    {"type" in metric ? formatMetricValue(metric) : ""}
+                  </Box>
+                </Flex>
+                <Text sx={style.metricText}>{metric.shortText || "Lorem ipsum lorem ipsum"}</Text>
+              </Box>
+            </Flex>
+          ))}
+        </Box>
+      </Box>
     </Flex>
   );
 };

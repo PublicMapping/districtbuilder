@@ -50,7 +50,14 @@ const style = {
     maxHeight: "60px"
   },
   item: {
-    pr: 2
+    ":not(:last-child)": {
+      pr: 3
+    },
+    maxWidth: "220px",
+    display: "inline-block",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis"
   },
   join: {
     whiteSpace: "nowrap"
@@ -223,7 +230,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                 )}
                 <Box sx={{ width: "620px" }}>
                   <Heading as="h1">{organization.resource.name}</Heading>
-                  <Box>
+                  <Box sx={{ my: 1 }}>
                     {(organization.resource.municipality || organization.resource.region) && (
                       <Box as="span" sx={style.item}>
                         <Icon name="map-marker" /> {organization.resource.municipality}
@@ -240,7 +247,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                       </Box>
                     )}
                     <Box as="span" sx={style.item}>
-                      <Icon name="tools" /> {organization.resource.users?.length || 0} builders
+                      <Icon name="user" /> {organization.resource.users?.length || 0} builders
                     </Box>
                   </Box>
                   {organization.resource.description && (
@@ -255,7 +262,6 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                       textAlign: "right",
                       alignItems: "flex-end"
                     }}
-                    onClick={leaveOrg}
                   >
                     <Button
                       sx={{
@@ -269,6 +275,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                           borderColor: "#f06543 !important"
                         }
                       }}
+                      onClick={leaveOrg}
                     >
                       Leave organization
                     </Button>

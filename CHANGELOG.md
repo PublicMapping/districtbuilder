@@ -5,18 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
-
 
 ### Added
 
-
 ### Changed
-
 
 ### Fixed
 
+## [1.5.0] - 2021-05-13
+
+### Added
+
+- Add toggle to limit drawing to within starting county [#698](https://github.com/PublicMapping/districtbuilder/pull/698)
+- Add project evaluate view for Equal Population [#685](https://github.com/PublicMapping/districtbuilder/pull/685)
+- Toggle map pan tool when holding down spacebar in rectangle / paintbrush select mode [#687](https://github.com/PublicMapping/districtbuilder/pull/687)
+- Highlight selected/hovered districts and zoom to district [#688](https://github.com/PublicMapping/districtbuilder/pull/688)
+- Added unique index on region config table for country / region code [#702](https://github.com/PublicMapping/districtbuilder/pull/702)
+- Display warnings and row-level flags for district import [#708](https://github.com/PublicMapping/districtbuilder/pull/708)
+- Add keyboard shortcuts for map functions [#718](https://github.com/PublicMapping/districtbuilder/pull/718)
+- Added voting info to sidebar [#730](https://github.com/PublicMapping/districtbuilder/pull/730)
+
+### Changed
+
+- Style Evaluate Mode panel [#724](https://github.com/PublicMapping/districtbuilder/pull/724)
+- Change eslint config to detect misuse of NestJS services [#700](https://github.com/PublicMapping/districtbuilder/pull/700)
+- Log non-HTTP errors to Rollbar [#725](https://github.com/PublicMapping/districtbuilder/pull/725)
+- Changed default project visibility, prevent org admins from seeing private maps [#754](https://github.com/PublicMapping/districtbuilder/pull/754)
+
+### Fixed
+
+- Fix import region detection to exclude hidden regions [#702](https://github.com/PublicMapping/districtbuilder/pull/702)
+- Display unassigned areas as transparent fill in Evaluate mode map [#694](https://github.com/PublicMapping/districtbuilder/pull/699)
+- Minor style cleanup for organizations page and dropdown [#709](https://github.com/PublicMapping/districtbuilder/pull/709)
+- Make password validation visible in modal [#706](https://github.com/PublicMapping/districtbuilder/pull/706)
+- Sorting on organization admin table [#711](https://github.com/PublicMapping/districtbuilder/pull/711)
+- Fix joining/leaving organization with an inactive project template [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
+- Show maps for inactive project templates [#721](https://github.com/PublicMapping/districtbuilder/pull/721)
+- Only check file extension and not file type for CSV imports [#723](https://github.com/PublicMapping/districtbuilder/pull/723)
+- Fix off-by-one error in district lock handling [#741](https://github.com/PublicMapping/districtbuilder/pull/741)
 
 ## [1.4.0] - 2021-04-12
 
@@ -63,11 +90,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix bug where projects are created after closing Join Organization modal triggered from an organization's template [#673](https://github.com/PublicMapping/districtbuilder/pull/673)
 
 ### Fixed
+
 - Allow last district to be locked [#677](https://github.com/PublicMapping/districtbuilder/pull/677)
 - Allow editing at lower geolevels after toggling evaluate mode [#679](https://github.com/PublicMapping/districtbuilder/pull/679)
 - Fix off screen geounits deselected when using rectangle tool [#680](https://github.com/PublicMapping/districtbuilder/pull/680)
 - Set project as unfeatured if private [#686](https://github.com/PublicMapping/districtbuilder/pull/686)
-
 
 ## [1.3.0] - 2021-01-26
 
@@ -161,7 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/publicmapping/districtbuilder/compare/1.1.0...1.2.0

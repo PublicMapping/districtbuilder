@@ -28,7 +28,10 @@ export class RollbarExceptionFilter extends BaseExceptionFilter {
   }
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    if (exception instanceof HttpException && !isWhitelisted(exception)) {
+    if (
+      (exception instanceof HttpException && !isWhitelisted(exception)) ||
+      (exception instanceof Error && !(exception instanceof HttpException))
+    ) {
       const ctx = host.switchToHttp();
       const request = ctx.getRequest<Request>();
 

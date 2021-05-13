@@ -15,68 +15,17 @@ import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
 import { useState, useEffect } from "react";
 import { Resource } from "../../resource";
-import { geoLevelLabelSingular } from "../../functions";
+import { geoLevelLabelSingular, getTargetPopulation } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
-    bg: "muted",
-    boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
-    display: "flex",
     flexDirection: "column",
     flexShrink: 0,
     height: "100%",
     minWidth: "430px",
-    maxWidth: "35%",
+    maxWidth: "447px",
     position: "relative",
-    ml: "0",
-    color: "gray.8",
     zIndex: 200
-  },
-  td: {
-    fontWeight: "body",
-    color: "gray.8",
-    fontSize: 1,
-    p: 2,
-    textAlign: "left",
-    verticalAlign: "bottom"
-  },
-  header: {
-    variant: "header.app",
-    borderBottom: "1px solid",
-    borderColor: "gray.2",
-    paddingBottom: "20px",
-    flexDirection: "column",
-    m: "0"
-  },
-  closeBtn: {
-    position: "absolute",
-    right: "20px"
-  },
-  metricRow: {
-    p: 1,
-    width: "100%",
-    mb: "10px",
-    "&:hover": {
-      cursor: "pointer"
-    },
-    flexDirection: "row"
-  },
-  evaluateMetricsList: {
-    overflowY: "auto",
-    flex: 1,
-    flexDirection: "column",
-    mt: "50px"
-  },
-  metricValue: {
-    variant: "header.right",
-    position: "relative",
-    mr: "20px",
-    textAlign: "right"
-  },
-  metricText: {
-    fontSize: "10",
-    ml: "50px",
-    minHeight: "50px"
   }
 };
 
@@ -94,7 +43,9 @@ const ProjectEvaluateSidebar = ({
   readonly staticMetadata?: IStaticMetadata;
 }) => {
   const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
+  const [avgPopulation, setAvgPopulation] = useState<number | undefined>(undefined);
   const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
+  const popThreshold = 0.05;
   useEffect(() => {
     if (geojson && !avgCompactness) {
       const totalCompactness = geojson.features.reduce(function(accumulator, feature) {
@@ -103,6 +54,13 @@ const ProjectEvaluateSidebar = ({
       setAvgCompactness(totalCompactness / (geojson.features.length - 1));
     }
   }, [geojson, avgCompactness]);
+
+  useEffect(() => {
+    if (geojson && !avgPopulation && project) {
+      getTargetPopulation(geojson, project);
+      setAvgPopulation(getTargetPopulation(geojson, project));
+    }
+  }, [geojson, avgPopulation, project]);
 
   useEffect(() => {
     if (staticMetadata) {
@@ -125,9 +83,25 @@ const ProjectEvaluateSidebar = ({
       status: false,
       description: "have equal population",
       shortText: "Lorem ipsum",
-      longText: "Lorem ipsum",
+      longText: `This map has a goal of getting within ${Math.floor(
+        popThreshold * 100
+      )}% of ${avgPopulation?.toLocaleString()}`,
+      avgPopulation: avgPopulation || undefined,
+      popThreshold: popThreshold,
       type: "fraction",
-      value: 17
+      total: geojson?.features.filter(f => f.id !== 0).length || 0,
+      value:
+        avgPopulation && geojson
+          ? geojson?.features.filter(f => {
+              return (
+                f.id !== 0 &&
+                // @ts-ignore
+                f.properties.percentDeviation &&
+                // @ts-ignore
+                Math.abs(f.properties.percentDeviation) <= popThreshold
+              );
+            }).length
+          : 0
     },
     {
       key: "contiguity",
@@ -141,7 +115,9 @@ const ProjectEvaluateSidebar = ({
         "All parts of a district must be in physical contact with some other part of the district",
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
-      value: geojson?.features.filter(f => f.properties.contiguity === "contiguous").length || 0
+      value:
+        geojson?.features.filter(f => f.properties.contiguity === "contiguous" && f.id !== 0)
+          .length || 0
     }
   ];
   const optionalMetrics: readonly EvaluateMetric[] = [

@@ -119,8 +119,7 @@ import { Errors } from "../../../../shared/types";
       };
     } else {
       // Unauthenticated access is allowed for individual projects if they are
-      // visible or published, and not archived. Admins can also see projects created from templates
-      // for organizations that they administer.
+      // visible or published, and not archived.
       const publicallyVisible = [
         { visibility: ProjectVisibility.Published },
         { visibility: ProjectVisibility.Visible }
@@ -129,8 +128,6 @@ import { Errors } from "../../../../shared/types";
         ? [
             // User created project
             { user_id: user.id },
-            // User is admin of project template organization
-            { "projectTemplate.organization.admin": user.id },
             // Or it's public
             ...publicallyVisible
           ]
@@ -362,9 +359,11 @@ export class ProjectsController implements CrudController<Project> {
         ...feature,
         properties: {
           ...feature.properties,
-          // Flatten nested demographics object so it is maintained when converting
+          // Flatten nested demographics & voting objects so they are maintained when converting
           demographics: undefined,
+          voting: undefined,
           ...feature.properties.demographics,
+          ...feature.properties.voting,
           // The feature ID doesn't seem to make its way over as part of 'convert' natively
           id: feature.id
         }

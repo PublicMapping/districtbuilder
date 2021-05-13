@@ -14,6 +14,8 @@ export enum FindTool {
 }
 
 export const setSelectedDistrictId = createAction("Set selected district id")<number>();
+export const setHoveredDistrictId = createAction("Set hovered district id")<number | null>();
+export const setZoomToDistrictId = createAction("Set zoom to district id")<DistrictId | null>();
 
 export const addSelectedGeounits = createAction("Add selected geounits")<GeoUnits>();
 export const removeSelectedGeounits = createAction("Remove selected geounits")<GeoUnits>();
@@ -38,15 +40,22 @@ export const setSelectionTool = createAction("Set selection tool")<SelectionTool
 
 export const setGeoLevelIndex = createAction("Set geoLevel index")<number>();
 
+export const setMapLabel = createAction("Set map label")<string | undefined>();
+
 export const setGeoLevelVisibility = createAction("Set geolevel visibility")<readonly boolean[]>();
 
 export const toggleDistrictLocked = createAction("Toggle district locked")<DistrictId>();
+
+export const toggleLimitDrawingToWithinCounty = createAction("Limit drawing to within county")();
+
+export const showKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")<boolean>();
 
 export const showAdvancedEditingModal = createAction("Show advanced editing warning modal")<
   boolean
 >();
 
 export const showCopyMapModal = createAction("Show copy map modal")<boolean>();
+export const setImportFlagsModal = createAction("Show import flags modal")<boolean>();
 
 export const undo = createAction("Undo project action")();
 export const redo = createAction("Redo project action")();

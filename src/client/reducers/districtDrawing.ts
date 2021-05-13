@@ -15,9 +15,11 @@ import {
   setGeoLevelVisibility,
   setHighlightedGeounits,
   setSelectedDistrictId,
+  setHoveredDistrictId,
   setSelectionTool,
   showAdvancedEditingModal,
   showCopyMapModal,
+  setImportFlagsModal,
   toggleDistrictLocked,
   undo,
   replaceSelectedGeounits,
@@ -28,7 +30,11 @@ import {
   saveDistrictsDefinition,
   setSavingState,
   FindTool,
-  selectEvaluationMetric
+  toggleLimitDrawingToWithinCounty,
+  selectEvaluationMetric,
+  setZoomToDistrictId,
+  setMapLabel,
+  showKeyboardShortcutsModal
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -101,30 +107,42 @@ function toggleLock(id: DistrictId, locks: LockedDistricts): LockedDistricts {
 
 export interface DistrictDrawingState {
   readonly selectedDistrictId: number;
+  readonly hoveredDistrictId: number | null;
+  readonly zoomToDistrictId: number | null;
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
+  readonly showKeyboardShortcutsModal: boolean;
+  readonly showImportFlagsModal: boolean;
   readonly findMenuOpen: boolean;
   readonly evaluateMode: boolean;
   readonly evaluateMetric: EvaluateMetric | undefined;
   readonly findIndex?: number;
   readonly findTool: FindTool;
+  readonly limitSelectionToCounty: boolean;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
+  readonly mapLabel: string | undefined;
 }
 
 export const initialDistrictDrawingState: DistrictDrawingState = {
   selectedDistrictId: 1,
+  hoveredDistrictId: null,
+  zoomToDistrictId: null,
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
+  showImportFlagsModal: false,
+  showKeyboardShortcutsModal: false,
   findMenuOpen: false,
   evaluateMode: false,
   evaluateMetric: undefined,
   findTool: FindTool.Unassigned,
+  limitSelectionToCounty: false,
   saving: "unsaved",
+  mapLabel: "undefined",
   undoHistory: {
     past: [],
     present: {
@@ -155,6 +173,21 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         selectedDistrictId: action.payload
+      };
+    case getType(setHoveredDistrictId):
+      return {
+        ...state,
+        hoveredDistrictId: action.payload
+      };
+    case getType(setZoomToDistrictId):
+      return {
+        ...state,
+        zoomToDistrictId: action.payload
+      };
+    case getType(setMapLabel):
+      return {
+        ...state,
+        mapLabel: action.payload
       };
     case getType(addSelectedGeounits):
       return loop(
@@ -206,6 +239,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         saving: action.payload
       };
+    case getType(toggleLimitDrawingToWithinCounty):
+      return {
+        ...state,
+        limitSelectionToCounty: !state.limitSelectionToCounty
+      };
     case getType(setHighlightedGeounits):
       return {
         ...state,
@@ -247,10 +285,20 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         showAdvancedEditingModal: action.payload
       };
+    case getType(showKeyboardShortcutsModal):
+      return {
+        ...state,
+        showKeyboardShortcutsModal: action.payload
+      };
     case getType(showCopyMapModal):
       return {
         ...state,
         showCopyMapModal: action.payload
+      };
+    case getType(setImportFlagsModal):
+      return {
+        ...state,
+        showImportFlagsModal: action.payload
       };
     case getType(toggleFind):
       return {

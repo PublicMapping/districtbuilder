@@ -79,17 +79,19 @@ const ConfirmJoinOrganization = ({
         </Heading>
       </Box>
       <Flex sx={{ flexDirection: "column" }}>
-        <Box>
-          Joining an organization allows you to create maps using their templates, participate in
-          contents and...
+        <Box sx={{ marginBottom: 2 }}>
+          Joining an organization allows you to participate their public mapping activities. You can
+          create maps from their templates and have your maps featured on the organization&#39;s
+          page.
         </Box>
         <Box>
-          This organization will be able to see some information about you when you build out a map
-          using one of their templates
+          This organization will be able to see some of your information when you join:
           <ul>
             <li>View your name and email address</li>
-            <li>View any maps you create using their templates</li>
+            <li>View any non-private maps you create using their templates</li>
           </ul>
+          You still have control over your maps. You can mark any of your maps &#34;Private&#34; and
+          they will only be visible to you.
         </Box>
         <Flex sx={style.footer}>
           <Button id="primary-action" sx={{ marginBottom: 3 }} onClick={joinOrg}>

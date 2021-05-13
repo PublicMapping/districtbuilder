@@ -1,6 +1,5 @@
 import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
-
 import {
   DistrictsDefinition,
   FeatureId,
@@ -11,7 +10,7 @@ import {
 } from "../../../shared/entities";
 
 import { editSelectedGeounits } from "../../actions/districtDrawing";
-import { mergeGeoUnits } from "../../functions";
+import { areAnyGeoUnitsSelected, mergeGeoUnits } from "../../functions";
 import paint from "../../media/paint.png";
 import store from "../../store";
 
@@ -23,7 +22,9 @@ import {
   ISelectionTool,
   setFeaturesSelectedFromGeoUnits,
   SET_FEATURE_DELAY,
-  getChildGeoUnits
+  getChildGeoUnits,
+  filterGeoUnitsByCounty,
+  getCurrentCountyFromGeoUnits
 } from "./index";
 
 /*
@@ -38,13 +39,17 @@ const PaintBrushSelectionTool: ISelectionTool = {
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
-    staticGeoLevels: UintArrays
+    staticGeoLevels: UintArrays,
+    setActive: (isActive: boolean) => void,
+    limitSelectionToCounty: boolean,
+    selectedGeounits: GeoUnits
   ) {
     map.boxZoom.disable();
     map.dragPan.disable();
     map.getCanvas().style.cursor = `url('${paint}') 0 14, default`; // eslint-disable-line
 
     const canvas = map.getCanvasContainer();
+    let currentCounty: number | undefined = undefined; // eslint-disable-line
 
     canvas.addEventListener("mousedown", mouseDown);
     // Save mouseDown for removal upon disabling
@@ -90,6 +95,10 @@ const PaintBrushSelectionTool: ISelectionTool = {
         staticGeoLevels
       );
 
+      if (!currentCounty && limitSelectionToCounty) {
+        currentCounty = getCurrentCountyFromGeoUnits(staticMetadata, geoUnits);
+      }
+
       // New geounits (to select on map) are the highlighted ones that aren't already selected
       const newGeoUnits = filterGeoUnits(
         geoUnits,
@@ -99,7 +108,14 @@ const PaintBrushSelectionTool: ISelectionTool = {
             sourceLayer: geoLevelId
           })
       );
-      setFeaturesSelectedFromGeoUnits(map, newGeoUnits, true);
+
+      const geoUnitsToAdd =
+        currentCounty && limitSelectionToCounty
+          ? // Filter geounits to current county
+            filterGeoUnitsByCounty(newGeoUnits, currentCounty)
+          : newGeoUnits;
+      setFeaturesSelectedFromGeoUnits(map, geoUnitsToAdd, true);
+      throttledAddGeounits(geoUnitsToAdd);
       // Geounit is not selected, so select it, making sure to remove the selection on any child
       // geounits since the parent selection supercedes any child selections
       features.forEach(feature => {
@@ -110,14 +126,13 @@ const PaintBrushSelectionTool: ISelectionTool = {
         setFeaturesSelectedFromGeoUnits(map, childGeoUnits, false);
         throttledRemoveGeounits(childGeoUnits);
       });
-      throttledAddGeounits(newGeoUnits);
     }
 
     function mouseDown(e: MouseEvent) {
       // Call functions for the following events
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
-
+      setActive(true);
       updateSelection(e);
     }
 
@@ -129,6 +144,10 @@ const PaintBrushSelectionTool: ISelectionTool = {
       // Remove these events now that finish has been called.
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      if (!areAnyGeoUnitsSelected(selectedGeounits)) {
+        currentCounty = undefined;
+      }
+      setActive(false);
     }
 
     function getFeaturesAtPoint(
