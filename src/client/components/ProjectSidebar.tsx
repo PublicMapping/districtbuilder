@@ -321,7 +321,11 @@ const SidebarRow = memo(
       store.dispatch(toggleDistrictLocked(districtId - 1));
     };
 
-    const { voting } = district.properties;
+    // The voting dobject can be present but have no data, we treat this case as if it isn't there
+    const voting =
+      Object.keys(district.properties.voting || {}).length > 0
+        ? district.properties.voting
+        : undefined;
     const winningParty =
       voting && Object.keys(voting).reduce((a, b) => (voting[a] > voting[b] ? a : b), "");
     const color = winningParty && getPartyColor(winningParty);
