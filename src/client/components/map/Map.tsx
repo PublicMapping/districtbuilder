@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Flex, Text, jsx, ThemeUIStyleObject } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
@@ -24,7 +24,12 @@ import {
   EvaluateMetric
 } from "../../../shared/entities";
 import { DistrictsGeoJSON } from "../../types";
-import { areAnyGeoUnitsSelected, getSelectedGeoLevel, getTargetPopulation } from "../../functions";
+import {
+  areAnyGeoUnitsSelected,
+  getSelectedGeoLevel,
+  getTargetPopulation,
+  geoLevelLabelSingular
+} from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
   DISTRICTS_SOURCE_ID,
@@ -88,42 +93,48 @@ interface Props {
 }
 
 const style: ThemeUIStyleObject = {
-  legendLabel: {
-    display: "inline-block",
-    ml: "5px"
-  },
-  legendItem: {
-    display: "inline-block",
-    minWidth: "120px",
-    maxWidth: "170px",
-    mr: "20px"
-  },
-  legendTitle: {
-    display: "inline-block",
-    width: "120px",
-    fontWeight: "600",
-    mr: "35px"
-  },
   legendBox: {
     position: "absolute",
-    bottom: "20px",
-    left: "100px",
-    right: "40px",
-    height: "60px",
-    minWidth: "600px",
-    maxWidth: "1300px",
-    fontSize: "14pt",
+    bg: "muted",
+    bottom: 6,
+    width: "auto",
+    left: "50%",
+    transform: "translateX(-50%)",
+    border: "1px solid",
+    borderColor: "gray.2",
+    borderRadius: "small",
+    boxShadow: "large",
+    p: 3,
     display: "inline-block",
-    outline: "1px solid gray",
-    padding: "20px"
+    minWidth: "fit-content",
+    zIndex: "200"
+  },
+  legendTitle: {
+    fontSize: 1,
+    color: "gray.8",
+    fontWeight: "medium",
+    mr: 4,
+    display: "inline-block"
+  },
+  legendItem: {
+    display: "inline-flex",
+    mr: 3,
+    alignItems: "center"
   },
   legendColorSwatch: {
-    display: "inline-block",
-    mr: "10px",
-    width: "20px",
-    height: "20px",
-    opacity: "0.9",
-    outline: "1px solid lightgray"
+    mr: 2,
+    height: "15px",
+    width: "15px",
+    flex: "0 0 15px",
+    borderRadius: "small",
+    border: "1px solid",
+    borderColor: "gray.2",
+    display: "inline-block"
+  },
+  legendLabel: {
+    color: "gray.8",
+    flex: "0 0 auto",
+    display: "inline-block"
   }
 };
 
@@ -171,6 +182,10 @@ const DistrictsMap = ({
   // The ability to zoom this far in isn't needed in the typical use-case (+4 is fine for that),
   // but it's needed in order to allow the user to fix very tiny unassigned slivers that may arise.
   const overZoom = maxZoom + 8;
+
+  const legendLabel = geoLevelLabelSingular(
+    staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id
+  );
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -695,80 +710,94 @@ const DistrictsMap = ({
       <FindMenu map={map} />
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
-          <Box sx={style.legendTitle}>County splits</Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: COUNTY_SPLIT_FILL_COLOR
-              }}
-            />
-            <Box sx={style.legendLabel}>Split</Box>
-          </Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: "none"
-              }}
-            />
-            <Box sx={style.legendLabel}>Not split</Box>
-          </Box>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>{legendLabel} splits</Text>
+            <Flex sx={style.legendItem}>
+              <Box
+                sx={{
+                  ...style.legendColorSwatch,
+                  backgroundColor: COUNTY_SPLIT_FILL_COLOR
+                }}
+              />
+              <Text sx={style.legendLabel}>Split</Text>
+            </Flex>
+            <Flex sx={style.legendItem}>
+              <Box
+                sx={{
+                  ...style.legendColorSwatch,
+                  backgroundColor: "transparent"
+                }}
+              />
+              <Text sx={style.legendLabel}>Not split</Text>
+            </Flex>
+          </Flex>
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "compactness" && (
         <Box sx={style.legendBox}>
-          <Box sx={style.legendTitle}>Compactness</Box>
-          {getChoroplethStops(evaluateMetric.key).map((step, i) => (
-            <Box sx={style.legendItem} key={i}>
-              <Box
-                sx={{
-                  ...style.legendColorSwatch,
-                  backgroundColor: `${step[1]}`
-                }}
-              ></Box>
-              <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Compactness</Text>
+            <Box sx={{ display: "inline-block" }}>
+              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+                <Flex sx={style.legendItem} key={i}>
+                  <Box
+                    sx={{
+                      ...style.legendColorSwatch,
+                      backgroundColor: `${step[1]}`
+                    }}
+                  ></Box>
+                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
+                </Flex>
+              ))}
             </Box>
-          ))}
+          </Flex>
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "equalPopulation" && (
         <Box sx={style.legendBox}>
-          <Box sx={style.legendTitle}>Equal Population</Box>
-          {getChoroplethStops(evaluateMetric.key).map((step, i) => (
-            <Box sx={style.legendItem} key={i}>
-              <Box
-                sx={{
-                  ...style.legendColorSwatch,
-                  backgroundColor: `${step[1]}`
-                }}
-              ></Box>
-              <Box sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Box>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Equal Population</Text>
+            <Box sx={{ display: "inline-block" }}>
+              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+                <Flex sx={style.legendItem} key={i}>
+                  <Box
+                    sx={{
+                      ...style.legendColorSwatch,
+                      backgroundColor: `${step[1]}`
+                    }}
+                  ></Box>
+                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
+                </Flex>
+              ))}
             </Box>
-          ))}
+          </Flex>
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "contiguity" && (
         <Box sx={style.legendBox}>
-          <Box sx={style.legendTitle}>Contiguity</Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: CONTIGUITY_FILL_COLOR
-              }}
-            ></Box>
-            <Box sx={style.legendLabel}>Contiguous</Box>
-          </Box>
-          <Box sx={style.legendItem}>
-            <Box
-              sx={{
-                ...style.legendColorSwatch,
-                backgroundColor: EVALUATE_GRAY_FILL_COLOR
-              }}
-            ></Box>
-            <Box sx={style.legendLabel}>Non-contiguous</Box>
-          </Box>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Contiguity</Text>
+            <Box sx={{ display: "inline-block" }}>
+              <Flex sx={style.legendItem}>
+                <Box
+                  sx={{
+                    ...style.legendColorSwatch,
+                    backgroundColor: CONTIGUITY_FILL_COLOR
+                  }}
+                ></Box>
+                <Box sx={style.legendLabel}>Contiguous</Box>
+              </Flex>
+              <Flex sx={style.legendItem}>
+                <Box
+                  sx={{
+                    ...style.legendColorSwatch,
+                    backgroundColor: EVALUATE_GRAY_FILL_COLOR
+                  }}
+                ></Box>
+                <Box sx={style.legendLabel}>Non-contiguous</Box>
+              </Flex>
+            </Box>
+          </Flex>
         </Box>
       )}
     </Box>

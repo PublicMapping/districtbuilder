@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
 import {
   EvaluateMetricWithValue,
   IProject,
@@ -9,9 +9,39 @@ import {
 import { useState, useEffect } from "react";
 import { getLabelLookup } from "../../map/labels";
 import { Resource } from "../../../resource";
-import { geoLevelLabel } from "../../../functions";
+import { geoLevelLabel, geoLevelLabelSingular } from "../../../functions";
 
 const style: ThemeUIStyleObject = {
+  table: {
+    mx: 0,
+    mb: 2,
+    width: "100%"
+  },
+  th: {
+    fontWeight: "bold",
+    color: "gray.7",
+    bg: "muted",
+    fontSize: 1,
+    textAlign: "left",
+    pt: 2,
+    px: 2,
+    height: "32px",
+    position: "sticky",
+    top: "0",
+    zIndex: 2,
+    userSelect: "none",
+    "&::after": {
+      height: "1px",
+      content: "''",
+      display: "block",
+      width: "100%",
+      bg: "gray.2",
+      bottom: "-1px",
+      position: "absolute",
+      left: 0,
+      right: 0
+    }
+  },
   td: {
     fontWeight: "body",
     color: "gray.8",
@@ -19,22 +49,31 @@ const style: ThemeUIStyleObject = {
     p: 2,
     textAlign: "left",
     verticalAlign: "bottom",
-    minWidth: "20px",
-    maxWidth: "200px",
-    mr: "10px"
+    position: "relative"
+  },
+  colFirst: {
+    pl: 0
+  },
+  colLast: {
+    pr: 0
   },
   fillBox: {
-    height: "10px",
-    width: "10px",
-    background: "#fed8b1",
-    opacity: "0.5",
-    outline: "1px solid black"
+    mr: 2,
+    height: "15px",
+    width: "15px",
+    borderRadius: "small",
+    bg: "#fed8b1",
+    border: "1px solid",
+    borderColor: "gray.2"
   },
   unfilledBox: {
-    height: "10px",
-    width: "10px",
-    background: "none",
-    outline: "1px solid black"
+    mr: 2,
+    height: "15px",
+    width: "15px",
+    borderRadius: "small",
+    bg: "transparent",
+    border: "1px solid",
+    borderColor: "gray.2"
   }
 };
 
@@ -64,37 +103,45 @@ const CountySplitMetricDetail = ({
   }, [regionProperties, countyLookup]);
 
   return (
-    <Box sx={{ ml: "20px", overflowY: "scroll" }}>
-      <Heading as="h4" sx={{ variant: "text.h4", display: "block" }}>
+    <Box>
+      <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         {metric.value} / {metric.total} {geoLevelLabel(geoLevel)} {metric.description}
       </Heading>
-      <Flex sx={{ flexDirection: "column", width: "60%" }}>
-        <table>
-          <tbody>
-            {countyLookup ? (
-              project?.districtsDefinition.map((d, id) => (
-                <tr key={id}>
-                  <td sx={style.tableElement}>
-                    {countyLookup && id in countyLookup && staticMetadata
-                      ? getLabelLookup(geoLevel, countyLookup[id])
-                      : staticMetadata
-                      ? getLabelLookup(geoLevel, undefined, id)
-                      : ""}
-                  </td>
-                  <td sx={style.tableElement}>
+      <Styled.table sx={style.table}>
+        <thead>
+          <Styled.tr>
+            <Styled.th sx={{ ...style.th, ...style.colFirst }}>
+              {geoLevelLabelSingular(geoLevel)}
+            </Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colLast }}>Split</Styled.th>
+          </Styled.tr>
+        </thead>
+        <tbody>
+          {countyLookup ? (
+            project?.districtsDefinition.map((d, id) => (
+              <Styled.tr key={id}>
+                <Styled.td sx={{ ...style.td, ...style.colFirst }}>
+                  {countyLookup && id in countyLookup && staticMetadata
+                    ? getLabelLookup(geoLevel, countyLookup[id])
+                    : staticMetadata
+                    ? getLabelLookup(geoLevel, undefined, id)
+                    : ""}
+                </Styled.td>
+                <Styled.td sx={{ ...style.td, ...style.colLast }}>
+                  <Flex sx={{ alignItems: "center" }}>
                     <Box sx={Array.isArray(d) ? style.fillBox : style.unfilledBox}></Box>
-                  </td>
-                  <td sx={style.tableElement}>{Array.isArray(d) ? "Split" : "Not split"}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td>Loading...</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Flex>
+                    <Box>{Array.isArray(d) ? "Split" : "Not split"}</Box>
+                  </Flex>
+                </Styled.td>
+              </Styled.tr>
+            ))
+          ) : (
+            <Styled.tr>
+              <Styled.td sx={style.td}>Loading...</Styled.td>
+            </Styled.tr>
+          )}
+        </tbody>
+      </Styled.table>
     </Box>
   );
 };

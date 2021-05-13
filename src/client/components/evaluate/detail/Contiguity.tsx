@@ -1,48 +1,57 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
 import { DistrictProperties, EvaluateMetricWithValue } from "../../../../shared/entities";
 import { DistrictsGeoJSON } from "../../../types";
 import { CONTIGUITY_FILL_COLOR, EVALUATE_GRAY_FILL_COLOR } from "../../map/index";
-import React from "react";
 
 const style: ThemeUIStyleObject = {
-  tableElement: {
+  table: {
+    mx: 0,
+    mb: 2,
+    width: "100%"
+  },
+  th: {
+    fontWeight: "bold",
+    color: "gray.7",
+    bg: "muted",
+    fontSize: 1,
+    textAlign: "left",
+    pt: 2,
+    px: 2,
+    height: "32px",
+    position: "sticky",
+    top: "0",
+    zIndex: 2,
+    userSelect: "none",
+    "&::after": {
+      height: "1px",
+      content: "''",
+      display: "block",
+      width: "100%",
+      bg: "gray.2",
+      bottom: "-1px",
+      position: "absolute",
+      left: 0,
+      right: 0
+    }
+  },
+  td: {
     fontWeight: "body",
     color: "gray.8",
     fontSize: 1,
     p: 2,
     textAlign: "left",
     verticalAlign: "bottom",
-    minWidth: "20px",
-    maxWidth: "200px",
-    mr: "10px"
+    position: "relative"
   },
-  fillBox: {
-    height: "10px",
-    width: "10px",
-    background: "orange",
-    outline: "1px solid black"
+  colFirst: {
+    pl: 0
   },
-  unfilledBox: {
-    height: "10px",
-    width: "10px",
-    background: "none",
-    outline: "1px solid black"
+  colLast: {
+    pr: 0
   },
-  compactnessItem: {
-    display: "inline-block",
-    verticalAlign: "center"
-  },
-  tableHeader: {
-    float: "left",
-    width: "40%"
-  },
-  legendColorSwatch: {
-    display: "inline-block",
-    mr: "40px",
-    width: "20px",
-    height: "20px",
-    opacity: "0.9"
+  blankValue: {
+    color: "gray.2"
   }
 };
 
@@ -57,49 +66,50 @@ const ContiguityMetricDetail = ({
     return row.contiguity === "contiguous" ? CONTIGUITY_FILL_COLOR : EVALUATE_GRAY_FILL_COLOR;
   }
   return (
-    <Box sx={{ ml: "20px", overflowY: "scroll" }}>
-      <Heading as="h4" sx={{ variant: "text.h4", display: "block", width: "100%" }}>
+    <Box>
+      <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         {metric.value} of {metric.total} districts are contiguous
       </Heading>
-      <Flex sx={{ flexDirection: "column", width: "100%" }}>
-        <table>
-          <thead>
-            <tr>
-              <th sx={style.tableElement}>Number</th>
-              <th sx={style.tableElement}>Contiguity</th>
-            </tr>
-          </thead>
-          <tbody>
-            {geojson?.features.map(
-              (feature, id) =>
-                id > 0 && (
-                  <tr key={id}>
-                    <td sx={style.tableElement}>{id}</td>
-                    <td sx={style.tableElement}>
-                      {feature.properties.contiguity ? (
-                        <React.Fragment>
-                          <Box
-                            sx={{
-                              ...style.legendColorSwatch,
-                              backgroundColor: computeRowFill(feature.properties)
-                            }}
-                          ></Box>
-                          <Box sx={style.compactnessItem}>
-                            {feature.properties.contiguity === "contiguous"
-                              ? "Contiguous"
-                              : "Non-contiguous"}
-                          </Box>
-                        </React.Fragment>
-                      ) : (
-                        <Box sx={style.compactnessItem}>Empty</Box>
-                      )}
-                    </td>
-                  </tr>
-                )
-            )}
-          </tbody>
-        </table>
-      </Flex>
+      <Styled.table sx={style.table}>
+        <thead>
+          <Styled.tr>
+            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colLast }}>Contiguity</Styled.th>
+          </Styled.tr>
+        </thead>
+        <tbody>
+          {geojson?.features.map(
+            (feature, id) =>
+              id > 0 && (
+                <Styled.tr key={id}>
+                  <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
+                  <Styled.td sx={{ ...style.td, ...style.colLast }}>
+                    {feature.properties.contiguity ? (
+                      <Flex sx={{ alignItems: "center" }}>
+                        <Box
+                          sx={{
+                            mr: 2,
+                            width: "15px",
+                            height: "15px",
+                            borderRadius: "small",
+                            bg: computeRowFill(feature.properties)
+                          }}
+                        ></Box>
+                        <Box>
+                          {feature.properties.contiguity === "contiguous"
+                            ? "Contiguous"
+                            : "Non-contiguous"}
+                        </Box>
+                      </Flex>
+                    ) : (
+                      <Box sx={style.blankValue}>–</Box>
+                    )}
+                  </Styled.td>
+                </Styled.tr>
+              )
+          )}
+        </tbody>
+      </Styled.table>
     </Box>
   );
 };

@@ -134,21 +134,22 @@ const ProjectHeader = ({
               sx={{
                 ...{
                   variant: "buttons.primary",
-                  fontWeight: "light"
+                  fontWeight: "light",
+                  maxHeight: "34px",
+                  borderBottom: evaluateMode ? "solid 3px" : "none",
+                  borderBottomColor: "blue.2"
                 },
                 ...menuButtonStyle.menuButton
               }}
               onClick={() => store.dispatch(toggleEvaluate(!evaluateMode))}
             >
-              <Box
+              <span
                 sx={{
-                  borderBottom: evaluateMode ? "solid 1px" : "none",
-                  borderBottomColor: "muted",
-                  mb: !evaluateMode ? "-1px" : "0"
+                  mb: evaluateMode ? "-3px" : "0"
                 }}
               >
                 Evaluate
-              </Box>
+              </span>
             </Button>
           </Box>
         </React.Fragment>
