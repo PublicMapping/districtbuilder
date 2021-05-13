@@ -20,6 +20,26 @@ export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
 }
 
+export function canSwitchGeoLevels(
+  currentIndex: number,
+  newIndex: number,
+  geoLevelHierarchy: GeoLevelHierarchy,
+  selectedGeounits: GeoUnits
+): boolean {
+  const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
+  const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(geoLevelHierarchy);
+  const isBaseGeoLevelSelected = newIndex === geoLevelHierarchy.length - 1;
+  const isCurrentLevelBaseGeoLevel = currentIndex === geoLevelHierarchy.length - 1;
+  return !(
+    !isBaseLevelAlwaysVisible &&
+    areGeoUnitsSelected &&
+    // block level selected, so disable all higher geolevels
+    ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
+      // non-block level selected, so disable block level
+      (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel))
+  );
+}
+
 // Determines if we are in a scenario where all geolevels have the same minimum zoom,
 // and thus, the base geolevel doesn't require special handling
 export function isBaseGeoLevelAlwaysVisible(geoLevelHierarchy: GeoLevelHierarchy) {

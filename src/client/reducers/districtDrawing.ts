@@ -54,6 +54,11 @@ import {
   UndoableState,
   updateCurrentState
 } from "./undoRedo";
+import {
+  isBaseGeoLevelAlwaysVisible,
+  areAnyGeoUnitsSelected,
+  canSwitchGeoLevels
+} from "../functions";
 
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
@@ -259,10 +264,32 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         selectionTool: action.payload
       };
-    case getType(setGeoLevelIndex):
-      return updateCurrentState(state, {
-        geoLevelIndex: action.payload
-      });
+    case getType(setGeoLevelIndex): {
+      if (
+        !state.showAdvancedEditingModal &&
+        "resource" in state.staticData &&
+        "resource" in state.projectData
+      ) {
+        const [index, isReadOnly] = action.payload;
+        const { geoLevelHierarchy } = state.staticData.resource.staticMetadata;
+        const { advancedEditingEnabled } = state.projectData.resource.project;
+        const canSwitch = canSwitchGeoLevels(
+          state.undoHistory.present.state.geoLevelIndex,
+          index,
+          geoLevelHierarchy,
+          state.undoHistory.present.state.selectedGeounits
+        );
+
+        return !canSwitch
+          ? loop(state, Cmd.none)
+          : isReadOnly || advancedEditingEnabled
+          ? updateCurrentState(state, {
+              geoLevelIndex: index
+            })
+          : loop(state, Cmd.action(showAdvancedEditingModal(true)));
+      }
+      return state;
+    }
     case getType(setGeoLevelVisibility):
       return updateCurrentState(state, {
         geoLevelVisibility: action.payload

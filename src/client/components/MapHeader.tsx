@@ -1,12 +1,7 @@
 /** @jsx jsx */
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
-import {
-  areAnyGeoUnitsSelected,
-  geoLevelLabel,
-  isBaseGeoLevelAlwaysVisible,
-  capitalizeFirstLetter
-} from "../functions";
+import { geoLevelLabel, capitalizeFirstLetter, canSwitchGeoLevels } from "../functions";
 import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
 import Icon from "./Icon";
@@ -15,7 +10,6 @@ import {
   setGeoLevelIndex,
   setSelectionTool,
   SelectionTool,
-  showAdvancedEditingModal,
   setMapLabel
 } from "../actions/districtDrawing";
 import store from "../store";
@@ -87,7 +81,6 @@ const GeoLevelButton = ({
   geoLevelIndex,
   geoLevelHierarchy,
   selectedGeounits,
-  advancedEditingEnabled,
   isReadOnly
 }: {
   readonly index: number;
@@ -95,24 +88,13 @@ const GeoLevelButton = ({
   readonly geoLevelIndex: number;
   readonly geoLevelHierarchy: GeoLevelHierarchy;
   readonly selectedGeounits: GeoUnits;
-  readonly advancedEditingEnabled?: boolean;
   readonly isReadOnly: boolean;
 }) => {
   const label = geoLevelLabel(value.id);
-  const areGeoUnitsSelected = areAnyGeoUnitsSelected(selectedGeounits);
-  const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(geoLevelHierarchy);
-  const isBaseGeoLevelSelected = geoLevelIndex === geoLevelHierarchy.length - 1;
-  const isCurrentLevelBaseGeoLevel = index === geoLevelHierarchy.length - 1;
-  const areChangesPending =
-    !isBaseLevelAlwaysVisible &&
-    areGeoUnitsSelected &&
-    // block level selected, so disable all higher geolevels
-    ((isBaseGeoLevelSelected && !isCurrentLevelBaseGeoLevel) ||
-      // non-block level selected, so disable block level
-      (!isBaseGeoLevelSelected && isCurrentLevelBaseGeoLevel));
-  // Always show the currently selected geolevel, even if it would otherwise be hidden
+  const canSwitch = canSwitchGeoLevels(geoLevelIndex, index, geoLevelHierarchy, selectedGeounits);
+  // Always show the currently selected geolevel, even if it would otherwise be disabled
   const isCurrentLevelSelected = index === geoLevelIndex;
-  const isButtonDisabled = !isCurrentLevelSelected && areChangesPending;
+  const isButtonDisabled = !isCurrentLevelSelected && !canSwitch;
 
   return (
     <Box sx={{ ...style.buttonGroup, ...{ display: "inline-block", position: "relative" } }}>
@@ -127,16 +109,7 @@ const GeoLevelButton = ({
             key={index}
             sx={{ ...style.selectionButton, ...{ mr: "1px" } }}
             className={buttonClassName(geoLevelIndex === index)}
-            onClick={() =>
-              store.dispatch(
-                !isCurrentLevelBaseGeoLevel ||
-                  isReadOnly ||
-                  advancedEditingEnabled ||
-                  isBaseLevelAlwaysVisible
-                  ? setGeoLevelIndex(index)
-                  : showAdvancedEditingModal(true)
-              )
-            }
+            onClick={() => store.dispatch(setGeoLevelIndex([index, isReadOnly]))}
             disabled={isButtonDisabled}
           >
             {label}
@@ -153,7 +126,6 @@ const MapHeader = ({
   selectionTool,
   geoLevelIndex,
   selectedGeounits,
-  advancedEditingEnabled,
   isReadOnly,
   limitSelectionToCounty
 }: {
@@ -188,7 +160,6 @@ const MapHeader = ({
             geoLevelIndex={geoLevelIndex}
             geoLevelHierarchy={geoLevelHierarchy}
             selectedGeounits={selectedGeounits}
-            advancedEditingEnabled={advancedEditingEnabled}
             isReadOnly={isReadOnly}
           />
         ))
