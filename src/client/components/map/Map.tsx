@@ -333,7 +333,8 @@ const DistrictsMap = ({
         maxZoom,
         map,
         geojson,
-        evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined
+        evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined,
+        project && project.populationDeviation ? project.populationDeviation : undefined
       );
 
       setMap(map);
@@ -921,17 +922,26 @@ const DistrictsMap = ({
           <Flex sx={{ alignItems: "center" }}>
             <Text sx={style.legendTitle}>Equal Population</Text>
             <Box sx={{ display: "inline-block" }}>
-              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
-                <Flex sx={style.legendItem} key={i}>
-                  <Box
-                    sx={{
-                      ...style.legendColorSwatch,
-                      backgroundColor: `${step[1]}`
-                    }}
-                  ></Box>
-                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
-                </Flex>
-              ))}
+              {getChoroplethStops(evaluateMetric.key, project.populationDeviation).map(
+                (step, i) => (
+                  <Flex sx={style.legendItem} key={i}>
+                    <Box
+                      sx={{
+                        ...style.legendColorSwatch,
+                        backgroundColor: `${step[1]}`
+                      }}
+                    ></Box>
+                    <Text sx={style.legendLabel}>
+                      {project
+                        ? getChoroplethLabels(
+                            evaluateMetric.key,
+                            project.populationDeviation / 100.0
+                          )[i]
+                        : ""}
+                    </Text>
+                  </Flex>
+                )
+              )}
             </Box>
           </Flex>
         </Box>

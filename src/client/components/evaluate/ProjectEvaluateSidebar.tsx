@@ -45,7 +45,7 @@ const ProjectEvaluateSidebar = ({
   const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
   const [avgPopulation, setAvgPopulation] = useState<number | undefined>(undefined);
   const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
-  const popThreshold = 0.05;
+  const popThreshold = project && project.populationDeviation / 100.0;
   useEffect(() => {
     if (geojson && !avgCompactness) {
       const features = geojson.features.slice(1).filter(f => f.properties.compactness !== 0);
@@ -84,6 +84,7 @@ const ProjectEvaluateSidebar = ({
       status:
         (avgPopulation &&
           geojson &&
+          popThreshold &&
           geojson?.features.filter(f => {
             return (
               f.id !== 0 &&
@@ -96,15 +97,18 @@ const ProjectEvaluateSidebar = ({
       description: "have equal population",
       shortText:
         "The U.S. constitution requires that each district have about the same population for a map to be considered valid.",
-      longText: `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
-        popThreshold * 100
-      )}%) above or below that target.`,
+      longText:
+        (popThreshold &&
+          `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
+            popThreshold * 100
+          )}%) above or below that target.`) ||
+        "",
       avgPopulation: avgPopulation || undefined,
       popThreshold: popThreshold,
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
       value:
-        avgPopulation && geojson
+        avgPopulation && geojson && popThreshold
           ? geojson?.features.filter(f => {
               return (
                 f.id !== 0 &&

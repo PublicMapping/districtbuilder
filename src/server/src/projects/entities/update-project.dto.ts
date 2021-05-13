@@ -1,4 +1,14 @@
-import { ArrayNotEmpty, IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional } from "class-validator";
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  Max
+} from "class-validator";
 
 import { ProjectVisibility } from "../../../../shared/constants";
 import { DistrictsDefinition, UpdateProjectData } from "../../../../shared/entities";
@@ -18,6 +28,11 @@ export class UpdateProjectDto implements UpdateProjectData {
   @IsBoolean()
   @IsOptional()
   readonly advancedEditingEnabled: boolean;
+  @IsOptional()
+  @IsPositive({ message: "Population deviation must be positive" })
+  @IsNumber()
+  @Max(100, { message: "Population deviation must be between 0% and 100%" })
+  readonly populationDeviation: number;
   @IsEnum(ProjectVisibility)
   @IsOptional()
   readonly visibility: ProjectVisibility;

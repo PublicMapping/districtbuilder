@@ -67,7 +67,7 @@ const EqualPopulationMetricDetail = ({
 }) => {
   function computeRowFill(row: DistrictProperties) {
     const val = row.percentDeviation;
-    const choroplethStops = getChoroplethStops(metric.key);
+    const choroplethStops = getChoroplethStops(metric.key, metric.popThreshold);
     // eslint-disable-next-line
     for (let i = 0; i < choroplethStops.length; i++) {
       const r = choroplethStops[i];
