@@ -51,6 +51,12 @@ const style: ThemeUIStyleObject = {
     verticalAlign: "bottom",
     position: "relative"
   },
+  colFirst: {
+    pl: 0
+  },
+  colLast: {
+    pr: 0
+  },
   fillBox: {
     mr: 2,
     height: "15px",
@@ -98,28 +104,30 @@ const CountySplitMetricDetail = ({
 
   return (
     <Box>
-      <Heading as="h2" sx={{ variant: "text.h5", mt: 4, ml: 2 }}>
+      <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         {metric.value} / {metric.total} {geoLevelLabel(geoLevel)} {metric.description}
       </Heading>
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
-            <Styled.th sx={style.th}>{geoLevelLabelSingular(geoLevel)}</Styled.th>
-            <Styled.th sx={style.th}>Split</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colFirst }}>
+              {geoLevelLabelSingular(geoLevel)}
+            </Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colLast }}>Split</Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
           {countyLookup ? (
             project?.districtsDefinition.map((d, id) => (
               <Styled.tr key={id}>
-                <Styled.td sx={style.td}>
+                <Styled.td sx={{ ...style.td, ...style.colFirst }}>
                   {countyLookup && id in countyLookup && staticMetadata
                     ? getLabelLookup(geoLevel, countyLookup[id])
                     : staticMetadata
                     ? getLabelLookup(geoLevel, undefined, id)
                     : ""}
                 </Styled.td>
-                <Styled.td sx={style.td}>
+                <Styled.td sx={{ ...style.td, ...style.colLast }}>
                   <Flex sx={{ alignItems: "center" }}>
                     <Box sx={Array.isArray(d) ? style.fillBox : style.unfilledBox}></Box>
                     <Box>{Array.isArray(d) ? "Split" : "Not split"}</Box>

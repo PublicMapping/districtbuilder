@@ -45,6 +45,12 @@ const style: ThemeUIStyleObject = {
     verticalAlign: "bottom",
     position: "relative"
   },
+  colFirst: {
+    pl: 0
+  },
+  colLast: {
+    pr: 0
+  },
   blankValue: {
     color: "gray.2"
   }
@@ -75,15 +81,15 @@ const CompactnessMetricDetail = ({
   }
   return (
     <Box>
-      <Heading as="h2" sx={{ variant: "text.h5", mt: 4, ml: 2 }}>
+      <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         Average compactness of
         {metric.value ? ` ${Math.floor(metric.value * 100)}%` : " "}
       </Heading>
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
-            <Styled.th sx={style.th}>Number</Styled.th>
-            <Styled.th sx={style.th}>Compactness</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colLast }}>Compactness</Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
@@ -91,8 +97,8 @@ const CompactnessMetricDetail = ({
             (feature, id) =>
               id > 0 && (
                 <Styled.tr key={id}>
-                  <Styled.td sx={style.td}>{id}</Styled.td>
-                  <Styled.td sx={style.td}>
+                  <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
+                  <Styled.td sx={{ ...style.td, ...style.colLast }}>
                     {feature.properties.compactness ? (
                       <Flex sx={{ alignItems: "center" }}>
                         <Styled.div

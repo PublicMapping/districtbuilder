@@ -44,6 +44,12 @@ const style: ThemeUIStyleObject = {
     verticalAlign: "bottom",
     position: "relative"
   },
+  colFirst: {
+    pl: 0
+  },
+  colLast: {
+    pr: 0
+  },
   blankValue: {
     color: "gray.2"
   },
@@ -81,7 +87,7 @@ const EqualPopulationMetricDetail = ({
 
   return (
     <Box>
-      <Heading as="h2" sx={{ variant: "text.h5", mt: 4, ml: 2 }}>
+      <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         {metric.value || " "} of the {metric.total} districts are within{" "}
         {"popThreshold" in metric &&
           metric.popThreshold &&
@@ -91,9 +97,9 @@ const EqualPopulationMetricDetail = ({
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
-            <Styled.th sx={style.th}>Number</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.number }}>Deviation (%)</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.number }}>Deviation</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
+            <Styled.th sx={style.th}>Deviation (%)</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.number, ...style.colLast }}>Deviation</Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
@@ -101,9 +107,9 @@ const EqualPopulationMetricDetail = ({
             (feature, id) =>
               id > 0 && (
                 <Styled.tr key={id}>
-                  <Styled.td sx={style.td}>{id}</Styled.td>
+                  <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
 
-                  <Styled.td sx={{ ...style.td, ...style.number }}>
+                  <Styled.td sx={style.td}>
                     {feature.properties.percentDeviation ? (
                       <Flex sx={{ alignItems: "center" }}>
                         <Styled.div
@@ -122,7 +128,7 @@ const EqualPopulationMetricDetail = ({
                     )}
                   </Styled.td>
 
-                  <Styled.td sx={{ ...style.td, ...style.number }}>
+                  <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
                     {feature.properties.populationDeviation ? (
                       Math.round(feature.properties.populationDeviation).toLocaleString()
                     ) : (

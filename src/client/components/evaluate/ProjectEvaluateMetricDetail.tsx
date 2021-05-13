@@ -107,7 +107,7 @@ const ProjectEvaluateMetricDetail = ({
           <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
         ) : (
           <Box>
-            <Heading as="h2" sx={{ variant: "text.h5", mt: 4, ml: 2 }}>
+            <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
               7 / 10 districts {metric.description}
             </Heading>
             <Flex sx={{ flexDirection: "column" }}>
