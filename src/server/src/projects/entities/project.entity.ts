@@ -73,7 +73,7 @@ export class Project implements IProject {
   })
   lockedDistricts: readonly boolean[];
 
-  @Column({ type: "enum", enum: ProjectVisibility, default: ProjectVisibility.Private })
+  @Column({ type: "enum", enum: ProjectVisibility, default: ProjectVisibility.Published })
   visibility: ProjectVisibility;
 
   @Column({ type: "boolean", default: false })

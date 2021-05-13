@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Style Evaluate Mode panel [#724](https://github.com/PublicMapping/districtbuilder/pull/724)
 - Change eslint config to detect misuse of NestJS services [#700](https://github.com/PublicMapping/districtbuilder/pull/700)
 - Log non-HTTP errors to Rollbar [#725](https://github.com/PublicMapping/districtbuilder/pull/725)
+- Changed default project visibility, prevent org admins from seeing private maps [#754](https://github.com/PublicMapping/districtbuilder/pull/754)
 
 ### Fixed
 
