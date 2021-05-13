@@ -4,6 +4,7 @@ import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
 import { Repository } from "typeorm";
 
 import { ProjectTemplate } from "../entities/project-template.entity";
+import { ProjectVisibility } from "../../../../shared/constants";
 
 @Injectable()
 export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate> {
@@ -19,7 +20,8 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
       .innerJoinAndSelect("projectTemplate.regionConfig", "regionConfig")
       .innerJoinAndSelect("projectTemplate.projects", "projects")
       .innerJoinAndSelect("projects.user", "user")
-      .where("organization.slug = :slug", { slug: slug })
+      .where("organization.slug = :slug", { slug })
+      .andWhere("projects.visibility <> :private", { private: ProjectVisibility.Private })
       .select([
         "projectTemplate.name",
         "projectTemplate.numberOfDistricts",
