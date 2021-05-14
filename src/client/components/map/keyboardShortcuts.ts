@@ -1,4 +1,4 @@
-import { DistrictId, GeoUnits } from "../../../shared/entities";
+import { DistrictId } from "../../../shared/entities";
 
 import {
   setGeoLevelIndex,

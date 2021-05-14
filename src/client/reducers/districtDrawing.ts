@@ -54,11 +54,7 @@ import {
   UndoableState,
   updateCurrentState
 } from "./undoRedo";
-import {
-  isBaseGeoLevelAlwaysVisible,
-  areAnyGeoUnitsSelected,
-  canSwitchGeoLevels
-} from "../functions";
+import { canSwitchGeoLevels } from "../functions";
 
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
