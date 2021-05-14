@@ -41,6 +41,7 @@ export const setSelectionTool = createAction("Set selection tool")<SelectionTool
 export const setGeoLevelIndex = createAction("Set geoLevel index")<{
   readonly index: number;
   readonly isReadOnly: boolean;
+  readonly skipModal?: boolean;
 }>();
 
 export const setMapLabel = createAction("Set map label")<string | undefined>();
