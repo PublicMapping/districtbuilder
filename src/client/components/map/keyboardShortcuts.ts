@@ -150,13 +150,13 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
       store.dispatch(toggleDistrictLocked(selectedDistrictId - 1));
     }
   },
-  // {
-  //   key: "t",
-  //   text: "Toggle evaluate mode",
-  //   action: ({ evaluateMode }: MapContext) => {
-  //     store.dispatch(toggleEvaluate(!evaluateMode));
-  //   }
-  // },
+  {
+    key: "t",
+    text: "Toggle evaluate mode",
+    action: ({ evaluateMode }: MapContext) => {
+      store.dispatch(toggleEvaluate(!evaluateMode));
+    }
+  },
   {
     key: "z",
     text: "Undo",
