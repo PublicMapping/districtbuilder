@@ -109,7 +109,7 @@ const GeoLevelButton = ({
             key={index}
             sx={{ ...style.selectionButton, ...{ mr: "1px" } }}
             className={buttonClassName(geoLevelIndex === index)}
-            onClick={() => store.dispatch(setGeoLevelIndex([index, isReadOnly]))}
+            onClick={() => store.dispatch(setGeoLevelIndex({ index, isReadOnly }))}
             disabled={isButtonDisabled}
           >
             {label}

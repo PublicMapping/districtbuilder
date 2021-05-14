@@ -270,7 +270,7 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         "resource" in state.staticData &&
         "resource" in state.projectData
       ) {
-        const [index, isReadOnly] = action.payload;
+        const { index, isReadOnly } = action.payload;
         const { geoLevelHierarchy } = state.staticData.resource.staticMetadata;
         const { advancedEditingEnabled } = state.projectData.resource.project;
         const canSwitch = canSwitchGeoLevels(

@@ -66,12 +66,12 @@ function previousSelectionTool({ selectionTool }: MapContext) {
 function nextGeoLevel({ geoLevelIndex, numGeolevels, isReadOnly }: MapContext) {
   // Go to next geolevel if not already on smallest level
   const nextGeoLevelIndex = geoLevelIndex < numGeolevels - 1 ? geoLevelIndex + 1 : geoLevelIndex;
-  store.dispatch(setGeoLevelIndex([nextGeoLevelIndex, isReadOnly]));
+  store.dispatch(setGeoLevelIndex({ index: nextGeoLevelIndex, isReadOnly }));
 }
 function previousGeoLevel({ geoLevelIndex, isReadOnly }: MapContext) {
   // Go to previous geolevel if not already at largest level
   const previousGeoLevelIndex = geoLevelIndex > 0 ? geoLevelIndex - 1 : geoLevelIndex;
-  store.dispatch(setGeoLevelIndex([previousGeoLevelIndex, isReadOnly]));
+  store.dispatch(setGeoLevelIndex({ index: previousGeoLevelIndex, isReadOnly }));
 }
 
 function setNextDistrict({ selectedDistrictId, numFeatures }: MapContext) {

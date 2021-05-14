@@ -38,7 +38,10 @@ export const clearHighlightedGeounits = createAction("Clear highlighted geounit 
 
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
 
-export const setGeoLevelIndex = createAction("Set geoLevel index")<readonly [number, boolean]>();
+export const setGeoLevelIndex = createAction("Set geoLevel index")<{
+  readonly index: number;
+  readonly isReadOnly: boolean;
+}>();
 
 export const setMapLabel = createAction("Set map label")<string | undefined>();
 
