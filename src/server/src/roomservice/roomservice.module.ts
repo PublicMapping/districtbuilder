@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Module, HttpModule } from "@nestjs/common";
 import { RoomserviceController } from "./controllers/roomservice.controller";
 
 @Module({
-  controllers: [RoomserviceController],
+  imports: [HttpModule],
+  controllers: [RoomserviceController]
 })
 export class RoomserviceModule {}
