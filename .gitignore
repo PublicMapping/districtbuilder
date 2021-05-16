@@ -37,4 +37,5 @@ deployment/ansible/roles/azavea.*
 *.tfvars
 .idea/
 
+# Environment
 .env

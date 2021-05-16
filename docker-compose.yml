@@ -27,6 +27,7 @@ services:
       - JWT_SECRET=insecure
       - JWT_EXPIRATION_IN_MS=604800000  # 1 week
       - CLIENT_URL=http://localhost:3003  # TODO: make this configurable per environment
+    env_file: .env
     build:
       context: ./src/server
       dockerfile: Dockerfile
