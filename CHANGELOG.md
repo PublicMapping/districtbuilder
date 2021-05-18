@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Display warnings and row-level flags for district import [#708](https://github.com/PublicMapping/districtbuilder/pull/708)
 - Add keyboard shortcuts for map functions [#718](https://github.com/PublicMapping/districtbuilder/pull/718)
 - Added voting info to sidebar [#730](https://github.com/PublicMapping/districtbuilder/pull/730)
+- Show minority-majority districts in sidebar [#763](https://github.com/PublicMapping/districtbuilder/pull/763)
 
 ### Changed
 
