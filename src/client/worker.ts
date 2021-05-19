@@ -9,7 +9,11 @@ import {
   NestedArray,
   S3URI
 } from "../shared/entities";
-import { getDemographics as getDemographicsBase } from "../shared/functions";
+import { StaticCounts } from "../client/types";
+import {
+  getDemographics as getDemographicsBase,
+  getVoting as getVotingBase
+} from "../shared/functions";
 import { allGeoUnitIndices } from "./functions";
 import { fetchWorkerStaticData } from "./s3";
 import { WorkerProjectData } from "./types";
@@ -37,9 +41,14 @@ async function getDemographics(
   baseIndices: readonly number[] | ReadonlySet<number>,
   staticMetadata: IStaticMetadata,
   regionURI: S3URI
-): Promise<DemographicCounts> {
+): Promise<StaticCounts> {
   const data = await fetchRegionData(regionURI, staticMetadata).data;
-  return getDemographicsBase(baseIndices, staticMetadata, data.staticDemographics);
+  return data.staticVotingData
+    ? {
+        demographics: getDemographicsBase(baseIndices, staticMetadata, data.staticDemographics),
+        voting: getVotingBase(baseIndices, staticMetadata, data.staticVotingData)
+      }
+    : { demographics: getDemographicsBase(baseIndices, staticMetadata, data.staticDemographics) };
 }
 
 /*
@@ -88,7 +97,7 @@ export async function getTotalSelectedDemographics(
   staticMetadata: IStaticMetadata,
   regionURI: S3URI,
   selectedGeounits: GeoUnits
-): Promise<DemographicCounts> {
+): Promise<StaticCounts> {
   const data = await fetchRegionData(regionURI, staticMetadata).data;
   // Build up set of blocks ids corresponding to selected geounits
   // eslint-disable-next-line
@@ -100,7 +109,7 @@ export async function getTotalSelectedDemographics(
     )
   );
   // Aggregate all counts for selected blocks
-  return getDemographics(selectedBaseIndices, staticMetadata, regionURI);
+  return await getDemographics(selectedBaseIndices, staticMetadata, regionURI);
 }
 
 // Drill into the district definition and collect the base geounits for
@@ -158,7 +167,9 @@ export async function getSavedDistrictSelectedDemographics(
 
   return Promise.all(
     mutableDistrictGeounitAccum.map(baseGeounitIdsForDistrict =>
-      getDemographics(baseGeounitIdsForDistrict, staticMetadata, project.regionConfig.s3URI)
+      getDemographics(baseGeounitIdsForDistrict, staticMetadata, project.regionConfig.s3URI).then(
+        staticCounts => staticCounts.demographics
+      )
     )
   );
 }

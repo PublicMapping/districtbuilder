@@ -44,7 +44,7 @@ import DistrictOptionsFlyout from "./DistrictOptionsFlyout";
 import Icon from "./Icon";
 import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
-import VotingTooltip from "./VotingTooltip";
+import VotingSidebarTooltip from "./VotingSidebarTooltip";
 
 interface LoadingProps {
   readonly isLoading: boolean;
@@ -423,7 +423,7 @@ const SidebarRow = memo(
               placement="top-start"
               content={
                 votesTotal !== 0 ? (
-                  <VotingTooltip voting={voting} votingIds={votingIds} />
+                  <VotingSidebarTooltip voting={voting} votingIds={votingIds} />
                 ) : (
                   <em>
                     <strong>Empty district.</strong> Add people to this district to view the vote
@@ -536,7 +536,7 @@ const SidebarRows = ({
       // Don't overwrite current results with outdated ones
       !outdated &&
         setSelectedDemographics({
-          total: selectedTotals,
+          total: selectedTotals.demographics,
           savedDistrict: districtTotals
         });
     }
