@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import mapValues from "lodash/mapValues";
-import { Box, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, jsx, Styled, ThemeUIStyleObject, Divider } from "theme-ui";
 
 import { demographicsColors } from "../constants/colors";
 
@@ -56,9 +56,11 @@ const Row = ({
 );
 
 const DemographicsTooltip = ({
-  demographics
+  demographics,
+  isMinorityMajority
 }: {
   readonly demographics: { readonly [id: string]: number };
+  readonly isMinorityMajority?: boolean;
 }) => {
   const percentages = mapValues(
     demographics,
@@ -74,6 +76,12 @@ const DemographicsTooltip = ({
       <Styled.table sx={{ margin: "0", width: "100%" }}>
         <tbody>{rows}</tbody>
       </Styled.table>
+      {isMinorityMajority && (
+        <Box>
+          <Divider sx={{ my: 1, borderColor: "gray.6" }} />
+          <Box>* Minority majority district</Box>
+        </Box>
+      )}
     </Box>
   );
 };
