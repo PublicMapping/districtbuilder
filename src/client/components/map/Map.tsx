@@ -275,6 +275,7 @@ const DistrictsMap = ({
         shortcut.action({
           selectionTool,
           geoLevelIndex,
+          isReadOnly,
           selectedDistrictId,
           label,
           numFeatures: geojson.features.length,
@@ -288,6 +289,7 @@ const DistrictsMap = ({
     [
       selectionTool,
       geoLevelIndex,
+      isReadOnly,
       selectedDistrictId,
       label,
       geojson.features.length,

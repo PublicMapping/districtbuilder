@@ -106,7 +106,13 @@ const AdvancedEditingModal = ({
               setIsPending(true);
               patchProject(id, { advancedEditingEnabled: true })
                 .then(() => {
-                  store.dispatch(setGeoLevelIndex(geoLevels.length - 1));
+                  store.dispatch(
+                    setGeoLevelIndex({
+                      index: geoLevels.length - 1,
+                      isReadOnly: false,
+                      skipModal: true
+                    })
+                  );
                   store.dispatch(projectFetch(id));
                   hideModal();
                 })

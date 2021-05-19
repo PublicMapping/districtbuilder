@@ -21,6 +21,7 @@ import { showMapActionToast } from "../../functions";
 interface MapContext {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
+  readonly isReadOnly: boolean;
   readonly selectedDistrictId: DistrictId;
   readonly label?: string;
   readonly numFeatures: number;
@@ -62,15 +63,15 @@ function previousSelectionTool({ selectionTool }: MapContext) {
   store.dispatch(setSelectionTool(SelectionToolOrder[previousSelectionTool]));
 }
 
-function nextGeoLevel({ geoLevelIndex, numGeolevels }: MapContext) {
+function nextGeoLevel({ geoLevelIndex, numGeolevels, isReadOnly }: MapContext) {
   // Go to next geolevel if not already on smallest level
   const nextGeoLevelIndex = geoLevelIndex < numGeolevels - 1 ? geoLevelIndex + 1 : geoLevelIndex;
-  store.dispatch(setGeoLevelIndex(nextGeoLevelIndex));
+  store.dispatch(setGeoLevelIndex({ index: nextGeoLevelIndex, isReadOnly }));
 }
-function previousGeoLevel({ geoLevelIndex }: MapContext) {
+function previousGeoLevel({ geoLevelIndex, isReadOnly }: MapContext) {
   // Go to previous geolevel if not already at largest level
   const previousGeoLevelIndex = geoLevelIndex > 0 ? geoLevelIndex - 1 : geoLevelIndex;
-  store.dispatch(setGeoLevelIndex(previousGeoLevelIndex));
+  store.dispatch(setGeoLevelIndex({ index: previousGeoLevelIndex, isReadOnly }));
 }
 
 function setNextDistrict({ selectedDistrictId, numFeatures }: MapContext) {
