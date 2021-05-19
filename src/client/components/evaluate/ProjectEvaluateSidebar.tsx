@@ -23,7 +23,7 @@ const style: ThemeUIStyleObject = {
     flexShrink: 0,
     height: "100%",
     minWidth: "430px",
-    maxWidth: "447px",
+    maxWidth: "507px",
     position: "relative",
     zIndex: 200
   }

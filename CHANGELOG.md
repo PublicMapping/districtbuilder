@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Update map view for evaluate mode [#727](https://github.com/PublicMapping/districtbuilder/pull/727)
+
 ### Changed
 
 ### Fixed
