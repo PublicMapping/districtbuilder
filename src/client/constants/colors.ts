@@ -438,5 +438,7 @@ export const demographicsColors = {
   black: "#6AC59B",
   asian: "#F194C4",
   hispanic: "#C8BFF2",
+  nativeAmerican: "#9969F2",
+  pacificIslander: "#89A53A",
   other: "#999999"
 };

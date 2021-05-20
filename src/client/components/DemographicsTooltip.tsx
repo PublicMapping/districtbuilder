@@ -67,10 +67,20 @@ const DemographicsTooltip = ({
     (population: number) =>
       (demographics.population ? population / demographics.population : 0) * 100
   );
-  const races = ["white", "black", "asian", "hispanic", "other"] as const;
-  const rows = races.map((id: typeof races[number]) => (
-    <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
-  ));
+  const races = [
+    "white",
+    "black",
+    "asian",
+    "hispanic",
+    "nativeAmerican",
+    "pacificIslander",
+    "other"
+  ] as const;
+  const rows = races
+    .filter(race => percentages[race])
+    .map((id: typeof races[number]) => (
+      <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
+    ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
       <Styled.table sx={{ margin: "0", width: "100%" }}>
