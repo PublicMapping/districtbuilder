@@ -271,7 +271,7 @@ const DistrictsMap = ({
           !!shortcut.meta === key[meta] &&
           !!shortcut.shift === key.shiftKey
       );
-      if (shortcut) {
+      if (shortcut && (!isReadOnly || shortcut?.allowReadOnly)) {
         shortcut.action({
           selectionTool,
           geoLevelIndex,
