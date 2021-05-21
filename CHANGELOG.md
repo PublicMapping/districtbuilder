@@ -14,18 +14,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add voting info to map tooltip [#751](https://github.com/PublicMapping/districtbuilder/pull/751)
 - Disable some keyboard shortcuts in reads-only mode [#768](https://github.com/PublicMapping/districtbuilder/pull/768)
 
-- Update race column to handle different race categories [#766](https://github.com/PublicMapping/districtbuilder/pull/766)
 
 ### Changed
 
+- Update race column to handle different race categories [#766](https://github.com/PublicMapping/districtbuilder/pull/766)
+
 ### Fixed
 
-- Fix handling of switching into block editing when using keyboard shortcut [#758](https://github.com/PublicMapping/districtbuilder/pull/758)
 - Fix handling of switching into block editing when using keyboard shortcut [#758](https://github.com/PublicMapping/districtbuilder/pull/758)
 - Fix switching into/out of evaluate mode [#775](https://github.com/PublicMapping/districtbuilder/pull/775)
 - Fix showing blockgroup selections when viewing the county geolevel [#781](https://github.com/PublicMapping/districtbuilder/pull/781)
 - Don't show limit to county option in read-only mode [#777](https://github.com/PublicMapping/districtbuilder/pull/777)
 - Include unassigned district when switching using keyboard shortcuts [#779](https://github.com/PublicMapping/districtbuilder/pull/779)
+- Fix calculation of average compactness [#778](https://github.com/PublicMapping/districtbuilder/pull/778)
 
 ## [1.5.0] - 2021-05-13
 
