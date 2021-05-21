@@ -37,6 +37,7 @@ interface KeyboardShortcut {
   readonly text: string;
   readonly label?: string;
   readonly meta?: true;
+  readonly allowReadOnly?: boolean;
   readonly shift?: true | "optional";
   // eslint-disable-next-line
   readonly action: (context: MapContext) => void;
@@ -98,22 +99,26 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
     key: "e",
     text: "Previous district",
-    action: setPreviousDistrict
+    action: setPreviousDistrict,
+    allowReadOnly: true
   },
   {
     key: "d",
     text: "Next district",
-    action: setNextDistrict
+    action: setNextDistrict,
+    allowReadOnly: true
   },
   {
     key: "s",
     text: "Use bigger geolevels",
-    action: previousGeoLevel
+    action: previousGeoLevel,
+    allowReadOnly: true
   },
   {
     key: "f",
     text: "Use smaller geolevels",
-    action: nextGeoLevel
+    action: nextGeoLevel,
+    allowReadOnly: true
   },
   {
     key: "w",
@@ -142,7 +147,8 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
     key: "1",
     text: "Toggle population labels",
-    action: togglePopulationLabel
+    action: togglePopulationLabel,
+    allowReadOnly: true
   },
   {
     key: "q",
@@ -199,6 +205,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     key: "?",
     text: "Show this help menu",
     shift: true,
+    allowReadOnly: true,
     action: () => {
       store.dispatch(showKeyboardShortcutsModal(true));
     }
