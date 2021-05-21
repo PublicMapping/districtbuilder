@@ -12,12 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update map view for evaluate mode [#727](https://github.com/PublicMapping/districtbuilder/pull/727)
 - Show minority-majority districts in sidebar [#763](https://github.com/PublicMapping/districtbuilder/pull/763)
 - Add voting info to map tooltip [#751](https://github.com/PublicMapping/districtbuilder/pull/751)
-
+- Update race column to handle different race categories [#766](https://github.com/PublicMapping/districtbuilder/pull/766)
 
 ### Changed
 
 ### Fixed
- - Fix handling of switching into block editing when using keyboard shortcut [#758](https://github.com/PublicMapping/districtbuilder/pull/758)
+
+- Fix handling of switching into block editing when using keyboard shortcut [#758](https://github.com/PublicMapping/districtbuilder/pull/758)
 
 ## [1.5.0] - 2021-05-13
 

@@ -9,6 +9,7 @@ const style: ThemeUIStyleObject = {
     textAlign: "left",
     py: 0,
     pr: 2,
+    whiteSpace: "nowrap",
     textTransform: "capitalize"
   },
   number: {
@@ -19,6 +20,10 @@ const style: ThemeUIStyleObject = {
     fontWeight: "light"
   }
 };
+
+function parseRowLabel(label: string) {
+  return label.split(/(?=[A-Z])/).join(" ");
+}
 
 const Row = ({
   label,
@@ -35,7 +40,7 @@ const Row = ({
       border: "none"
     }}
   >
-    <Styled.td sx={style.label}>{label}</Styled.td>
+    <Styled.td sx={style.label}>{parseRowLabel(label)}</Styled.td>
     <Styled.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
         style={{
@@ -67,10 +72,20 @@ const DemographicsTooltip = ({
     (population: number) =>
       (demographics.population ? population / demographics.population : 0) * 100
   );
-  const races = ["white", "black", "asian", "hispanic", "other"] as const;
-  const rows = races.map((id: typeof races[number]) => (
-    <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
-  ));
+  const races = [
+    "white",
+    "black",
+    "asian",
+    "hispanic",
+    "nativeAmerican",
+    "pacificIslander",
+    "other"
+  ] as const;
+  const rows = races
+    .filter(race => percentages[race] !== undefined)
+    .map((id: typeof races[number]) => (
+      <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
+    ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
       <Styled.table sx={{ margin: "0", width: "100%" }}>

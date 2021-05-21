@@ -24,7 +24,7 @@ const style: ThemeUIStyleObject = {
     height: "auto",
     borderRadius: "small",
     boxShadow: "small",
-    width: "180px",
+    width: "200px",
     overflow: "hidden",
     pointerEvents: "none",
     p: 2,
