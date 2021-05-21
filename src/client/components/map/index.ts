@@ -131,14 +131,6 @@ export function getChoroplethLabels(metricKey: string) {
   }
 }
 
-export function removeEvaluateModeLayers(map: MapboxGL.Map) {
-  map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
-  map.setLayoutProperty(DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID, "visibility", "none");
-  map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
-  map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
-  map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
-}
-
 export function getGeolevelLinePaintStyle(geoLevel: string) {
   const largeGeolevel = {
     "line-color": "#000",
