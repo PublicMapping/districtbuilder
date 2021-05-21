@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update race column to handle different race categories [#766](https://github.com/PublicMapping/districtbuilder/pull/766)
+- Cleanup text in evaluate mode [#776](https://github.com/PublicMapping/districtbuilder/pull/776)
 
 ### Fixed
 
