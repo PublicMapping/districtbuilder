@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import React from "react";
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { geoLevelLabel, capitalizeFirstLetter, canSwitchGeoLevels } from "../functions";
@@ -168,42 +169,45 @@ const MapHeader = ({
     <Flex sx={style.header}>
       <Flex>
         {!isReadOnly && (
-          <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
-            <Tooltip content="Point-and-click selection">
-              <Button
-                sx={{ ...style.selectionButton }}
-                className={buttonClassName(selectionTool === SelectionTool.Default)}
-                onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
-              >
-                <Icon name="hand-pointer" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Rectangle selection">
-              <Button
-                sx={{ ...style.selectionButton }}
-                className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
-                onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
-              >
-                <Icon name="draw-square" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Paint brush selection">
-              <Button
-                sx={{ ...style.selectionButton }}
-                className={buttonClassName(selectionTool === SelectionTool.PaintBrush)}
-                onClick={() => store.dispatch(setSelectionTool(SelectionTool.PaintBrush))}
-              >
-                <Icon name="paint-brush" />
-              </Button>
-            </Tooltip>
-          </Flex>
+          <React.Fragment>
+            <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
+              <Tooltip content="Point-and-click selection">
+                <Button
+                  sx={{ ...style.selectionButton }}
+                  className={buttonClassName(selectionTool === SelectionTool.Default)}
+                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
+                >
+                  <Icon name="hand-pointer" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Rectangle selection">
+                <Button
+                  sx={{ ...style.selectionButton }}
+                  className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
+                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
+                >
+                  <Icon name="draw-square" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Paint brush selection">
+                <Button
+                  sx={{ ...style.selectionButton }}
+                  className={buttonClassName(selectionTool === SelectionTool.PaintBrush)}
+                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.PaintBrush))}
+                >
+                  <Icon name="paint-brush" />
+                </Button>
+              </Tooltip>
+            </Flex>
+
+            <Box sx={{ position: "relative", mr: 3, pt: "6px" }}>
+              <MapSelectionOptionsFlyout
+                limitSelectionToCounty={limitSelectionToCounty}
+                topGeoLevelName={topGeoLevelName}
+              />
+            </Box>
+          </React.Fragment>
         )}
-        <Box sx={{ position: "relative", mr: 3, pt: "6px" }}>
-          <MapSelectionOptionsFlyout
-            limitSelectionToCounty={limitSelectionToCounty}
-            topGeoLevelName={topGeoLevelName}
-          />
-        </Box>
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
       <Box sx={{ lineHeight: "1" }}>
