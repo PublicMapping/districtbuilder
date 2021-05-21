@@ -65,7 +65,7 @@ const ProjectEvaluateView = ({
       case "fraction":
         return `${metric.value} / ${metric.total || 18}`;
       case "percent":
-        return `${Math.floor(metric.value * 100)}%`;
+        return metric.value !== undefined ? `${Math.floor(metric.value * 100)}%` : "";
       case "count":
         return `${metric.value}`;
       default:
