@@ -88,7 +88,7 @@ const EqualPopulationMetricDetail = ({
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-        {metric.value.toString() || " "} of {metric.total} districts are within{" "}
+        {metric.value?.toString() || " "} of {metric.total} districts are within{" "}
         {"popThreshold" in metric &&
           metric.popThreshold &&
           ` ${Math.floor(metric.popThreshold * 100)}%`}{" "}
