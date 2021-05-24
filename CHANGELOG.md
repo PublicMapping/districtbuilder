@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+
+### Changed
+
+
+### Fixed
+
+
+
+## [1.6.0] - 2021-05-24
+
+### Added
+
 - Update map view for evaluate mode [#727](https://github.com/PublicMapping/districtbuilder/pull/727)
 - Show minority-majority districts in sidebar [#763](https://github.com/PublicMapping/districtbuilder/pull/763)
 - Add voting info to map tooltip [#751](https://github.com/PublicMapping/districtbuilder/pull/751)
@@ -204,7 +216,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...HEAD
+[1.6.0]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...1.6.0
 [1.5.0]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0
