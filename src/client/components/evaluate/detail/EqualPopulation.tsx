@@ -92,7 +92,8 @@ const EqualPopulationMetricDetail = ({
         {"popThreshold" in metric &&
           metric.popThreshold &&
           ` ${Math.floor(metric.popThreshold * 100)}%`}{" "}
-        of {metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()}
+        of the target population (
+        {metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()})
       </Heading>
       <Styled.table sx={style.table}>
         <thead>

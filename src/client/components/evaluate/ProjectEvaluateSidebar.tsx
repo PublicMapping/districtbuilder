@@ -87,9 +87,7 @@ const ProjectEvaluateSidebar = ({
           geojson?.features.filter(f => {
             return (
               f.id !== 0 &&
-              // @ts-ignore
               f.properties.percentDeviation &&
-              // @ts-ignore
               Math.abs(f.properties.percentDeviation) <= popThreshold
             );
           }).length ===
@@ -110,9 +108,7 @@ const ProjectEvaluateSidebar = ({
           ? geojson?.features.filter(f => {
               return (
                 f.id !== 0 &&
-                // @ts-ignore
                 f.properties.percentDeviation &&
-                // @ts-ignore
                 Math.abs(f.properties.percentDeviation) <= popThreshold
               );
             }).length
