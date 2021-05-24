@@ -30,7 +30,13 @@ const DemographicsChart = ({
       <Bar width={percentages.black} color={demographicsColors.black} />
       <Bar width={percentages.asian} color={demographicsColors.asian} />
       <Bar width={percentages.hispanic} color={demographicsColors.hispanic} />
-      <Bar width={percentages.other} color={demographicsColors.other} />
+      {"other" in percentages && <Bar width={percentages.other} color={demographicsColors.other} />}
+      {"nativeAmerican" in percentages && (
+        <Bar width={percentages.nativeAmerican} color={demographicsColors.nativeAmerican} />
+      )}
+      {"pacificIslander" in percentages && (
+        <Bar width={percentages.pacificIslander} color={demographicsColors.pacificIslander} />
+      )}
     </Flex>
   );
 };

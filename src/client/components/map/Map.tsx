@@ -6,6 +6,8 @@ import { BBox2d } from "@turf/helpers/lib/geojson";
 
 import MapboxGL from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import polylabel from "polylabel";
+import { Feature, FeatureCollection, Point, Position } from "geojson";
 
 import {
   setGeoLevelVisibility,
@@ -23,12 +25,13 @@ import {
   LockedDistricts,
   EvaluateMetric
 } from "../../../shared/entities";
-import { DistrictsGeoJSON } from "../../types";
+import { DistrictsGeoJSON, DistrictGeoJSON } from "../../types";
 import {
   areAnyGeoUnitsSelected,
   getSelectedGeoLevel,
   getTargetPopulation,
-  geoLevelLabelSingular
+  geoLevelLabelSingular,
+  assertNever
 } from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -40,12 +43,13 @@ import {
   levelToLineLayerId,
   onlyUnlockedGeoUnits,
   getChildGeoUnits,
-  DISTRICTS_EVALUATE_LAYER_ID,
+  DISTRICTS_LOCK_LAYER_ID,
   setFeaturesSelectedFromGeoUnits,
   TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
   TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID,
   DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
   DISTRICTS_LAYER_ID,
+  DISTRICTS_LABELS_SOURCE_ID,
   levelToSelectionLayerId,
   getChoroplethLabels,
   getChoroplethStops,
@@ -53,6 +57,7 @@ import {
   CONTIGUITY_FILL_COLOR,
   COUNTY_SPLIT_FILL_COLOR,
   EVALUATE_GRAY_FILL_COLOR,
+  DISTRICTS_EVALUATE_LABELS_LAYER_ID,
   DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
   DISTRICTS_OUTLINE_LAYER_ID
 } from "./index";
@@ -67,6 +72,98 @@ import { State } from "../../reducers";
 import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
+
+function removeEvaluateMetricLayers(map: MapboxGL.Map) {
+  map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+  map.setLayoutProperty(DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID, "visibility", "none");
+  map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
+  map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
+  map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
+}
+
+function disableEditMode(map: MapboxGL.Map, staticMetadata: IStaticMetadata) {
+  // Remove all geolayers from view
+  staticMetadata.geoLevelHierarchy.forEach(geoLevel => {
+    map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "none");
+    map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "none");
+    map.setLayoutProperty(levelToLabelLayerId(geoLevel.id), "visibility", "none");
+  });
+
+  // Disable selection tools in evaluate mode
+  DefaultSelectionTool.disable(map);
+  RectangleSelectionTool.disable(map);
+  PaintBrushSelectionTool.disable(map);
+
+  // Resize map after editing toolbar removed
+  map.resize();
+
+  // Hide lock layer in evaluate mode
+  map.setLayoutProperty(DISTRICTS_LOCK_LAYER_ID, "visibility", "none");
+
+  // Style district outline for evaluate mode
+  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-color", "#000");
+  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-opacity", 1);
+  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-width", [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    6,
+    2,
+    14,
+    5
+  ]);
+}
+
+function enableEditmode(map: MapboxGL.Map, staticMetadata: IStaticMetadata, geoLevelIndex: number) {
+  map.setLayoutProperty(DISTRICTS_EVALUATE_LABELS_LAYER_ID, "visibility", "none");
+  map.setLayoutProperty(DISTRICTS_LOCK_LAYER_ID, "visibility", "visible");
+
+  // Reset district styling to non-evaluate mode default
+  map.setPaintProperty(DISTRICTS_LAYER_ID, "fill-opacity", [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    6,
+    0.66,
+    14,
+    0.45
+  ]);
+  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-width", [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    6,
+    ["*", ["get", "outlineWidthScaleFactor"], 2],
+    14,
+    ["*", ["get", "outlineWidthScaleFactor"], 5]
+  ]);
+
+  // Reset map state to default
+  map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
+  removeEvaluateMetricLayers(map);
+
+  const invertedGeoLevelIndex = staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1;
+  staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
+    const geoLevelVisibility = idx >= invertedGeoLevelIndex ? "visible" : "none";
+    map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", geoLevelVisibility);
+    map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "visible");
+    map.setLayoutProperty(levelToLabelLayerId(geoLevel.id), "visibility", "visible");
+  });
+}
+
+function enableCommonEvaluateLayers(map: MapboxGL.Map) {
+  // Display district labels in evaluate mode
+  map.setLayoutProperty(DISTRICTS_EVALUATE_LABELS_LAYER_ID, "visibility", "visible");
+}
+
+function enableSummaryEvaluateLayers(map: MapboxGL.Map) {
+  map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
+  map.setPaintProperty(DISTRICTS_LAYER_ID, "fill-opacity", 1);
+}
+
+function disableSummaryEvaluateLayers(map: MapboxGL.Map) {
+  map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "none");
+}
 
 interface Props {
   readonly project: IProject;
@@ -91,6 +188,12 @@ interface Props {
   // eslint-disable-next-line
   readonly setMap: (map: MapboxGL.Map) => void;
 }
+
+interface LabelId {
+  readonly id?: string | number;
+}
+type Label = Feature<Point, LabelId>;
+type Labels = FeatureCollection<Point, LabelId>;
 
 const style: ThemeUIStyleObject = {
   legendBox: {
@@ -260,10 +363,11 @@ const DistrictsMap = ({
           !!shortcut.meta === key[meta] &&
           !!shortcut.shift === key.shiftKey
       );
-      if (shortcut) {
+      if (shortcut && (!isReadOnly || shortcut?.allowReadOnly)) {
         shortcut.action({
           selectionTool,
           geoLevelIndex,
+          isReadOnly,
           selectedDistrictId,
           label,
           numFeatures: geojson.features.length,
@@ -277,6 +381,7 @@ const DistrictsMap = ({
     [
       selectionTool,
       geoLevelIndex,
+      isReadOnly,
       selectedDistrictId,
       label,
       geojson.features.length,
@@ -312,6 +417,8 @@ const DistrictsMap = ({
     geojson.features.forEach((feature, id) => {
       const districtColor = getDistrictColor(id);
       // eslint-disable-next-line
+      feature.properties.id = id;
+      // eslint-disable-next-line
       feature.properties.outlineColor =
         findMenuOpen &&
         ((findTool === FindTool.Unassigned && id === 0) ||
@@ -341,7 +448,7 @@ const DistrictsMap = ({
 
   // Update layer styles when district is selected/hovered
   useEffect(() => {
-    if (map) {
+    if (map && !evaluateMode) {
       // NOTE: It's important to fall back to the outline color set for 'Find Unassigned' so as not
       // to loose line styles by falling back to "transparent"
       const fallbackLineColor = ["get", "outlineColor"];
@@ -364,11 +471,13 @@ const DistrictsMap = ({
               getDistrictColor(hoveredDistrictId),
               selectedDistrictMatchExpression
             ]
-          : // There's no hovered district so just set selected district line color
-            selectedDistrictMatchExpression
+          : // There's no hovered district so just set selected district line color if not in evaluate mode
+          !evaluateMode
+          ? selectedDistrictMatchExpression
+          : fallbackLineColor
       );
     }
-  }, [map, selectedDistrictId, hoveredDistrictId]);
+  }, [map, selectedDistrictId, hoveredDistrictId, evaluateMode]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -408,61 +517,111 @@ const DistrictsMap = ({
       }
     });
 
+  // @ts-ignore
+  const generateLabelsGeojson = (geojson: DistrictsGeoJSON): Labels => {
+    // eslint-disable-next-line
+    const labels: Label[] = geojson.features
+      .filter((feature: DistrictGeoJSON) => {
+        // @ts-ignore
+        return feature.geometry.coordinates.length > 0 && feature.id !== 0;
+      })
+      .map((feature: DistrictGeoJSON) => {
+        // @ts-ignore
+        return {
+          id: feature.id,
+          coords: feature.geometry.coordinates.flat(1).reduce(
+            // eslint-disable-next-line
+            (prev: Position[], current: Position[]) => {
+              // If a district contains multiple polygons, label the polygon with the most vertices
+              return prev.length > current.length ? prev : current;
+            }
+          )
+        };
+      })
+      .map(({ id, coords }) => {
+        return {
+          type: "Feature",
+          properties: { id },
+          geometry: {
+            type: "Point",
+            coordinates: polylabel([coords], 0.5)
+          }
+        };
+      });
+
+    return {
+      type: "FeatureCollection",
+      features: labels
+    };
+  };
+  // Update districts source when geojson is fetched
+  useEffect(() => {
+    const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
+    districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
+
+    const districtsLabelsSource = map && map.getSource(DISTRICTS_LABELS_SOURCE_ID);
+    districtsLabelsSource &&
+      districtsLabelsSource.type === "geojson" &&
+      districtsLabelsSource.setData(generateLabelsGeojson(geojson));
+  }, [map, geojson]);
+
   // Handle evaluate mode map views
   useEffect(() => {
     if (map) {
-      if (evaluateMetric && evaluateMode) {
-        // Remove all geolayers from view
-        staticMetadata.geoLevelHierarchy.forEach(geoLevel => {
-          map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", "none");
-          map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "none");
-        });
-        map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "none");
-        if (evaluateMetric.key === "compactness") {
-          map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "visible");
+      if (evaluateMode) {
+        disableEditMode(map, staticMetadata);
+        enableCommonEvaluateLayers(map);
+
+        const metric = evaluateMetric?.key;
+        // Disable summary layers for *any* metric
+        if (metric) {
+          disableSummaryEvaluateLayers(map);
         }
-        if (evaluateMetric.key === "countySplits") {
-          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
-          map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "visible");
-          map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "visible");
+        switch (metric) {
+          // Handle all evaluate metric views
+          case "compactness":
+            map.setLayoutProperty(
+              DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
+              "visibility",
+              "visible"
+            );
+            break;
+          case "competitiveness":
+            break;
+          case "contiguity":
+            map.setLayoutProperty(
+              DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
+              "visibility",
+              "visible"
+            );
+            break;
+          case "countySplits":
+            map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "visible");
+            map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "visible");
+            break;
+          case "equalPopulation":
+            map.setLayoutProperty(
+              DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
+              "visibility",
+              "visible"
+            );
+            break;
+          case "minorityMajority":
+            break;
+          // Summary view
+          case undefined:
+            removeEvaluateMetricLayers(map);
+            enableSummaryEvaluateLayers(map);
+            break;
+          default:
+            assertNever(metric);
         }
-        if (evaluateMetric.key === "contiguity") {
-          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
-          map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "visible");
-        }
-        if (evaluateMetric.key === "equalPopulation") {
-          map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "visible");
-          map.setLayoutProperty(
-            DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
-            "visibility",
-            "visible"
-          );
-        }
-        DefaultSelectionTool.disable(map);
-        RectangleSelectionTool.disable(map);
-        PaintBrushSelectionTool.disable(map);
       } else {
-        // Reset map state to default
-        map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
-        map.setLayoutProperty(DISTRICTS_EVALUATE_LAYER_ID, "visibility", "none");
-        map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
-        map.setLayoutProperty(DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID, "visibility", "none");
-        map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
-        map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
-        map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
-        const invertedGeoLevelIndex = staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1;
-        staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
-          const geoLevelVisibility = idx >= invertedGeoLevelIndex ? "visible" : "none";
-          map.setLayoutProperty(
-            levelToSelectionLayerId(geoLevel.id),
-            "visibility",
-            geoLevelVisibility
-          );
-          map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", geoLevelVisibility);
-        });
+        // Not in evaluate mode, reset
+        enableEditmode(map, staticMetadata, geoLevelIndex);
       }
     }
-  }, [evaluateMetric, evaluateMode, map, staticMetadata.geoLevelHierarchy, geoLevelIndex]);
+  }, [evaluateMetric, evaluateMode, map, staticMetadata, geoLevelIndex]);
 
   // Remove selected features from map when selected geounit ids has been emptied
   useEffect(() => {

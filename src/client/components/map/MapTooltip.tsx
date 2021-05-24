@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
@@ -11,6 +11,7 @@ import { getTotalSelectedDemographics } from "../../worker-functions";
 import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
 import DemographicsTooltip from "../DemographicsTooltip";
+import VotingMapTooltip from "../VotingMapTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 import { getLabel } from "./labels";
 
@@ -23,7 +24,7 @@ const style: ThemeUIStyleObject = {
     height: "auto",
     borderRadius: "small",
     boxShadow: "small",
-    width: "170px",
+    width: "200px",
     overflow: "hidden",
     pointerEvents: "none",
     p: 2,
@@ -36,6 +37,7 @@ const style: ThemeUIStyleObject = {
 
 interface Data {
   readonly demographics: DemographicCounts;
+  readonly voting?: DemographicCounts;
   readonly heading: React.ReactElement | string;
 }
 
@@ -68,6 +70,12 @@ const MapTooltip = ({
   const invertedGeoLevelIndex = staticMetadata
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
+
+  const votingIds = useMemo(
+    () =>
+      staticMetadata && staticMetadata.voting ? staticMetadata.voting.map(props => props.id) : [],
+    [staticMetadata]
+  );
 
   useEffect(() => {
     const throttledSetFeature = throttle(
@@ -139,13 +147,15 @@ const MapTooltip = ({
         const selectedGeounits = areAnyGeoUnitsSelected(highlightedGeounits)
           ? highlightedGeounits
           : feature && featuresToGeoUnits([feature], staticMetadata.geoLevelHierarchy);
-        const demographics =
+        const staticCounts =
           selectedGeounits &&
           (await getTotalSelectedDemographics(
             staticMetadata,
             project.regionConfig.s3URI,
             selectedGeounits
           ));
+        const demographics = staticCounts?.demographics;
+        const voting = staticCounts?.voting;
 
         const featureLabel = () => (
           <span sx={{ textTransform: "capitalize" }}>{getLabel(geoLevelId, feature)}</span>
@@ -167,7 +177,11 @@ const MapTooltip = ({
 
         // Only set data if it is for the most recent version requested, to
         // avoid overwriting fresh data with stale data
-        !outdated && throttledDataSetter(setData, demographics && { demographics, heading });
+        !outdated &&
+          throttledDataSetter(
+            setData,
+            demographics && (voting ? { demographics, voting, heading } : { demographics, heading })
+          );
       }
     }
     void getData();
@@ -219,6 +233,12 @@ const MapTooltip = ({
         <Divider sx={{ my: 1, borderColor: "gray.6" }} />
         <Box sx={{ width: "100%" }}>
           <DemographicsTooltip demographics={data.demographics} />
+          {data.voting && (
+            <React.Fragment>
+              <Divider sx={{ my: 1, borderColor: "gray.6" }} />
+              <VotingMapTooltip voting={data.voting} votingIds={votingIds} />
+            </React.Fragment>
+          )}
         </Box>
       </Box>
     );

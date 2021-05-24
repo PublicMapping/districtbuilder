@@ -33,7 +33,7 @@ export interface BaseEvaluateMetric {
 
 export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   readonly type: "fraction" | "percent" | "count";
-  readonly value: number;
+  readonly value?: number;
   readonly total?: number;
   readonly avgPopulation?: number;
   readonly popThreshold?: number;
@@ -101,6 +101,7 @@ export type DistrictProperties = {
   readonly voting?: DemographicCounts;
   /* eslint-disable */
   // NOTE: These properties are set for styling purposes
+  id?: number;
   color?: string;
   outlineColor?: string;
   percentDeviation?: number;

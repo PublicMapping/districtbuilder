@@ -2,7 +2,6 @@ import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { cloneDeep } from "lodash";
 import { join } from "path";
 import { s3ToHttps } from "../../s3";
-
 import {
   GeoUnitCollection,
   DistrictId,
@@ -25,18 +24,22 @@ import { mapValues } from "lodash";
 export const GEOLEVELS_SOURCE_ID = "db";
 // GeoJSON district data for district as currently drawn
 export const DISTRICTS_SOURCE_ID = "districts";
+// GeoJSON district label data for district as currently drawn
+export const DISTRICTS_LABELS_SOURCE_ID = "districts-labels";
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
 // Id for districts layer outline, used for Find
 export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
+// Id for districts lock layer
+export const DISTRICTS_LOCK_LAYER_ID = "districts-locked";
 // Id for districts fill outline used in evaluate mode
 export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID = "districts-equal-population";
-// Id for districts layer outline used in evaluate mode
-export const DISTRICTS_EVALUATE_LAYER_ID = "districts-evaluate";
+// Id for district labels layer used in evaluate mode
+export const DISTRICTS_EVALUATE_LABELS_LAYER_ID = "districts-evaluate-labels";
 // Id for topmost geolevel layer in Evaluate
 export const TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID = "topmost-geo-evaluate-split";
 // Id for topmost geolevel layer fill in Evaluate
@@ -59,7 +62,7 @@ export const EVALUATE_GRAY_FILL_COLOR = "#D3D3D3";
 export const COUNTY_SPLIT_FILL_COLOR = "#fed8b1";
 
 // Layers in the Mapbox Studio project that we filter to only show the active region.
-const filteredLabelLayers = [
+export const filteredLabelLayers = [
   "settlement-major-label",
   "settlement-minor-label",
   "settlement-subdivision-label",
@@ -185,6 +188,14 @@ export function generateMapLayers(
     maxzoom: maxZoom
   });
 
+  map.addSource(DISTRICTS_LABELS_SOURCE_ID, {
+    type: "geojson",
+    data: {
+      type: "FeatureCollection",
+      features: []
+    }
+  });
+
   map.addLayer(
     {
       id: DISTRICTS_LAYER_ID,
@@ -263,22 +274,7 @@ export function generateMapLayers(
 
   map.addLayer(
     {
-      id: DISTRICTS_EVALUATE_LAYER_ID,
-      type: "line",
-      source: DISTRICTS_SOURCE_ID,
-      layout: { visibility: "none" },
-      paint: {
-        "line-color": "#000",
-        "line-opacity": 1,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
-      }
-    },
-    LABELS_PLACEHOLDER_LAYER_ID
-  );
-
-  map.addLayer(
-    {
-      id: "districts-locked",
+      id: DISTRICTS_LOCK_LAYER_ID,
       type: "fill",
       source: DISTRICTS_SOURCE_ID,
       layout: {},
@@ -289,6 +285,7 @@ export function generateMapLayers(
     },
     DISTRICTS_PLACEHOLDER_LAYER_ID
   );
+
   map.addLayer(
     {
       id: TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID,
@@ -344,6 +341,27 @@ export function generateMapLayers(
     },
     LABELS_PLACEHOLDER_LAYER_ID
   );
+
+  map.addLayer({
+    id: DISTRICTS_EVALUATE_LABELS_LAYER_ID,
+    type: "symbol",
+    source: DISTRICTS_LABELS_SOURCE_ID,
+    layout: {
+      "text-size": 12,
+      "text-padding": 3,
+      "text-field": ["concat", regionCode, "-", ["get", "id"]],
+      "text-max-width": 10,
+      "text-font": ["Atlas Grotesk Bold"],
+      visibility: "visible"
+    },
+    paint: {
+      "text-color": "#000",
+      "text-opacity": 0.9,
+      "text-halo-color": "#fff",
+      "text-halo-width": 1.25,
+      "text-halo-blur": 0
+    }
+  });
 
   geoLevels.forEach(level => {
     map.addLayer(

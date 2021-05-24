@@ -21,6 +21,7 @@ import { showMapActionToast } from "../../functions";
 interface MapContext {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
+  readonly isReadOnly: boolean;
   readonly selectedDistrictId: DistrictId;
   readonly label?: string;
   readonly numFeatures: number;
@@ -36,6 +37,7 @@ interface KeyboardShortcut {
   readonly text: string;
   readonly label?: string;
   readonly meta?: true;
+  readonly allowReadOnly?: boolean;
   readonly shift?: true | "optional";
   // eslint-disable-next-line
   readonly action: (context: MapContext) => void;
@@ -62,25 +64,25 @@ function previousSelectionTool({ selectionTool }: MapContext) {
   store.dispatch(setSelectionTool(SelectionToolOrder[previousSelectionTool]));
 }
 
-function nextGeoLevel({ geoLevelIndex, numGeolevels }: MapContext) {
+function nextGeoLevel({ geoLevelIndex, numGeolevels, isReadOnly }: MapContext) {
   // Go to next geolevel if not already on smallest level
   const nextGeoLevelIndex = geoLevelIndex < numGeolevels - 1 ? geoLevelIndex + 1 : geoLevelIndex;
-  store.dispatch(setGeoLevelIndex(nextGeoLevelIndex));
+  store.dispatch(setGeoLevelIndex({ index: nextGeoLevelIndex, isReadOnly }));
 }
-function previousGeoLevel({ geoLevelIndex }: MapContext) {
+function previousGeoLevel({ geoLevelIndex, isReadOnly }: MapContext) {
   // Go to previous geolevel if not already at largest level
   const previousGeoLevelIndex = geoLevelIndex > 0 ? geoLevelIndex - 1 : geoLevelIndex;
-  store.dispatch(setGeoLevelIndex(previousGeoLevelIndex));
+  store.dispatch(setGeoLevelIndex({ index: previousGeoLevelIndex, isReadOnly }));
 }
 
 function setNextDistrict({ selectedDistrictId, numFeatures }: MapContext) {
-  // Set the next district as currently selected, or first district if currently at end of list
-  const nextDistrictId = selectedDistrictId < numFeatures - 1 ? selectedDistrictId + 1 : 1;
+  // Set the next district as currently selected, or unassigned district if currently at end of list
+  const nextDistrictId = selectedDistrictId < numFeatures - 1 ? selectedDistrictId + 1 : 0;
   store.dispatch(setSelectedDistrictId(nextDistrictId));
 }
 function setPreviousDistrict({ selectedDistrictId, numFeatures }: MapContext) {
   // Set the previous district as currently selected, or last district if currently at start of list
-  const previousDistrictId = selectedDistrictId > 1 ? selectedDistrictId - 1 : numFeatures - 1;
+  const previousDistrictId = selectedDistrictId > 0 ? selectedDistrictId - 1 : numFeatures - 1;
   store.dispatch(setSelectedDistrictId(previousDistrictId));
 }
 
@@ -97,22 +99,26 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
     key: "e",
     text: "Previous district",
-    action: setPreviousDistrict
+    action: setPreviousDistrict,
+    allowReadOnly: true
   },
   {
     key: "d",
     text: "Next district",
-    action: setNextDistrict
+    action: setNextDistrict,
+    allowReadOnly: true
   },
   {
     key: "s",
     text: "Use bigger geolevels",
-    action: previousGeoLevel
+    action: previousGeoLevel,
+    allowReadOnly: true
   },
   {
     key: "f",
     text: "Use smaller geolevels",
-    action: nextGeoLevel
+    action: nextGeoLevel,
+    allowReadOnly: true
   },
   {
     key: "w",
@@ -141,7 +147,8 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
     key: "1",
     text: "Toggle population labels",
-    action: togglePopulationLabel
+    action: togglePopulationLabel,
+    allowReadOnly: true
   },
   {
     key: "q",
@@ -150,13 +157,13 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
       store.dispatch(toggleDistrictLocked(selectedDistrictId - 1));
     }
   },
-  // {
-  //   key: "t",
-  //   text: "Toggle evaluate mode",
-  //   action: ({ evaluateMode }: MapContext) => {
-  //     store.dispatch(toggleEvaluate(!evaluateMode));
-  //   }
-  // },
+  {
+    key: "t",
+    text: "Toggle evaluate mode",
+    action: ({ evaluateMode }: MapContext) => {
+      store.dispatch(toggleEvaluate(!evaluateMode));
+    }
+  },
   {
     key: "z",
     text: "Undo",
@@ -198,6 +205,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     key: "?",
     text: "Show this help menu",
     shift: true,
+    allowReadOnly: true,
     action: () => {
       store.dispatch(showKeyboardShortcutsModal(true));
     }

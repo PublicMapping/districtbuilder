@@ -52,7 +52,13 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const CopyMapModal = ({ showModal }: { readonly showModal: boolean }) => {
+const KeyboardShortcutsModal = ({
+  showModal,
+  isReadOnly
+}: {
+  readonly showModal: boolean;
+  readonly isReadOnly: boolean;
+}) => {
   const hideModal = () => void store.dispatch(showKeyboardShortcutsModal(false));
   const os = navigator.appVersion.indexOf("Mac") !== -1 ? "Mac" : "pc";
   const meta = os === "Mac" ? "⌘" : "CTRL";
@@ -76,35 +82,39 @@ const CopyMapModal = ({ showModal }: { readonly showModal: boolean }) => {
             <Box>
               <table sx={style.table}>
                 <tbody>
-                  {KEYBOARD_SHORTCUTS.map((shortcut, index) => {
-                    const key = (
-                      <span sx={style.keyCode}>{shortcut.label || shortcut.key.toUpperCase()}</span>
-                    );
-                    return (
-                      <tr sx={style.keyRow} key={index}>
-                        <td>
-                          <Box sx={style.keyItem}>
-                            {shortcut.meta ? (
-                              shortcut.shift ? (
-                                <span>
-                                  <span sx={style.keyCode}>{meta}</span>+
-                                  <span sx={style.keyCode}>SHIFT</span>+{key}
-                                </span>
+                  {KEYBOARD_SHORTCUTS.filter(shortcut => !isReadOnly || shortcut.allowReadOnly).map(
+                    (shortcut, index) => {
+                      const key = (
+                        <span sx={style.keyCode}>
+                          {shortcut.label || shortcut.key.toUpperCase()}
+                        </span>
+                      );
+                      return (
+                        <tr sx={style.keyRow} key={index}>
+                          <td>
+                            <Box sx={style.keyItem}>
+                              {shortcut.meta ? (
+                                shortcut.shift ? (
+                                  <span>
+                                    <span sx={style.keyCode}>{meta}</span>+
+                                    <span sx={style.keyCode}>SHIFT</span>+{key}
+                                  </span>
+                                ) : (
+                                  <span>
+                                    <span sx={style.keyCode}>{meta}</span>+{key}
+                                  </span>
+                                )
                               ) : (
-                                <span>
-                                  <span sx={style.keyCode}>{meta}</span>+{key}
-                                </span>
-                              )
-                            ) : (
-                              key
-                            )}
+                                key
+                              )}
 
-                            <span sx={style.keyFunction}>{shortcut.text}</span>
-                          </Box>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              <span sx={style.keyFunction}>{shortcut.text}</span>
+                            </Box>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
                 </tbody>
               </table>
             </Box>
@@ -130,4 +140,4 @@ function mapStateToProps(state: State) {
   };
 }
 
-export default connect(mapStateToProps)(CopyMapModal);
+export default connect(mapStateToProps)(KeyboardShortcutsModal);

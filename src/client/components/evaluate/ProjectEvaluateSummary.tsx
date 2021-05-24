@@ -65,7 +65,7 @@ const ProjectEvaluateView = ({
       case "fraction":
         return `${metric.value} / ${metric.total || 18}`;
       case "percent":
-        return `${Math.floor(metric.value * 100)}%`;
+        return metric.value !== undefined ? `${Math.floor(metric.value * 100)}%` : "";
       case "count":
         return `${metric.value}`;
       default:
@@ -73,7 +73,7 @@ const ProjectEvaluateView = ({
     }
   }
   return (
-    <Flex sx={{ variant: "sidebar.gray", maxWidth: "447px" }}>
+    <Flex sx={{ variant: "sidebar.gray", maxWidth: "507px" }}>
       <Flex sx={style.header} className="evaluate-header">
         <Flex sx={{ variant: "header.left", justifyContent: "space-between" }}>
           <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>

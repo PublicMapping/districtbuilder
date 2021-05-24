@@ -9,9 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+
 ### Changed
 
+
 ### Fixed
+
+
+
+## [1.6.0] - 2021-05-24
+
+### Added
+
+- Update map view for evaluate mode [#727](https://github.com/PublicMapping/districtbuilder/pull/727)
+- Show minority-majority districts in sidebar [#763](https://github.com/PublicMapping/districtbuilder/pull/763)
+- Add voting info to map tooltip [#751](https://github.com/PublicMapping/districtbuilder/pull/751)
+- Disable some keyboard shortcuts in reads-only mode [#768](https://github.com/PublicMapping/districtbuilder/pull/768)
+
+
+### Changed
+
+- Update race column to handle different race categories [#766](https://github.com/PublicMapping/districtbuilder/pull/766)
+- Cleanup text in evaluate mode [#776](https://github.com/PublicMapping/districtbuilder/pull/776)
+
+### Fixed
+
+- Fix handling of switching into block editing when using keyboard shortcut [#758](https://github.com/PublicMapping/districtbuilder/pull/758)
+- Fix switching into/out of evaluate mode [#775](https://github.com/PublicMapping/districtbuilder/pull/775)
+- Fix showing blockgroup selections when viewing the county geolevel [#781](https://github.com/PublicMapping/districtbuilder/pull/781)
+- Don't show limit to county option in read-only mode [#777](https://github.com/PublicMapping/districtbuilder/pull/777)
+- Include unassigned district when switching using keyboard shortcuts [#779](https://github.com/PublicMapping/districtbuilder/pull/779)
+- Fix calculation of average compactness [#778](https://github.com/PublicMapping/districtbuilder/pull/778)
 
 ## [1.5.0] - 2021-05-13
 
@@ -188,7 +216,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...HEAD
+[1.6.0]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...1.6.0
 [1.5.0]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/publicmapping/districtbuilder/compare/1.2.0...1.3.0

@@ -44,7 +44,7 @@ import DistrictOptionsFlyout from "./DistrictOptionsFlyout";
 import Icon from "./Icon";
 import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
-import VotingTooltip from "./VotingTooltip";
+import VotingSidebarTooltip from "./VotingSidebarTooltip";
 
 interface LoadingProps {
   readonly isLoading: boolean;
@@ -106,6 +106,14 @@ const style: ThemeUIStyleObject = {
     textAlign: "left",
     verticalAlign: "bottom",
     position: "relative"
+  },
+  chart: {
+    display: "inline-block"
+  },
+  minorityMajorityFlag: {
+    display: "inline-block",
+    position: "relative",
+    top: "10px"
   },
   districtColor: {
     width: "10px",
@@ -307,6 +315,7 @@ const SidebarRow = memo(
     const intermediatePopulation = demographics.population + selectedDifference;
     const intermediateDeviation = deviation + selectedDifference;
     const populationDisplay = intermediatePopulation.toLocaleString();
+    const isMinorityMajority = demographics.white / demographics.population < 0.5;
     const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
       intermediateDeviation
     ).toLocaleString()}`;
@@ -388,7 +397,10 @@ const SidebarRow = memo(
             placement="top-start"
             content={
               demographics.population > 0 ? (
-                <DemographicsTooltip demographics={demographics} />
+                <DemographicsTooltip
+                  demographics={demographics}
+                  isMinorityMajority={isMinorityMajority}
+                />
               ) : (
                 <em>
                   <strong>Empty district.</strong> Add people to this district to view the race
@@ -397,8 +409,11 @@ const SidebarRow = memo(
               )
             }
           >
-            <span>
-              <DemographicsChart demographics={demographics} />
+            <span sx={{ display: "inline-block" }}>
+              <span sx={style.chart}>
+                <DemographicsChart demographics={demographics} />
+              </span>
+              {isMinorityMajority && <span sx={style.minorityMajorityFlag}>*</span>}
             </span>
           </Tooltip>
         </Styled.td>
@@ -408,7 +423,7 @@ const SidebarRow = memo(
               placement="top-start"
               content={
                 votesTotal !== 0 ? (
-                  <VotingTooltip voting={voting} votingIds={votingIds} />
+                  <VotingSidebarTooltip voting={voting} votingIds={votingIds} />
                 ) : (
                   <em>
                     <strong>Empty district.</strong> Add people to this district to view the vote
@@ -521,7 +536,7 @@ const SidebarRows = ({
       // Don't overwrite current results with outdated ones
       !outdated &&
         setSelectedDemographics({
-          total: selectedTotals,
+          total: selectedTotals.demographics,
           savedDistrict: districtTotals
         });
     }

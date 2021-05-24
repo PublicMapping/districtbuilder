@@ -213,7 +213,7 @@ const ProjectScreen = ({
                 />
               )}
               <CopyMapModal project={project} />
-              <KeyboardShortcutsModal />
+              <KeyboardShortcutsModal isReadOnly={isReadOnly} />
               <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}

@@ -84,7 +84,10 @@ it when necessary (file sizes ~1GB+).
 
     demographics: flags.string({
       char: "d",
-      description: "Comma-separated census demographics to select and aggregate",
+      description: `Comma-separated census demographics to select and aggregate
+      To use a different name for the property from the GeoJSON property, separate values by ':'
+      e.g. -l pop:population,wht:white,blk:black
+      `,
       default: "population,white,black,asian,hispanic,other"
     }),
 
@@ -156,7 +159,8 @@ it when necessary (file sizes ~1GB+).
     const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
-    const demographics = flags.demographics.split(",");
+    const demographics = splitPairs(flags.demographics);
+    const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
     const quantization = parseFloat(flags.quantization);
 
@@ -186,7 +190,7 @@ it when necessary (file sizes ~1GB+).
     }
 
     const firstFeature = baseGeoJson.features[0];
-    for (const demo of demographics) {
+    for (const [demo, _id] of demographics) {
       if (!(demo in firstFeature.properties)) {
         this.log(`Demographic: "${demo}" not present in features, exiting`);
         return;
@@ -205,7 +209,7 @@ it when necessary (file sizes ~1GB+).
       }
     }
 
-    this.renameProps(baseGeoJson, geoLevels, voting);
+    this.renameProps(baseGeoJson, [...geoLevels, ...voting, ...demographics]);
 
     if (flags.filterPrefix) {
       this.log(`Filtering to only prefixes of: ${flags.filterPrefix}`);
@@ -218,7 +222,7 @@ it when necessary (file sizes ~1GB+).
     const topoJsonHierarchy = this.mkTopoJsonHierarchy(
       baseGeoJson,
       geoLevelIds,
-      demographics,
+      demographicIds,
       votingIds,
       simplification,
       quantization
@@ -256,7 +260,7 @@ it when necessary (file sizes ~1GB+).
       geoLevelIds,
       minZooms,
       maxZooms,
-      demographics,
+      demographicIds,
       votingIds
     );
 
@@ -264,7 +268,7 @@ it when necessary (file sizes ~1GB+).
       flags.outputDir,
       topoJsonHierarchy,
       geoLevelIds[0],
-      demographics
+      demographicIds
     );
 
     const votingMetaData = this.writeNumericData(
@@ -295,10 +299,8 @@ it when necessary (file sizes ~1GB+).
 
   renameProps(
     baseGeoJson: FeatureCollection<Polygon, any>,
-    geoLevels: readonly [string, string][],
-    voting: readonly [string, string][]
+    props: readonly [string, string][]
   ): void {
-    const props = [...geoLevels, ...voting];
     for (const [prop, id] of props) {
       if (prop !== id) {
         this.log(`Renaming ${prop} to ${id} for ${baseGeoJson.features.length} features`);
