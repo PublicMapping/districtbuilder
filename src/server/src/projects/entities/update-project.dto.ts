@@ -6,8 +6,8 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsPositive,
-  Max
+  Max,
+  Min
 } from "class-validator";
 
 import { ProjectVisibility } from "../../../../shared/constants";
@@ -29,9 +29,9 @@ export class UpdateProjectDto implements UpdateProjectData {
   @IsOptional()
   readonly advancedEditingEnabled: boolean;
   @IsOptional()
-  @IsPositive({ message: "Population deviation must be positive" })
   @IsNumber()
   @Max(100, { message: "Population deviation must be between 0% and 100%" })
+  @Min(0, { message: "Population deviation must be between 0% and 100%" })
   readonly populationDeviation: number;
   @IsEnum(ProjectVisibility)
   @IsOptional()

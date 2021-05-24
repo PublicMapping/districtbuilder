@@ -105,10 +105,7 @@ export function getChoroplethStops(metricKey: string, popThreshold?: number) {
 
 export function getChoroplethLabels(metricKey: string, populationDeviation?: number) {
   const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
-  const steps =
-    populationDeviation !== undefined
-      ? getChoroplethStops(metricKey, populationDeviation)
-      : getChoroplethStops(metricKey);
+  const steps = getChoroplethStops(metricKey, populationDeviation);
   switch (metricKey) {
     case "compactness":
       return compactnessLabels;
@@ -237,7 +234,7 @@ export function generateMapLayers(
         "fill-opacity": 0.9
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(
@@ -259,7 +256,7 @@ export function generateMapLayers(
         "fill-opacity": 0.9
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(

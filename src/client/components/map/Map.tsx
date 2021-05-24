@@ -334,7 +334,7 @@ const DistrictsMap = ({
         map,
         geojson,
         evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined,
-        project && project.populationDeviation ? project.populationDeviation : undefined
+        project?.populationDeviation
       );
 
       setMap(map);

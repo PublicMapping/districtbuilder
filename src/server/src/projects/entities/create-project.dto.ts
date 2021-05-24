@@ -6,7 +6,8 @@ import {
   IsOptional,
   IsPositive,
   IsNumber,
-  Max
+  Max,
+  Min
 } from "class-validator";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
@@ -29,6 +30,7 @@ export class CreateProjectDto implements CreateProjectData {
   @IsOptional()
   @IsNumber()
   @Max(100, { message: "Population deviation must be between 0% and 100%" })
+  @Min(0, { message: "Population deviation must be between 0% and 100%" })
   readonly populationDeviation: number;
   @IsOptional()
   readonly chamber: ChamberIdDto;

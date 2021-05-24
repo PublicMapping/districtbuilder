@@ -163,8 +163,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       width: "100%",
       pt: 4,
       borderTop: "1px solid",
-      borderColor: "gray.2",
-      display: "flex"
+      borderColor: "gray.2"
     },
     legend: {
       paddingInlineStart: "0",

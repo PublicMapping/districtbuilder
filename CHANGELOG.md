@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
+
 
 ### Changed
 
 - Display evaluate mode toggle button in read-only mode [#786](https://github.com/PublicMapping/districtbuilder/pull/786)
+- Disable keyboard shortcuts in evaluate mode [#784](https://github.com/PublicMapping/districtbuilder/pull/784)
 
 
 ### Fixed
@@ -26,14 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update map view for evaluate mode [#727](https://github.com/PublicMapping/districtbuilder/pull/727)
 - Show minority-majority districts in sidebar [#763](https://github.com/PublicMapping/districtbuilder/pull/763)
 - Add voting info to map tooltip [#751](https://github.com/PublicMapping/districtbuilder/pull/751)
-- Disable some keyboard shortcuts in reads-only mode [#768](https://github.com/PublicMapping/districtbuilder/pull/768)
 
 
 ### Changed
 
 - Update race column to handle different race categories [#766](https://github.com/PublicMapping/districtbuilder/pull/766)
 - Cleanup text in evaluate mode [#776](https://github.com/PublicMapping/districtbuilder/pull/776)
-- Disable keyboard shortcuts in evaluate mode [#784](https://github.com/PublicMapping/districtbuilder/pull/784)
+
 
 ### Fixed
 
@@ -56,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Display warnings and row-level flags for district import [#708](https://github.com/PublicMapping/districtbuilder/pull/708)
 - Add keyboard shortcuts for map functions [#718](https://github.com/PublicMapping/districtbuilder/pull/718)
 - Added voting info to sidebar [#730](https://github.com/PublicMapping/districtbuilder/pull/730)
-- Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
+
 
 ### Changed
 

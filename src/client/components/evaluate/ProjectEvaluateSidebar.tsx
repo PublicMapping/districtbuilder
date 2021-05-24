@@ -84,7 +84,7 @@ const ProjectEvaluateSidebar = ({
       status:
         (avgPopulation &&
           geojson &&
-          popThreshold &&
+          popThreshold !== undefined &&
           geojson?.features.filter(f => {
             return (
               f.id !== 0 &&
@@ -98,7 +98,7 @@ const ProjectEvaluateSidebar = ({
       shortText:
         "The U.S. constitution requires that each district have about the same population for a map to be considered valid.",
       longText:
-        (popThreshold &&
+        (popThreshold !== undefined &&
           `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
             popThreshold * 100
           )}%) above or below that target.`) ||
@@ -108,7 +108,7 @@ const ProjectEvaluateSidebar = ({
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
       value:
-        avgPopulation && geojson && popThreshold
+        avgPopulation && geojson && popThreshold !== undefined
           ? geojson?.features.filter(f => {
               return (
                 f.id !== 0 &&
