@@ -13,7 +13,7 @@ import {
   undo,
   redo,
   toggleLimitDrawingToWithinCounty,
-  showKeyboardShortcutsModal
+  toggleKeyboardShortcutsModal
 } from "../../actions/districtDrawing";
 import store from "../../store";
 import { showMapActionToast } from "../../functions";
@@ -38,6 +38,7 @@ interface KeyboardShortcut {
   readonly label?: string;
   readonly meta?: true;
   readonly allowReadOnly?: boolean;
+  readonly allowInEvaluateMode?: boolean;
   readonly shift?: true | "optional";
   // eslint-disable-next-line
   readonly action: (context: MapContext) => void;
@@ -160,6 +161,8 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
     key: "t",
     text: "Toggle evaluate mode",
+    allowReadOnly: true,
+    allowInEvaluateMode: true,
     action: ({ evaluateMode }: MapContext) => {
       store.dispatch(toggleEvaluate(!evaluateMode));
     }
@@ -206,8 +209,9 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     text: "Show this help menu",
     shift: true,
     allowReadOnly: true,
+    allowInEvaluateMode: true,
     action: () => {
-      store.dispatch(showKeyboardShortcutsModal(true));
+      store.dispatch(toggleKeyboardShortcutsModal());
     }
   }
   // Feature not implemented yet

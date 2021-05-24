@@ -363,7 +363,11 @@ const DistrictsMap = ({
           !!shortcut.meta === key[meta] &&
           !!shortcut.shift === key.shiftKey
       );
-      if (shortcut && (!isReadOnly || shortcut?.allowReadOnly)) {
+      if (
+        shortcut &&
+        (!isReadOnly || shortcut?.allowReadOnly) &&
+        (!evaluateMode || shortcut?.allowInEvaluateMode)
+      ) {
         shortcut.action({
           selectionTool,
           geoLevelIndex,

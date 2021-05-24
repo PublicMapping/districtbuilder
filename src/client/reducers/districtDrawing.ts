@@ -34,7 +34,7 @@ import {
   selectEvaluationMetric,
   setZoomToDistrictId,
   setMapLabel,
-  showKeyboardShortcutsModal
+  toggleKeyboardShortcutsModal
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -309,10 +309,10 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         showAdvancedEditingModal: action.payload
       };
-    case getType(showKeyboardShortcutsModal):
+    case getType(toggleKeyboardShortcutsModal):
       return {
         ...state,
-        showKeyboardShortcutsModal: action.payload
+        showKeyboardShortcutsModal: !state.showKeyboardShortcutsModal
       };
     case getType(showCopyMapModal):
       return {
