@@ -88,12 +88,11 @@ const EqualPopulationMetricDetail = ({
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-        {metric.value?.toString() || " "} of the {metric.total} districts are within{" "}
+        {metric.value.toString() || " "} of {metric.total} districts are within{" "}
         {"popThreshold" in metric &&
           metric.popThreshold &&
           ` ${Math.floor(metric.popThreshold * 100)}%`}{" "}
-        of the target population (
-        {metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()})
+        of the target ({metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()})
       </Heading>
       <Styled.table sx={style.table}>
         <thead>
