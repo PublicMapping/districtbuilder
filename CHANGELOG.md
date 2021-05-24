@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Display evaluate mode toggle button in read-only mode [#786](https://github.com/PublicMapping/districtbuilder/pull/786)
+
 
 ### Fixed
 
