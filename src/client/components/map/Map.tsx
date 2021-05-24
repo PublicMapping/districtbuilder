@@ -145,8 +145,8 @@ function enableEditmode(map: MapboxGL.Map, staticMetadata: IStaticMetadata, geoL
   const invertedGeoLevelIndex = staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1;
   staticMetadata.geoLevelHierarchy.forEach((geoLevel, idx) => {
     const geoLevelVisibility = idx >= invertedGeoLevelIndex ? "visible" : "none";
-    map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", geoLevelVisibility);
     map.setLayoutProperty(levelToLineLayerId(geoLevel.id), "visibility", geoLevelVisibility);
+    map.setLayoutProperty(levelToSelectionLayerId(geoLevel.id), "visibility", "visible");
     map.setLayoutProperty(levelToLabelLayerId(geoLevel.id), "visibility", "visible");
   });
 }
