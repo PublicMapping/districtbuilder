@@ -76,13 +76,13 @@ function previousGeoLevel({ geoLevelIndex, isReadOnly }: MapContext) {
 }
 
 function setNextDistrict({ selectedDistrictId, numFeatures }: MapContext) {
-  // Set the next district as currently selected, or first district if currently at end of list
-  const nextDistrictId = selectedDistrictId < numFeatures - 1 ? selectedDistrictId + 1 : 1;
+  // Set the next district as currently selected, or unassigned district if currently at end of list
+  const nextDistrictId = selectedDistrictId < numFeatures - 1 ? selectedDistrictId + 1 : 0;
   store.dispatch(setSelectedDistrictId(nextDistrictId));
 }
 function setPreviousDistrict({ selectedDistrictId, numFeatures }: MapContext) {
   // Set the previous district as currently selected, or last district if currently at start of list
-  const previousDistrictId = selectedDistrictId > 1 ? selectedDistrictId - 1 : numFeatures - 1;
+  const previousDistrictId = selectedDistrictId > 0 ? selectedDistrictId - 1 : numFeatures - 1;
   store.dispatch(setSelectedDistrictId(previousDistrictId));
 }
 
