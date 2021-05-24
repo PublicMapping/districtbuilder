@@ -4,7 +4,7 @@ import AriaModal from "react-aria-modal";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { connect } from "react-redux";
 
-import { showKeyboardShortcutsModal } from "../../actions/districtDrawing";
+import { toggleKeyboardShortcutsModal } from "../../actions/districtDrawing";
 import { State } from "../../reducers";
 import store from "../../store";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
@@ -54,12 +54,14 @@ const style: ThemeUIStyleObject = {
 
 const KeyboardShortcutsModal = ({
   showModal,
-  isReadOnly
+  isReadOnly,
+  evaluateMode
 }: {
   readonly showModal: boolean;
   readonly isReadOnly: boolean;
+  readonly evaluateMode: boolean;
 }) => {
-  const hideModal = () => void store.dispatch(showKeyboardShortcutsModal(false));
+  const hideModal = () => void store.dispatch(toggleKeyboardShortcutsModal());
   const os = navigator.appVersion.indexOf("Mac") !== -1 ? "Mac" : "pc";
   const meta = os === "Mac" ? "⌘" : "CTRL";
 
@@ -82,39 +84,39 @@ const KeyboardShortcutsModal = ({
             <Box>
               <table sx={style.table}>
                 <tbody>
-                  {KEYBOARD_SHORTCUTS.filter(shortcut => !isReadOnly || shortcut.allowReadOnly).map(
-                    (shortcut, index) => {
-                      const key = (
-                        <span sx={style.keyCode}>
-                          {shortcut.label || shortcut.key.toUpperCase()}
-                        </span>
-                      );
-                      return (
-                        <tr sx={style.keyRow} key={index}>
-                          <td>
-                            <Box sx={style.keyItem}>
-                              {shortcut.meta ? (
-                                shortcut.shift ? (
-                                  <span>
-                                    <span sx={style.keyCode}>{meta}</span>+
-                                    <span sx={style.keyCode}>SHIFT</span>+{key}
-                                  </span>
-                                ) : (
-                                  <span>
-                                    <span sx={style.keyCode}>{meta}</span>+{key}
-                                  </span>
-                                )
+                  {KEYBOARD_SHORTCUTS.filter(
+                    shortcut =>
+                      (!isReadOnly || shortcut.allowReadOnly) &&
+                      (!evaluateMode || shortcut.allowInEvaluateMode)
+                  ).map((shortcut, index) => {
+                    const key = (
+                      <span sx={style.keyCode}>{shortcut.label || shortcut.key.toUpperCase()}</span>
+                    );
+                    return (
+                      <tr sx={style.keyRow} key={index}>
+                        <td>
+                          <Box sx={style.keyItem}>
+                            {shortcut.meta ? (
+                              shortcut.shift ? (
+                                <span>
+                                  <span sx={style.keyCode}>{meta}</span>+
+                                  <span sx={style.keyCode}>SHIFT</span>+{key}
+                                </span>
                               ) : (
-                                key
-                              )}
+                                <span>
+                                  <span sx={style.keyCode}>{meta}</span>+{key}
+                                </span>
+                              )
+                            ) : (
+                              key
+                            )}
 
-                              <span sx={style.keyFunction}>{shortcut.text}</span>
-                            </Box>
-                          </td>
-                        </tr>
-                      );
-                    }
-                  )}
+                            <span sx={style.keyFunction}>{shortcut.text}</span>
+                          </Box>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </Box>

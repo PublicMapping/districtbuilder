@@ -52,7 +52,7 @@ export const toggleDistrictLocked = createAction("Toggle district locked")<Distr
 
 export const toggleLimitDrawingToWithinCounty = createAction("Limit drawing to within county")();
 
-export const showKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")<boolean>();
+export const toggleKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")();
 
 export const showAdvancedEditingModal = createAction("Show advanced editing warning modal")<
   boolean
