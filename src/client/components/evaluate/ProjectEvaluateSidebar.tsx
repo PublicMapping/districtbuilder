@@ -48,10 +48,11 @@ const ProjectEvaluateSidebar = ({
   const popThreshold = 0.05;
   useEffect(() => {
     if (geojson && !avgCompactness) {
-      const totalCompactness = geojson.features.reduce(function(accumulator, feature) {
+      const features = geojson.features.slice(1).filter(f => f.properties.compactness !== 0);
+      const totalCompactness = features.reduce(function(accumulator, feature) {
         return accumulator + feature.properties.compactness;
       }, 0);
-      setAvgCompactness(totalCompactness / (geojson.features.length - 1));
+      setAvgCompactness(features.length !== 0 ? totalCompactness / features.length : undefined);
     }
   }, [geojson, avgCompactness]);
 

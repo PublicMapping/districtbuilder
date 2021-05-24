@@ -33,7 +33,7 @@ export interface BaseEvaluateMetric {
 
 export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   readonly type: "fraction" | "percent" | "count";
-  readonly value: number;
+  readonly value?: number;
   readonly total?: number;
   readonly avgPopulation?: number;
   readonly popThreshold?: number;
