@@ -177,6 +177,17 @@ export async function fetchProjects(): Promise<readonly IProject[]> {
   });
 }
 
+export async function fetchAllPublishedProjects(): Promise<readonly IProject[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get("/api/globalProjects")
+      .then(response => {
+        console.log(response.data)
+        return resolve(response.data)})
+      .catch(error => reject(error.response.data));
+  });
+}
+
 export async function fetchProjectData(id: ProjectId): Promise<DynamicProjectData> {
   return Promise.all([fetchProject(id), fetchProjectGeoJson(id)]).then(([project, geojson]) => ({
     project,
