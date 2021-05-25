@@ -1,17 +1,8 @@
 import {
-  BadRequestException,
   Controller,
   Get,
-  Header,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-  Param,
-  Post,
-  Body,
-  Res,
-  UseGuards,
-  UseInterceptors
+  ParseIntPipe,
+  Query,
 } from "@nestjs/common";
 import {
   Crud,
@@ -44,16 +35,12 @@ import { TopologyService } from "../../districts/services/topology.service";
 
 import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
-import { User } from "../../users/entities/user.entity";
-import { CreateProjectDto } from "../entities/create-project.dto";
-import { DistrictsGeoJSON, Project } from "../entities/project.entity";
+import { Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
-import { OrganizationsService } from "../../organizations/services/organizations.service";
 
-import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
-import { UsersService } from "../../users/services/users.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
-import { Errors } from "../../../../shared/types";
+import { Pagination } from 'nestjs-typeorm-paginate';
+
 
 @Crud({
   model: {
@@ -79,7 +66,9 @@ export class GlobalProjectsController implements CrudController<Project> {
 
   @Get()
   async getAllGlobalProjects(
-  ): Promise<Project[]> {
-    return this.service.findAllPublishedProjects();
+    @Query('page', ParseIntPipe) page: number = 1,
+    @Query('limit', ParseIntPipe) limit: number = 10,
+  ): Promise<Pagination<Project>> {
+    return this.service.findAllPublishedProjectsPaginated({page, limit});
   }
 }

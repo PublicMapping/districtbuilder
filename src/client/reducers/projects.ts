@@ -10,6 +10,7 @@ import {
   projectsFetchFailure,
   projectsFetchSuccess,
   globalProjectsFetch,
+  globalProjectsFetchPage,
   globalProjectsFetchSuccess,
   globalProjectsFetchFailure,
   setDeleteProject
@@ -24,6 +25,11 @@ export interface ProjectsState {
   readonly projects: Resource<readonly IProject[]>;
   readonly globalProjects: Resource<readonly IProject[]>;
   readonly deleteProject?: IProject;
+  readonly globalProjectsPagination: { 
+    currentPage: number, 
+    limit: number,
+    totalItems?: number,
+    totalPages?: number },
   readonly archiveProjectPending: boolean;
 }
 
@@ -32,6 +38,12 @@ export const initialState = {
   projects: { isPending: false },
   // All projects
   globalProjects: { isPending: false },
+  globalProjectsPagination: { 
+    currentPage: 1, 
+    limit: 10,
+    totalItems: undefined,
+    totalPages: undefined
+  },
   archiveProjectPending: false
 };
 
@@ -66,21 +78,33 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         Cmd.run(showResourceFailedToast)
       );
       case getType(globalProjectsFetch):
+        {
+          console.log("Fetch")
+          return loop(
+            {
+              ...state,
+              globalProjects: { isPending: true }
+            },
+            Cmd.run(fetchAllPublishedProjects, {
+              successActionCreator: globalProjectsFetchSuccess,
+              failActionCreator: globalProjectsFetchFailure,
+              args: [state.globalProjectsPagination.currentPage, state.globalProjectsPagination.limit] as Parameters<typeof fetchAllPublishedProjects>
+            })
+          );
+        }
+      case getType(globalProjectsFetchPage):
         return loop(
           {
             ...state,
-            globalProjects: { isPending: true }
+            globalProjectsPagination: { ...state.globalProjectsPagination , currentPage: action.payload }
           },
-          Cmd.run(fetchAllPublishedProjects, {
-            successActionCreator: globalProjectsFetchSuccess,
-            failActionCreator: globalProjectsFetchFailure,
-            args: [] as Parameters<typeof fetchProjects>
-          })
+          Cmd.run(globalProjectsFetch)
         );
       case getType(globalProjectsFetchSuccess):
         return {
           ...state,
-          globalProjects: { resource: action.payload }
+          globalProjects: { resource: action.payload.items },
+          globalProjectsPagination: { ...state.globalProjectsPagination, totalItems: action.payload.meta.totalItems, totalPages: action.payload.meta.totalPages}
         };
       case getType(globalProjectsFetchFailure):
         return loop(
@@ -108,6 +132,7 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
       return {
             deleteProject: undefined,
             archiveProjectPending: false,
+            globalProjectsPagination: state.globalProjectsPagination,
             projects: "resource" in state.projects ? {
               resource: state.projects.resource.map(project =>
                 project.id !== action.payload.id ? project : action.payload

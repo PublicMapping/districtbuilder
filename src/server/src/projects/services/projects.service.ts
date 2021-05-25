@@ -5,7 +5,11 @@ import { Repository } from "typeorm";
 
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
-
+import {
+  paginate,
+  Pagination,
+  IPaginationOptions,
+} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class ProjectsService extends TypeOrmCrudService<Project> {
@@ -17,7 +21,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     return this.repo.save(project);
   }
 
-  async findAllPublishedProjects(): Promise<Project[]> {
+  async findAllPublishedProjectsPaginated(options: IPaginationOptions): Promise<Pagination<Project>> {
     // Returns admin-only listing of all organization projects
     const builder = this.repo.createQueryBuilder("project");
     const data = await builder
@@ -36,6 +40,6 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       ])
       .orderBy("project.name")
       .getMany();
-    return data;
+    return paginate<Project>(builder, options);
   }
 }

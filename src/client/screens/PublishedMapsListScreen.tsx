@@ -1,30 +1,24 @@
 /** @jsx jsx */
-import MapboxGL from "mapbox-gl";
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { useParams } from "react-router-dom";
 import { Flex, jsx, Spinner, ThemeUIStyleObject, Box, Heading, Text } from "theme-ui";
-
-import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
-import { DistrictsGeoJSON } from "../types";
 import { IProject, ProjectNest } from "../../shared/entities";
-import { projectDataFetch } from "../actions/projectData";
-import { DistrictDrawingState } from "../reducers/districtDrawing";
-import { resetProjectState } from "../actions/root";
-import { userFetch } from "../actions/user";
 import "../App.css";
-import { getJWT } from "../jwt";
 import { State } from "../reducers";
-import { Resource } from "../resource";
 import store from "../store";
-import { useBeforeunload } from "react-beforeunload";
 import SiteHeader from "../components/SiteHeader";
-import { globalProjectsFetch } from "../actions/projects";
+import { globalProjectsFetch, globalProjectsFetchPage } from "../actions/projects";
 import { UserState } from "../reducers/user";
 import FeaturedProjectCard from "../components/FeaturedProjectCard";
 
 interface StateProps {
   readonly globalProjects?: readonly IProject[];
+  readonly pagination: {
+    currentPage: number;
+    limit: number;
+    totalItems?: number;
+    totalPages?: number;
+  };
   readonly user: UserState;
 }
 
@@ -51,14 +45,43 @@ const style = {
     gridGap: "15px",
     justifyContent: "space-between",
     marginTop: "4"
+  },
+  pagination: {
+    cursor: "pointer"
   }
 };
 
-const PublishedMapsListScreen = ({ globalProjects, user }: StateProps) => {
+const PublishedMapsListScreen = ({ globalProjects, user, pagination }: StateProps) => {
+  const [pageNumbers, setPageNumbers] = useState<number[] | undefined>(undefined);
   useEffect(() => {
-    console.log("fetching global projects");
     store.dispatch(globalProjectsFetch());
-  }, []);
+  }, [pagination.currentPage]);
+
+  useEffect(() => {
+    if (pagination.totalPages) {
+      const pn = [];
+      for (let i = 1; i <= pagination.totalPages; i++) {
+        pn.push(i);
+      }
+      console.log(pn);
+      setPageNumbers(pn);
+    }
+  }, [pagination]);
+
+  const renderPageNumbers =
+    pageNumbers &&
+    pageNumbers.map(number => {
+      return (
+        <li
+          key={number}
+          id={number.toString()}
+          sx={style.pagination}
+          onClick={() => store.dispatch(globalProjectsFetchPage(number))}
+        >
+          {number}
+        </li>
+      );
+    });
 
   return (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
@@ -80,6 +103,7 @@ const PublishedMapsListScreen = ({ globalProjects, user }: StateProps) => {
                 <Box>There are no published maps yet.</Box>
               )}
             </Box>
+            <ul id="page-numbers">{renderPageNumbers}</ul>
           </Box>
         ) : (
           <Flex sx={{ justifyContent: "center" }}>
@@ -97,6 +121,7 @@ function mapStateToProps(state: State): StateProps {
       "resource" in state.projects.globalProjects
         ? state.projects.globalProjects.resource
         : undefined,
+    pagination: state.projects.globalProjectsPagination,
     user: state.user
   };
 }

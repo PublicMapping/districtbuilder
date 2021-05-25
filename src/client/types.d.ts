@@ -6,7 +6,8 @@ import {
   UintArrays,
   GeoUnitHierarchy,
   DistrictProperties,
-  DemographicCounts
+  DemographicCounts,
+  IProject
 } from "../shared/entities";
 
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;
@@ -15,6 +16,17 @@ export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictPropertie
 export interface DynamicProjectData {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
+}
+
+export interface PaginatedResponse<T> {
+  readonly items: T[];
+  readonly meta: {
+    currentPage: number;
+    itemCount: number;
+    itemsPerPage: number;
+    totalItems: number;
+    totalPages: number;
+  }
 }
 
 export interface StaticProjectData {
