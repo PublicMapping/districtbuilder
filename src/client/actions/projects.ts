@@ -8,7 +8,9 @@ export const projectsFetchFailure = createAction("Projects fetch failure")<strin
 
 export const globalProjectsFetch = createAction("Global projects fetch")();
 export const globalProjectsFetchPage = createAction("Global projects fetch page")<number>();
-export const globalProjectsFetchSuccess = createAction("Global projects fetch success")<PaginatedResponse<IProject>>();
+export const globalProjectsFetchSuccess = createAction("Global projects fetch success")<
+  PaginatedResponse<IProject>
+>();
 export const globalProjectsFetchFailure = createAction("Global projects fetch failure")<string>();
 
 export const setDeleteProject = createAction("Set the id for the delete project modal")<

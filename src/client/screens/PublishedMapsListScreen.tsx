@@ -1,7 +1,7 @@
 /** @jsx jsx */
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Flex, jsx, Spinner, ThemeUIStyleObject, Box, Heading, Text } from "theme-ui";
+import { Flex, jsx, Spinner, Box, Heading, Text } from "theme-ui";
 import { IProject, ProjectNest } from "../../shared/entities";
 import "../App.css";
 import { State } from "../reducers";
@@ -10,14 +10,16 @@ import SiteHeader from "../components/SiteHeader";
 import { globalProjectsFetch, globalProjectsFetchPage } from "../actions/projects";
 import { UserState } from "../reducers/user";
 import FeaturedProjectCard from "../components/FeaturedProjectCard";
+import PaginationFooter from "../components/PaginationFooter";
+import { isEqual } from "lodash";
 
 interface StateProps {
   readonly globalProjects?: readonly IProject[];
   readonly pagination: {
-    currentPage: number;
-    limit: number;
-    totalItems?: number;
-    totalPages?: number;
+    readonly currentPage: number;
+    readonly limit: number;
+    readonly totalItems?: number;
+    readonly totalPages?: number;
   };
   readonly user: UserState;
 }
@@ -49,61 +51,46 @@ const style = {
   pagination: {
     cursor: "pointer"
   }
-};
+} as const;
 
 const PublishedMapsListScreen = ({ globalProjects, user, pagination }: StateProps) => {
-  const [pageNumbers, setPageNumbers] = useState<number[] | undefined>(undefined);
-  useEffect(() => {
-    store.dispatch(globalProjectsFetch());
-  }, [pagination.currentPage]);
+  const [projects, setProjects] = useState<readonly IProject[] | undefined>(undefined);
 
   useEffect(() => {
-    if (pagination.totalPages) {
-      const pn = [];
-      for (let i = 1; i <= pagination.totalPages; i++) {
-        pn.push(i);
+    !globalProjects && store.dispatch(globalProjectsFetch());
+    if (globalProjects) {
+      if (!isEqual(projects, globalProjects)) {
+        setProjects(globalProjects);
       }
-      console.log(pn);
-      setPageNumbers(pn);
     }
-  }, [pagination]);
-
-  const renderPageNumbers =
-    pageNumbers &&
-    pageNumbers.map(number => {
-      return (
-        <li
-          key={number}
-          id={number.toString()}
-          sx={style.pagination}
-          onClick={() => store.dispatch(globalProjectsFetchPage(number))}
-        >
-          {number}
-        </li>
-      );
-    });
+  }, [globalProjects, projects]);
 
   return (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
       <SiteHeader user={user} />
       <Box>
-        {globalProjects ? (
-          // @ts-ignore
+        {projects ? (
           <Box sx={style.projects}>
             <Heading as="h2" sx={{ mb: "3" }}>
               <span>All published maps</span>
             </Heading>
             <Text>A collection of maps built by all DistrictBuilder users globally</Text>
             <Box sx={style.featuredProjectContainer}>
-              {globalProjects.length > 0 ? (
-                globalProjects.map((project: ProjectNest) => (
+              {projects.length > 0 ? (
+                projects.map((project: ProjectNest) => (
                   <FeaturedProjectCard project={project} key={project.id} />
                 ))
               ) : (
                 <Box>There are no published maps yet.</Box>
               )}
             </Box>
-            <ul id="page-numbers">{renderPageNumbers}</ul>
+            {pagination.totalPages && (
+              <PaginationFooter
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                setPage={number => store.dispatch(globalProjectsFetchPage(number))}
+              />
+            )}
           </Box>
         ) : (
           <Flex sx={{ justifyContent: "center" }}>

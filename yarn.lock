@@ -7850,11 +7850,6 @@ nested-property@^1.0.2:
   resolved "https://registry.yarnpkg.com/nested-property/-/nested-property-1.0.4.tgz#4068c4289d1f3ac9f367e784502ff342d277ee2f"
   integrity sha512-6fNIumJJUyP3rkB4FyVYCYpdW+PKUCaxRWRGLLf0kv/RKoG4mbTvInedA9x3zOyuOmOkGudKuAtPSI+dnhwj2g==
 
-nestjs-typeorm-paginate@^2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/nestjs-typeorm-paginate/-/nestjs-typeorm-paginate-2.5.1.tgz#2e50935113443e29da4dc5e45a16a4281a8f852f"
-  integrity sha512-cSUKRpY3jmKT/ngOlYa0kmZ3XXY4VNgCPXiud6RxmPv5swZRFnZ1uy65A9rI9TEboSzvo0nwUNQfnz9g5FX2SQ==
-
 next-tick@1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.1.0.tgz#1836ee30ad56d67ef281b22bd199f709449b35eb"

@@ -19,14 +19,14 @@ export interface DynamicProjectData {
 }
 
 export interface PaginatedResponse<T> {
-  readonly items: T[];
+  readonly items: readonly T[];
   readonly meta: {
-    currentPage: number;
-    itemCount: number;
-    itemsPerPage: number;
-    totalItems: number;
-    totalPages: number;
-  }
+    readonly currentPage: number;
+    readonly itemCount: number;
+    readonly itemsPerPage: number;
+    readonly totalItems: number;
+    readonly totalPages: number;
+  };
 }
 
 export interface StaticProjectData {

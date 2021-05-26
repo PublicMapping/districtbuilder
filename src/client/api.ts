@@ -177,14 +177,17 @@ export async function fetchProjects(): Promise<readonly IProject[]> {
   });
 }
 
-export async function fetchAllPublishedProjects(page: number, limit: number): Promise<PaginatedResponse<IProject>> {
-  const endpoint = "/api/globalProjects?page="+page.toString()+'&limit='+limit.toString()
-  console.log(endpoint)
+export async function fetchAllPublishedProjects(
+  page: number,
+  limit: number
+): Promise<PaginatedResponse<IProject>> {
+  const endpoint = "/api/globalProjects?page=" + page.toString() + "&limit=" + limit.toString();
   return new Promise((resolve, reject) => {
     apiAxios
       .get(endpoint)
       .then(response => {
-        return resolve(response.data)})
+        return resolve(response.data);
+      })
       .catch(error => reject(error.response.data));
   });
 }
