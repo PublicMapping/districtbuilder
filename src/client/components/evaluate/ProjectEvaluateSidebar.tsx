@@ -92,7 +92,7 @@ const ProjectEvaluateSidebar = ({
               Math.abs(f.properties.percentDeviation) <= popThreshold
             );
           }).length ===
-            geojson?.features.length - 1) ||
+            geojson?.features.filter(f => f.properties.demographics.population > 0).length - 1) ||
         false,
       description: "have equal population",
       shortText:
