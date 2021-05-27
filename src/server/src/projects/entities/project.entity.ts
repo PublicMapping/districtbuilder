@@ -7,6 +7,7 @@ import { RegionConfig } from "../../region-configs/entities/region-config.entity
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
+import { DEFAULT_POPULATION_DEVIATION } from "../../../../shared/constants";
 
 // TODO #179: Move to shared/entities
 export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -81,6 +82,13 @@ export class Project implements IProject {
 
   @Column({ type: "boolean", default: false })
   isFeatured: boolean;
+
+  @Column({
+    type: "double precision",
+    name: "population_deviation",
+    default: () => `${DEFAULT_POPULATION_DEVIATION}`
+  })
+  populationDeviation: number;
 
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {
