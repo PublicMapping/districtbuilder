@@ -31,24 +31,31 @@ const style: ThemeUIStyleObject = {
     overflow: "visible"
   },
   table: {
-    width: "90%"
+    width: "100%"
   },
   keyRow: {
     height: 6,
     mb: 2
   },
   keyItem: {
-    ml: "5%",
-    mr: "5%",
+    ml: "0",
+    mr: "0",
     textAlign: "left",
-    height: "30px"
+    height: "30px",
+    display: "flex"
   },
   keyCode: {
-    border: "1px solid",
-    padding: "5px"
+    bg: "gray.1",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "gray.2",
+    borderRadius: "3px",
+    fontSize: "1",
+    fontFamily: "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+    padding: "2px 4px"
   },
-  keyFunction: {
-    float: "right"
+  keyCombo: {
+    width: "140px"
   }
 };
 
@@ -90,7 +97,11 @@ const KeyboardShortcutsModal = ({
                       (!evaluateMode || shortcut.allowInEvaluateMode)
                   ).map((shortcut, index) => {
                     const key = (
-                      <span sx={style.keyCode}>{shortcut.label || shortcut.key.toUpperCase()}</span>
+                      <span sx={style.keyCombo}>
+                        <span sx={style.keyCode}>
+                          {shortcut.label || shortcut.key.toUpperCase()}
+                        </span>
+                      </span>
                     );
                     return (
                       <tr sx={style.keyRow} key={index}>
@@ -98,19 +109,18 @@ const KeyboardShortcutsModal = ({
                           <Box sx={style.keyItem}>
                             {shortcut.meta ? (
                               shortcut.shift ? (
-                                <span>
+                                <span sx={style.keyCombo}>
                                   <span sx={style.keyCode}>{meta}</span>+
                                   <span sx={style.keyCode}>SHIFT</span>+{key}
                                 </span>
                               ) : (
-                                <span>
+                                <span sx={style.keyCombo}>
                                   <span sx={style.keyCode}>{meta}</span>+{key}
                                 </span>
                               )
                             ) : (
                               key
                             )}
-
                             <span sx={style.keyFunction}>{shortcut.text}</span>
                           </Box>
                         </td>
