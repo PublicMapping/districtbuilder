@@ -177,6 +177,7 @@ interface ProjectTemplateFields {
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly chamber?: IChamber;
+  readonly populationDeviation: number;
   readonly districtsDefinition: DistrictsDefinition;
 }
 
@@ -214,6 +215,7 @@ export interface CreateProjectData {
   readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id">;
   readonly districtsDefinition?: DistrictsDefinition;
+  readonly populationDeviation?: number;
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
 }
 

@@ -45,6 +45,7 @@ export default function Field<D, R>({
 interface InputFieldProps<D, R> extends FieldProps<D, R> {
   readonly label: string | React.ReactElement;
   readonly description?: string | React.ReactElement;
+  readonly defaultValue?: number | string;
   readonly inputProps: RefAttributes<HTMLInputElement> & InputProps;
 }
 
@@ -52,6 +53,7 @@ export function InputField<D, R>({
   field,
   label,
   description,
+  defaultValue,
   resource,
   inputProps
 }: InputFieldProps<D, R>): React.ReactElement {
@@ -70,6 +72,7 @@ export function InputField<D, R>({
           <Input
             {...inputProps}
             id={field.toString()}
+            defaultValue={defaultValue || undefined}
             aria-describedby={description ? `description-${field.toString()}` : undefined}
             sx={{ borderColor: hasErrors ? "warning" : undefined }}
           />

@@ -5,6 +5,7 @@ import { Chamber } from "../../chambers/entities/chamber.entity";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Project } from "../../projects/entities/project.entity";
+import { DEFAULT_POPULATION_DEVIATION } from "../../../../shared/constants";
 
 @Entity()
 export class ProjectTemplate implements IProjectTemplateWithProjects {
@@ -51,6 +52,13 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
 
   @Column({ type: "character varying" })
   details: string;
+
+  @Column({
+    type: "double precision",
+    name: "population_deviation",
+    default: () => `${DEFAULT_POPULATION_DEVIATION}`
+  })
+  populationDeviation: number;
 
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive: boolean;

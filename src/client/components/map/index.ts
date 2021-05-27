@@ -69,7 +69,7 @@ export const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getChoroplethStops(metricKey: string, threshold?: number) {
+export function getChoroplethStops(metricKey: string, popThreshold?: number) {
   const compactnessSteps = [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
@@ -77,16 +77,22 @@ export function getChoroplethStops(metricKey: string, threshold?: number) {
     [0.6, "#2ca25f"],
     [1.0, "#006d2c"]
   ];
-  const popThreshold = threshold || 0.05;
-  const equalPopulationSteps = [
-    [-1.0, "#D1E5F0"],
-    [-1 * (popThreshold + 0.02), "#66A9CF"],
-    [-1 * (popThreshold + 0.01), "#2166AC"],
-    [-1 * popThreshold, "#01665E"],
-    [popThreshold, "#EFBE60"],
-    [popThreshold + 0.01, "#F5D092"],
-    [popThreshold + 0.02, "#F7E1C3"]
-  ];
+
+  const equalPopulationSteps =
+    popThreshold !== undefined
+      ? [
+          [-1.0, "#D1E5F0"],
+          [-1 * (popThreshold + 0.02), "#66A9CF"],
+          [-1 * (popThreshold + 0.01), "#2166AC"],
+          [-1 * popThreshold, "#01665E"],
+          [popThreshold, "#EFBE60"],
+          [popThreshold + 0.01, "#F5D092"],
+          [popThreshold + 0.02, "#F7E1C3"]
+        ]
+      : [
+          [-1.0, "#D1E5F0"],
+          [1.0, "#F7E1C3"]
+        ];
   switch (metricKey) {
     case "compactness":
       return compactnessSteps;
@@ -97,9 +103,9 @@ export function getChoroplethStops(metricKey: string, threshold?: number) {
   }
 }
 
-export function getChoroplethLabels(metricKey: string) {
+export function getChoroplethLabels(metricKey: string, populationDeviation?: number) {
   const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
-  const steps = getChoroplethStops(metricKey);
+  const steps = getChoroplethStops(metricKey, populationDeviation);
   switch (metricKey) {
     case "compactness":
       return compactnessLabels;
@@ -173,7 +179,8 @@ export function generateMapLayers(
   /* eslint-disable */
   map: any,
   geojson: any,
-  metric?: EvaluateMetricWithValue
+  metric?: EvaluateMetricWithValue,
+  populationDeviation?: number
   /* eslint-enable */
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
@@ -227,7 +234,7 @@ export function generateMapLayers(
         "fill-opacity": 0.9
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(
@@ -241,13 +248,15 @@ export function generateMapLayers(
         "fill-color": {
           property: "percentDeviation",
           type: "interval",
-          stops: getChoroplethStops("equalPopulation")
+          stops: populationDeviation
+            ? getChoroplethStops("equalPopulation", populationDeviation / 100.0)
+            : getChoroplethStops("equalPopulation")
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(

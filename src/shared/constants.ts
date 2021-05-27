@@ -44,6 +44,8 @@ export enum ProjectVisibility {
   Published = "PUBLISHED"
 }
 
+export const DEFAULT_POPULATION_DEVIATION = 5;
+
 export const FIPS: { readonly [fips: string]: string } = {
   "10": "DE",
   "11": "DC",
