@@ -9,18 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
-
-
 ### Changed
 
+- Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
+- Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
 - Display evaluate mode toggle button in read-only mode [#786](https://github.com/PublicMapping/districtbuilder/pull/786)
 - Disable keyboard shortcuts in evaluate mode [#784](https://github.com/PublicMapping/districtbuilder/pull/784)
 
-
 ### Fixed
 
-
+- Improved padding in the sidebar district rows, which had become unbalanced [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
 
 ## [1.6.0] - 2021-05-24
 
@@ -29,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update map view for evaluate mode [#727](https://github.com/PublicMapping/districtbuilder/pull/727)
 - Show minority-majority districts in sidebar [#763](https://github.com/PublicMapping/districtbuilder/pull/763)
 - Add voting info to map tooltip [#751](https://github.com/PublicMapping/districtbuilder/pull/751)
-
 
 ### Changed
 

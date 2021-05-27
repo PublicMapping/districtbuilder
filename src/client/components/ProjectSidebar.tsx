@@ -103,6 +103,7 @@ const style: ThemeUIStyleObject = {
     color: "gray.8",
     fontSize: 1,
     p: 2,
+    pt: 0,
     textAlign: "left",
     verticalAlign: "bottom",
     position: "relative"
