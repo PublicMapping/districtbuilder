@@ -3,10 +3,13 @@ import { jsx, Styled } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import Icon from "../components/Icon";
 import { style, invertStyles } from "./MenuButton.styles";
+import store from "../store";
+import { toggleKeyboardShortcutsModal } from "../actions/districtDrawing";
 
 enum UserMenuKeys {
   Contact = "contact",
-  Guide = "guide"
+  Guide = "guide",
+  KeyboardShortcuts = "keyboardShortcuts"
 }
 
 const guideLink =
@@ -14,11 +17,16 @@ const guideLink =
 
 const contactLink = "mailto:support@districtbuilder.org";
 
+const showKeyboardShortcuts = () => store.dispatch(toggleKeyboardShortcutsModal());
+
+interface StateProps {
+  readonly project?: boolean;
+}
 interface SupportProps {
   readonly invert?: boolean;
 }
 
-const SupportMenu = (props: SupportProps) => {
+const SupportMenu = ({ project, ...props }: SupportProps & StateProps) => {
   return (
     <Wrapper sx={{ position: "relative", pr: 1 }}>
       <MenuButton
@@ -31,7 +39,7 @@ const SupportMenu = (props: SupportProps) => {
         className="support-menu"
       >
         <Icon name="question-circle" />
-        Support
+        Resources
       </MenuButton>
       <Menu sx={style.menu}>
         <ul sx={style.menuList}>
@@ -51,6 +59,16 @@ const SupportMenu = (props: SupportProps) => {
               </Styled.a>
             </MenuItem>
           </li>
+          {project && (
+            <li key={UserMenuKeys.KeyboardShortcuts}>
+              <MenuItem value={UserMenuKeys.KeyboardShortcuts}>
+                <Styled.a target="_blank" sx={style.menuListItem} onClick={showKeyboardShortcuts}>
+                  <Icon name="keyboard" sx={style.menuListIcon} />
+                  Show keyboard shortcuts
+                </Styled.a>
+              </MenuItem>
+            </li>
+          )}
         </ul>
       </Menu>
     </Wrapper>

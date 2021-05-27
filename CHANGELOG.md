@@ -9,16 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add button to display keyboard shortcuts modal (#787)[https://github.com/PublicMapping/districtbuilder/pull/787]
+- Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
+
+
 ### Changed
 
 - Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
-- Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
 - Display evaluate mode toggle button in read-only mode [#786](https://github.com/PublicMapping/districtbuilder/pull/786)
 - Disable keyboard shortcuts in evaluate mode [#784](https://github.com/PublicMapping/districtbuilder/pull/784)
+- Rename Support menu to Resources (#787)[https://github.com/PublicMapping/districtbuilder/pull/787]
+- Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
 
 ### Fixed
 
 - Improved padding in the sidebar district rows, which had become unbalanced [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
+
 
 ## [1.6.0] - 2021-05-24
 
