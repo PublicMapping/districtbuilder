@@ -92,7 +92,7 @@ const ProjectEvaluateSidebar = ({
               Math.abs(f.properties.percentDeviation) <= popThreshold
             );
           }).length ===
-            geojson?.features.length - 1) ||
+            geojson?.features.filter(f => f.properties.demographics.population > 0).length - 1) ||
         false,
       description: "have equal population",
       shortText:
@@ -122,7 +122,8 @@ const ProjectEvaluateSidebar = ({
       key: "contiguity",
       name: "Contiguity",
       status:
-        geojson?.features.filter(f => f.properties.contiguity === "non-contiguous").length === 0,
+        geojson?.features.filter(f => f.properties.contiguity === "non-contiguous" && f.id !== 0)
+          .length === 0,
       description: "are contiguous",
       longText:
         "Each district should be contiguous, meaning it must be a single, unbroken shape. Some exceptions are allowed, such as the inclusion of islands in a coastal district. Two areas connected only by a single point (touching just their corners) are not considered contiguous.",
