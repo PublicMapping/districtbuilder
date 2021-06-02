@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add button to display keyboard shortcuts modal (#787)[https://github.com/PublicMapping/districtbuilder/pull/787]
 - Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
+- Display target population symbols [#720](https://github.com/PublicMapping/districtbuilder/issues/720)
 
 
 ### Changed

@@ -122,6 +122,9 @@ const style: ThemeUIStyleObject = {
     borderRadius: "100%",
     mr: 2
   },
+  deviationIcon: {
+    ml: "15px"
+  },
   unassignedColor: {
     border: "1px solid",
     borderColor: "gray.3"
@@ -148,6 +151,7 @@ const ProjectSidebar = ({
   lockedDistricts,
   hoveredDistrictId,
   saving,
+  avgPopulation,
   isReadOnly
 }: {
   readonly project?: IProject;
@@ -160,6 +164,7 @@ const ProjectSidebar = ({
   readonly lockedDistricts: LockedDistricts;
   readonly hoveredDistrictId: number | null;
   readonly saving: SavingState;
+  readonly avgPopulation?: number;
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
   return (
@@ -293,7 +298,8 @@ const SidebarRow = memo(
     districtId,
     isDistrictLocked,
     isDistrictHovered,
-    isReadOnly
+    isReadOnly,
+    popDeviationThreshold
   }: {
     readonly district: DistrictGeoJSON;
     readonly selected: boolean;
@@ -305,6 +311,7 @@ const SidebarRow = memo(
     readonly isDistrictLocked?: boolean;
     readonly isDistrictHovered: boolean;
     readonly isReadOnly: boolean;
+    readonly popDeviationThreshold: number;
   }) => {
     const selectedDifference = selectedPopulationDifference || 0;
     const showPopulationChange = selectedDifference !== 0;
@@ -320,6 +327,7 @@ const SidebarRow = memo(
     const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
       intermediateDeviation
     ).toLocaleString()}`;
+
     const compactnessDisplay =
       districtId === 0 ? (
         <span sx={style.blankValue}>{BLANK_VALUE}</span>
@@ -391,7 +399,17 @@ const SidebarRow = memo(
           {populationDisplay}
         </Styled.td>
         <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-          {deviationDisplay}
+          <span>{deviationDisplay}</span>
+          <span sx={style.deviationIcon}>
+            {(districtId === 0 && Math.abs(intermediateDeviation) === 0) ||
+            (districtId !== 0 && Math.abs(intermediateDeviation) <= popDeviationThreshold) ? (
+              <Icon name="circle-check-solid" color="#388a64" />
+            ) : intermediateDeviation < 0 ? (
+              <Icon name="arrow-circle-down-solid" color="gray.4" />
+            ) : (
+              <Icon name="arrow-circle-up-solid" color="#000000" />
+            )}
+          </span>
         </Styled.td>
         <Styled.td sx={style.td}>
           <Tooltip
@@ -589,6 +607,7 @@ const SidebarRows = ({
             isDistrictHovered={districtId === hoveredDistrictId}
             districtId={districtId}
             isReadOnly={isReadOnly}
+            popDeviationThreshold={averagePopulation * (project.populationDeviation / 100)}
             votingIds={votingIds}
           />
         );
