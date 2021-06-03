@@ -11,8 +11,9 @@ import {
   HostParam,
   InternalServerErrorException
 } from "@nestjs/common";
+import stringify from "csv-stringify/lib/sync";
 
-import { OrganizationSlug, IStaticMetadata } from "../../../../shared/entities";
+import { OrganizationSlug } from "../../../../shared/entities";
 
 import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { Organization } from "../../organizations/entities/organization.entity";
@@ -23,8 +24,6 @@ import { ProjectTemplatesService } from "../services/project-templates.service";
 import { TopologyService } from "../../districts/services/topology.service";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { getDemographicLabel } from "../../../../shared/functions";
-import _ from "lodash";
-import stringify from "csv-stringify/lib/sync";
 
 function getIds(
   topoLayers: { [s3uri: string]: GeoUnitTopology },
@@ -104,10 +103,12 @@ export class ProjectTemplatesController {
     }
     const projectRows = await this.service.findAdminOrgProjectsWithDistrictProperties(slug);
     const regionURIs = new Set(projectRows.map(row => row.regionS3URI));
-    let topoLayers: { [s3uri: string]: GeoUnitTopology } = {};
+    const topoLayers: { [s3uri: string]: GeoUnitTopology } = {};
+    // eslint-disable-next-line
     for (const [s3uri, layerPromise] of Object.entries(this.topologyService.layers() || {})) {
       const layer = await layerPromise;
       if (layer && regionURIs.has(s3uri)) {
+        // eslint-disable-next-line
         topoLayers[s3uri] = layer;
       }
     }
