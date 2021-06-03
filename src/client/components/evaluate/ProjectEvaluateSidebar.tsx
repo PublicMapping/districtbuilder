@@ -33,14 +33,12 @@ const ProjectEvaluateSidebar = ({
   geojson,
   metric,
   project,
-  avgDistrictPopulationIsInteger,
   regionProperties,
   staticMetadata
 }: {
   readonly geojson?: DistrictsGeoJSON;
   readonly metric: EvaluateMetric | undefined;
   readonly project?: IProject;
-  readonly avgDistrictPopulationIsInteger: boolean;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
 }) => {
@@ -71,25 +69,6 @@ const ProjectEvaluateSidebar = ({
     }
   }, [staticMetadata]);
 
-  console.log(
-    geojson &&
-      popThreshold !== undefined &&
-      geojson?.features.filter(f => {
-        console.log(f.properties);
-        return (
-          f.id !== 0 &&
-          f.properties.percentDeviation !== undefined &&
-          f.properties.populationDeviation !== undefined &&
-          (Math.abs(f.properties.percentDeviation) <= popThreshold ||
-            // @ts-ignore
-            Math.abs(f.properties.populationDeviation) < 1 ||
-            (Math.floor(Math.abs(f.properties.populationDeviation)) === 1 &&
-              !avgDistrictPopulationIsInteger))
-        );
-      })
-  );
-  console.log(geojson?.features.filter(f => f.properties.demographics.population > 0));
-
   useEffect(() => {
     if (project && project.regionConfig.regionCode && geoLevel) {
       store.dispatch(
@@ -106,16 +85,13 @@ const ProjectEvaluateSidebar = ({
         (geojson &&
           popThreshold !== undefined &&
           geojson?.features.filter(f => {
-            console.log(f.properties);
             return (
               f.id !== 0 &&
               f.properties.percentDeviation !== undefined &&
               f.properties.populationDeviation !== undefined &&
               (Math.abs(f.properties.percentDeviation) <= popThreshold ||
                 // @ts-ignore
-                Math.abs(f.properties.populationDeviation) < 1 ||
-                (Math.floor(Math.abs(f.properties.populationDeviation)) === 1 &&
-                  !avgDistrictPopulationIsInteger))
+                Math.abs(f.properties.populationDeviation) < 1)
             );
           }).length >=
             geojson?.features.filter(f => f.properties.demographics.population > 0).length - 1) ||
