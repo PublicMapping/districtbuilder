@@ -142,12 +142,7 @@ const EqualPopulationMetricDetail = ({
 
                   <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
                     {feature.properties.populationDeviation !== undefined ? (
-                      Math.round(feature.properties.populationDeviation) === -0 ? (
-                        // Render 0 instead of -0
-                        0
-                      ) : (
-                        Math.round(feature.properties.populationDeviation).toLocaleString()
-                      )
+                      Math.round(feature.properties.populationDeviation).toLocaleString()
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}
