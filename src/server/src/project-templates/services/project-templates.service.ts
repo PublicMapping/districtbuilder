@@ -5,11 +5,65 @@ import { Repository } from "typeorm";
 
 import { ProjectTemplate } from "../entities/project-template.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
+import {
+  OrganizationSlug,
+  DistrictProperties,
+  UserId,
+  ProjectId
+} from "../../../../shared/entities";
+
+export type ProjectExportRow = {
+  readonly userId: UserId;
+  readonly userName: string;
+  readonly userEmail: string;
+  readonly mapName: string;
+  readonly projectId: ProjectId;
+  readonly createdDt: Date;
+  readonly updatedDt: Date;
+  readonly templateName: string;
+  readonly regionName: string;
+  readonly regionS3URI: string;
+  readonly chamberName?: string;
+  readonly districtProperties: readonly DistrictProperties[];
+};
 
 @Injectable()
 export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate> {
   constructor(@InjectRepository(ProjectTemplate) repo: Repository<ProjectTemplate>) {
     super(repo);
+  }
+
+  async findAdminOrgProjectsWithDistrictProperties(
+    slug: OrganizationSlug
+  ): Promise<ProjectExportRow[]> {
+    // Returns admin-only listing of all organization projects, with data for CSV export
+    const builder = this.repo
+      .createQueryBuilder("projectTemplate")
+      .innerJoin("projectTemplate.organization", "organization")
+      .innerJoin("projectTemplate.regionConfig", "regionConfig")
+      .innerJoin("projectTemplate.projects", "projects")
+      .innerJoin("projects.user", "user")
+      .leftJoin("projects.chamber", "chamber")
+      .where("organization.slug = :slug", { slug })
+      .andWhere("projects.visibility <> :private", { private: ProjectVisibility.Private })
+      .select("user.id", "userId")
+      .addSelect("user.name", "userName")
+      .addSelect("user.email", "userEmail")
+      .addSelect("projects.name", "mapName")
+      .addSelect("projects.id", "projectId")
+      .addSelect("projects.createdDt", "createdDt")
+      .addSelect("projects.updatedDt", "updatedDt")
+      .addSelect("projectTemplate.name", "templateName")
+      .addSelect("regionConfig.name", "regionName")
+      .addSelect("regionConfig.s3URI", "regionS3URI")
+      .addSelect("chamber.name", "chamberName")
+      .addSelect(
+        // Extract just the geojson properties, so we avoid querying the (much larger) geometries
+        `jsonb_path_query_array("projects"."districts", '$.features[*].properties')`,
+        "districtProperties"
+      )
+      .orderBy("projects.name");
+    return builder.getRawMany<ProjectExportRow>();
   }
 
   async findAdminOrgProjects(slug: string): Promise<ProjectTemplate[]> {
@@ -40,7 +94,7 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
     return data;
   }
 
-  async findOrgFeaturedProjects(slug: string): Promise<ProjectTemplate[]> {
+  async findOrgFeaturedProjects(slug: OrganizationSlug): Promise<ProjectTemplate[]> {
     // Returns public listing of all featured projects for an organization
     const builder = this.repo.createQueryBuilder("projectTemplate");
     const data = await builder

@@ -185,6 +185,7 @@ export type ProjectId = string;
 
 export type IProject = ProjectTemplateFields & {
   readonly id: ProjectId;
+  readonly createdDt: Date;
   readonly updatedDt: Date;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly projectTemplate?: IProjectTemplate;
