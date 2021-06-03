@@ -178,6 +178,7 @@ interface Props {
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly evaluateMetric?: EvaluateMetric;
+  readonly avgDistrictPopulationIsInteger: boolean;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
   readonly limitSelectionToCounty: boolean;
@@ -257,6 +258,7 @@ const DistrictsMap = ({
   limitSelectionToCounty,
   findMenuOpen,
   evaluateMetric,
+  avgDistrictPopulationIsInteger,
   evaluateMode,
   findTool,
   label,
@@ -323,7 +325,6 @@ const DistrictsMap = ({
     const setLevelVisibility = () => {
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
     };
-
     const onMapLoad = () => {
       generateMapLayers(
         project.regionConfig.s3URI,
@@ -333,7 +334,7 @@ const DistrictsMap = ({
         maxZoom,
         map,
         geojson,
-        evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined,
+        avgDistrictPopulationIsInteger,
         project?.populationDeviation
       );
 

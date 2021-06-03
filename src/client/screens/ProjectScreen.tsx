@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
-import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
+import { areAnyGeoUnitsSelected, destructureResource, getTargetPopulation } from "../functions";
 import { DistrictsGeoJSON } from "../types";
 import {
   GeoUnitHierarchy,
@@ -38,7 +38,6 @@ import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
-
 interface StateProps {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -86,9 +85,16 @@ const ProjectScreen = ({
 }: StateProps) => {
   const { projectId } = useParams();
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
+  const [avgDistrictPopulation, setAvgDistrictPopulation] = useState<number | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
   const presentDrawingState = districtDrawing.undoHistory.present.state;
+  useEffect(() => {
+    if (geojson && !avgDistrictPopulation && project) {
+      getTargetPopulation(geojson, project);
+      setAvgDistrictPopulation(getTargetPopulation(geojson, project));
+    }
+  }, [geojson, avgDistrictPopulation, project]);
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
@@ -148,6 +154,9 @@ const ProjectScreen = ({
             geoUnitHierarchy={geoUnitHierarchy}
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
+            avgDistrictPopulationIsInteger={
+              (avgDistrictPopulation && avgDistrictPopulation % 1 === 0) || false
+            }
             saving={districtDrawing.saving}
             isReadOnly={isReadOnly}
           />
@@ -200,6 +209,9 @@ const ProjectScreen = ({
                 lockedDistricts={presentDrawingState.lockedDistricts}
                 evaluateMode={evaluateMode}
                 evaluateMetric={evaluateMetric}
+                avgDistrictPopulationIsInteger={
+                  (avgDistrictPopulation && avgDistrictPopulation % 1 === 0) || false
+                }
                 isReadOnly={isReadOnly}
                 limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
                 label={mapLabel}

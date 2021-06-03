@@ -86,7 +86,6 @@ const ProjectEvaluateSidebar = ({
           geojson &&
           popThreshold !== undefined &&
           geojson?.features.filter(f => {
-            console.log(f);
             return (
               (f.id !== 0 &&
                 f.properties.percentDeviation !== undefined &&

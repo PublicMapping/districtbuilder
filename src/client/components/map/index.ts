@@ -13,8 +13,7 @@ import {
   MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays,
-  EvaluateMetricWithValue
+  UintArrays
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible } from "../../functions";
@@ -69,7 +68,7 @@ export const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getChoroplethStops(metricKey: string, popThreshold?: number) {
+export function getChoroplethStops(metricKey: string, popThreshold?: number, avgPopulationIsInteger?: boolean) {
   const compactnessSteps = [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
@@ -88,11 +87,19 @@ export function getChoroplethStops(metricKey: string, popThreshold?: number) {
           [popThreshold, "#EFBE60"],
           [popThreshold + 0.01, "#F5D092"],
           [popThreshold + 0.02, "#F7E1C3"]
+        ] : avgPopulationIsInteger ? [
+          [-1.0, "#D1E5F0"],
+          [-0.01, "#66A9CF"],
+          [0, "#01665E"],
+          [0.0000001, "#EFBE60"],
+          [0.01, "#F5D092"],
+          [popThreshold + 0.02, "#F7E1C3"]
         ] : [
           [-1.0, "#D1E5F0"],
-          [-1 * (popThreshold + 0.02), "#66A9CF"],
-          [-1 * (popThreshold + 0.01), "#01665E"],
-          [popThreshold + 0.01, "#F5D092"],
+          [-0.01, "#66A9CF"],
+          [-0.001, "#01665E"],
+          [0.001, "#EFBE60"],
+          [0.01, "#F5D092"],
           [popThreshold + 0.02, "#F7E1C3"]
         ]
       : [
@@ -185,7 +192,7 @@ export function generateMapLayers(
   /* eslint-disable */
   map: any,
   geojson: any,
-  metric?: EvaluateMetricWithValue,
+  avgDistrictPopulationIsInteger: boolean,
   populationDeviation?: number
   /* eslint-enable */
 ) {
@@ -242,7 +249,6 @@ export function generateMapLayers(
     },
     DISTRICTS_PLACEHOLDER_LAYER_ID
   );
-
   map.addLayer(
     {
       id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
@@ -255,7 +261,7 @@ export function generateMapLayers(
           property: "percentDeviation",
           type: "interval",
           stops: populationDeviation !== undefined
-            ? getChoroplethStops("equalPopulation", populationDeviation / 100.0)
+            ? getChoroplethStops("equalPopulation", populationDeviation / 100.0, avgDistrictPopulationIsInteger)
             : getChoroplethStops("equalPopulation")
         },
         "fill-outline-color": "gray",

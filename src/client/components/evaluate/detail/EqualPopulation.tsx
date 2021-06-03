@@ -65,10 +65,15 @@ const EqualPopulationMetricDetail = ({
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
 }) => {
+  const avgDistrictPopulationIsInteger =
+    (metric.avgPopulation && metric.avgPopulation % 1 === 0) || false;
   function computeRowFill(row: DistrictProperties) {
     const val = row.percentDeviation;
-    const choroplethStops = getChoroplethStops(metric.key, metric.popThreshold);
-    console.log(val);
+    const choroplethStops = getChoroplethStops(
+      metric.key,
+      metric.popThreshold,
+      avgDistrictPopulationIsInteger
+    );
     // eslint-disable-next-line
     for (let i = 0; i < choroplethStops.length; i++) {
       const r = choroplethStops[i];
@@ -111,7 +116,8 @@ const EqualPopulationMetricDetail = ({
                   <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
 
                   <Styled.td sx={style.td}>
-                    {feature.properties.percentDeviation !== undefined ? (
+                    {feature.properties.percentDeviation !== undefined &&
+                    feature.properties.populationDeviation !== undefined ? (
                       <Flex sx={{ alignItems: "center" }}>
                         <Styled.div
                           sx={{
@@ -124,8 +130,8 @@ const EqualPopulationMetricDetail = ({
                         ></Styled.div>
                         <Box>
                           {feature.properties.percentDeviation > 0
-                            ? Math.floor(feature.properties.percentDeviation * 1000) / 10
-                            : Math.ceil(feature.properties.percentDeviation * 1000) / 10}
+                            ? Math.ceil(feature.properties.percentDeviation * 1000) / 10
+                            : Math.floor(feature.properties.percentDeviation * 1000) / 10}
                           %
                         </Box>
                       </Flex>
@@ -136,11 +142,11 @@ const EqualPopulationMetricDetail = ({
 
                   <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
                     {feature.properties.populationDeviation !== undefined ? (
-                      Math.round(feature.properties.populationDeviation) !== -0 ? (
-                        Math.round(feature.properties.populationDeviation).toLocaleString()
-                      ) : (
+                      Math.round(feature.properties.populationDeviation) === -0 ? (
                         // Render 0 instead of -0
                         0
+                      ) : (
+                        Math.round(feature.properties.populationDeviation).toLocaleString()
                       )
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
