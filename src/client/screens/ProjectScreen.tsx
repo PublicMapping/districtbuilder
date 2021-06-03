@@ -165,6 +165,9 @@ const ProjectScreen = ({
             geojson={geojson}
             metric={evaluateMetric}
             project={project}
+            avgDistrictPopulationIsInteger={
+              (avgDistrictPopulation && avgDistrictPopulation % 1 === 0) || false
+            }
             regionProperties={regionProperties}
             staticMetadata={staticMetadata}
           />
