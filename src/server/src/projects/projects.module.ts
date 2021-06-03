@@ -10,6 +10,7 @@ import { Project } from "./entities/project.entity";
 import { ProjectsService } from "./services/projects.service";
 import { OrganizationsModule } from "../organizations/organizations.module";
 import { ChambersModule } from "../chambers/chambers.module";
+import { GlobalProjectsController } from "./controllers/globalProjects.controller";
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { ChambersModule } from "../chambers/chambers.module";
     OrganizationsModule,
     UsersModule
   ],
-  controllers: [ProjectsController],
+  controllers: [ProjectsController, GlobalProjectsController],
   providers: [ProjectsService],
   exports: [ProjectsService]
 })

@@ -9,22 +9,42 @@ import {
   projectsFetch,
   projectsFetchFailure,
   projectsFetchSuccess,
+  globalProjectsFetch,
+  globalProjectsFetchPage,
+  globalProjectsFetchSuccess,
+  globalProjectsFetchFailure,
   setDeleteProject
 } from "../actions/projects";
 
 import { IProject } from "../../shared/entities";
-import { fetchProjects, patchProject } from "../api";
+import { fetchAllPublishedProjects, fetchProjects, patchProject } from "../api";
 import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
 
 export interface ProjectsState {
   readonly projects: Resource<readonly IProject[]>;
+  readonly globalProjects: Resource<readonly IProject[]>;
   readonly deleteProject?: IProject;
+  readonly globalProjectsPagination: {
+    readonly currentPage: number;
+    readonly limit: number;
+    readonly totalItems?: number;
+    readonly totalPages?: number;
+  };
   readonly archiveProjectPending: boolean;
 }
 
 export const initialState = {
+  // User projects
   projects: { isPending: false },
+  // All projects
+  globalProjects: { isPending: false },
+  globalProjectsPagination: {
+    currentPage: 1,
+    limit: 10,
+    totalItems: undefined,
+    totalPages: undefined
+  },
   archiveProjectPending: false
 };
 
@@ -58,6 +78,51 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         },
         Cmd.run(showResourceFailedToast)
       );
+    case getType(globalProjectsFetch): {
+      return loop(
+        {
+          ...state,
+          globalProjects: { isPending: true }
+        },
+        Cmd.run(fetchAllPublishedProjects, {
+          successActionCreator: globalProjectsFetchSuccess,
+          failActionCreator: globalProjectsFetchFailure,
+          args: [
+            state.globalProjectsPagination.currentPage,
+            state.globalProjectsPagination.limit
+          ] as Parameters<typeof fetchAllPublishedProjects>
+        })
+      );
+    }
+    case getType(globalProjectsFetchPage):
+      return loop(
+        {
+          ...state,
+          globalProjectsPagination: {
+            ...state.globalProjectsPagination,
+            currentPage: action.payload
+          }
+        },
+        Cmd.action(globalProjectsFetch())
+      );
+    case getType(globalProjectsFetchSuccess):
+      return {
+        ...state,
+        globalProjects: { resource: action.payload.items },
+        globalProjectsPagination: {
+          ...state.globalProjectsPagination,
+          totalItems: action.payload.meta.totalItems,
+          totalPages: action.payload.meta.totalPages
+        }
+      };
+    case getType(globalProjectsFetchFailure):
+      return loop(
+        {
+          ...state,
+          globalProjects: { errorMessage: action.payload }
+        },
+        Cmd.run(showResourceFailedToast)
+      );
     case getType(setDeleteProject):
       return {
         ...state,
@@ -73,17 +138,27 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         })
       );
     case getType(projectArchiveSuccess):
-      return "resource" in state.projects
-        ? {
-            deleteProject: undefined,
-            archiveProjectPending: false,
-            projects: {
-              resource: state.projects.resource.map(project =>
-                project.id !== action.payload.id ? project : action.payload
-              )
-            }
-          }
-        : state;
+      return {
+        deleteProject: undefined,
+        archiveProjectPending: false,
+        globalProjectsPagination: state.globalProjectsPagination,
+        projects:
+          "resource" in state.projects
+            ? {
+                resource: state.projects.resource.map(project =>
+                  project.id !== action.payload.id ? project : action.payload
+                )
+              }
+            : state.projects,
+        globalProjects:
+          "resource" in state.globalProjects
+            ? {
+                resource: state.globalProjects.resource.map(project =>
+                  project.id !== action.payload.id ? project : action.payload
+                )
+              }
+            : state.globalProjects
+      };
     case getType(projectArchiveFailure):
       return loop({ ...state, archiveProjectPending: false }, Cmd.run(showResourceFailedToast));
     default:

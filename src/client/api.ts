@@ -18,7 +18,7 @@ import {
   ProjectNest,
   DistrictsImportApiResponse
 } from "../shared/entities";
-import { DistrictsGeoJSON, DynamicProjectData } from "./types";
+import { DistrictsGeoJSON, DynamicProjectData, PaginatedResponse } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();
@@ -173,6 +173,21 @@ export async function fetchProjects(): Promise<readonly IProject[]> {
     apiAxios
       .get("/api/projects?sort=updatedDt,DESC")
       .then(response => resolve(response.data))
+      .catch(error => reject(error.response.data));
+  });
+}
+
+export async function fetchAllPublishedProjects(
+  page: number,
+  limit: number
+): Promise<PaginatedResponse<IProject>> {
+  const endpoint = "/api/globalProjects?page=" + page.toString() + "&limit=" + limit.toString();
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(endpoint)
+      .then(response => {
+        return resolve(response.data);
+      })
       .catch(error => reject(error.response.data));
   });
 }
