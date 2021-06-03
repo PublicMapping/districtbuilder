@@ -38,3 +38,8 @@ export const toggleProjectFeaturedSuccess = createAction("Toggle project feature
 export const toggleProjectFeaturedFailure = createAction("Toggle project featured failure")<
   ResourceFailure
 >();
+
+export const exportProjects = createAction("Export organization projects CSV")<OrganizationSlug>();
+export const exportProjectsFailure = createAction("Export organization projects CSV failure")<
+  string
+>();

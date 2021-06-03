@@ -2,9 +2,9 @@
 import { useEffect } from "react";
 import { connect } from "react-redux";
 import { useParams, Link } from "react-router-dom";
-import { Box, Flex, Heading, jsx } from "theme-ui";
+import { Box, Flex, Heading, jsx, Button } from "theme-ui";
 import { organizationFetch } from "../actions/organization";
-import { organizationProjectsFetch } from "../actions/organizationProjects";
+import { organizationProjectsFetch, exportProjects } from "../actions/organizationProjects";
 import { State } from "../reducers";
 import { OrganizationState } from "../reducers/organization";
 import { UserState } from "../reducers/user";
@@ -30,7 +30,9 @@ const style = {
     boxShadow: "small",
     p: 5,
     "> *": {
-      m: 5
+      width: "100%",
+      m: 5,
+      pr: 5
     }
   },
   projectList: {
@@ -116,6 +118,12 @@ const OrganizationAdminScreen = ({ organization, user, organizationProjects }: S
                   <Link to={`/o/${organizationSlug}`}>{organization.resource.name}</Link>
                 </Heading>
                 <Heading>Maps</Heading>
+                <Button
+                  onClick={() => store.dispatch(exportProjects(organizationSlug))}
+                  sx={{ float: "right" }}
+                >
+                  Export maps
+                </Button>
                 <Box>
                   Published maps that were created by members of your organization. You can select
                   up to 12 maps to feature on your organization profile page.
