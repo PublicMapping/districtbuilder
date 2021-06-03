@@ -46,6 +46,7 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
       .leftJoin("projects.chamber", "chamber")
       .where("organization.slug = :slug", { slug })
       .andWhere("projects.visibility <> :private", { private: ProjectVisibility.Private })
+      .andWhere("projects.archived <> TRUE")
       .select("user.id", "userId")
       .addSelect("user.name", "userName")
       .addSelect("user.email", "userEmail")
@@ -76,6 +77,7 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
       .innerJoinAndSelect("projects.user", "user")
       .where("organization.slug = :slug", { slug })
       .andWhere("projects.visibility <> :private", { private: ProjectVisibility.Private })
+      .andWhere("projects.archived <> TRUE")
       .select([
         "projectTemplate.name",
         "projectTemplate.numberOfDistricts",
