@@ -68,7 +68,11 @@ export const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getChoroplethStops(metricKey: string, popThreshold?: number, avgPopulationIsInteger?: boolean) {
+export function getChoroplethStops(
+  metricKey: string,
+  popThreshold?: number,
+  avgPopulationIsInteger?: boolean
+) {
   const compactnessSteps = [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
@@ -79,29 +83,33 @@ export function getChoroplethStops(metricKey: string, popThreshold?: number, avg
 
   const equalPopulationSteps =
     popThreshold !== undefined
-      ? popThreshold !== 0 ? [
-          [-1.0, "#D1E5F0"],
-          [-1 * (popThreshold + 0.02), "#66A9CF"],
-          [-1 * (popThreshold + 0.01), "#2166AC"],
-          [-1 * popThreshold, "#01665E"],
-          [popThreshold, "#EFBE60"],
-          [popThreshold + 0.01, "#F5D092"],
-          [popThreshold + 0.02, "#F7E1C3"]
-        ] : avgPopulationIsInteger ? [
-          [-1.0, "#D1E5F0"],
-          [-0.01, "#66A9CF"],
-          [0, "#01665E"],
-          [0.0000001, "#EFBE60"],
-          [0.01, "#F5D092"],
-          [popThreshold + 0.02, "#F7E1C3"]
-        ] : [
-          [-1.0, "#D1E5F0"],
-          [-0.01, "#66A9CF"],
-          [-0.001, "#01665E"],
-          [0.001, "#EFBE60"],
-          [0.01, "#F5D092"],
-          [popThreshold + 0.02, "#F7E1C3"]
-        ]
+      ? popThreshold !== 0
+        ? [
+            [-1.0, "#D1E5F0"],
+            [-1 * (popThreshold + 0.02), "#66A9CF"],
+            [-1 * (popThreshold + 0.01), "#2166AC"],
+            [-1 * popThreshold, "#01665E"],
+            [popThreshold, "#EFBE60"],
+            [popThreshold + 0.01, "#F5D092"],
+            [popThreshold + 0.02, "#F7E1C3"]
+          ]
+        : avgPopulationIsInteger
+        ? [
+            [-1.0, "#D1E5F0"],
+            [-0.01, "#66A9CF"],
+            [0, "#01665E"],
+            [0.0000001, "#EFBE60"],
+            [0.01, "#F5D092"],
+            [popThreshold + 0.02, "#F7E1C3"]
+          ]
+        : [
+            [-1.0, "#D1E5F0"],
+            [-0.01, "#66A9CF"],
+            [-0.001, "#01665E"],
+            [0.001, "#EFBE60"],
+            [0.01, "#F5D092"],
+            [popThreshold + 0.02, "#F7E1C3"]
+          ]
       : [
           [-1.0, "#D1E5F0"],
           [1.0, "#F7E1C3"]
@@ -260,9 +268,14 @@ export function generateMapLayers(
         "fill-color": {
           property: "percentDeviation",
           type: "interval",
-          stops: populationDeviation !== undefined
-            ? getChoroplethStops("equalPopulation", populationDeviation / 100.0, avgDistrictPopulationIsInteger)
-            : getChoroplethStops("equalPopulation")
+          stops:
+            populationDeviation !== undefined
+              ? getChoroplethStops(
+                  "equalPopulation",
+                  populationDeviation / 100.0,
+                  avgDistrictPopulationIsInteger
+                )
+              : getChoroplethStops("equalPopulation")
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
