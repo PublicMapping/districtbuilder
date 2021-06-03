@@ -80,12 +80,18 @@ export function getChoroplethStops(metricKey: string, popThreshold?: number) {
 
   const equalPopulationSteps =
     popThreshold !== undefined
-      ? [
+      ? popThreshold !== 0 ? [
           [-1.0, "#D1E5F0"],
           [-1 * (popThreshold + 0.02), "#66A9CF"],
           [-1 * (popThreshold + 0.01), "#2166AC"],
           [-1 * popThreshold, "#01665E"],
           [popThreshold, "#EFBE60"],
+          [popThreshold + 0.01, "#F5D092"],
+          [popThreshold + 0.02, "#F7E1C3"]
+        ] : [
+          [-1.0, "#D1E5F0"],
+          [-1 * (popThreshold + 0.02), "#66A9CF"],
+          [-1 * (popThreshold + 0.01), "#01665E"],
           [popThreshold + 0.01, "#F5D092"],
           [popThreshold + 0.02, "#F7E1C3"]
         ]
@@ -248,7 +254,7 @@ export function generateMapLayers(
         "fill-color": {
           property: "percentDeviation",
           type: "interval",
-          stops: populationDeviation
+          stops: populationDeviation !== undefined
             ? getChoroplethStops("equalPopulation", populationDeviation / 100.0)
             : getChoroplethStops("equalPopulation")
         },

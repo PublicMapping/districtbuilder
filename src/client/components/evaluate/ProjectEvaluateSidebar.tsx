@@ -86,10 +86,14 @@ const ProjectEvaluateSidebar = ({
           geojson &&
           popThreshold !== undefined &&
           geojson?.features.filter(f => {
+            console.log(f);
             return (
-              f.id !== 0 &&
-              f.properties.percentDeviation &&
-              Math.abs(f.properties.percentDeviation) <= popThreshold
+              (f.id !== 0 &&
+                f.properties.percentDeviation !== undefined &&
+                f.properties.populationDeviation !== undefined &&
+                Math.abs(f.properties.percentDeviation) <= popThreshold) ||
+              // @ts-ignore
+              Math.abs(f.properties.populationDeviation) < 1
             );
           }).length ===
             geojson?.features.filter(f => f.properties.demographics.population > 0).length - 1) ||
@@ -111,9 +115,12 @@ const ProjectEvaluateSidebar = ({
         avgPopulation && geojson && popThreshold !== undefined
           ? geojson?.features.filter(f => {
               return (
-                f.id !== 0 &&
-                f.properties.percentDeviation &&
-                Math.abs(f.properties.percentDeviation) <= popThreshold
+                (f.id !== 0 &&
+                  f.properties.percentDeviation !== undefined &&
+                  f.properties.populationDeviation !== undefined &&
+                  Math.abs(f.properties.percentDeviation) <= popThreshold) ||
+                // @ts-ignore
+                Math.abs(f.properties.populationDeviation) < 1
               );
             }).length
           : 0

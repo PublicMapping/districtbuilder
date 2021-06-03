@@ -321,7 +321,12 @@ const SidebarRow = memo(
         : negativeChangeColor
       : "inherit";
     const intermediatePopulation = demographics.population + selectedDifference;
-    const intermediateDeviation = deviation + selectedDifference;
+    const intermediateDeviation =
+      deviation + selectedDifference > 0
+        ? Math.floor(deviation + selectedDifference)
+        : deviation + selectedDifference > -1
+        ? Math.abs(Math.ceil(deviation + selectedDifference))
+        : Math.ceil(deviation + selectedDifference);
     const populationDisplay = intermediatePopulation.toLocaleString();
     const isMinorityMajority = demographics.white / demographics.population < 0.5;
     const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
@@ -401,8 +406,9 @@ const SidebarRow = memo(
         <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
           <span>{deviationDisplay}</span>
           <span sx={style.deviationIcon}>
-            {(districtId === 0 && Math.abs(intermediateDeviation) === 0) ||
-            (districtId !== 0 && Math.abs(intermediateDeviation) <= popDeviationThreshold) ? (
+            {(districtId === 0 && Math.abs(Math.floor(intermediateDeviation)) === 0) ||
+            (districtId !== 0 &&
+              Math.floor(Math.abs(intermediateDeviation)) <= popDeviationThreshold) ? (
               <Icon name="circle-check-solid" color="#388a64" />
             ) : intermediateDeviation < 0 ? (
               <Icon name="arrow-circle-down-solid" color="gray.4" />
