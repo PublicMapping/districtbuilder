@@ -10,6 +10,9 @@ DistrictBuilder is web-based, open source software for collaborative redistricti
 
 - [Requirements](#requirements)
 - [Development](#development)
+  - [Host Environments](#host-environments)
+    - [Linux](#linux)
+    - [macOS](#macos)
   - [Hot Reloading 🔥](#hot-reloading-)
   - [Remote Server Proxy](#remote-server-proxy)
   - [Project Organization](#project-organization)
@@ -28,21 +31,56 @@ DistrictBuilder is web-based, open source software for collaborative redistricti
 Ensure that you have an AWS credential profile for `district-builder` configured on your host system.
 The server backend will need this in order to access S3 assets.
 
-Run `scripts/setup` to prepare the development environment:
+### Host Environments
+
+The Docker containers used in development work very well on Linux, but require an additional layer of translation when running on non-Linux hosts. In particular, there are significant file-watching costs, which result in high CPU usage on macOS. On macOS, it is more efficient to run the containers within a Linux VM created with Vagrant.
+
+#### Linux
+
+On Linux, run `scripts/setup` to prepare the development environment:
 
 ```bash
 $ ./scripts/setup
 ```
+
+All other scripts can be run natively from the host, e.g.
+
+```bash
+$ ./scripts/update
+```
+
+#### macOS
+
+On macOS, use the `--vagrant` flag to create a Vagrant VM instead:
+
+```bash
+$ ./scripts/setup --vagrant
+```
+
+All other scripts must be run from the Vagrant VM, e.g.
+
+```bash
+$ vagrant ssh
+vagrant@vagrant:/vagrant$ ./scripts/update
+```
+
+or
+
+```bash
+$ vagrant ssh -c 'cd /vagrant && ./scripts/update'
+```
+
+For brevity, this document will use Linux examples throughout. You should run the scripts from the appropriate environment.
+
+_Note:_ It is recommended to configure your editor to auto-format your code via Prettier on save.
+
+### Hot Reloading 🔥
 
 Next, run `scripts/server` to start the application:
 
 ```bash
  $ ./scripts/server
 ```
-
-_Note:_ It is recommended to configure your editor to auto-format your code via Prettier on save.
-
-### Hot Reloading 🔥
 
 While `server` is running, the [Create React App](https://github.com/facebook/create-react-app/) frontend will automatically [reload](https://github.com/facebook/create-react-app/#whats-included) when changes are made. Additionally, the [NestJS](https://nestjs.com/) backend will [restart](https://docs.nestjs.com/cli/usages#nest-start) when changes are made.
 
