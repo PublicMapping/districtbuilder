@@ -73,3 +73,7 @@ export function getAggregatedCounts(
     return { ...data, [props.id]: count };
   }, {} as DemographicCounts);
 }
+
+export function getDemographicLabel(id: string) {
+  return id.split(/(?=[A-Z])/).join(" ");
+}

@@ -335,6 +335,19 @@ export async function fetchOrganizationFeaturedProjects(
   });
 }
 
+export async function exportOrganizationProjectsCsv(slug: OrganizationSlug): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/${slug}/export/maps-csv`)
+      .then(response => {
+        return resolve(
+          saveAs(new Blob([response.data], { type: "text/csv;charset=utf-8" }), `${slug}.csv`)
+        );
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
 export async function saveProjectFeatured(project: ProjectNest): Promise<IOrganization> {
   return new Promise((resolve, reject) => {
     const projectPost = {

@@ -3,6 +3,7 @@ import mapValues from "lodash/mapValues";
 import { Box, jsx, Styled, ThemeUIStyleObject, Divider } from "theme-ui";
 
 import { demographicsColors } from "../constants/colors";
+import { getDemographicLabel } from "../../shared/functions";
 
 const style: ThemeUIStyleObject = {
   label: {
@@ -21,16 +22,12 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-function parseRowLabel(label: string) {
-  return label.split(/(?=[A-Z])/).join(" ");
-}
-
 const Row = ({
-  label,
+  id,
   percent,
   color
 }: {
-  readonly label: string;
+  readonly id: string;
   readonly percent?: number;
   readonly color: string;
 }) => (
@@ -40,7 +37,7 @@ const Row = ({
       border: "none"
     }}
   >
-    <Styled.td sx={style.label}>{parseRowLabel(label)}</Styled.td>
+    <Styled.td sx={style.label}>{getDemographicLabel(id)}</Styled.td>
     <Styled.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
         style={{
@@ -84,7 +81,7 @@ const DemographicsTooltip = ({
   const rows = races
     .filter(race => percentages[race] !== undefined)
     .map((id: typeof races[number]) => (
-      <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
+      <Row key={id} id={id} percent={percentages[id]} color={demographicsColors[id]} />
     ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
