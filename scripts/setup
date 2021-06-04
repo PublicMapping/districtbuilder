@@ -8,14 +8,20 @@ fi
 
 function usage() {
     echo -n \
-        "Usage: $(basename "$0")
-Setup the project's development environment.
+        "Usage: $(basename "$0") [--vagrant]
+Setup the project's Docker-based development environment.
+This is recommended for Linux hosts.
+
+Optionally use --vagrant to setup a Vagrant-based environment.
+This is recommended for macOS hosts.
 "
 }
 
 if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
+    elif [ "${1:-}" = "--vagrant" ]; then
+        vagrant up --provision
     else
         ./scripts/update
     fi
