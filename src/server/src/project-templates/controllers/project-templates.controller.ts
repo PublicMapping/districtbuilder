@@ -88,7 +88,7 @@ export class ProjectTemplatesController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(":slug/export/maps-csv")
+  @Get(":slug/export/maps-csv/")
   @Header("Content-Type", "text/csv")
   async exportMapsCsv(
     @Param("slug") slug: OrganizationSlug,

@@ -5,12 +5,20 @@ import { Action } from "../actions";
 import {
   organizationFetch,
   organizationFetchFailure,
-  organizationFetchSuccess
+  organizationFetchSuccess,
+  exportOrgUsers,
+  exportOrgUsersFailure,
+  exportProjects,
+  exportProjectsFailure
 } from "../actions/organization";
 
 import { IOrganization } from "../../shared/entities";
-import { fetchOrganization } from "../api";
-import { showResourceFailedToast } from "../functions";
+import {
+  fetchOrganization,
+  exportOrganizationUsersCsv,
+  exportOrganizationProjectsCsv
+} from "../api";
+import { showResourceFailedToast, showActionFailedToast } from "../functions";
 import { Resource } from "../resource";
 
 export type OrganizationState = Resource<IOrganization>;
@@ -48,6 +56,26 @@ const organizationReducer: LoopReducer<OrganizationState, Action> = (
           ? Cmd.run(showResourceFailedToast)
           : Cmd.none
       );
+    case getType(exportProjects):
+      return loop(
+        state,
+        Cmd.run(exportOrganizationProjectsCsv, {
+          failActionCreator: exportProjectsFailure,
+          args: [action.payload] as Parameters<typeof exportOrganizationProjectsCsv>
+        })
+      );
+    case getType(exportProjectsFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
+    case getType(exportOrgUsers):
+      return loop(
+        state,
+        Cmd.run(exportOrganizationUsersCsv, {
+          failActionCreator: exportOrgUsersFailure,
+          args: [action.payload] as Parameters<typeof exportOrganizationUsersCsv>
+        })
+      );
+    case getType(exportOrgUsersFailure):
+      return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state;
   }
