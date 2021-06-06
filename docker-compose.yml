@@ -33,6 +33,7 @@ services:
     volumes:
       - ./src/server:/home/node/app/server
       - ./src/shared:/home/node/app/shared
+      - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
       - $HOME/.aws:/root/.aws:ro
     working_dir: /home/node/app/server
@@ -51,6 +52,7 @@ services:
     volumes:
       - ./:/home/node/app
       - ./src/server/dist/server/src/static:/home/node/app/build
+      - /var/cache/district-builder-client-node-modules:/home/node/app/node_modules
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
     working_dir: /home/node/app
     command: yarn start
@@ -72,6 +74,8 @@ services:
       - ./src/server:/home/node/app/server
       - ./src/shared:/home/node/app/shared
       - ./src/manage:/home/node/app/manage
+      - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
+      - /var/cache/district-builder-manage-node-modules:/home/node/app/manage/node_modules
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
       - $HOME/.aws:/root/.aws:ro
     working_dir: /home/node/app/manage
