@@ -90,11 +90,10 @@ const ProjectScreen = ({
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
   const presentDrawingState = districtDrawing.undoHistory.present.state;
   useEffect(() => {
-    if (geojson && !avgDistrictPopulation && project) {
-      getTargetPopulation(geojson, project);
-      setAvgDistrictPopulation(getTargetPopulation(geojson, project));
+    if (geojson && !avgDistrictPopulation) {
+      setAvgDistrictPopulation(getTargetPopulation(geojson));
     }
-  }, [geojson, avgDistrictPopulation, project]);
+  }, [geojson, avgDistrictPopulation]);
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
@@ -154,9 +153,6 @@ const ProjectScreen = ({
             geoUnitHierarchy={geoUnitHierarchy}
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
-            avgDistrictPopulationIsInteger={
-              (avgDistrictPopulation && avgDistrictPopulation % 1 === 0) || false
-            }
             saving={districtDrawing.saving}
             isReadOnly={isReadOnly}
           />
@@ -209,9 +205,6 @@ const ProjectScreen = ({
                 lockedDistricts={presentDrawingState.lockedDistricts}
                 evaluateMode={evaluateMode}
                 evaluateMetric={evaluateMetric}
-                avgDistrictPopulationIsInteger={
-                  (avgDistrictPopulation && avgDistrictPopulation % 1 === 0) || false
-                }
                 isReadOnly={isReadOnly}
                 limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
                 label={mapLabel}

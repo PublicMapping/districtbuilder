@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
 import { EvaluateMetricWithValue, DistrictProperties } from "../../../../shared/entities";
-import { getChoroplethStops } from "../../map/index";
+import { getEqualPopulationStops } from "../../map/index";
 import { DistrictsGeoJSON } from "../../../types";
 
 const style: ThemeUIStyleObject = {
@@ -65,26 +65,22 @@ const EqualPopulationMetricDetail = ({
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
 }) => {
-  const avgDistrictPopulationIsInteger =
-    (metric.avgPopulation && metric.avgPopulation % 1 === 0) || false;
   function computeRowFill(row: DistrictProperties) {
-    const val = row.percentDeviation;
-    const choroplethStops = getChoroplethStops(
-      metric.key,
-      metric.popThreshold,
-      avgDistrictPopulationIsInteger
-    );
-    // eslint-disable-next-line
-    for (let i = 0; i < choroplethStops.length; i++) {
-      const r = choroplethStops[i];
-      if (val !== undefined && val >= r[0]) {
-        if (i < choroplethStops.length - 1) {
-          const r1 = choroplethStops[i + 1];
-          if (val < r1[0]) {
+    const val = row.populationDeviation;
+    if (metric.popThreshold !== undefined && metric.avgPopulation !== undefined) {
+      const choroplethStops = getEqualPopulationStops(metric.popThreshold, metric.avgPopulation);
+      // eslint-disable-next-line
+      for (let i = 0; i < choroplethStops.length; i++) {
+        const r = choroplethStops[i];
+        if (val !== undefined && val >= r[0]) {
+          if (i < choroplethStops.length - 1) {
+            const r1 = choroplethStops[i + 1];
+            if (val < r1[0]) {
+              return r[1];
+            }
+          } else {
             return r[1];
           }
-        } else {
-          return r[1];
         }
       }
     }
@@ -128,12 +124,7 @@ const EqualPopulationMetricDetail = ({
                             bg: computeRowFill(feature.properties)
                           }}
                         ></Styled.div>
-                        <Box>
-                          {feature.properties.percentDeviation > 0
-                            ? Math.ceil(feature.properties.percentDeviation * 1000) / 10
-                            : Math.floor(feature.properties.percentDeviation * 1000) / 10}
-                          %
-                        </Box>
+                        <Box>{Math.floor(feature.properties.percentDeviation * 1000) / 10}%</Box>
                       </Flex>
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
@@ -142,7 +133,12 @@ const EqualPopulationMetricDetail = ({
 
                   <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
                     {feature.properties.populationDeviation !== undefined ? (
-                      Math.round(feature.properties.populationDeviation).toLocaleString()
+                      Math.ceil(feature.properties.populationDeviation) === 0 ? (
+                        // Need this to handle negative 0, which Math.ceil likes to return
+                        "0"
+                      ) : (
+                        Math.ceil(feature.properties.populationDeviation).toLocaleString()
+                      )
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}
