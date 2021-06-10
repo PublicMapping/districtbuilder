@@ -68,13 +68,13 @@ const PublishedMapsListScreen = ({ globalProjects, user, pagination }: StateProp
   return (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
       <SiteHeader user={user} />
-      <Box>
+      <Box sx={{ flex: 1 }}>
         {projects ? (
           <Box sx={style.projects}>
-            <Heading as="h2" sx={{ mb: "3" }}>
-              <span>All published maps</span>
+            <Heading as="h2" sx={{ my: "3" }}>
+              <span>Community maps</span>
             </Heading>
-            <Text>A collection of maps built by all DistrictBuilder users globally</Text>
+            <Text>Explore published maps from across the entire DistrictBuilder community</Text>
             <Box sx={style.featuredProjectContainer}>
               {projects.length > 0 ? (
                 projects.map((project: ProjectNest) => (
@@ -85,15 +85,23 @@ const PublishedMapsListScreen = ({ globalProjects, user, pagination }: StateProp
               )}
             </Box>
             {pagination.totalPages && (
-              <PaginationFooter
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                setPage={number => store.dispatch(globalProjectsFetchPage(number))}
-              />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <PaginationFooter
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  setPage={number => store.dispatch(globalProjectsFetchPage(number))}
+                />
+              </Box>
             )}
           </Box>
         ) : (
-          <Flex sx={{ justifyContent: "center" }}>
+          <Flex sx={{ justifyContent: "center", alignItems: "center", height: "100%" }}>
             <Spinner variant="spinner.large" />
           </Flex>
         )}

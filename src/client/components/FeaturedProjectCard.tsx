@@ -105,7 +105,7 @@ const FeaturedProjectCard = ({ project }: { readonly project: ProjectNest }) => 
         <Box ref={mapRef} sx={style.map}></Box>
       </Box>
       {!mapLoaded && (
-        <Box sx={style.mapContainer}>
+        <Box sx={{ ...style.mapContainer, ...{ position: "absolute" } }}>
           <Spinner variant="spinner.small" />
         </Box>
       )}

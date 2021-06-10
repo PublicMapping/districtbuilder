@@ -131,44 +131,46 @@ const HomeScreen = ({ projects, user }: StateProps) => {
             <Flex
               sx={{
                 flexDirection: "column",
-                alignItems: "center",
+                alignItems: "start",
                 maxWidth: "500px",
                 mt: 7,
                 mx: "auto"
               }}
             >
-              <Box sx={{ mb: 5, mx: "auto" }}>
+              <Box sx={{ mb: 5 }}>
                 <NoMapsIllustration />
               </Box>
-              <Heading sx={{ variant: "text.h4", textAlign: "center" }}>
-                Welcome to DistrictBuilder!
-              </Heading>
-
-              <Text sx={{ fontSize: 3, color: "text", textAlign: "center", mb: 5 }}>
-                Start building your first map or check out our{" "}
+              <Heading sx={{ variant: "text.h4" }}>Welcome to DistrictBuilder!</Heading>
+              <Text sx={{ fontSize: 3, color: "text", mb: 5, mt: 3 }}>
+                We believe in the power of individuals like you to draw maps that reflect local
+                communities and lead to fair representation. We are excited to see what you build!
+                And for extra help, check out the{" "}
                 <Styled.a
-                  href="https://github.com/PublicMapping/districtbuilder/wiki/Getting-Started-with-DistrictBuilder"
+                  href="https://github.com/PublicMapping/districtbuilder/wiki/G
+etting-Started-with-DistrictBuilder"
                   target="_blank"
                 >
-                  Getting Started Guide
+                  getting started guide
                 </Styled.a>{" "}
-                to learn how!
+                or see <Styled.a href="/maps">community maps</Styled.a>.
               </Text>
-              <Styled.a
-                as={Link}
-                to="/create-project"
-                sx={{ variant: "links.button", fontSize: 3, px: 4, py: 2 }}
-              >
-                <Icon name="plus-circle" />
-                Create a map
-              </Styled.a>
-              <Styled.a
-                as={Link}
-                to="/import-project"
-                sx={{ variant: "links.secondaryButton", fontSize: 3, px: 6, py: 2, mt: 2 }}
-              >
-                Import map
-              </Styled.a>
+              <Flex>
+                <Styled.a
+                  as={Link}
+                  to="/create-project"
+                  sx={{ variant: "links.button", fontSize: 3, px: 4, py: 2 }}
+                >
+                  <Icon name="plus-circle" />
+                  Create a map
+                </Styled.a>
+                <Styled.a
+                  as={Link}
+                  to="/import-project"
+                  sx={{ variant: "links.secondaryButton", fontSize: 3, px: 4, py: 2, ml: 2 }}
+                >
+                  Import map
+                </Styled.a>
+              </Flex>
             </Flex>
           )
         ) : null}

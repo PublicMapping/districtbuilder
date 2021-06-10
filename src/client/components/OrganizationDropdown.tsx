@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
-import Icon from "../components/Icon";
 import { invertStyles, style } from "./MenuButton.styles";
 import { OrganizationNest } from "../../shared/entities";
 import * as H from "history";
@@ -14,7 +13,7 @@ interface Props {
 const OrganizationDropdown = ({ organizations }: Props) => {
   const history = useHistory();
   return (
-    <Wrapper sx={{ position: "relative", pr: 1 }} onSelection={handleSelection(history)}>
+    <Wrapper sx={{ position: "relative" }} onSelection={handleSelection(history)}>
       <MenuButton
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light" },
@@ -25,7 +24,6 @@ const OrganizationDropdown = ({ organizations }: Props) => {
         className="organization-menu"
       >
         My Organizations
-        <Icon name="angle-down" />
       </MenuButton>
       <Menu sx={style.menu}>
         <ul sx={style.menuList}>

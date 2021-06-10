@@ -12,19 +12,22 @@ interface StateProps {
 
 const style = {
   pagination: {
-    // TODO: Make this not look bad
     cursor: "pointer",
+    display: "inline",
+    mr: 1,
+    backgroundColor: "transparent",
+    color: "text"
+  },
+  paginationSelected: {
+    cursor: "pointer",
+    fontWeight: 700,
     display: "inline",
     mr: 1
   },
-  paginationSelected: {
-    // TODO: Make this not look bad
-    cursor: "pointer",
-    fontWeight: 700,
-    display: "inline"
-  },
   pageList: {
-    display: "inline-block"
+    display: "inline-block",
+    padding: 0,
+    listStyle: "none"
   }
 };
 
@@ -37,12 +40,11 @@ const PaginationFooter = ({ currentPage, totalPages, setPage }: StateProps) => {
     pageNumbers &&
     pageNumbers.map(number => {
       return (
-        <li
-          key={number}
-          id={number.toString()}
-          sx={number === currentPage ? style.paginationSelected : style.pagination}
-        >
-          <Button disabled={number === currentPage} onClick={() => setPage(number)}>
+        <li sx={{ display: "inline" }} key={number} id={number.toString()}>
+          <Button
+            sx={number === currentPage ? style.paginationSelected : style.pagination}
+            onClick={() => setPage(number)}
+          >
             {number}
           </Button>
         </li>

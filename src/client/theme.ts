@@ -17,7 +17,6 @@ const appButtonStyles = {
   fontWeight: "medium",
   borderRadius: "3px",
   cursor: "pointer",
-  transition: "0.2s background ease-out, 0.2s background-color ease-out",
   "& > svg": {
     mr: 1
   },
@@ -273,8 +272,7 @@ const theme: Theme & StyledSystemTheme = {
       ...appButtonStyles,
       ...{
         bg: "transparent",
-        color: "blue.6",
-        fontWeight: "bold",
+        color: "blue.5",
         padding: 0,
         "&:hover:not([disabled]):not(:active)": {
           textDecoration: "underline",
@@ -508,11 +506,10 @@ const theme: Theme & StyledSystemTheme = {
       color: "gray.2"
     },
     a: {
-      color: "blue.6",
-      fontWeight: "bold",
+      color: "blue.5",
       textDecoration: "none",
       "&:visited": {
-        color: "blue.6"
+        color: "blue.5"
       },
       "&:hover:not([disabled]):not(:active)": {
         textDecoration: "underline"
