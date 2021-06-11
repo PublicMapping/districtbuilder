@@ -292,7 +292,6 @@ const SidebarRow = memo(
     selected,
     selectedPopulationDifference,
     demographics,
-    votingIds,
     deviation,
     districtId,
     isDistrictLocked,
@@ -304,7 +303,6 @@ const SidebarRow = memo(
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
     readonly demographics: DemographicCounts;
-    readonly votingIds: readonly string[];
     readonly deviation: number;
     readonly districtId: number;
     readonly isDistrictLocked?: boolean;
@@ -435,6 +433,7 @@ const SidebarRow = memo(
               placement="top-start"
               content={
                 pvi !== undefined ? (
+                  <VotingSidebarTooltip voting={voting} />
                 ) : (
                   <em>
                     <strong>Empty district.</strong> Add people to this district to view the vote
@@ -516,12 +515,6 @@ const SidebarRows = ({
     | undefined
   >(undefined);
 
-  const votingIds = useMemo(
-    () =>
-      staticMetadata && staticMetadata.voting ? staticMetadata.voting.map(props => props.id) : [],
-    [staticMetadata]
-  );
-
   // Asynchronously recalculate demographics on state changes with web workers
   useEffect(() => {
     // eslint-disable-next-line
@@ -593,7 +586,6 @@ const SidebarRows = ({
             districtId={districtId}
             isReadOnly={isReadOnly}
             popDeviationThreshold={averagePopulation * (project.populationDeviation / 100)}
-            votingIds={votingIds}
           />
         ) : null;
       })}

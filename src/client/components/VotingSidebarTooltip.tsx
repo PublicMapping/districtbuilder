@@ -1,10 +1,18 @@
 /** @jsx jsx */
-import { mapValues, sum } from "lodash";
-import { Box, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { mapKeys, mapValues, pickBy, sum } from "lodash";
+import { Box, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
 
 import { getPartyColor, capitalizeFirstLetter } from "../functions";
+import { DemographicCounts } from "../../shared/entities";
+import React from "react";
 
 const style: ThemeUIStyleObject = {
+  header: {
+    textAlign: "left",
+    color: "muted",
+    py: 1,
+    mb: 0
+  },
   label: {
     textAlign: "left",
     py: 0,
@@ -60,29 +68,64 @@ const Row = ({
   </Styled.tr>
 );
 
-const VotingSidebarTooltip = ({
+function extractYear(voting: DemographicCounts, suffix: string): DemographicCounts {
+  return mapKeys(
+    pickBy(voting, (val, key) => key.endsWith(suffix)),
+    (val, key) => key.slice(0, -suffix.length)
+  );
+}
+
+const Rows = ({
   voting,
-  votingIds
+  suffix
 }: {
-  readonly voting: { readonly [id: string]: number };
-  readonly votingIds: readonly string[];
+  readonly voting: DemographicCounts;
+  readonly suffix?: string;
 }) => {
-  const total = sum(Object.values(voting));
-  const percentages = mapValues(voting, (votes: number) => (total ? votes / total : 0) * 100);
-  const rows = votingIds.map(party => (
+  const votesForYear = suffix ? extractYear(voting, suffix) : voting;
+  const total = sum(Object.values(votesForYear));
+  const order = ["republican", "democrat"];
+  // eslint-disable-next-line
+  const percentages = Object.entries(
+    mapValues(votesForYear, (votes: number) => (total ? votes / total : 0) * 100)
+  ).sort(([a], [b]) => {
+    return order.indexOf(b) - order.indexOf(a);
+  });
+  const rows = percentages.map(([party, percent]) => (
     <Row
       key={party}
       party={party}
-      votes={voting[party]}
-      percent={percentages[party]}
+      votes={votesForYear[party]}
+      percent={percent}
       color={getPartyColor(party)}
     />
   ));
+  return rows ? <React.Fragment>{rows}</React.Fragment> : null;
+};
+
+const VotingSidebarTooltip = ({ voting }: { readonly voting: DemographicCounts }) => {
+  const rows16 = <Rows voting={voting} suffix={"16"} />;
+  const rows20 = <Rows voting={voting} suffix={"20"} />;
+  const unspecifiedRows = !rows16 && !rows20 && <Rows voting={voting} />;
+
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
+      <Heading as="h5" sx={style.header}>
+        Presidential 2016
+      </Heading>
       <Styled.table sx={{ margin: "0", width: "100%" }}>
-        <tbody>{rows}</tbody>
+        <tbody>{rows16 || unspecifiedRows}</tbody>
       </Styled.table>
+      {rows20 && (
+        <React.Fragment>
+          <Heading as="h5" sx={style.header}>
+            Presidential 2020
+          </Heading>
+          <Styled.table sx={{ margin: "0", width: "100%" }}>
+            <tbody>{rows20}</tbody>
+          </Styled.table>
+        </React.Fragment>
+      )}
     </Box>
   );
 };
