@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { sum, sortBy } from "lodash";
 import React, { Fragment, memo, useEffect, useMemo, useState } from "react";
 import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
@@ -29,7 +28,8 @@ import {
   assertNever,
   getPartyColor,
   getTargetPopulation,
-  mergeGeoUnits
+  mergeGeoUnits,
+  calculatePVI
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -165,6 +165,12 @@ const ProjectSidebar = ({
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
+  const hasMultElections =
+    staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
+    staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+  const polLabel = hasMultElections
+    ? "Cook Partisan Voting Index (2021)"
+    : "Political lean (2016 presidential)";
   return (
     <Flex sx={style.sidebar} className="map-sidebar">
       <ProjectSidebarHeader
@@ -198,12 +204,7 @@ const ProjectSidebar = ({
               </Styled.th>
               {staticMetadata?.voting && (
                 <Styled.th sx={{ ...style.th, ...style.number }}>
-                  <Tooltip
-                    content={
-                      "Political lean" +
-                      (staticMetadata.labels ? ` (${staticMetadata.labels.election})` : "")
-                    }
-                  >
+                  <Tooltip content={polLabel}>
                     <span>Pol.</span>
                   </Tooltip>
                 </Styled.th>
@@ -339,27 +340,19 @@ const SidebarRow = memo(
       store.dispatch(toggleDistrictLocked(districtId - 1));
     };
 
-    // The voting dobject can be present but have no data, we treat this case as if it isn't there
+    // The voting object can be present but have no data, we treat this case as if it isn't there
     const voting =
       Object.keys(district.properties.voting || {}).length > 0
         ? district.properties.voting
         : undefined;
-    const sortedVotes = voting && sortBy(Object.entries(voting), ([, votes]) => -votes);
-    const winningParty = sortedVotes && sortedVotes[0][0];
-    const color = winningParty && getPartyColor(winningParty);
-    const votesTotal = voting ? sum(Object.values(voting)) : 0;
-    const marginPct =
-      sortedVotes &&
-      votesTotal &&
-      100 * (sortedVotes[0][1] / votesTotal - sortedVotes[1][1] / votesTotal);
+    const pvi = voting && calculatePVI(voting);
+    const color = getPartyColor(pvi && pvi > 0 ? "democrat" : "republican");
+    const partyLabel = pvi && pvi > 0 ? "D" : "R";
     const votingDisplay =
-      voting && winningParty && marginPct !== undefined && voting[winningParty] !== 0 ? (
-        <Box sx={{ color }}>{`${winningParty[0].toUpperCase()}+${marginPct.toLocaleString(
-          undefined,
-          {
-            maximumFractionDigits: 0
-          }
-        )}%`}</Box>
+      pvi !== undefined ? (
+        <Box sx={{ color }}>{`${partyLabel}+${pvi.toLocaleString(undefined, {
+          maximumFractionDigits: 0
+        })}`}</Box>
       ) : (
         <span sx={{ color: "gray.2" }}>{BLANK_VALUE}</span>
       );
@@ -441,8 +434,7 @@ const SidebarRow = memo(
             <Tooltip
               placement="top-start"
               content={
-                votesTotal !== 0 ? (
-                  <VotingSidebarTooltip voting={voting} votingIds={votingIds} />
+                pvi !== undefined ? (
                 ) : (
                   <em>
                     <strong>Empty district.</strong> Add people to this district to view the vote

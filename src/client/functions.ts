@@ -2,6 +2,7 @@ import { toast } from "react-toastify";
 import { cloneDeep } from "lodash";
 
 import {
+  DemographicCounts,
   DistrictsDefinition,
   MutableGeoUnitCollection,
   GeoLevelHierarchy,
@@ -58,6 +59,50 @@ export const capitalizeFirstLetter = (s: string) =>
 
 export const getPartyColor = (party: string) =>
   party === "republican" ? "#BF4E6A" : party === "democrat" ? "#4E56BF" : "#F7AD00";
+
+// Source: https://cookpolitical.com/analysis/national/pvi/introducing-2021-cook-political-report-partisan-voter-index
+const nationalDemVoteShare16 = 51.1;
+const nationalDemVoteShare20 = 52.3;
+const nationalDemVoteShareAvg = nationalDemVoteShare16 + nationalDemVoteShare20 / 2;
+function calculateDemVoteShare(
+  democrat: number,
+  republican: number,
+  other: number
+): number | undefined {
+  const total = democrat + republican + other;
+  return total ? (100 * democrat) / total : undefined;
+}
+
+export function calculatePVI(voting: DemographicCounts): number | undefined {
+  if (
+    "democrat16" in voting &&
+    "republican16" in voting &&
+    "democrat20" in voting &&
+    "republican20" in voting
+  ) {
+    const votes16 = calculateDemVoteShare(
+      voting.democrat16,
+      voting.republican16,
+      voting["other party16"] || 0
+    );
+    const votes20 = calculateDemVoteShare(
+      voting.democrat20,
+      voting.republican20,
+      voting["other party20"] || 0
+    );
+    if (votes16 !== undefined && votes20 !== undefined) {
+      const avgVoteShare = votes16 + votes20 / 2;
+      return avgVoteShare - nationalDemVoteShareAvg;
+    }
+  } else if ("democrat" in voting && "republican" in voting) {
+    // Assume 2016 election data if year is not provided
+    const voteShare = calculateDemVoteShare(voting.democrat, voting.republican, voting.other || 0);
+    if (voteShare !== undefined) {
+      return voteShare - nationalDemVoteShare16;
+    }
+  }
+  return undefined;
+}
 
 /*
  * Assign nested geounit to district.
