@@ -96,23 +96,37 @@ export function calculatePVI(voting: DemographicCounts): number | undefined {
       const avgVoteShare = votes16 + votes20 / 2;
       return avgVoteShare - nationalDemVoteShareAvg;
     }
-  } else if ("democrat" in voting && "republican" in voting) {
-    // Assume 2016 election data if year is not provided
-    const voteShare = calculateDemVoteShare(voting.democrat, voting.republican, voting.other || 0);
+  } else {
+    // We have some states for which we anticipate having only 2016 election data
+    // We assume unspecified vote totals are from 2016
+    const voteShare =
+      "democrat16" in voting && "republican16" in voting
+        ? calculateDemVoteShare(
+            voting.democrat16,
+            voting.republican16,
+            voting["other party16"] || 0
+          )
+        : "democrat" in voting && "republican" in voting
+        ? calculateDemVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        : undefined;
     if (voteShare !== undefined) {
       return voteShare - nationalDemVoteShare16;
     }
   }
   return undefined;
 }
+
 export const hasMultipleElections = (staticMetadata?: IStaticMetadata) =>
   staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
   staticMetadata?.voting?.some(file => file.id.endsWith("20"));
 
 export function extractYear(voting: DemographicCounts, year?: ElectionYear): DemographicCounts {
-  return mapKeys(year ? pickBy(voting, (val, key) => key.endsWith(year)) : voting, (val, key) =>
-    key.slice(0, -2)
-  );
+  return year
+    ? mapKeys(
+        pickBy(voting, (val, key) => key.endsWith(year)),
+        (val, key) => key.slice(0, -2)
+      )
+    : voting;
 }
 
 /*

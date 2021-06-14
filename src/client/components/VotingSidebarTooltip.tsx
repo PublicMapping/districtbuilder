@@ -76,7 +76,7 @@ const getRows = ({
   readonly voting: DemographicCounts;
   readonly year?: ElectionYear;
 }) => {
-  const votesForYear = year ? extractYear(voting, year) : voting;
+  const votesForYear = extractYear(voting, year);
   const total = sum(Object.values(votesForYear));
   const order = ["republican", "democrat"];
   // eslint-disable-next-line
