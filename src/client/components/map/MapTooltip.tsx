@@ -238,7 +238,7 @@ const MapTooltip = ({
         </Grid>
         <Divider sx={{ my: 1, borderColor: "gray.6" }} />
         <Box sx={{ width: "100%" }}>
-          <DemographicsTooltip demographics={data.demographics} />
+          <DemographicsTooltip demographics={data.demographics} abbreviate={true} />
           {voting && (
             <React.Fragment>
               <Divider sx={{ my: 1, borderColor: "gray.6" }} />
