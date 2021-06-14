@@ -1,21 +1,29 @@
 /** @jsx jsx */
 import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
+import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
 import {
+  DistrictsGeoJSON,
   EvaluateMetric,
   EvaluateMetricWithValue,
-  IProject,
-  IStaticMetadata,
-  RegionLookupProperties
-} from "../../../shared/entities";
+  ElectionYear,
+  Party
+} from "../../types";
 import store from "../../store";
+import { hasMultipleElections } from "../../functions";
 import { regionPropertiesFetch } from "../../actions/regionConfig";
-import { DistrictsGeoJSON } from "../../types";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
 import { useState, useEffect } from "react";
 import { Resource } from "../../resource";
-import { geoLevelLabelSingular, getTargetPopulation } from "../../functions";
+import { selectEvaluationMetric } from "../../actions/districtDrawing";
+
+import {
+  geoLevelLabelSingular,
+  getTargetPopulation,
+  calculatePVI,
+  getPartyColor
+} from "../../functions";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
@@ -45,7 +53,10 @@ const ProjectEvaluateSidebar = ({
   const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
   const [avgPopulation, setAvgPopulation] = useState<number | undefined>(undefined);
   const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
-  const popThreshold = project && project.populationDeviation / 100.0;
+  const [electionYear, setEvaluateElectionYear] = useState<ElectionYear>("combined");
+  const [avgCompetitiveness, setAvgCompetitiveness] = useState<number | undefined>(undefined);
+  const [party, setParty] = useState<Party | undefined>(undefined);
+  const popThreshold = project && project.populationDeviation;
   useEffect(() => {
     if (geojson && !avgCompactness) {
       const features = geojson.features.slice(1).filter(f => f.properties.compactness !== 0);
@@ -84,12 +95,63 @@ const ProjectEvaluateSidebar = ({
         f.id !== 0 &&
         f.properties.percentDeviation !== undefined &&
         f.properties.populationDeviation !== undefined &&
-        (Math.abs(f.properties.percentDeviation) <= popThreshold ||
+        (Math.abs(f.properties.percentDeviation) <= popThreshold / 100.0 ||
           Math.abs(f.properties.populationDeviation) < 1)
       );
     }).length;
   const numDistrictsWithPopulation =
     geojson && geojson.features.filter(f => f.properties.demographics.population > 0).length;
+
+  useEffect(() => {
+    if (
+      (!avgCompetitiveness ||
+        (metric && "electionYear" in metric && electionYear !== metric.electionYear)) &&
+      numDistrictsWithPopulation &&
+      numDistrictsWithPopulation > 1
+    ) {
+      const numDistrictsWithPvi =
+        geojson &&
+        geojson.features
+          .filter(f => f.id !== 0 && f.properties.demographics.population > 0)
+          .filter(f => Object.keys(f.properties.voting || {}).length > 0).length;
+
+      const competitiveness =
+        geojson && geojson.features && numDistrictsWithPvi && numDistrictsWithPvi > 0
+          ? geojson.features
+              .filter(f => f.id !== 0)
+              .map(f => {
+                const voting =
+                  Object.keys(f.properties.voting || {}).length > 0
+                    ? f.properties.voting
+                    : undefined;
+                const pvi = voting && calculatePVI(voting, electionYear);
+                return pvi || 0;
+              })
+              .reduce((a, b) => a + b) / numDistrictsWithPvi
+          : undefined;
+
+      setAvgCompetitiveness(competitiveness);
+      const partyLabel = competitiveness && competitiveness > 0 ? "D" : "R";
+      const partyColor = getPartyColor(
+        competitiveness && competitiveness > 0 ? "democrat" : "republican"
+      );
+      const party: Party = { color: partyColor, label: partyLabel };
+      setParty(party);
+      if (metric && metric.key === "competitiveness") {
+        metric &&
+          store.dispatch(
+            selectEvaluationMetric({
+              ...metric,
+              electionYear: electionYear,
+              party: party,
+              value: competitiveness
+            })
+          );
+      }
+    }
+  }, [electionYear, geojson, metric, avgCompetitiveness, numDistrictsWithPopulation]);
+
+  const multipleElections = hasMultipleElections(staticMetadata);
 
   const requiredMetrics: readonly EvaluateMetricWithValue[] = [
     {
@@ -105,7 +167,7 @@ const ProjectEvaluateSidebar = ({
       longText:
         (popThreshold !== undefined &&
           `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
-            popThreshold * 100
+            popThreshold
           )}%) above or below that target.`) ||
         "",
       avgPopulation: avgPopulation,
@@ -133,12 +195,16 @@ const ProjectEvaluateSidebar = ({
     }
   ];
   const optionalMetrics: readonly EvaluateMetric[] = [
-    // TODO: Add competitiveness display (??)
-    // {
-    //   key: "competitiveness",
-    //   name: "Competitiveness",
-    //   description: "are competitive"
-    // },
+    {
+      key: "competitiveness",
+      name: "Competitiveness",
+      description: "are competitive",
+      type: "pvi",
+      party: party,
+      value: avgCompetitiveness,
+      hasMultipleElections: multipleElections,
+      electionYear: electionYear
+    },
     {
       key: "compactness",
       name: "Compactness",
@@ -194,6 +260,8 @@ const ProjectEvaluateSidebar = ({
           geojson={geojson}
           metric={metric}
           project={project}
+          electionYear={electionYear}
+          setElectionYear={setEvaluateElectionYear}
           geoLevel={geoLevel}
           regionProperties={regionProperties}
           staticMetadata={staticMetadata}

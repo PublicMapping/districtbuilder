@@ -13,9 +13,10 @@ import {
   IStaticMetadata,
   RegionLookupProperties,
   IUser,
-  UintArrays,
-  EvaluateMetric
+  UintArrays
 } from "../../shared/entities";
+import { ElectionYear, EvaluateMetric } from "../types";
+
 import { projectDataFetch } from "../actions/projectData";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
@@ -38,7 +39,6 @@ import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
-import { ElectionYear } from "../actions/districtDrawing";
 
 interface StateProps {
   readonly project?: IProject;

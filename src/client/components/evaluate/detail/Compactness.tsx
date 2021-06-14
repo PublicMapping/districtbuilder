@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
-import { EvaluateMetricWithValue, DistrictProperties } from "../../../../shared/entities";
 import { getCompactnessStops } from "../../map/index";
-import { DistrictsGeoJSON } from "../../../types";
+import { EvaluateMetricWithValue, DistrictsGeoJSON } from "../../../types";
 import { getCompactnessDisplay } from "../../ProjectSidebar";
+import { computeRowFill } from "../../../functions";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -63,22 +63,7 @@ const CompactnessMetricDetail = ({
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
 }) => {
-  function computeRowFill(row: DistrictProperties) {
-    const val = row.compactness;
-    const choroplethStops = getCompactnessStops();
-    // eslint-disable-next-line
-    let i = 0;
-    // eslint-disable-next-line
-    while (i < choroplethStops.length) {
-      const r = choroplethStops[i];
-      if (val < r[0]) {
-        return r[1];
-      } else {
-        i++;
-      }
-    }
-    return "#fff";
-  }
+  const choroplethStops = getCompactnessStops();
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
@@ -107,7 +92,7 @@ const CompactnessMetricDetail = ({
                             width: "15px",
                             height: "15px",
                             borderRadius: "small",
-                            bg: computeRowFill(feature.properties)
+                            bg: computeRowFill(choroplethStops, feature.properties.compactness)
                           }}
                         ></Styled.div>
                         <Box>{getCompactnessDisplay(feature.properties)}</Box>

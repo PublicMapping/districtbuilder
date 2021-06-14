@@ -15,35 +15,6 @@ export interface IUser {
   readonly organizations: readonly OrganizationNest[];
 }
 
-export type MetricKey =
-  | "equalPopulation"
-  | "contiguity"
-  | "competitiveness"
-  | "compactness"
-  | "minorityMajority"
-  | "countySplits";
-
-export interface BaseEvaluateMetric {
-  readonly key: MetricKey;
-  readonly name: string;
-  readonly description: string;
-  readonly longText?: string;
-  readonly shortText?: string;
-}
-
-export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
-  readonly type: "fraction" | "percent" | "count";
-  readonly value?: number;
-  readonly total?: number;
-  readonly avgPopulation?: number;
-  readonly popThreshold?: number;
-  readonly status?: boolean;
-  // eslint-disable-next-line
-  readonly [key: string]: any;
-}
-
-export type EvaluateMetric = BaseEvaluateMetric | EvaluateMetricWithValue;
-
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
 
 export type OrganizationSlug = string;
@@ -105,6 +76,7 @@ export type DistrictProperties = {
   color?: string;
   outlineColor?: string;
   percentDeviation?: number;
+  pvi?: number;
   populationDeviation?: number;
   outlineWidthScaleFactor?: number;
   /* eslint-enable */

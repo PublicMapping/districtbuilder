@@ -1,9 +1,10 @@
 /** @jsx jsx */
 import { Box, IconButton, Flex, jsx, ThemeUIStyleObject, Heading, Text } from "theme-ui";
 
-import { EvaluateMetric, EvaluateMetricWithValue } from "../../../shared/entities";
 import Icon from "../Icon";
 import store from "../../store";
+import { EvaluateMetric, EvaluateMetricWithValue } from "../../types";
+import { formatPvi } from "../../functions";
 import { selectEvaluationMetric, toggleEvaluate } from "../../actions/districtDrawing";
 
 const style: ThemeUIStyleObject = {
@@ -64,6 +65,8 @@ const ProjectEvaluateView = ({
     switch (metric.type) {
       case "fraction":
         return `${metric.value} / ${metric.total || 18}`;
+      case "pvi":
+        return formatPvi(metric.party, metric.value);
       case "percent":
         return metric.value !== undefined ? `${Math.floor(metric.value * 100)}%` : "";
       case "count":

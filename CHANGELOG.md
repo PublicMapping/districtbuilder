@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add tooltip for population deviation in project sidebar [#819](https://github.com/PublicMapping/districtbuilder/pull/819)
 - Add ability to archive regions as read-only to reduce memory requirements [#831](https://github.com/PublicMapping/districtbuilder/pull/831)
 - Add voting info to labels selector [#840](https://github.com/PublicMapping/districtbuilder/pull/840)
+- Add evaluate mode metric view for competitiveness [#824](https://github.com/PublicMapping/districtbuilder/pull/824)
 
 ### Changed
 

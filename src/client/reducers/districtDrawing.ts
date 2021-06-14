@@ -35,19 +35,14 @@ import {
   setZoomToDistrictId,
   setMapLabel,
   toggleKeyboardShortcutsModal,
-  setElectionYear,
-  ElectionYear
+  setElectionYear
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import {
-  DistrictId,
-  EvaluateMetric,
-  GeoUnits,
-  GeoUnitsForLevel,
-  LockedDistricts
-} from "../../shared/entities";
+import { DistrictId, GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
+import { ElectionYear, EvaluateMetric } from "../types";
+
 import { ProjectState, initialProjectState } from "./project";
 import {
   pushEffect,

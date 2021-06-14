@@ -1,8 +1,9 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
-import { DistrictProperties } from "../../../../shared/entities";
+import { getPviSteps } from "../../map/index";
 import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
-import { CONTIGUITY_FILL_COLOR, EVALUATE_GRAY_FILL_COLOR } from "../../map/index";
+import PVIDisplay from "../../PVIDisplay";
+import { formatPvi, computeRowFill, calculatePVI } from "../../../functions";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -55,26 +56,27 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const ContiguityMetricDetail = ({
+const CompetitivenessMetricDetail = ({
   metric,
   geojson
 }: {
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
 }) => {
-  function computeRowFill(row: DistrictProperties) {
-    return row.contiguity === "contiguous" ? CONTIGUITY_FILL_COLOR : EVALUATE_GRAY_FILL_COLOR;
-  }
+  const choroplethStops = getPviSteps();
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-        {metric.value} of {metric.total} districts are contiguous
+        Partisan Voting Index (PVI):
+        <span sx={{ color: metric.party?.color || "#000" }}>
+          {formatPvi(metric.party, metric.value)}
+        </span>
       </Heading>
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
             <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.colLast }}>Contiguity</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colLast }}>Partisan Voting Index</Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
@@ -84,25 +86,27 @@ const ContiguityMetricDetail = ({
                 <Styled.tr key={id}>
                   <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
                   <Styled.td sx={{ ...style.td, ...style.colLast }}>
-                    {feature.properties.contiguity ? (
+                    {feature.properties.voting && metric.electionYear ? (
                       <Flex sx={{ alignItems: "center" }}>
-                        <Box
+                        <Styled.div
                           sx={{
                             mr: 2,
                             width: "15px",
                             height: "15px",
                             borderRadius: "small",
-                            bg: computeRowFill(feature.properties)
+                            bg:
+                              feature.properties.pvi &&
+                              computeRowFill(
+                                choroplethStops,
+                                calculatePVI(feature.properties.voting, metric.electionYear),
+                                true
+                              )
                           }}
-                        ></Box>
-                        <Box>
-                          {feature.properties.contiguity === "contiguous"
-                            ? "Contiguous"
-                            : "Non-contiguous"}
-                        </Box>
+                        ></Styled.div>
+                        <PVIDisplay properties={feature.properties} year={metric.electionYear} />
                       </Flex>
                     ) : (
-                      <Box sx={style.blankValue}>–</Box>
+                      <Box sx={style.blankValue}>-</Box>
                     )}
                   </Styled.td>
                 </Styled.tr>
@@ -114,4 +118,4 @@ const ContiguityMetricDetail = ({
   );
 };
 
-export default ContiguityMetricDetail;
+export default CompetitivenessMetricDetail;

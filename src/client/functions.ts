@@ -12,11 +12,12 @@ import {
   NestedArray,
   IStaticMetadata
 } from "../shared/entities";
+import { ChoroplethSteps, ElectionYear, Party } from "./types";
+
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
 import { isThisYear, isToday } from "date-fns";
 import format from "date-fns/format";
-import { ElectionYear } from "./actions/districtDrawing";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
@@ -62,6 +63,55 @@ export const capitalizeFirstLetter = (s: string) =>
 export const getPartyColor = (party: string) =>
   party === "republican" ? "#BF4E6A" : party === "democrat" ? "#4E56BF" : "#F7AD00";
 
+export function formatPvi(party?: Party, value?: number): string {
+  return value !== undefined && party !== undefined
+    ? `${party.label}+${Math.abs(value).toLocaleString(undefined, {
+        maximumFractionDigits: 0
+      })}`
+    : "N/A";
+}
+
+function computeRowFillInterval(stops: ChoroplethSteps, value?: number) {
+  if (value) {
+    // eslint-disable-next-line
+    for (let i = 0; i < stops.length; i++) {
+      const r = stops[i];
+      if (value >= r[0]) {
+        if (i < stops.length - 1) {
+          const r1 = stops[i + 1];
+          if (value < r1[0]) {
+            return r[1];
+          }
+        } else {
+          return r[1];
+        }
+      } else {
+        return r[1];
+      }
+    }
+  }
+  return "#fff";
+}
+
+export function computeRowFill(stops: ChoroplethSteps, value?: number, interval?: boolean): string {
+  // eslint-disable-next-line
+  let i = 0;
+  if (!interval) {
+    // eslint-disable-next-line
+    while (i < stops.length) {
+      const r = stops[i];
+      if (value && value < r[0]) {
+        return r[1];
+      } else {
+        i++;
+      }
+    }
+    return "#fff";
+  } else {
+    return computeRowFillInterval(stops, value);
+  }
+}
+
 // Source: https://cookpolitical.com/analysis/national/pvi/introducing-2021-cook-political-report-partisan-voter-index
 const nationalDemVoteShare16 = 51.1;
 const nationalDemVoteShare20 = 52.3;
@@ -75,12 +125,21 @@ function calculateDemVoteShare(
   return total ? (100 * democrat) / total : undefined;
 }
 
-export function calculatePVI(voting: DemographicCounts): number | undefined {
+/**
+ * Computes the Cook Political Partisan Voting Index (PVI).
+ * Positive values indicate that a district leans Democrat,
+ * and negative values indicate that a district leans Republican.
+ * @param  {[DemographicCounts]} voting
+ * @return {[number | undefined]} pvi
+ */
+export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): number | undefined {
   if (
     "democrat16" in voting &&
     "republican16" in voting &&
     "democrat20" in voting &&
-    "republican20" in voting
+    "republican20" in voting &&
+    year !== "16" &&
+    year !== "20"
   ) {
     const votes16 = calculateDemVoteShare(
       voting.democrat16,
@@ -95,6 +154,20 @@ export function calculatePVI(voting: DemographicCounts): number | undefined {
     if (votes16 !== undefined && votes20 !== undefined) {
       const avgVoteShare = votes16 + votes20 / 2;
       return avgVoteShare - nationalDemVoteShareAvg;
+    }
+  } else if (year === "20") {
+    const voteShare =
+      "democrat20" in voting && "republican20" in voting
+        ? calculateDemVoteShare(
+            voting.democrat20,
+            voting.republican20,
+            voting["other party20"] || 0
+          )
+        : "democrat" in voting && "republican" in voting
+        ? calculateDemVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        : undefined;
+    if (voteShare !== undefined) {
+      return voteShare - nationalDemVoteShare20;
     }
   } else {
     // We have some states for which we anticipate having only 2016 election data
@@ -113,7 +186,6 @@ export function calculatePVI(voting: DemographicCounts): number | undefined {
       return voteShare - nationalDemVoteShare16;
     }
   }
-  return undefined;
 }
 
 export const hasMultipleElections = (staticMetadata?: IStaticMetadata) =>
