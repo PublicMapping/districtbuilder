@@ -8,8 +8,7 @@ import {
   GeoUnits,
   GeoUnitIndices,
   GeoUnitHierarchy,
-  NestedArray,
-  IProject
+  NestedArray
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
@@ -134,12 +133,13 @@ export function assignGeounitsToDistrict(
 // The target population is based on the average population of all districts,
 // not including the unassigned district, so we use the number of districts,
 // rather than the district feature count (which includes the unassigned district)
-export function getTargetPopulation(geojson: DistrictsGeoJSON, project: IProject) {
+export function getTargetPopulation(geojson: DistrictsGeoJSON) {
   return (
     geojson.features.reduce(
       (population, feature) => population + feature.properties.demographics.population,
       0
-    ) / project.numberOfDistricts
+    ) /
+    (geojson.features.length - 1)
   );
 }
 

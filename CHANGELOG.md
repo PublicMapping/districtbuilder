@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't show limit to county option in read-only mode [#777](https://github.com/PublicMapping/districtbuilder/pull/777)
 - Include unassigned district when switching using keyboard shortcuts [#779](https://github.com/PublicMapping/districtbuilder/pull/779)
 - Fix calculation of average compactness [#778](https://github.com/PublicMapping/districtbuilder/pull/778)
+- Fix computation of equal population flags for population deviation of zero [#806](https://github.com/PublicMapping/districtbuilder/pull/806)
 
 ## [1.5.0] - 2021-05-13
 

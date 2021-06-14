@@ -13,11 +13,10 @@ import {
   MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays,
-  EvaluateMetricWithValue
+  UintArrays
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
-import { isBaseGeoLevelAlwaysVisible } from "../../functions";
+import { isBaseGeoLevelAlwaysVisible, getTargetPopulation } from "../../functions";
 import { mapValues } from "lodash";
 
 // Vector tiles with geolevel data for this geography
@@ -69,72 +68,44 @@ export const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getChoroplethStops(metricKey: string, popThreshold?: number) {
-  const compactnessSteps = [
+export function getCompactnessStops() {
+  return [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
     [0.5, "#66c2a4"],
     [0.6, "#2ca25f"],
     [1.0, "#006d2c"]
   ];
-
-  const equalPopulationSteps =
-    popThreshold !== undefined
-      ? [
-          [-1.0, "#D1E5F0"],
-          [-1 * (popThreshold + 0.02), "#66A9CF"],
-          [-1 * (popThreshold + 0.01), "#2166AC"],
-          [-1 * popThreshold, "#01665E"],
-          [popThreshold, "#EFBE60"],
-          [popThreshold + 0.01, "#F5D092"],
-          [popThreshold + 0.02, "#F7E1C3"]
-        ]
-      : [
-          [-1.0, "#D1E5F0"],
-          [1.0, "#F7E1C3"]
-        ];
-  switch (metricKey) {
-    case "compactness":
-      return compactnessSteps;
-    case "equalPopulation":
-      return equalPopulationSteps;
-    default:
-      return [];
-  }
 }
 
-export function getChoroplethLabels(metricKey: string, populationDeviation?: number) {
-  const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
-  const steps = getChoroplethStops(metricKey, populationDeviation);
-  switch (metricKey) {
-    case "compactness":
-      return compactnessLabels;
-    case "equalPopulation":
-      return steps.map((step, i) => {
-        const stepVal = Number(step[0]);
-        if (i === 0) {
-          // Lower bound condition
-          return `< ${Math.ceil(Number(steps[1][0]) * 100)}%`;
-        } else if (i === steps.length - 1) {
-          // Upper bound condition
-          return `> ${Math.floor(stepVal * 100)}%`;
-        } else {
-          const nextStep = Number(steps[i + 1][0]);
-          if (stepVal < 0 && nextStep > 0) {
-            // Target condition
-            return `Target (+/- ${Math.floor(nextStep * 100)}%)`;
-          } else {
-            if (stepVal < 0) {
-              return `${Math.ceil(stepVal * 100)}% to ${Math.ceil(nextStep * 100)}%`;
-            } else {
-              return `${Math.floor(stepVal * 100)}% to ${Math.floor(nextStep * 100)}%`;
-            }
-          }
-        }
-      });
-    default:
-      return [];
-  }
+export function getEqualPopulationStops(popThresholdNum: number, avgPopulation: number) {
+  const popThreshold = popThresholdNum / 100;
+  const isAvgFractional = avgPopulation % 1 !== 0;
+  return [
+    [-1.0 * avgPopulation, "#D1E5F0"],
+    [-1 * (popThreshold + 0.02) * avgPopulation, "#66A9CF"],
+    [-1 * (popThreshold + 0.01) * avgPopulation, "#2166AC"],
+    [-1 * popThreshold * avgPopulation - (isAvgFractional ? 1 : 0.1), "#01665E"],
+    [popThreshold === 0 ? (isAvgFractional ? 1 : 0.1) : popThreshold * avgPopulation, "#EFBE60"],
+    [(popThreshold + 0.01) * avgPopulation, "#F5D092"],
+    [(popThreshold + 0.02) * avgPopulation, "#F7E1C3"]
+  ];
+}
+
+export function getCompactnessLabels() {
+  return ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
+}
+
+export function getEqualPopulationLabels(popThreshold: number) {
+  return [
+    [`< ${Math.ceil(-1 * (popThreshold + 2))}%`],
+    [`${-1 * Math.ceil(popThreshold + 2)}% to ${-1 * Math.ceil(popThreshold + 1)}%`],
+    [`${-1 * Math.ceil(popThreshold + 1)}% to ${-1 * Math.ceil(popThreshold)}%`],
+    [popThreshold !== 0 ? `Target (+/- ${Math.floor(popThreshold)}%)` : `Target (0%)`],
+    [`${Math.floor(popThreshold)}% to ${Math.floor(popThreshold + 1)}%`],
+    [`${Math.floor(popThreshold + 1)}% to ${Math.floor(popThreshold + 2)}%`],
+    [`> ${Math.floor(popThreshold + 2)}%`]
+  ];
 }
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
@@ -179,9 +150,8 @@ export function generateMapLayers(
   /* eslint-disable */
   map: any,
   geojson: any,
-  metric?: EvaluateMetricWithValue,
-  populationDeviation?: number
   /* eslint-enable */
+  populationDeviation: number
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
     type: "geojson",
@@ -228,7 +198,7 @@ export function generateMapLayers(
       paint: {
         "fill-color": {
           property: "compactness",
-          stops: getChoroplethStops("compactness")
+          stops: getCompactnessStops()
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
@@ -237,6 +207,7 @@ export function generateMapLayers(
     DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
+  const avgPopulation = getTargetPopulation(geojson);
   map.addLayer(
     {
       id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
@@ -246,11 +217,9 @@ export function generateMapLayers(
       filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
         "fill-color": {
-          property: "percentDeviation",
+          property: "populationDeviation",
           type: "interval",
-          stops: populationDeviation
-            ? getChoroplethStops("equalPopulation", populationDeviation / 100.0)
-            : getChoroplethStops("equalPopulation")
+          stops: getEqualPopulationStops(populationDeviation, avgPopulation)
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9

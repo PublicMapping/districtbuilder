@@ -151,7 +151,6 @@ const ProjectSidebar = ({
   lockedDistricts,
   hoveredDistrictId,
   saving,
-  avgPopulation,
   isReadOnly
 }: {
   readonly project?: IProject;
@@ -164,7 +163,6 @@ const ProjectSidebar = ({
   readonly lockedDistricts: LockedDistricts;
   readonly hoveredDistrictId: number | null;
   readonly saving: SavingState;
-  readonly avgPopulation?: number;
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
   return (
@@ -321,12 +319,14 @@ const SidebarRow = memo(
         : negativeChangeColor
       : "inherit";
     const intermediatePopulation = demographics.population + selectedDifference;
-    const intermediateDeviation = deviation + selectedDifference;
+    const intermediateDeviation = Math.ceil(deviation + selectedDifference);
+    const absoluteDeviation = Math.floor(Math.abs(deviation + selectedDifference));
     const populationDisplay = intermediatePopulation.toLocaleString();
     const isMinorityMajority = demographics.white / demographics.population < 0.5;
-    const deviationDisplay = `${intermediateDeviation > 0 ? "+" : ""}${Math.round(
-      intermediateDeviation
-    ).toLocaleString()}`;
+    const deviationDisplay =
+      intermediateDeviation === 0
+        ? "0"
+        : `${intermediateDeviation > 0 ? "+" : ""}${intermediateDeviation.toLocaleString()}`;
 
     const compactnessDisplay =
       districtId === 0 ? (
@@ -401,8 +401,8 @@ const SidebarRow = memo(
         <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
           <span>{deviationDisplay}</span>
           <span sx={style.deviationIcon}>
-            {(districtId === 0 && Math.abs(intermediateDeviation) === 0) ||
-            (districtId !== 0 && Math.abs(intermediateDeviation) <= popDeviationThreshold) ? (
+            {(districtId === 0 && absoluteDeviation === 0) ||
+            (districtId !== 0 && absoluteDeviation <= popDeviationThreshold) ? (
               <Icon name="circle-check-solid" color="#388a64" />
             ) : intermediateDeviation < 0 ? (
               <Icon name="arrow-circle-down-solid" color="gray.4" />
@@ -572,7 +572,7 @@ const SidebarRows = ({
     };
   }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
-  const averagePopulation = getTargetPopulation(geojson, project);
+  const averagePopulation = getTargetPopulation(geojson);
 
   return (
     <React.Fragment>
@@ -588,20 +588,13 @@ const SidebarRows = ({
             ? -1 * selectedPopulation
             : undefined;
 
-        // The population goal for the unassigned district is 0,
-        // so it's deviation is equal to its population
-        const deviation =
-          districtId === 0
-            ? feature.properties.demographics.population
-            : feature.properties.demographics.population - averagePopulation;
-
-        return (
+        return feature.properties.populationDeviation !== undefined ? (
           <SidebarRow
             district={feature}
             selected={selected}
             selectedPopulationDifference={selectedPopulationDifference || 0}
             demographics={feature.properties.demographics}
-            deviation={deviation}
+            deviation={feature.properties.populationDeviation}
             key={districtId}
             isDistrictLocked={lockedDistricts[districtId - 1]}
             isDistrictHovered={districtId === hoveredDistrictId}
@@ -610,7 +603,7 @@ const SidebarRows = ({
             popDeviationThreshold={averagePopulation * (project.populationDeviation / 100)}
             votingIds={votingIds}
           />
-        );
+        ) : null;
       })}
     </React.Fragment>
   );

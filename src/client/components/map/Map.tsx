@@ -51,15 +51,17 @@ import {
   DISTRICTS_LAYER_ID,
   DISTRICTS_LABELS_SOURCE_ID,
   levelToSelectionLayerId,
-  getChoroplethLabels,
-  getChoroplethStops,
   DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
   CONTIGUITY_FILL_COLOR,
   COUNTY_SPLIT_FILL_COLOR,
   EVALUATE_GRAY_FILL_COLOR,
   DISTRICTS_EVALUATE_LABELS_LAYER_ID,
   DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
-  DISTRICTS_OUTLINE_LAYER_ID
+  DISTRICTS_OUTLINE_LAYER_ID,
+  getCompactnessStops,
+  getEqualPopulationStops,
+  getCompactnessLabels,
+  getEqualPopulationLabels
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -277,6 +279,8 @@ const DistrictsMap = ({
 
   const selectedGeolevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex);
 
+  const avgPopulation = getTargetPopulation(geojson);
+
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
   const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
 
@@ -323,7 +327,6 @@ const DistrictsMap = ({
     const setLevelVisibility = () => {
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
     };
-
     const onMapLoad = () => {
       generateMapLayers(
         project.regionConfig.s3URI,
@@ -333,7 +336,6 @@ const DistrictsMap = ({
         maxZoom,
         map,
         geojson,
-        evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined,
         project?.populationDeviation
       );
 
@@ -417,7 +419,6 @@ const DistrictsMap = ({
 
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
-    const avgPopulation = getTargetPopulation(geojson, project);
     // Add a color property to the geojson, so it can be used for styling
     geojson.features.forEach((feature, id) => {
       const districtColor = getDistrictColor(id);
@@ -435,7 +436,14 @@ const DistrictsMap = ({
           : "transparent";
       // eslint-disable-next-line
       feature.properties.color = districtColor;
-      const populationDeviation = feature.properties.demographics.population - avgPopulation;
+
+      // The population goal for the unassigned district is 0,
+      // so it's deviation is equal to its population
+      const populationDeviation =
+        id === 0
+          ? feature.properties.demographics.population
+          : feature.properties.demographics.population - avgPopulation;
+
       // eslint-disable-next-line
       feature.properties.percentDeviation =
         feature.properties.demographics.population > 0 && feature.id !== 0
@@ -449,7 +457,7 @@ const DistrictsMap = ({
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool, project]);
+  }, [map, geojson, findMenuOpen, findTool, avgPopulation]);
 
   // Update layer styles when district is selected/hovered
   useEffect(() => {
@@ -902,7 +910,7 @@ const DistrictsMap = ({
           <Flex sx={{ alignItems: "center" }}>
             <Text sx={style.legendTitle}>Compactness</Text>
             <Box sx={{ display: "inline-block" }}>
-              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+              {getCompactnessStops().map((step, i) => (
                 <Flex sx={style.legendItem} key={i}>
                   <Box
                     sx={{
@@ -910,7 +918,7 @@ const DistrictsMap = ({
                       backgroundColor: `${step[1]}`
                     }}
                   ></Box>
-                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
+                  <Text sx={style.legendLabel}>{getCompactnessLabels()[i]}</Text>
                 </Flex>
               ))}
             </Box>
@@ -922,7 +930,7 @@ const DistrictsMap = ({
           <Flex sx={{ alignItems: "center" }}>
             <Text sx={style.legendTitle}>Equal Population</Text>
             <Box sx={{ display: "inline-block" }}>
-              {getChoroplethStops(evaluateMetric.key, project.populationDeviation).map(
+              {getEqualPopulationStops(project.populationDeviation, avgPopulation).map(
                 (step, i) => (
                   <Flex sx={style.legendItem} key={i}>
                     <Box
@@ -932,12 +940,7 @@ const DistrictsMap = ({
                       }}
                     ></Box>
                     <Text sx={style.legendLabel}>
-                      {project
-                        ? getChoroplethLabels(
-                            evaluateMetric.key,
-                            project.populationDeviation / 100.0
-                          )[i]
-                        : ""}
+                      {project ? getEqualPopulationLabels(project.populationDeviation)[i] : ""}
                     </Text>
                   </Flex>
                 )

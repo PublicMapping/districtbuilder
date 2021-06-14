@@ -57,11 +57,10 @@ const ProjectEvaluateSidebar = ({
   }, [geojson, avgCompactness]);
 
   useEffect(() => {
-    if (geojson && !avgPopulation && project) {
-      getTargetPopulation(geojson, project);
-      setAvgPopulation(getTargetPopulation(geojson, project));
+    if (geojson && !avgPopulation) {
+      setAvgPopulation(getTargetPopulation(geojson));
     }
-  }, [geojson, avgPopulation, project]);
+  }, [geojson, avgPopulation]);
 
   useEffect(() => {
     if (staticMetadata) {
@@ -77,23 +76,29 @@ const ProjectEvaluateSidebar = ({
     }
   }, [project, geoLevel]);
 
+  const numEqualPopDistricts =
+    geojson &&
+    popThreshold !== undefined &&
+    geojson?.features.filter(f => {
+      return (
+        f.id !== 0 &&
+        f.properties.percentDeviation !== undefined &&
+        f.properties.populationDeviation !== undefined &&
+        (Math.abs(f.properties.percentDeviation) <= popThreshold ||
+          Math.abs(f.properties.populationDeviation) < 1)
+      );
+    }).length;
+  const numDistrictsWithPopulation =
+    geojson && geojson.features.filter(f => f.properties.demographics.population > 0).length;
+
   const requiredMetrics: readonly EvaluateMetricWithValue[] = [
     {
       key: "equalPopulation",
       name: "Equal Population",
       status:
-        (avgPopulation &&
-          geojson &&
-          popThreshold !== undefined &&
-          geojson?.features.filter(f => {
-            return (
-              f.id !== 0 &&
-              f.properties.percentDeviation &&
-              Math.abs(f.properties.percentDeviation) <= popThreshold
-            );
-          }).length ===
-            geojson?.features.filter(f => f.properties.demographics.population > 0).length - 1) ||
-        false,
+        numEqualPopDistricts !== undefined &&
+        numDistrictsWithPopulation !== undefined &&
+        numEqualPopDistricts === numDistrictsWithPopulation,
       description: "have equal population",
       shortText:
         "The U.S. constitution requires that each district have about the same population for a map to be considered valid.",
@@ -103,20 +108,11 @@ const ProjectEvaluateSidebar = ({
             popThreshold * 100
           )}%) above or below that target.`) ||
         "",
-      avgPopulation: avgPopulation || undefined,
+      avgPopulation: avgPopulation,
       popThreshold: popThreshold,
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
-      value:
-        avgPopulation && geojson && popThreshold !== undefined
-          ? geojson?.features.filter(f => {
-              return (
-                f.id !== 0 &&
-                f.properties.percentDeviation &&
-                Math.abs(f.properties.percentDeviation) <= popThreshold
-              );
-            }).length
-          : 0
+      value: numEqualPopDistricts || 0
     },
     {
       key: "contiguity",

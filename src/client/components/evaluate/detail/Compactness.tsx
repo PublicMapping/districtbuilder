@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
 import { EvaluateMetricWithValue, DistrictProperties } from "../../../../shared/entities";
-import { getChoroplethStops } from "../../map/index";
+import { getCompactnessStops } from "../../map/index";
 import { DistrictsGeoJSON } from "../../../types";
 import { getCompactnessDisplay } from "../../ProjectSidebar";
 
@@ -65,7 +65,7 @@ const CompactnessMetricDetail = ({
 }) => {
   function computeRowFill(row: DistrictProperties) {
     const val = row.compactness;
-    const choroplethStops = getChoroplethStops(metric.key);
+    const choroplethStops = getCompactnessStops();
     // eslint-disable-next-line
     let i = 0;
     // eslint-disable-next-line
