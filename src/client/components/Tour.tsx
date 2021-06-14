@@ -27,7 +27,7 @@ class Tour extends Component<Props, State> {
     super(props);
 
     const numberOfDistricts = props.project.numberOfDistricts;
-    const population = Number(Math.round(getTargetPopulation(props.geojson))).toLocaleString();
+    const population = Math.round(getTargetPopulation(props.geojson)).toLocaleString();
     const regionConfig = props.project.regionConfig.name;
     const geoLevelsSingular = props.staticMetadata.geoLevelHierarchy
       .map(geolevel => geolevel.id)
