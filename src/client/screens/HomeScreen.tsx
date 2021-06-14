@@ -146,8 +146,7 @@ const HomeScreen = ({ projects, user }: StateProps) => {
                 communities and lead to fair representation. We are excited to see what you build!
                 And for extra help, check out the{" "}
                 <Styled.a
-                  href="https://github.com/PublicMapping/districtbuilder/wiki/G
-etting-Started-with-DistrictBuilder"
+                  href="https://github.com/PublicMapping/districtbuilder/wiki/Getting-Started-with-DistrictBuilder"
                   target="_blank"
                 >
                   getting started guide
