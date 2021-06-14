@@ -8,6 +8,8 @@ import { toggleKeyboardShortcutsModal } from "../../actions/districtDrawing";
 import { State } from "../../reducers";
 import store from "../../store";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
+import { IStaticMetadata } from "../../../shared/entities";
+import { hasMultipleElections } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -62,15 +64,18 @@ const style: ThemeUIStyleObject = {
 const KeyboardShortcutsModal = ({
   showModal,
   isReadOnly,
-  evaluateMode
+  evaluateMode,
+  staticMetadata
 }: {
   readonly showModal: boolean;
   readonly isReadOnly: boolean;
   readonly evaluateMode: boolean;
+  readonly staticMetadata?: IStaticMetadata;
 }) => {
   const hideModal = () => void store.dispatch(toggleKeyboardShortcutsModal());
   const os = navigator.appVersion.indexOf("Mac") !== -1 ? "Mac" : "pc";
   const meta = os === "Mac" ? "⌘" : "CTRL";
+  const multipleElections = hasMultipleElections(staticMetadata);
 
   return showModal ? (
     <AriaModal
@@ -94,7 +99,8 @@ const KeyboardShortcutsModal = ({
                   {KEYBOARD_SHORTCUTS.filter(
                     shortcut =>
                       (!isReadOnly || shortcut.allowReadOnly) &&
-                      (!evaluateMode || shortcut.allowInEvaluateMode)
+                      (!evaluateMode || shortcut.allowInEvaluateMode) &&
+                      (multipleElections || !shortcut.onlyForMultipleElections)
                   ).map((shortcut, index) => {
                     const key = (
                       <span sx={style.keyCombo}>
