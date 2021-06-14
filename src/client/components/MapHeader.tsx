@@ -11,7 +11,8 @@ import {
   setGeoLevelIndex,
   setSelectionTool,
   SelectionTool,
-  setMapLabel
+  setMapLabel,
+  ElectionYear
 } from "../actions/districtDrawing";
 import store from "../store";
 
@@ -128,7 +129,8 @@ const MapHeader = ({
   geoLevelIndex,
   selectedGeounits,
   isReadOnly,
-  limitSelectionToCounty
+  limitSelectionToCounty,
+  electionYear
 }: {
   readonly label?: string;
   readonly metadata?: IStaticMetadata;
@@ -138,6 +140,7 @@ const MapHeader = ({
   readonly advancedEditingEnabled?: boolean;
   readonly isReadOnly: boolean;
   readonly limitSelectionToCounty: boolean;
+  readonly electionYear: ElectionYear;
 }) => {
   const topGeoLevelName = metadata
     ? metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id
@@ -204,6 +207,8 @@ const MapHeader = ({
               <MapSelectionOptionsFlyout
                 limitSelectionToCounty={limitSelectionToCounty}
                 topGeoLevelName={topGeoLevelName}
+                metadata={metadata}
+                electionYear={electionYear}
               />
             </Box>
           </React.Fragment>

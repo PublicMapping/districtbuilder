@@ -52,6 +52,14 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 's3://global-districtbuilder-dev-us-east-1/regions/US/PA/2021-02-08T18:07:18.957Z/',
                 DEFAULT,
                 DEFAULT
+              ), (
+                '6c440b8d-c26e-4bae-850f-dbff37fe0209',
+                'Illinois',
+                'US',
+                'IL',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/IL/2021-06-04T15:05:37.089Z/',
+                DEFAULT,
+                DEFAULT
              )
               ON CONFLICT DO NOTHING;
             "
@@ -62,7 +70,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Add user to testing organization
         docker-compose \
             exec database psql -U districtbuilder districtbuilder -c "
-              INSERT INTO organization_users_user VALUES((SELECT id FROM organization WHERE slug = 'azavea'), (SELECT id FROM \"user\" ORDER BY id LIMIT 1));
+              INSERT INTO organization_users_user VALUES((SELECT id FROM organization WHERE slug = 'azavea'), (SELECT id FROM \"user\" ORDER BY id LIMIT 1)) ON CONFLICT DO NOTHING;
             "
 
         # Set testing organization admin (no-op if there are no users) 

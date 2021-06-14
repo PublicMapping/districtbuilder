@@ -1,6 +1,5 @@
 /** @jsx jsx */
-import { sum, sortBy } from "lodash";
-import React, { Fragment, memo, useEffect, useMemo, useState } from "react";
+import React, { Fragment, memo, useEffect, useState } from "react";
 import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
@@ -29,7 +28,9 @@ import {
   assertNever,
   getPartyColor,
   getTargetPopulation,
-  mergeGeoUnits
+  mergeGeoUnits,
+  calculatePVI,
+  hasMultipleElections
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -165,6 +166,10 @@ const ProjectSidebar = ({
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
+  const multElections = hasMultipleElections(staticMetadata);
+  const polLabel = multElections
+    ? "Cook Partisan Voting Index (2016 / 2020)"
+    : "Political Lean (2016)";
   return (
     <Flex sx={style.sidebar} className="map-sidebar">
       <ProjectSidebarHeader
@@ -198,13 +203,8 @@ const ProjectSidebar = ({
               </Styled.th>
               {staticMetadata?.voting && (
                 <Styled.th sx={{ ...style.th, ...style.number }}>
-                  <Tooltip
-                    content={
-                      "Political lean" +
-                      (staticMetadata.labels ? ` (${staticMetadata.labels.election})` : "")
-                    }
-                  >
-                    <span>Pol.</span>
+                  <Tooltip content={polLabel}>
+                    <span>{multElections ? "PVI" : "Pol."}</span>
                   </Tooltip>
                 </Styled.th>
               )}
@@ -291,7 +291,6 @@ const SidebarRow = memo(
     selected,
     selectedPopulationDifference,
     demographics,
-    votingIds,
     deviation,
     districtId,
     isDistrictLocked,
@@ -303,7 +302,6 @@ const SidebarRow = memo(
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
     readonly demographics: DemographicCounts;
-    readonly votingIds: readonly string[];
     readonly deviation: number;
     readonly districtId: number;
     readonly isDistrictLocked?: boolean;
@@ -339,27 +337,19 @@ const SidebarRow = memo(
       store.dispatch(toggleDistrictLocked(districtId - 1));
     };
 
-    // The voting dobject can be present but have no data, we treat this case as if it isn't there
+    // The voting object can be present but have no data, we treat this case as if it isn't there
     const voting =
       Object.keys(district.properties.voting || {}).length > 0
         ? district.properties.voting
         : undefined;
-    const sortedVotes = voting && sortBy(Object.entries(voting), ([, votes]) => -votes);
-    const winningParty = sortedVotes && sortedVotes[0][0];
-    const color = winningParty && getPartyColor(winningParty);
-    const votesTotal = voting ? sum(Object.values(voting)) : 0;
-    const marginPct =
-      sortedVotes &&
-      votesTotal &&
-      100 * (sortedVotes[0][1] / votesTotal - sortedVotes[1][1] / votesTotal);
+    const pvi = voting && calculatePVI(voting);
+    const color = getPartyColor(pvi && pvi > 0 ? "democrat" : "republican");
+    const partyLabel = pvi && pvi > 0 ? "D" : "R";
     const votingDisplay =
-      voting && winningParty && marginPct !== undefined && voting[winningParty] !== 0 ? (
-        <Box sx={{ color }}>{`${winningParty[0].toUpperCase()}+${marginPct.toLocaleString(
-          undefined,
-          {
-            maximumFractionDigits: 0
-          }
-        )}%`}</Box>
+      pvi !== undefined ? (
+        <Box sx={{ color }}>{`${partyLabel}+${Math.abs(pvi).toLocaleString(undefined, {
+          maximumFractionDigits: 0
+        })}`}</Box>
       ) : (
         <span sx={{ color: "gray.2" }}>{BLANK_VALUE}</span>
       );
@@ -441,8 +431,8 @@ const SidebarRow = memo(
             <Tooltip
               placement="top-start"
               content={
-                votesTotal !== 0 ? (
-                  <VotingSidebarTooltip voting={voting} votingIds={votingIds} />
+                pvi !== undefined ? (
+                  <VotingSidebarTooltip voting={voting} />
                 ) : (
                   <em>
                     <strong>Empty district.</strong> Add people to this district to view the vote
@@ -524,12 +514,6 @@ const SidebarRows = ({
     | undefined
   >(undefined);
 
-  const votingIds = useMemo(
-    () =>
-      staticMetadata && staticMetadata.voting ? staticMetadata.voting.map(props => props.id) : [],
-    [staticMetadata]
-  );
-
   // Asynchronously recalculate demographics on state changes with web workers
   useEffect(() => {
     // eslint-disable-next-line
@@ -601,7 +585,6 @@ const SidebarRows = ({
             districtId={districtId}
             isReadOnly={isReadOnly}
             popDeviationThreshold={averagePopulation * (project.populationDeviation / 100)}
-            votingIds={votingIds}
           />
         ) : null;
       })}

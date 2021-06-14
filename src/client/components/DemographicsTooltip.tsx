@@ -11,7 +11,8 @@ const style: ThemeUIStyleObject = {
     py: 0,
     pr: 2,
     whiteSpace: "nowrap",
-    textTransform: "capitalize"
+    textTransform: "capitalize",
+    width: "70px"
   },
   number: {
     flex: "auto",
@@ -25,11 +26,13 @@ const style: ThemeUIStyleObject = {
 const Row = ({
   id,
   percent,
-  color
+  color,
+  abbreviate
 }: {
   readonly id: string;
   readonly percent?: number;
   readonly color: string;
+  readonly abbreviate?: boolean;
 }) => (
   <Styled.tr
     sx={{
@@ -37,7 +40,7 @@ const Row = ({
       border: "none"
     }}
   >
-    <Styled.td sx={style.label}>{getDemographicLabel(id)}</Styled.td>
+    <Styled.td sx={style.label}>{abbreviate ? id : getDemographicLabel(id)}</Styled.td>
     <Styled.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
         style={{
@@ -59,29 +62,29 @@ const Row = ({
 
 const DemographicsTooltip = ({
   demographics,
-  isMinorityMajority
+  isMinorityMajority,
+  abbreviate
 }: {
   readonly demographics: { readonly [id: string]: number };
   readonly isMinorityMajority?: boolean;
+  readonly abbreviate?: boolean;
 }) => {
   const percentages = mapValues(
     demographics,
     (population: number) =>
       (demographics.population ? population / demographics.population : 0) * 100
   );
-  const races = [
-    "white",
-    "black",
-    "asian",
-    "hispanic",
-    "nativeAmerican",
-    "pacificIslander",
-    "other"
-  ] as const;
+  const races = ["white", "black", "asian", "hispanic", "native", "pacific", "other"] as const;
   const rows = races
     .filter(race => percentages[race] !== undefined)
     .map((id: typeof races[number]) => (
-      <Row key={id} id={id} percent={percentages[id]} color={demographicsColors[id]} />
+      <Row
+        key={id}
+        id={id}
+        percent={percentages[id]}
+        color={demographicsColors[id]}
+        abbreviate={abbreviate}
+      />
     ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>

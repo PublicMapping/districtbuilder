@@ -13,7 +13,9 @@ import {
   undo,
   redo,
   toggleLimitDrawingToWithinCounty,
-  toggleKeyboardShortcutsModal
+  toggleKeyboardShortcutsModal,
+  ElectionYear,
+  setElectionYear
 } from "../../actions/districtDrawing";
 import store from "../../store";
 import { showMapActionToast } from "../../functions";
@@ -28,6 +30,7 @@ interface MapContext {
   readonly numGeolevels: number;
   readonly limitSelectionToCounty: boolean;
   readonly evaluateMode: boolean;
+  readonly electionYear: ElectionYear;
   // eslint-disable-next-line
   readonly setTogglePan: (isSet: boolean) => void;
 }
@@ -39,6 +42,7 @@ interface KeyboardShortcut {
   readonly meta?: true;
   readonly allowReadOnly?: boolean;
   readonly allowInEvaluateMode?: boolean;
+  readonly onlyForMultipleElections?: boolean;
   readonly shift?: true | "optional";
   // eslint-disable-next-line
   readonly action: (context: MapContext) => void;
@@ -194,6 +198,16 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
             ? "No longer limit selection to county"
             : "Limiting selection to county"
         );
+    }
+  },
+  {
+    key: "y",
+    text: "Toggle election year displayed in map tooltip",
+    onlyForMultipleElections: true,
+    action: ({ electionYear }: MapContext) => {
+      const newYear = electionYear === "16" ? "20" : "16";
+      store.dispatch(setElectionYear(newYear)) &&
+        showMapActionToast(`Displaying data for the 20${newYear} election`);
     }
   },
   {

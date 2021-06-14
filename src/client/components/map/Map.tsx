@@ -14,7 +14,8 @@ import {
   SelectionTool,
   replaceSelectedGeounits,
   FindTool,
-  setZoomToDistrictId
+  setZoomToDistrictId,
+  ElectionYear
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -31,7 +32,8 @@ import {
   getSelectedGeoLevel,
   getTargetPopulation,
   geoLevelLabelSingular,
-  assertNever
+  assertNever,
+  hasMultipleElections
 } from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -187,6 +189,7 @@ interface Props {
   readonly findTool: FindTool;
   readonly label?: string;
   readonly map?: MapboxGL.Map;
+  readonly electionYear: ElectionYear;
   // eslint-disable-next-line
   readonly setMap: (map: MapboxGL.Map) => void;
 }
@@ -263,7 +266,8 @@ const DistrictsMap = ({
   findTool,
   label,
   map,
-  setMap
+  setMap,
+  electionYear
 }: Props) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
@@ -280,6 +284,7 @@ const DistrictsMap = ({
   const selectedGeolevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex);
 
   const avgPopulation = getTargetPopulation(geojson);
+  const multipleElections = hasMultipleElections(staticMetadata);
 
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
   const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
@@ -369,7 +374,8 @@ const DistrictsMap = ({
       if (
         shortcut &&
         (!isReadOnly || shortcut?.allowReadOnly) &&
-        (!evaluateMode || shortcut?.allowInEvaluateMode)
+        (!evaluateMode || shortcut?.allowInEvaluateMode) &&
+        (multipleElections || !shortcut?.onlyForMultipleElections)
       ) {
         shortcut.action({
           selectionTool,
@@ -381,7 +387,8 @@ const DistrictsMap = ({
           numGeolevels: staticMetadata.geoLevelHierarchy.length,
           limitSelectionToCounty,
           evaluateMode,
-          setTogglePan
+          setTogglePan,
+          electionYear
         });
       }
     },
@@ -394,7 +401,9 @@ const DistrictsMap = ({
       geojson.features.length,
       staticMetadata.geoLevelHierarchy.length,
       limitSelectionToCounty,
-      evaluateMode
+      evaluateMode,
+      multipleElections,
+      electionYear
     ]
   );
   // Keyboard handlers
@@ -984,6 +993,7 @@ function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
     findTool: state.project.findTool,
+    electionYear: state.project.electionYear,
     showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal
   };
 }

@@ -2,6 +2,8 @@ import { createAction } from "typesafe-actions";
 import { DistrictId, EvaluateMetric, GeoUnits } from "../../shared/entities";
 import { SavingState } from "../types";
 
+export type ElectionYear = "16" | "20";
+
 export enum SelectionTool {
   Default = "DEFAULT",
   Rectangle = "RECTANGLE",
@@ -51,6 +53,8 @@ export const setGeoLevelVisibility = createAction("Set geolevel visibility")<rea
 export const toggleDistrictLocked = createAction("Toggle district locked")<DistrictId>();
 
 export const toggleLimitDrawingToWithinCounty = createAction("Limit drawing to within county")();
+
+export const setElectionYear = createAction("Set election year for tooltip data")<ElectionYear>();
 
 export const toggleKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")();
 

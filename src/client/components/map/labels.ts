@@ -3,6 +3,9 @@ import { geoLevelLabelSingular } from "../../functions";
 
 export function getLabel(geoLevelId?: string, feature?: MapboxGeoJSONFeature) {
   if (feature && feature.properties && typeof feature.properties.name === "string") {
+    if (geoLevelId === "county" && !feature.properties.name.endsWith("County")) {
+      return `${feature.properties.name} County`;
+    }
     return feature.properties.name;
   } else if (feature && geoLevelId) {
     return `${geoLevelId} #${feature.id}`;

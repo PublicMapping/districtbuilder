@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
 import { Flex, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
-import { areAnyGeoUnitsSelected, destructureResource, getTargetPopulation } from "../functions";
+import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import { DistrictsGeoJSON } from "../types";
 import {
   GeoUnitHierarchy,
@@ -38,6 +38,8 @@ import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
+import { ElectionYear } from "../actions/districtDrawing";
+
 interface StateProps {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -53,6 +55,7 @@ interface StateProps {
   readonly isReadOnly: boolean;
   readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
+  readonly electionYear: ElectionYear;
 }
 
 const style: ThemeUIStyleObject = {
@@ -81,19 +84,14 @@ const ProjectScreen = ({
   mapLabel,
   isLoading,
   isReadOnly,
-  user
+  user,
+  electionYear
 }: StateProps) => {
   const { projectId } = useParams();
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
-  const [avgDistrictPopulation, setAvgDistrictPopulation] = useState<number | undefined>(undefined);
   const isLoggedIn = getJWT() !== null;
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
   const presentDrawingState = districtDrawing.undoHistory.present.state;
-  useEffect(() => {
-    if (geojson && !avgDistrictPopulation) {
-      setAvgDistrictPopulation(getTargetPopulation(geojson));
-    }
-  }, [geojson, avgDistrictPopulation]);
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
@@ -176,6 +174,7 @@ const ProjectScreen = ({
               limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
               advancedEditingEnabled={project?.advancedEditingEnabled}
               isReadOnly={isReadOnly}
+              electionYear={electionYear}
             />
           ) : (
             <Flex></Flex>
@@ -218,7 +217,11 @@ const ProjectScreen = ({
                 />
               )}
               <CopyMapModal project={project} />
-              <KeyboardShortcutsModal isReadOnly={isReadOnly} evaluateMode={evaluateMode} />
+              <KeyboardShortcutsModal
+                isReadOnly={isReadOnly}
+                evaluateMode={evaluateMode}
+                staticMetadata={staticMetadata}
+              />
               <Flex id="tour-start" sx={style.tourStart}></Flex>
             </React.Fragment>
           ) : null}
@@ -239,6 +242,7 @@ function mapStateToProps(state: State): StateProps {
     evaluateMode: state.project.evaluateMode,
     evaluateMetric: state.project.evaluateMetric,
     mapLabel: state.project.mapLabel,
+    electionYear: state.project.electionYear,
     districtDrawing: state.project,
     regionProperties: state.regionConfig.regionProperties,
     isLoading:

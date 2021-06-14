@@ -1,19 +1,22 @@
 import { toast } from "react-toastify";
-import { cloneDeep } from "lodash";
+import { cloneDeep, mapKeys, pickBy } from "lodash";
 
 import {
+  DemographicCounts,
   DistrictsDefinition,
   MutableGeoUnitCollection,
   GeoLevelHierarchy,
   GeoUnits,
   GeoUnitIndices,
   GeoUnitHierarchy,
-  NestedArray
+  NestedArray,
+  IStaticMetadata
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
 import { isThisYear, isToday } from "date-fns";
 import format from "date-fns/format";
+import { ElectionYear } from "./actions/districtDrawing";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
@@ -58,6 +61,73 @@ export const capitalizeFirstLetter = (s: string) =>
 
 export const getPartyColor = (party: string) =>
   party === "republican" ? "#BF4E6A" : party === "democrat" ? "#4E56BF" : "#F7AD00";
+
+// Source: https://cookpolitical.com/analysis/national/pvi/introducing-2021-cook-political-report-partisan-voter-index
+const nationalDemVoteShare16 = 51.1;
+const nationalDemVoteShare20 = 52.3;
+const nationalDemVoteShareAvg = nationalDemVoteShare16 + nationalDemVoteShare20 / 2;
+function calculateDemVoteShare(
+  democrat: number,
+  republican: number,
+  other: number
+): number | undefined {
+  const total = democrat + republican + other;
+  return total ? (100 * democrat) / total : undefined;
+}
+
+export function calculatePVI(voting: DemographicCounts): number | undefined {
+  if (
+    "democrat16" in voting &&
+    "republican16" in voting &&
+    "democrat20" in voting &&
+    "republican20" in voting
+  ) {
+    const votes16 = calculateDemVoteShare(
+      voting.democrat16,
+      voting.republican16,
+      voting["other party16"] || 0
+    );
+    const votes20 = calculateDemVoteShare(
+      voting.democrat20,
+      voting.republican20,
+      voting["other party20"] || 0
+    );
+    if (votes16 !== undefined && votes20 !== undefined) {
+      const avgVoteShare = votes16 + votes20 / 2;
+      return avgVoteShare - nationalDemVoteShareAvg;
+    }
+  } else {
+    // We have some states for which we anticipate having only 2016 election data
+    // We assume unspecified vote totals are from 2016
+    const voteShare =
+      "democrat16" in voting && "republican16" in voting
+        ? calculateDemVoteShare(
+            voting.democrat16,
+            voting.republican16,
+            voting["other party16"] || 0
+          )
+        : "democrat" in voting && "republican" in voting
+        ? calculateDemVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        : undefined;
+    if (voteShare !== undefined) {
+      return voteShare - nationalDemVoteShare16;
+    }
+  }
+  return undefined;
+}
+
+export const hasMultipleElections = (staticMetadata?: IStaticMetadata) =>
+  staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
+  staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+
+export function extractYear(voting: DemographicCounts, year?: ElectionYear): DemographicCounts {
+  return year
+    ? mapKeys(
+        pickBy(voting, (val, key) => key.endsWith(year)),
+        (val, key) => key.slice(0, -2)
+      )
+    : voting;
+}
 
 /*
  * Assign nested geounit to district.

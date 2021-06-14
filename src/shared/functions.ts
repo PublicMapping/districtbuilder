@@ -75,5 +75,9 @@ export function getAggregatedCounts(
 }
 
 export function getDemographicLabel(id: string) {
-  return id.split(/(?=[A-Z])/).join(" ");
+  return id === "native"
+    ? "Native American"
+    : id === "pacific"
+    ? "Pacific Islander"
+    : id.split(/(?=[A-Z])/).join(" ");
 }
