@@ -9,7 +9,8 @@ const style: ThemeUIStyleObject = {
     textAlign: "left",
     py: 0,
     pr: 2,
-    textTransform: "capitalize"
+    textTransform: "capitalize",
+    width: "70px"
   },
   number: {
     flex: "auto",
@@ -55,23 +56,33 @@ const Row = ({
   </Styled.tr>
 );
 
-const VotingMapTooltip = ({
-  voting,
-  votingIds
-}: {
-  readonly voting: { readonly [id: string]: number };
-  readonly votingIds: readonly string[];
-}) => {
+const VotingMapTooltip = ({ voting }: { readonly voting: { readonly [id: string]: number } }) => {
   const total = sum(Object.values(voting));
   const percentages = mapValues(voting, (votes: number) => (total ? votes / total : 0) * 100);
-  const rows = votingIds.map(party => (
-    <Row key={party} label={party} percent={percentages[party]} color={getPartyColor(party)} />
-  ));
+  const order = ["republican", "democrat"];
+  // eslint-disable-next-line
+  const rows = Object.entries(percentages)
+    .sort(([a], [b]) => order.indexOf(b) - order.indexOf(a))
+    .map(([party, percent]) => (
+      <Row key={party} label={party} percent={percent} color={getPartyColor(party)} />
+    ));
 
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
       <Styled.table sx={{ margin: "0", width: "100%" }}>
-        <tbody>{rows}</tbody>
+        <tbody>
+          <Row label={"Dem."} percent={percentages["democrat"]} color={getPartyColor("democrat")} />
+          <Row
+            label={"Rep."}
+            percent={percentages["republican"]}
+            color={getPartyColor("republican")}
+          />
+          <Row
+            label={"Other"}
+            percent={percentages["other party"]}
+            color={getPartyColor("other party")}
+          />
+        </tbody>
       </Styled.table>
     </Box>
   );

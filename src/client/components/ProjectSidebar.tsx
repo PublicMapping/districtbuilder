@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { Fragment, memo, useEffect, useMemo, useState } from "react";
+import React, { Fragment, memo, useEffect, useState } from "react";
 import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import {
@@ -29,7 +29,8 @@ import {
   getPartyColor,
   getTargetPopulation,
   mergeGeoUnits,
-  calculatePVI
+  calculatePVI,
+  hasMultipleElections
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -165,12 +166,10 @@ const ProjectSidebar = ({
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
-  const hasMultElections =
-    staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
-    staticMetadata?.voting?.some(file => file.id.endsWith("20"));
-  const polLabel = hasMultElections
-    ? "Cook Partisan Voting Index (2021)"
-    : "Political lean (2016 presidential)";
+  const multElections = hasMultipleElections(staticMetadata);
+  const polLabel = multElections
+    ? "Cook Partisan Voting Index (2016 / 2020)"
+    : "Political Lean (2016)";
   return (
     <Flex sx={style.sidebar} className="map-sidebar">
       <ProjectSidebarHeader
@@ -205,7 +204,7 @@ const ProjectSidebar = ({
               {staticMetadata?.voting && (
                 <Styled.th sx={{ ...style.th, ...style.number }}>
                   <Tooltip content={polLabel}>
-                    <span>Pol.</span>
+                    <span>{multElections ? "PVI" : "Pol."}</span>
                   </Tooltip>
                 </Styled.th>
               )}
@@ -348,7 +347,7 @@ const SidebarRow = memo(
     const partyLabel = pvi && pvi > 0 ? "D" : "R";
     const votingDisplay =
       pvi !== undefined ? (
-        <Box sx={{ color }}>{`${partyLabel}+${pvi.toLocaleString(undefined, {
+        <Box sx={{ color }}>{`${partyLabel}+${Math.abs(pvi).toLocaleString(undefined, {
           maximumFractionDigits: 0
         })}`}</Box>
       ) : (

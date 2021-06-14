@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import { cloneDeep } from "lodash";
+import { cloneDeep, mapKeys, pickBy } from "lodash";
 
 import {
   DemographicCounts,
@@ -9,12 +9,14 @@ import {
   GeoUnits,
   GeoUnitIndices,
   GeoUnitHierarchy,
-  NestedArray
+  NestedArray,
+  IStaticMetadata
 } from "../shared/entities";
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
 import { isThisYear, isToday } from "date-fns";
 import format from "date-fns/format";
+import { ElectionYear } from "./actions/districtDrawing";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
@@ -102,6 +104,15 @@ export function calculatePVI(voting: DemographicCounts): number | undefined {
     }
   }
   return undefined;
+}
+export const hasMultipleElections = (staticMetadata?: IStaticMetadata) =>
+  staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
+  staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+
+export function extractYear(voting: DemographicCounts, year?: ElectionYear): DemographicCounts {
+  return mapKeys(year ? pickBy(voting, (val, key) => key.endsWith(year)) : voting, (val, key) =>
+    key.slice(0, -2)
+  );
 }
 
 /*

@@ -38,6 +38,8 @@ import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
+import { ElectionYear } from "../actions/districtDrawing";
+
 interface StateProps {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -53,6 +55,7 @@ interface StateProps {
   readonly isReadOnly: boolean;
   readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
+  readonly electionYear: ElectionYear;
 }
 
 const style: ThemeUIStyleObject = {
@@ -81,7 +84,8 @@ const ProjectScreen = ({
   mapLabel,
   isLoading,
   isReadOnly,
-  user
+  user,
+  electionYear
 }: StateProps) => {
   const { projectId } = useParams();
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
@@ -176,6 +180,7 @@ const ProjectScreen = ({
               limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
               advancedEditingEnabled={project?.advancedEditingEnabled}
               isReadOnly={isReadOnly}
+              electionYear={electionYear}
             />
           ) : (
             <Flex></Flex>
@@ -239,6 +244,7 @@ function mapStateToProps(state: State): StateProps {
     evaluateMode: state.project.evaluateMode,
     evaluateMetric: state.project.evaluateMetric,
     mapLabel: state.project.mapLabel,
+    electionYear: state.project.electionYear,
     districtDrawing: state.project,
     regionProperties: state.regionConfig.regionProperties,
     isLoading:

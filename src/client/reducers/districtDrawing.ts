@@ -34,7 +34,9 @@ import {
   selectEvaluationMetric,
   setZoomToDistrictId,
   setMapLabel,
-  toggleKeyboardShortcutsModal
+  toggleKeyboardShortcutsModal,
+  setElectionYear,
+  ElectionYear
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
@@ -122,6 +124,7 @@ export interface DistrictDrawingState {
   readonly findIndex?: number;
   readonly findTool: FindTool;
   readonly limitSelectionToCounty: boolean;
+  readonly electionYear: ElectionYear;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
   readonly mapLabel: string | undefined;
@@ -142,6 +145,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   evaluateMetric: undefined,
   findTool: FindTool.Unassigned,
   limitSelectionToCounty: false,
+  electionYear: "16",
   saving: "unsaved",
   mapLabel: "undefined",
   undoHistory: {
@@ -244,6 +248,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         limitSelectionToCounty: !state.limitSelectionToCounty
+      };
+    case getType(setElectionYear):
+      return {
+        ...state,
+        electionYear: action.payload
       };
     case getType(setHighlightedGeounits):
       return {

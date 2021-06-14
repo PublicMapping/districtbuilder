@@ -1,10 +1,11 @@
 /** @jsx jsx */
-import { mapKeys, mapValues, pickBy, sum } from "lodash";
+import { mapValues, sum } from "lodash";
 import { Box, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
 
-import { getPartyColor, capitalizeFirstLetter } from "../functions";
+import { getPartyColor, capitalizeFirstLetter, extractYear } from "../functions";
 import { DemographicCounts } from "../../shared/entities";
 import React from "react";
+import { ElectionYear } from "../actions/districtDrawing";
 
 const style: ThemeUIStyleObject = {
   header: {
@@ -68,21 +69,14 @@ const Row = ({
   </Styled.tr>
 );
 
-function extractYear(voting: DemographicCounts, suffix: string): DemographicCounts {
-  return mapKeys(
-    pickBy(voting, (val, key) => key.endsWith(suffix)),
-    (val, key) => key.slice(0, -suffix.length)
-  );
-}
-
-const Rows = ({
+const getRows = ({
   voting,
-  suffix
+  year
 }: {
   readonly voting: DemographicCounts;
-  readonly suffix?: string;
+  readonly year?: ElectionYear;
 }) => {
-  const votesForYear = suffix ? extractYear(voting, suffix) : voting;
+  const votesForYear = year ? extractYear(voting, year) : voting;
   const total = sum(Object.values(votesForYear));
   const order = ["republican", "democrat"];
   // eslint-disable-next-line
@@ -100,13 +94,13 @@ const Rows = ({
       color={getPartyColor(party)}
     />
   ));
-  return rows ? <React.Fragment>{rows}</React.Fragment> : null;
+  return rows.length > 0 ? rows : null;
 };
 
 const VotingSidebarTooltip = ({ voting }: { readonly voting: DemographicCounts }) => {
-  const rows16 = <Rows voting={voting} suffix={"16"} />;
-  const rows20 = <Rows voting={voting} suffix={"20"} />;
-  const unspecifiedRows = !rows16 && !rows20 && <Rows voting={voting} />;
+  const rows16 = getRows({ voting, year: "16" });
+  const rows20 = getRows({ voting, year: "20" });
+  const unspecifiedRows = !rows16 && !rows20 && getRows({ voting });
 
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>

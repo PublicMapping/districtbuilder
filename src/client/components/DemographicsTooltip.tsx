@@ -11,7 +11,8 @@ const style: ThemeUIStyleObject = {
     py: 0,
     pr: 2,
     whiteSpace: "nowrap",
-    textTransform: "capitalize"
+    textTransform: "capitalize",
+    width: "70px"
   },
   number: {
     flex: "auto",
