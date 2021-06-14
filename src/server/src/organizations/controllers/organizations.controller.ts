@@ -1,4 +1,14 @@
-import { Controller, UseGuards, Param, Post, NotFoundException, Body, Get } from "@nestjs/common";
+import {
+  Controller,
+  UseGuards,
+  Param,
+  Post,
+  NotFoundException,
+  Body,
+  Get,
+  Request,
+  UnauthorizedException
+} from "@nestjs/common";
 
 import { OrganizationSlug, UserId } from "../../../../shared/entities";
 import { JoinOrganizationErrors } from "../../../../shared/constants";
@@ -10,6 +20,7 @@ import { UsersService } from "../../users/services/users.service";
 import { Organization } from "../entities/organization.entity";
 import { OrganizationUserDto } from "../entities/organizationUser.dto";
 import { OrganizationsService } from "../services/organizations.service";
+import stringify = require("csv-stringify/lib/sync");
 
 @Controller("api/organization")
 export class OrganizationsController {
@@ -24,7 +35,10 @@ export class OrganizationsController {
   }
 
   async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
-    const org = await this.service.findOne({ slug: organizationSlug });
+    const org = await this.service.findOne(
+      { slug: organizationSlug },
+      { join: { alias: "organization", leftJoinAndSelect: { admin: "organization.admin" } } }
+    );
     if (!org) {
       throw new NotFoundException(`Organization ${organizationSlug} not found`);
     }
@@ -46,6 +60,23 @@ export class OrganizationsController {
   @Get(":slug/")
   async getOne(@Param("slug") slug: OrganizationSlug): Promise<Organization> {
     return this.getOrgAndTemplates(slug);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(":slug/export/users-csv/")
+  async exportUsers(@Param("slug") slug: OrganizationSlug, @Request() req: any): Promise<string> {
+    const org = await this.getOrg(slug);
+    if (org.admin.id !== req.user.id) {
+      throw new UnauthorizedException(
+        `User does not have admin privileges for organization: ${org.id}`
+      );
+    }
+    const users = await this.usersService.getOrgUsers(slug);
+    const rows = users.map(user => [user.id, user.name, user.email]);
+    return stringify(rows, {
+      header: true,
+      columns: ["User-id", "Name", "Email"]
+    });
   }
 
   @UseGuards(JwtAuthGuard)

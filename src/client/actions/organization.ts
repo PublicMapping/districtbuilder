@@ -7,3 +7,13 @@ export const organizationFetchSuccess = createAction("Organization fetch success
 export const organizationFetchFailure = createAction("Organization fetch failure")<
   ResourceFailure
 >();
+
+export const exportProjects = createAction("Export organization projects CSV")<OrganizationSlug>();
+export const exportProjectsFailure = createAction("Export organization projects CSV failure")<
+  string
+>();
+
+export const exportOrgUsers = createAction("Export organization users CSV")<OrganizationSlug>();
+export const exportOrgUsersFailure = createAction("Export organization users CSV failure")<
+  string
+>();

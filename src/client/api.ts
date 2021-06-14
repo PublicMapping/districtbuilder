@@ -338,10 +338,23 @@ export async function fetchOrganizationFeaturedProjects(
 export async function exportOrganizationProjectsCsv(slug: OrganizationSlug): Promise<void> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get(`/api/project_templates/${slug}/export/maps-csv`)
+      .get(`/api/project_templates/${slug}/export/maps-csv/`)
       .then(response => {
         return resolve(
-          saveAs(new Blob([response.data], { type: "text/csv;charset=utf-8" }), `${slug}.csv`)
+          saveAs(new Blob([response.data], { type: "text/csv;charset=utf-8" }), `${slug}-maps.csv`)
+        );
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function exportOrganizationUsersCsv(slug: OrganizationSlug): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/organization/${slug}/export/users-csv/`)
+      .then(response => {
+        return resolve(
+          saveAs(new Blob([response.data], { type: "text/csv;charset=utf-8" }), `${slug}-users.csv`)
         );
       })
       .catch(error => reject(error.message));

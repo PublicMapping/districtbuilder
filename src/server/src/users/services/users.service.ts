@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
 import { Repository } from "typeorm";
 
-import { Register } from "../../../../shared/entities";
+import { Register, OrganizationSlug } from "../../../../shared/entities";
 import { User } from "../entities/user.entity";
 
 @Injectable()
@@ -21,5 +21,12 @@ export class UsersService extends TypeOrmCrudService<User> {
   save(user: User): Promise<User> {
     // @ts-ignore
     return this.repo.save(user);
+  }
+
+  async getOrgUsers(slug: OrganizationSlug): Promise<ReadonlyArray<User>> {
+    return this.repo
+      .createQueryBuilder("user")
+      .innerJoin("user.organizations", "organization", "slug = :slug", { slug })
+      .getMany();
   }
 }

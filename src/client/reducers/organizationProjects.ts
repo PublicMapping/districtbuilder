@@ -7,10 +7,9 @@ import { IProjectTemplateWithProjects } from "../../shared/entities";
 import {
   fetchOrganizationFeaturedProjects,
   fetchOrganizationProjects,
-  saveProjectFeatured,
-  exportOrganizationProjectsCsv
+  saveProjectFeatured
 } from "../api";
-import { showResourceFailedToast, showActionFailedToast } from "../functions";
+import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
 import {
   organizationProjectsFetch,
@@ -21,9 +20,7 @@ import {
   organizationFeaturedProjectsFetchFailure,
   toggleProjectFeatured,
   toggleProjectFeaturedSuccess,
-  toggleProjectFeaturedFailure,
-  exportProjectsFailure,
-  exportProjects
+  toggleProjectFeaturedFailure
 } from "../actions/organizationProjects";
 
 export interface OrganizationProjectsState {
@@ -127,16 +124,6 @@ const organizationProjectsReducer: LoopReducer<OrganizationProjectsState, Action
         },
         Cmd.run(showResourceFailedToast)
       );
-    case getType(exportProjects):
-      return loop(
-        state,
-        Cmd.run(exportOrganizationProjectsCsv, {
-          failActionCreator: exportProjectsFailure,
-          args: [action.payload] as Parameters<typeof exportOrganizationProjectsCsv>
-        })
-      );
-    case getType(exportProjectsFailure):
-      return loop(state, Cmd.run(showActionFailedToast));
     default:
       return state;
   }
