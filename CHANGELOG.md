@@ -14,11 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Display target population symbols in sidebar [#720](https://github.com/PublicMapping/districtbuilder/issues/720)
 - List all published maps in new screen [#796](https://github.com/PublicMapping/districtbuilder/pull/796)
 - Add map export to organization admin screen [#805](https://github.com/PublicMapping/districtbuilder/pull/805)
-<<<<<<< HEAD
 - Add support for Vagrant Development Environment [#729](https://github.com/PublicMapping/districtbuilder/pull/729)
-=======
 - Add user export to organization admin screen [#812](https://github.com/PublicMapping/districtbuilder/pull/812)
->>>>>>> Update CHANGELOG
+- Add support for calculating PVI / handling '16 & '20 election data [#818](https://github.com/PublicMapping/districtbuilder/pull/818)
 
 ### Changed
 
