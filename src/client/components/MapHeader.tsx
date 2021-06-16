@@ -17,6 +17,7 @@ import {
   setPaintBrushSize
 } from "../actions/districtDrawing";
 import store from "../store";
+import icons from "../icons";
 
 const style: ThemeUIStyleObject = {
   buttonGroup: {
@@ -183,42 +184,47 @@ const MapHeader = ({
           />
         ))
     : [];
+  const selectionToolIcons: ReadonlyArray<{
+    readonly tooltipContent: string;
+    readonly tool: SelectionTool;
+    readonly iconName: keyof typeof icons;
+  }> = [
+    {
+      tooltipContent: "Point-and-click selection",
+      tool: SelectionTool.Default,
+      iconName: "hand-pointer"
+    },
+    {
+      tooltipContent: "Rectangle selection",
+      tool: SelectionTool.Rectangle,
+      iconName: "draw-square"
+    },
+    {
+      tooltipContent: "Paint brush selection",
+      tool: SelectionTool.PaintBrush,
+      iconName: "paint-brush"
+    }
+  ];
   return (
     <Flex sx={style.header}>
       <Flex>
         {!isReadOnly && (
           <React.Fragment>
             <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
-              <Tooltip content="Point-and-click selection">
-                <Button
-                  sx={{ ...style.selectionButton }}
-                  className={buttonClassName(selectionTool === SelectionTool.Default)}
-                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
-                >
-                  <Icon name="hand-pointer" />
-                </Button>
-              </Tooltip>
-              <Tooltip content="Rectangle selection">
-                <Button
-                  sx={{ ...style.selectionButton }}
-                  className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
-                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
-                >
-                  <Icon name="draw-square" />
-                </Button>
-              </Tooltip>
-              <Tooltip content="Paint brush selection">
-                <Button
-                  sx={{ ...style.selectionButton }}
-                  className={buttonClassName(selectionTool === SelectionTool.PaintBrush)}
-                  onClick={() => {
-                    setPaintBrushSizeSliderVisibility(true);
-                    store.dispatch(setSelectionTool(SelectionTool.PaintBrush));
-                  }}
-                >
-                  <Icon name="paint-brush" />
-                </Button>
-              </Tooltip>
+              {selectionToolIcons.map(({ tooltipContent, tool, iconName }) => (
+                <Tooltip key={iconName} content={tooltipContent}>
+                  <Button
+                    sx={{ ...style.selectionButton }}
+                    className={buttonClassName(selectionTool === tool)}
+                    onClick={() => {
+                      setPaintBrushSizeSliderVisibility(tool === SelectionTool.PaintBrush);
+                      store.dispatch(setSelectionTool(tool));
+                    }}
+                  >
+                    <Icon name={iconName} />
+                  </Button>
+                </Tooltip>
+              ))}
             </Flex>
             {isPaintBrushSizeSliderVisible ? (
               <Box sx={style.sliderContainer}>
