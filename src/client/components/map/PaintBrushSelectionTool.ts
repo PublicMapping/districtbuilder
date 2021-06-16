@@ -8,11 +8,15 @@ import {
   LockedDistricts,
   UintArrays
 } from "../../../shared/entities";
-
-import { editSelectedGeounits } from "../../actions/districtDrawing";
+import booleanIntersects from "@turf/boolean-intersects";
+import distance from "@turf/distance";
+import circle from "@turf/circle";
+import { polygon } from "@turf/turf";
+import { editSelectedGeounits, PaintBrushSize } from "../../actions/districtDrawing";
 import { areAnyGeoUnitsSelected, mergeGeoUnits } from "../../functions";
 import paint from "../../media/paint.png";
 import store from "../../store";
+import { MapboxGeoJSONFeature } from "mapbox-gl";
 
 import {
   featuresToUnlockedGeoUnits,
@@ -40,6 +44,7 @@ const PaintBrushSelectionTool: ISelectionTool = {
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
     staticGeoLevels: UintArrays,
+    paintBrushSize: PaintBrushSize,
     setActive: (isActive: boolean) => void,
     limitSelectionToCounty: boolean,
     selectedGeounits: GeoUnits
@@ -54,6 +59,8 @@ const PaintBrushSelectionTool: ISelectionTool = {
     canvas.addEventListener("mousedown", mouseDown);
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
+
+    const brushCircle = document.getElementById("brush-circle");
 
     // eslint-disable-next-line
     let batchGeounits = { add: {}, remove: {} };
@@ -86,7 +93,19 @@ const PaintBrushSelectionTool: ISelectionTool = {
     function updateSelection(e: MouseEvent) {
       // Capture the ongoing xy coordinates
       const current = mousePos(e);
-      const features = getFeaturesAtPoint(current);
+      /* eslint-disable */
+      if (brushCircle) {
+        brushCircle.style.visibility = "visible";
+        brushCircle.style.top = current.y + "px";
+        brushCircle.style.left = current.x + "px";
+      }
+      const brushRadius = paintBrushSize * 15;
+      const bbox: [MapboxGL.PointLike, MapboxGL.PointLike] = [
+        [current.x - brushRadius, current.y + brushRadius],
+        [current.x + brushRadius, current.y - brushRadius]
+      ];
+      /* eslint-enable */
+      const features = getFeaturesAroundPoint(bbox, current, brushRadius);
       const geoUnits = featuresToUnlockedGeoUnits(
         features,
         staticMetadata,
@@ -148,13 +167,40 @@ const PaintBrushSelectionTool: ISelectionTool = {
         currentCounty = undefined;
       }
       setActive(false);
+      /* eslint-disable */
+      if (brushCircle) {
+        brushCircle.style.visibility = "hidden";
+      }
+      /* eslint-enable */
     }
 
-    function getFeaturesAtPoint(
-      point: MapboxGL.PointLike
+    function getFeaturesAroundPoint(
+      // eslint-disable-next-line
+      bbox: [MapboxGL.PointLike, MapboxGL.PointLike],
+      point: MapboxGL.Point,
+      brushRadius: number
     ): readonly MapboxGL.MapboxGeoJSONFeature[] {
-      return map.queryRenderedFeatures(point, {
+      const features: readonly MapboxGL.MapboxGeoJSONFeature[] = map.queryRenderedFeatures(bbox, {
         layers: [levelToSelectionLayerId(geoLevelId)]
+      });
+      const centerPoint = map.unproject(point);
+      const radialPoint = map.unproject([point.x, point.y + brushRadius]);
+      const options = { units: "miles" } as const;
+      const radialDistance = distance(
+        [centerPoint.lng, centerPoint.lat],
+        [radialPoint.lng, radialPoint.lat],
+        options
+      );
+      const circleAroundPoint = circle([centerPoint.lng, centerPoint.lat], radialDistance, options);
+      return features.filter(f => {
+        // eslint-disable-next-line
+        return (
+          f.geometry.type === "Polygon" &&
+          booleanIntersects(
+            polygon(f.geometry.coordinates),
+            polygon(circleAroundPoint.geometry.coordinates)
+          )
+        );
       });
     }
   },

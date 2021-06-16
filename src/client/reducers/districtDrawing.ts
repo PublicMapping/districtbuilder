@@ -36,6 +36,8 @@ import {
   setMapLabel,
   toggleKeyboardShortcutsModal,
   setElectionYear,
+  PaintBrushSize,
+  setPaintBrushSize,
   toggleExpandedMetrics
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
@@ -109,6 +111,7 @@ export interface DistrictDrawingState {
   readonly zoomToDistrictId: number | null;
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
+  readonly paintBrushSize: PaintBrushSize;
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
   readonly showKeyboardShortcutsModal: boolean;
@@ -132,6 +135,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   zoomToDistrictId: null,
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
+  paintBrushSize: 1,
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
   showImportFlagsModal: false,
@@ -266,6 +270,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         selectionTool: action.payload
+      };
+    case getType(setPaintBrushSize):
+      return {
+        ...state,
+        paintBrushSize: action.payload
       };
     case getType(setGeoLevelIndex): {
       if ("resource" in state.staticData && "resource" in state.projectData) {
