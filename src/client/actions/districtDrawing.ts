@@ -10,6 +10,8 @@ export enum SelectionTool {
   PaintBrush = "PAINTBRUSH"
 }
 
+export type PaintBrushSize = 1 | 2 | 3 | 4 | 5;
+
 export enum FindTool {
   Unassigned = "UNASSIGNED",
   NonContiguous = "NON_CONTIGUOUS"
@@ -39,6 +41,7 @@ export const setHighlightedGeounits = createAction("Add highlighted geounit ids"
 export const clearHighlightedGeounits = createAction("Clear highlighted geounit ids")();
 
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
+export const setPaintBrushSize = createAction("Set paint brush size")<PaintBrushSize>();
 
 export const setGeoLevelIndex = createAction("Set geoLevel index")<{
   readonly index: number;

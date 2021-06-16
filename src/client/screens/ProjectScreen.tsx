@@ -169,6 +169,7 @@ const ProjectScreen = ({
               label={mapLabel}
               metadata={staticMetadata}
               selectionTool={districtDrawing.selectionTool}
+              paintBrushSize={districtDrawing.paintBrushSize}
               geoLevelIndex={presentDrawingState.geoLevelIndex}
               selectedGeounits={presentDrawingState.selectedGeounits}
               limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
