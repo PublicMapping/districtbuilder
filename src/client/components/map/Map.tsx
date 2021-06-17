@@ -15,7 +15,8 @@ import {
   replaceSelectedGeounits,
   FindTool,
   setZoomToDistrictId,
-  ElectionYear
+  ElectionYear,
+  PaintBrushSize
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -179,6 +180,7 @@ interface Props {
   readonly hoveredDistrictId: number | null;
   readonly zoomToDistrictId: number | null;
   readonly selectionTool: SelectionTool;
+  readonly paintBrushSize: PaintBrushSize;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly evaluateMetric?: EvaluateMetric;
@@ -256,6 +258,7 @@ const DistrictsMap = ({
   hoveredDistrictId,
   zoomToDistrictId,
   selectionTool,
+  paintBrushSize,
   geoLevelIndex,
   lockedDistricts,
   isReadOnly,
@@ -884,11 +887,33 @@ const DistrictsMap = ({
     selectedGeounits
   ]);
 
+  const brushCircleRadius = 30 * paintBrushSize;
+
   return (
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
+      <div
+        id="brush-circle"
+        style={{
+          visibility: "hidden",
+          opacity: 0.5,
+          position: "absolute",
+          zIndex: 999,
+          marginTop: (brushCircleRadius / 2) * -1,
+          marginLeft: (brushCircleRadius / 2) * -1
+        }}
+      >
+        <svg height={brushCircleRadius} width={brushCircleRadius}>
+          <circle
+            cx={brushCircleRadius / 2}
+            cy={brushCircleRadius / 2}
+            r={brushCircleRadius / 2}
+            strokeWidth="0"
+          ></circle>
+        </svg>
+      </div>
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
           <Flex sx={{ alignItems: "center" }}>

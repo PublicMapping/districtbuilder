@@ -55,6 +55,8 @@ const PaintBrushSelectionTool: ISelectionTool = {
     // Save mouseDown for removal upon disabling
     this.mouseDown = mouseDown; // eslint-disable-line
 
+    const brushCircle = document.getElementById("brush-circle");
+
     // eslint-disable-next-line
     let batchGeounits = { add: {}, remove: {} };
     const throttledStoreToRedux = throttle(() => {
@@ -86,6 +88,13 @@ const PaintBrushSelectionTool: ISelectionTool = {
     function updateSelection(e: MouseEvent) {
       // Capture the ongoing xy coordinates
       const current = mousePos(e);
+      /* eslint-disable */
+      if (brushCircle) {
+        brushCircle.style.visibility = "visible";
+        brushCircle.style.top = current.y + "px";
+        brushCircle.style.left = current.x + "px";
+      }
+      /* eslint-enable */
       const features = getFeaturesAtPoint(current);
       const geoUnits = featuresToUnlockedGeoUnits(
         features,
@@ -148,6 +157,11 @@ const PaintBrushSelectionTool: ISelectionTool = {
         currentCounty = undefined;
       }
       setActive(false);
+      /* eslint-disable */
+      if (brushCircle) {
+        brushCircle.style.visibility = "hidden";
+      }
+      /* eslint-enable */
     }
 
     function getFeaturesAtPoint(

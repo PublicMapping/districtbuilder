@@ -201,6 +201,7 @@ const ProjectScreen = ({
                 hoveredDistrictId={districtDrawing.hoveredDistrictId}
                 zoomToDistrictId={districtDrawing.zoomToDistrictId}
                 selectionTool={districtDrawing.selectionTool}
+                paintBrushSize={districtDrawing.paintBrushSize}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
                 lockedDistricts={presentDrawingState.lockedDistricts}
                 evaluateMode={evaluateMode}
