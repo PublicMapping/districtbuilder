@@ -73,9 +73,12 @@ const style: ThemeUIStyleObject = {
     backgroundColor: "#fff",
     borderRadius: "2px",
     border: "1px solid",
+    borderColor: "gray.2",
     padding: "5px",
     top: "100px",
-    zIndex: 99999
+    zIndex: 99999,
+    justifyContent: "space-evenly",
+    width: "300px"
   }
 };
 
@@ -228,7 +231,7 @@ const MapHeader = ({
             </Flex>
             {isPaintBrushSizeSliderVisible ? (
               <Box sx={style.sliderContainer}>
-                <Box>Brush size</Box>
+                <Box sx={{ flexShrink: 0 }}>Brush size</Box>
                 <Slider
                   min={1}
                   max={5}
@@ -238,6 +241,7 @@ const MapHeader = ({
                       setPaintBrushSize(parseInt(e.target.value, 10) as PaintBrushSize)
                     );
                   }}
+                  sx={{ width: "150px" }}
                   defaultValue={paintBrushSize}
                 />
                 <Box>{paintBrushSize}</Box>
