@@ -31,7 +31,10 @@ import {
   updateProjectName,
   updateProjectNameSuccess,
   updateProjectVisibility,
-  updateProjectVisibilitySuccess
+  updateProjectVisibilitySuccess,
+  updatePinnedMetrics,
+  updatePinnedMetricsSuccess,
+  updatedPinnedMetricsFailure
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
@@ -397,6 +400,52 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         }
       );
     case getType(updateDistrictLocksFailure):
+      return loop(
+        {
+          ...state,
+          saving: "failed"
+        },
+        Cmd.run(showActionFailedToast)
+      );
+    case getType(updatePinnedMetrics): {
+      if ("resource" in state.projectData) {
+        const { id } = state.projectData.resource.project;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () =>
+              patchProject(id, { pinnedMetricFields: action.payload }).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: updatePinnedMetricsSuccess,
+              failActionCreator: updatedPinnedMetricsFailure
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(updatePinnedMetricsSuccess):
+      return updateCurrentState(
+        {
+          ...state,
+          saving: "saved",
+          projectData: {
+            resource: action.payload
+          }
+        },
+        {
+          pinnedMetricFields: action.payload.project.pinnedMetricFields
+        }
+      );
+    case getType(updatedPinnedMetricsFailure):
       return loop(
         {
           ...state,

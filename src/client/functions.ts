@@ -116,13 +116,24 @@ export function computeRowFill(stops: ChoroplethSteps, value?: number, interval?
 const nationalDemVoteShare16 = 51.1;
 const nationalDemVoteShare20 = 52.3;
 const nationalDemVoteShareAvg = nationalDemVoteShare16 + nationalDemVoteShare20 / 2;
-function calculateDemVoteShare(
-  democrat: number,
-  republican: number,
-  other: number
+
+// Computes share of votes for party1
+export function calculatePartyVoteShare(
+  party1Votes: number,
+  party2Votes: number,
+  otherVotes: number
 ): number | undefined {
-  const total = democrat + republican + other;
-  return total ? (100 * democrat) / total : undefined;
+  const total = party1Votes + party2Votes + otherVotes;
+  return total ? (100 * party1Votes) / total : undefined;
+}
+
+export function getPartyVoteShareDisplay(percent?: number): string {
+  return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
+}
+
+export function computeDemographicSplit(demographic: number, total: number): string | undefined {
+  const percent = total > 0 ? (demographic / total) * 100 : undefined;
+  return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
 }
 
 /**
@@ -141,12 +152,12 @@ export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): nu
     year !== "16" &&
     year !== "20"
   ) {
-    const votes16 = calculateDemVoteShare(
+    const votes16 = calculatePartyVoteShare(
       voting.democrat16,
       voting.republican16,
       voting["other party16"] || 0
     );
-    const votes20 = calculateDemVoteShare(
+    const votes20 = calculatePartyVoteShare(
       voting.democrat20,
       voting.republican20,
       voting["other party20"] || 0
@@ -158,13 +169,13 @@ export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): nu
   } else if (year === "20") {
     const voteShare =
       "democrat20" in voting && "republican20" in voting
-        ? calculateDemVoteShare(
+        ? calculatePartyVoteShare(
             voting.democrat20,
             voting.republican20,
             voting["other party20"] || 0
           )
         : "democrat" in voting && "republican" in voting
-        ? calculateDemVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        ? calculatePartyVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
         : undefined;
     if (voteShare !== undefined) {
       return voteShare - nationalDemVoteShare20;
@@ -174,13 +185,13 @@ export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): nu
     // We assume unspecified vote totals are from 2016
     const voteShare =
       "democrat16" in voting && "republican16" in voting
-        ? calculateDemVoteShare(
+        ? calculatePartyVoteShare(
             voting.democrat16,
             voting.republican16,
             voting["other party16"] || 0
           )
         : "democrat" in voting && "republican" in voting
-        ? calculateDemVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        ? calculatePartyVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
         : undefined;
     if (voteShare !== undefined) {
       return voteShare - nationalDemVoteShare16;
@@ -190,6 +201,15 @@ export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): nu
 
 export const hasMultipleElections = (staticMetadata?: IStaticMetadata) =>
   staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
+  staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+
+export const has16Election = (staticMetadata?: IStaticMetadata) =>
+  staticMetadata?.voting?.some(file => file.id.endsWith("16"));
+
+export const demographicsHasOther = (staticMetadata?: IStaticMetadata) =>
+  staticMetadata?.demographics?.some(file => file.id === "other");
+
+export const has20Election = (staticMetadata?: IStaticMetadata) =>
   staticMetadata?.voting?.some(file => file.id.endsWith("20"));
 
 export function extractYear(voting: DemographicCounts, year?: ElectionYear): DemographicCounts {

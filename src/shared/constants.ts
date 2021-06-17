@@ -46,6 +46,14 @@ export enum ProjectVisibility {
 
 export const DEFAULT_POPULATION_DEVIATION = 5;
 
+export const DEFAULT_PINNED_METRIC_FIELDS = [
+  "population",
+  "populationDeviation",
+  "raceChart",
+  "pvi",
+  "compactness"
+];
+
 export const FIPS: { readonly [fips: string]: string } = {
   "10": "DE",
   "11": "DC",

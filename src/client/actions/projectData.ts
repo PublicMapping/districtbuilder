@@ -1,6 +1,12 @@
 import { createAction } from "typesafe-actions";
 import { ProjectVisibility } from "../../shared/constants";
-import { DistrictsDefinition, IProject, LockedDistricts, ProjectId } from "../../shared/entities";
+import {
+  DistrictsDefinition,
+  IProject,
+  LockedDistricts,
+  MetricField,
+  ProjectId
+} from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { ResourceFailure } from "../resource";
 
@@ -50,6 +56,12 @@ export const updateDistrictLocksSuccess = createAction("Update district locks su
   DynamicProjectData
 >();
 export const updateDistrictLocksFailure = createAction("Update district locks failure")<string>();
+
+export const updatePinnedMetrics = createAction("Update pinned metrics")<readonly MetricField[]>();
+export const updatePinnedMetricsSuccess = createAction("Update pinned metrics success")<
+  DynamicProjectData
+>();
+export const updatedPinnedMetricsFailure = createAction("Update pinned metrics failure")<string>();
 
 export const updateProjectFailed = createAction("Update project failure")();
 

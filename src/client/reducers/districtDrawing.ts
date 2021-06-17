@@ -2,7 +2,7 @@ import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { SavingState } from "../types";
+import { SavingState, EvaluateMetric, ElectionYear } from "../types";
 
 import {
   addSelectedGeounits,
@@ -35,14 +35,13 @@ import {
   setZoomToDistrictId,
   setMapLabel,
   toggleKeyboardShortcutsModal,
-  setElectionYear
+  setElectionYear,
+  toggleExpandedMetrics
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { DistrictId, GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
-import { ElectionYear, EvaluateMetric } from "../types";
-
 import { ProjectState, initialProjectState } from "./project";
 import {
   pushEffect,
@@ -52,6 +51,7 @@ import {
   updateCurrentState
 } from "./undoRedo";
 import { canSwitchGeoLevels, isBaseGeoLevelAlwaysVisible } from "../functions";
+import { DEFAULT_PINNED_METRIC_FIELDS } from "../../shared/constants";
 
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
@@ -114,6 +114,7 @@ export interface DistrictDrawingState {
   readonly showKeyboardShortcutsModal: boolean;
   readonly showImportFlagsModal: boolean;
   readonly findMenuOpen: boolean;
+  readonly expandedProjectMetrics: boolean;
   readonly evaluateMode: boolean;
   readonly evaluateMetric: EvaluateMetric | undefined;
   readonly findIndex?: number;
@@ -136,6 +137,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   showImportFlagsModal: false,
   showKeyboardShortcutsModal: false,
   findMenuOpen: false,
+  expandedProjectMetrics: false,
   evaluateMode: false,
   evaluateMetric: undefined,
   findTool: FindTool.Unassigned,
@@ -151,6 +153,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
         geoLevelIndex: 0,
         geoLevelVisibility: [],
         lockedDistricts: [],
+        pinnedMetricFields: DEFAULT_PINNED_METRIC_FIELDS,
         districtsDefinition: []
       }
     },
@@ -338,6 +341,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         evaluateMode: action.payload
+      };
+    case getType(toggleExpandedMetrics):
+      return {
+        ...state,
+        expandedProjectMetrics: action.payload
       };
     case getType(selectEvaluationMetric):
       return {
