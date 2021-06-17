@@ -2,7 +2,7 @@
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import Avatar from "react-avatar";
 import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, NavLink, useHistory } from "react-router-dom";
 import * as H from "history";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
@@ -90,6 +90,22 @@ const style: ThemeUIStyleObject = {
     m: "0",
     listStyleType: "none"
   },
+  linkItem: {
+    px: "3",
+    py: 1,
+    display: "inline-block",
+    a: {
+      textDecoration: "none",
+      fontWeight: "light",
+      fontFamily: "heading",
+      color: "gray.8"
+    },
+    "> .active": {
+      borderBottom: "2px solid currentColor",
+      paddingBottom: "4px",
+      fontWeight: "medium"
+    }
+  },
   menuListItem: {
     borderRadius: "small",
     py: 1,
@@ -164,7 +180,7 @@ const SiteHeader = ({ user }: Props) => {
         </Alert>
       )}
       <Flex as="header" sx={style.header}>
-        <Heading as="h1" sx={{ mb: "0px", mr: "auto", p: 2 }}>
+        <Heading as="h1" sx={{ mb: "0px", mr: "auto", pt: 2 }}>
           <Link to="/" sx={style.logoLink}>
             <Logo sx={{ width: "15rem" }} />
           </Link>
@@ -180,10 +196,29 @@ const SiteHeader = ({ user }: Props) => {
           </React.Fragment>
         ) : "resource" in user ? (
           <React.Fragment>
-            <SupportMenu />
+            <span sx={style.linkItem}>
+              <NavLink exact to="/">
+                My maps
+              </NavLink>
+            </span>
             {user.resource.organizations.length > 0 && (
               <OrganizationDropdown organizations={user.resource.organizations} />
             )}
+            <span sx={style.linkItem}>
+              <NavLink exact to="/maps">
+                Community maps
+              </NavLink>
+            </span>
+            <span
+              sx={{
+                svg: { display: "none" },
+                span: {
+                  backgroundColor: "transparent !important"
+                }
+              }}
+            >
+              <SupportMenu />
+            </span>
             <Wrapper onSelection={handleSelection(history)} sx={{ ml: 3 }}>
               <MenuButton sx={style.menuButton}>
                 <Avatar
