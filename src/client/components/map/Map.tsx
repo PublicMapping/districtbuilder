@@ -364,6 +364,13 @@ const DistrictsMap = ({
 
   const downHandler = useCallback(
     (key: KeyboardEvent) => {
+      // Don't allow keyboard shortcuts to mess with form elements
+      if (
+        ["button", "select", "input"].includes(document.activeElement?.tagName.toLowerCase() || "")
+      ) {
+        return;
+      }
+
       const meta = navigator.appVersion.indexOf("Mac") !== -1 ? "metaKey" : "ctrlKey";
       const shortcut = KEYBOARD_SHORTCUTS.find(
         shortcut =>
