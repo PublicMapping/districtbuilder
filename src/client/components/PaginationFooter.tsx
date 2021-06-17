@@ -43,7 +43,7 @@ const PaginationFooter = ({ currentPage, totalPages, setPage }: StateProps) => {
         <li sx={{ display: "inline" }} key={number} id={number.toString()}>
           <Button
             sx={number === currentPage ? style.paginationSelected : style.pagination}
-            onClick={() =>number !== currentPage && setPage(number)}
+            onClick={() => number !== currentPage && setPage(number)}
           >
             {number}
           </Button>
