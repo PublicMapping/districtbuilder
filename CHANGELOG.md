@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Improved padding in the sidebar district rows, which had become unbalanced [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
+- Keyboard shortcuts no longer fire when form elements are focused [#823](https://github.com/PublicMapping/districtbuilder/pull/823)
 
 
 ## [1.6.0] - 2021-05-24
