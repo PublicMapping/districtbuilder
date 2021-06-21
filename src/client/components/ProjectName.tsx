@@ -39,7 +39,8 @@ const style = {
 
 enum MenuKeys {
   Rename = "Rename",
-  AboutTemplate = "AboutTemplate"
+  AboutTemplate = "AboutTemplate",
+  RoomService = "RoomService",
 }
 
 const ProjectName = ({
@@ -103,6 +104,11 @@ const ProjectName = ({
               <Box sx={menuButtonStyles.menuListItem}>
                 About “{project.projectTemplate?.name}” template
               </Box>
+            </MenuItem>
+          </li>
+          <li key={MenuKeys.RoomService}>
+            <MenuItem value={MenuKeys.RoomService}>
+              <Box sx={menuButtonStyles.menuListItem}>RoomService</Box>
             </MenuItem>
           </li>
         </ul>

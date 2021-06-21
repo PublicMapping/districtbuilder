@@ -301,3 +301,9 @@ export interface DistrictsImportApiResponse {
   readonly rowFlags?: readonly ImportRowFlag[];
   readonly maxDistrictId: number;
 }
+
+export interface RoomserviceResponse {
+  readonly user: UserId,
+  readonly resources: [],
+  readonly token: string,
+}

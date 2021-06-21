@@ -16,7 +16,8 @@ import {
   UserId,
   RegionConfigId,
   ProjectNest,
-  DistrictsImportApiResponse
+  DistrictsImportApiResponse,
+  RoomserviceResponse
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData, PaginatedResponse } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -408,6 +409,20 @@ export async function removeUserFromOrganization(
   return new Promise((resolve, reject) => {
     apiAxios
       .post(`/api/organization/${slug}/leave`, userRemove)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
+export async function roomserviceJoin(
+  project: ProjectId,
+  user: UserId
+): Promise<RoomserviceResponse> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post('/api/roomservice/connect', { project, user })
       .then(response => resolve(response.data))
       .catch(error => {
         reject(error.message);
