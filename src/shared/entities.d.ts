@@ -170,6 +170,7 @@ export interface IRegionConfig {
   readonly s3URI: S3URI;
   readonly version: Date;
   readonly hidden: boolean;
+  readonly archived: boolean;
 }
 
 interface ProjectTemplateFields {

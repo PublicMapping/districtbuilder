@@ -27,15 +27,15 @@ export class TopologyService {
 
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
     void repo.find().then(regionConfigs => {
-      this._layers = regionConfigs
-        .map(regionConfig => regionConfig.s3URI)
-        .reduce(
-          (layers, s3URI) => ({
-            ...layers,
-            [s3URI]: this.fetchLayer(s3URI)
-          }),
-          {}
-        );
+      this._layers = regionConfigs.reduce(
+        (layers, regionConfig) => ({
+          ...layers,
+          [regionConfig.s3URI]: regionConfig.archived
+            ? Promise.resolve(void 0)
+            : this.fetchLayer(regionConfig.s3URI)
+        }),
+        {}
+      );
     });
   }
 
