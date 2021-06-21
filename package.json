@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@redux-beacon/google-tag-manager": "1.0.1",
+    "@roomservice/react": "^1.0.6",
     "@szhsin/react-menu": "^1.9.1",
     "@theme-ui/color": "0.4.0-rc.1",
     "@tippyjs/react": "^4.1.0",

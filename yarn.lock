@@ -1561,6 +1561,28 @@
   resolved "https://registry.yarnpkg.com/@redux-beacon/google-tag-manager/-/google-tag-manager-1.0.1.tgz#ba3f6ee6f5495933a6fddf08e8071d30b4cf0e13"
   integrity sha512-WZqKKviHUF30GuvOlAqfAmtfoGmLToE1hVsGGfwmzTlshQmn2peL+xPL38ukIgUvI74UCzTfVmCSFsychFIyMA==
 
+"@roomservice/browser@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@roomservice/browser/-/browser-3.0.4.tgz#cbacf71b2ed29c7ab337042e9191b954182cbdf3"
+  integrity sha512-vbnCNz4/iwQQcYNxfrTDIB+7CboQ/Rq1DlBL/SHRNSro2kahlnztLDheRCqKr6mLbFq7hguBQ2hstBBcRXm/eA==
+  dependencies:
+    "@roomservice/core" "0.3.2"
+    tiny-invariant "^1.1.0"
+
+"@roomservice/core@0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@roomservice/core/-/core-0.3.2.tgz#a3af2a760ecc14863a03ce8f3524ca4257d0fa66"
+  integrity sha512-F4nEw9puvnW2B9N6DxjyXniahJSPx3WWrBEXZYtUKu89DlVsUkvDyEsoozXpAtA5Khj1CICvZIMKj+ba5PdTXg==
+  dependencies:
+    tiny-invariant "^1.1.0"
+
+"@roomservice/react@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@roomservice/react/-/react-1.0.6.tgz#0dbd1028e4278fc139aec63605336c4b93448944"
+  integrity sha512-u1NtnYHxJw3xsUkSeCgOuShHtRlAhj+c8zuTJ7sNpd4hz9d8udi4drOaiYOfdMGANdoNZE4GG9tD19Tjc8+mrg==
+  dependencies:
+    "@roomservice/browser" "^3.0.4"
+
 "@styled-system/background@^5.1.2":
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/@styled-system/background/-/background-5.1.2.tgz#75c63d06b497ab372b70186c0bf608d62847a2ba"
@@ -11250,7 +11272,7 @@ timsort@^0.3.0:
   resolved "https://registry.yarnpkg.com/timsort/-/timsort-0.3.0.tgz#405411a8e7e6339fe64db9a234de11dc31e02bd4"
   integrity sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=
 
-tiny-invariant@^1.0.2:
+tiny-invariant@^1.0.2, tiny-invariant@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/tiny-invariant/-/tiny-invariant-1.1.0.tgz#634c5f8efdc27714b7f386c35e6760991d230875"
   integrity sha512-ytxQvrb1cPc9WBEI/HSeYYoGD0kWnGEOR8RY6KomWLBVhqz0RgTwVO9dLrGz7dC+nN9llyI7OKAgRq8Vq4ZBSw==
