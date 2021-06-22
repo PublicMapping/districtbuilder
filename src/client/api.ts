@@ -340,8 +340,13 @@ export async function exportOrganizationProjectsCsv(slug: OrganizationSlug): Pro
     apiAxios
       .get(`/api/project_templates/${slug}/export/maps-csv/`)
       .then(response => {
+        const today = new Date();
+        const dateString = today.toISOString().split("T")[0];
         return resolve(
-          saveAs(new Blob([response.data], { type: "text/csv;charset=utf-8" }), `${slug}-maps.csv`)
+          saveAs(
+            new Blob([response.data], { type: "text/csv;charset=utf-8" }),
+            `${dateString}-${slug}-maps.csv`
+          )
         );
       })
       .catch(error => reject(error.message));
@@ -353,8 +358,13 @@ export async function exportOrganizationUsersCsv(slug: OrganizationSlug): Promis
     apiAxios
       .get(`/api/organization/${slug}/export/users-csv/`)
       .then(response => {
+        const today = new Date();
+        const dateString = today.toISOString().split("T")[0];
         return resolve(
-          saveAs(new Blob([response.data], { type: "text/csv;charset=utf-8" }), `${slug}-users.csv`)
+          saveAs(
+            new Blob([response.data], { type: "text/csv;charset=utf-8" }),
+            `${dateString}-${slug}-users.csv`
+          )
         );
       })
       .catch(error => reject(error.message));

@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ignore unassigned districts when computing flag for Contiguity and Equal Population [#797](https://github.com/PublicMapping/districtbuilder/pull/797)
 - Rename Support menu to Resources [#787](https://github.com/PublicMapping/districtbuilder/pull/787)
 - Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
+- Tweaks to org report downloads [#832](https://github.com/PublicMapping/districtbuilder/pull/832)
 
 ### Fixed
 
