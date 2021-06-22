@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Body,
+  Request,
   Res,
   UseGuards,
   UseInterceptors
@@ -329,26 +330,40 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/geojson")
-  async exportGeoJSON(
-    @ParsedRequest() req: CrudRequest,
-    @Param("id") projectId: ProjectId
-  ): Promise<DistrictsGeoJSON> {
-    const project = await this.getProject(req, projectId);
-    if (!project.districtsDefinition) {
+  async exportGeoJSON(@Request() req: any, @Param("id") id: ProjectId): Promise<DistrictsGeoJSON> {
+    const user = req.user as User;
+    // Not using 'getProject' because we need to select the 'districts' column
+    // Unauthenticated access is allowed for individual projects if they are
+    // visible or published, and not archived.
+    const commonFilter = { id, archived: false };
+    const project = await this.service.findOne({
+      where: [
+        { ...commonFilter, user: { id: user.id } },
+        { ...commonFilter, visibility: ProjectVisibility.Published },
+        { ...commonFilter, visibility: ProjectVisibility.Visible }
+      ],
+      loadEagerRelations: false,
+      relations: ["regionConfig"]
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${id} not found`);
+    }
+    // If the region is archived we can't calculate districts
+    if (project.regionConfig.archived && !project.districts) {
       throw new BadRequestException(
-        "District definition is invalid",
+        "Saved district is not available and cannot be calculated",
         MakeDistrictsErrors.INVALID_DEFINITION
       );
     }
 
-    return project.districts || (await this.getGeojson({ ...project }));
+    return project.districts;
   }
 
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/shp")
   async exportShapefile(
-    @ParsedRequest() req: CrudRequest,
+    @Request() req: any,
     @Param("id") projectId: ProjectId,
     @Res() response: Response
   ): Promise<void> {
