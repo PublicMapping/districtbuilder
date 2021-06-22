@@ -23,7 +23,6 @@ import { RegionLookupProperties } from "../../../../shared/entities";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { RegionConfig } from "../entities/region-config.entity";
 import { RegionConfigsService } from "../services/region-configs.service";
-import { GeometryCollection } from "topojson-specification";
 import * as _ from "lodash";
 
 @Crud({
@@ -81,26 +80,14 @@ export class RegionConfigsController implements CrudController<RegionConfig> {
     @Param("regionId") regionId: string,
     @Param("geounit") geounit: string,
     @Query("fields") fields: string[]
-  ): Promise<RegionLookupProperties[]> {
+  ): Promise<readonly RegionLookupProperties[]> {
     const regionConfig = await this.service.findOne({ id: regionId });
 
     const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
     if (!geoCollection) {
       throw new InternalServerErrorException();
     }
-    const geoUnitLayer = geoCollection.topology.objects[geounit] as GeometryCollection;
-    if (fields) {
-      return geoUnitLayer.geometries.map(f => {
-        if (f.properties) {
-          return _.pick(f.properties, fields);
-        } else {
-          return {};
-        }
-      });
-    } else {
-      return geoUnitLayer.geometries.map(f => {
-        return f?.properties || {};
-      });
-    }
+    const props = geoCollection.topologyProperties[geounit];
+    return fields ? props.map(f => _.pick(f, fields)) : props;
   }
 }

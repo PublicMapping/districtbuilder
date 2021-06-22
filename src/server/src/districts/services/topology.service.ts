@@ -7,6 +7,7 @@ import { Repository } from "typeorm";
 import { UintArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
+import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 
 function s3Options(path: S3URI, fileName: string): GetObjectRequest {
   const url = new URL(path);
@@ -16,7 +17,7 @@ function s3Options(path: S3URI, fileName: string): GetObjectRequest {
 }
 
 interface Layers {
-  readonly [s3URI: string]: Promise<GeoUnitTopology | void>;
+  readonly [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | void>;
 }
 
 @Injectable()
@@ -30,9 +31,7 @@ export class TopologyService {
       this._layers = regionConfigs.reduce(
         (layers, regionConfig) => ({
           ...layers,
-          [regionConfig.s3URI]: regionConfig.archived
-            ? Promise.resolve(void 0)
-            : this.fetchLayer(regionConfig.s3URI)
+          [regionConfig.s3URI]: this.fetchLayer(regionConfig.s3URI, regionConfig.archived)
         }),
         {}
       );
@@ -43,7 +42,7 @@ export class TopologyService {
     return this._layers && Object.freeze(this._layers);
   }
 
-  public async get(s3URI: S3URI): Promise<GeoUnitTopology | void> {
+  public async get(s3URI: S3URI): Promise<GeoUnitTopology | GeoUnitProperties | void> {
     if (!this._layers) {
       return;
     }
@@ -59,7 +58,10 @@ export class TopologyService {
     return this._layers[s3URI];
   }
 
-  private async fetchLayer(s3URI: S3URI): Promise<GeoUnitTopology | void> {
+  private async fetchLayer(
+    s3URI: S3URI,
+    archived: boolean
+  ): Promise<GeoUnitTopology | GeoUnitProperties | void> {
     try {
       const [topojsonResponse, staticMetadataResponse] = await Promise.all([
         this.s3.getObject(s3Options(s3URI, "topo.json")).promise(),
@@ -82,7 +84,7 @@ export class TopologyService {
         ]);
 
         this.logger.debug(`downloaded data for s3URI ${s3URI}`);
-        return new GeoUnitTopology(
+        const geoUnitTopology = new GeoUnitTopology(
           topology,
           { groups: geoLevelHierarchy.slice().reverse() },
           staticMetadata,
@@ -90,6 +92,9 @@ export class TopologyService {
           voting,
           geoLevels
         );
+        // For archived read-only regions, we get the properties of the topology (which are used for exports)
+        // and let the much larger TopoJSON geometries get garbage collected
+        return archived ? GeoUnitProperties.fromTopology(geoUnitTopology) : geoUnitTopology;
       } else {
         this.logger.error("Invalid TopoJSON or metadata bodies");
       }
