@@ -98,7 +98,11 @@ export class DistrictsController {
     const blockToDistricts = Object.fromEntries(unflaggedRows);
 
     const regionCode = FIPS[stateFips];
-    const regionConfig = await this.regionConfigService.findOne({ regionCode, hidden: false });
+    const regionConfig = await this.regionConfigService.findOne({
+      regionCode,
+      hidden: false,
+      archived: false
+    });
     const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
     if (!geoCollection) {
       throw new InternalServerErrorException();
