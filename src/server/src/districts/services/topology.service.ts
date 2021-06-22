@@ -8,6 +8,7 @@ import { UintArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../sha
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
+import _ from "lodash";
 
 function s3Options(path: S3URI, fileName: string): GetObjectRequest {
   const url = new URL(path);
@@ -17,7 +18,7 @@ function s3Options(path: S3URI, fileName: string): GetObjectRequest {
 }
 
 interface Layers {
-  readonly [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | void>;
+  [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | void>;
 }
 
 @Injectable()
@@ -28,13 +29,29 @@ export class TopologyService {
 
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
     void repo.find().then(regionConfigs => {
-      this._layers = regionConfigs.reduce(
-        (layers, regionConfig) => ({
-          ...layers,
-          [regionConfig.s3URI]: this.fetchLayer(regionConfig.s3URI, regionConfig.archived)
-        }),
-        {}
-      );
+      const getLayers = async () => {
+        this._layers = regionConfigs.reduce(
+          (layers, regionConfig) => ({ ...layers, [regionConfig.s3URI]: void 0 }),
+          {}
+        );
+        const archivedURIs = regionConfigs.filter(r => r.archived).map(r => r.s3URI);
+        const activeURIs = regionConfigs.filter(r => !r.archived).map(r => r.s3URI);
+
+        // Archived regions don't have high memory requirements once loaded, so we take care of them first
+        // eslint-disable-next-line
+        for (const s3URI of archivedURIs) {
+          this._layers[s3URI] = this.fetchLayer(s3URI, true);
+        }
+        // Block until loading archived layers is complete
+        await Promise.all(Object.values(_.pick(this._layers, archivedURIs)));
+
+        // Next we load all remaining (unarchived) regions
+        // eslint-disable-next-line
+        for (const s3URI of activeURIs) {
+          this._layers[s3URI] = this.fetchLayer(s3URI, false);
+        }
+      };
+      void getLayers();
     });
   }
 
@@ -92,6 +109,7 @@ export class TopologyService {
           voting,
           geoLevels
         );
+        this.logger.debug(`finished calculating computed data for s3URI ${s3URI}`);
         // For archived read-only regions, we get the properties of the topology (which are used for exports)
         // and let the much larger TopoJSON geometries get garbage collected
         return archived ? GeoUnitProperties.fromTopology(geoUnitTopology) : geoUnitTopology;
