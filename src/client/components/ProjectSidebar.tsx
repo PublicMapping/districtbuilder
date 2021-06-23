@@ -296,6 +296,7 @@ const SidebarRow = memo(
     isDistrictLocked,
     isDistrictHovered,
     isReadOnly,
+    popDeviation,
     popDeviationThreshold
   }: {
     readonly district: DistrictGeoJSON;
@@ -307,6 +308,7 @@ const SidebarRow = memo(
     readonly isDistrictLocked?: boolean;
     readonly isDistrictHovered: boolean;
     readonly isReadOnly: boolean;
+    readonly popDeviation: number;
     readonly popDeviationThreshold: number;
   }) => {
     const selectedDifference = selectedPopulationDifference || 0;
@@ -389,17 +391,53 @@ const SidebarRow = memo(
           {populationDisplay}
         </Styled.td>
         <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-          <span>{deviationDisplay}</span>
-          <span sx={style.deviationIcon}>
-            {(districtId === 0 && absoluteDeviation === 0) ||
-            (districtId !== 0 && absoluteDeviation <= popDeviationThreshold) ? (
-              <Icon name="circle-check-solid" color="#388a64" />
-            ) : intermediateDeviation < 0 ? (
-              <Icon name="arrow-circle-down-solid" color="gray.4" />
-            ) : (
-              <Icon name="arrow-circle-up-solid" color="#000000" />
-            )}
-          </span>
+          <Tooltip
+            placement="top-start"
+            content={
+              districtId !== 0 ? (
+                Math.abs(intermediateDeviation) <= popDeviationThreshold ? (
+                  <div>This district meets the {popDeviation}% population deviation tolerance</div>
+                ) : intermediateDeviation < 0 ? (
+                  <div>
+                    Add{" "}
+                    {Math.floor(
+                      Math.abs(intermediateDeviation) + popDeviationThreshold
+                    ).toLocaleString()}{" "}
+                    people to this district to meet the {popDeviation}% population deviation
+                    tolerance
+                  </div>
+                ) : (
+                  <div>
+                    Remove{" "}
+                    {Math.floor(intermediateDeviation - popDeviationThreshold).toLocaleString()}{" "}
+                    people from this district to meet the {popDeviation}% population deviation
+                    tolerance
+                  </div>
+                )
+              ) : intermediateDeviation > 0 ? (
+                <div>
+                  This population is not assigned to any district. Make sure all population is
+                  assigned to a district to complete your map.
+                </div>
+              ) : (
+                <div>All population has been assigned to a district.</div>
+              )
+            }
+          >
+            <span>
+              <span>{deviationDisplay}</span>
+              <span sx={style.deviationIcon}>
+                {(districtId === 0 && absoluteDeviation === 0) ||
+                (districtId !== 0 && absoluteDeviation <= popDeviationThreshold) ? (
+                  <Icon name="circle-check-solid" color="#388a64" />
+                ) : intermediateDeviation < 0 ? (
+                  <Icon name="arrow-circle-down-solid" color="gray.4" />
+                ) : (
+                  <Icon name="arrow-circle-up-solid" color="#000000" />
+                )}
+              </span>
+            </span>
+          </Tooltip>
         </Styled.td>
         <Styled.td sx={style.td}>
           <Tooltip
@@ -584,6 +622,7 @@ const SidebarRows = ({
             isDistrictHovered={districtId === hoveredDistrictId}
             districtId={districtId}
             isReadOnly={isReadOnly}
+            popDeviation={project.populationDeviation}
             popDeviationThreshold={averagePopulation * (project.populationDeviation / 100)}
           />
         ) : null;
