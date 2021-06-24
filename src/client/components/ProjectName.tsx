@@ -47,12 +47,14 @@ const ProjectName = ({
   project,
   projectNameSaving,
   saving,
-  isReadOnly
+  isReadOnly,
+  user
 }: {
   readonly project: IProject;
   readonly saving: SavingState;
   readonly projectNameSaving: SavingState;
   readonly isReadOnly: boolean;
+  readonly user: any;
 }) => {
   const [name, setName] = useState(project.name);
   const [modalVisible, setModalVisibility] = useState(false);
@@ -75,6 +77,8 @@ const ProjectName = ({
           store.dispatch(setProjectNameEditing(true));
         } else if (menuKey === MenuKeys.AboutTemplate) {
           setModalVisibility(true);
+        } else if (menuKey === MenuKeys.RoomService) {
+
         }
       }}
     >
@@ -193,7 +197,8 @@ const ProjectName = ({
 function mapStateToProps(state: State) {
   return {
     projectNameSaving: state.project.projectNameSaving,
-    saving: state.project.saving
+    saving: state.project.saving,
+    user: state.user,
   };
 }
 
