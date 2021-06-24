@@ -166,6 +166,7 @@ const ProjectSidebar = ({
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
 } & LoadingProps) => {
+  const hasElectionData = Object.keys(geojson?.features[0].properties.voting || {}).length > 0;
   const multElections = hasMultipleElections(staticMetadata);
   const polLabel = multElections
     ? "Cook Partisan Voting Index (2016 / 2020)"
@@ -201,7 +202,7 @@ const ProjectSidebar = ({
                   <span>Race</span>
                 </Tooltip>
               </Styled.th>
-              {staticMetadata?.voting && (
+              {hasElectionData && (
                 <Styled.th sx={{ ...style.th, ...style.number }}>
                   <Tooltip content={polLabel}>
                     <span>{multElections ? "PVI" : "Pol."}</span>

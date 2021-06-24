@@ -24,6 +24,7 @@ import {
 import { getAllBaseIndices, getDemographics, getVoting } from "../../../../shared/functions";
 import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
+import { mapValues } from "lodash";
 
 interface GeoUnitHierarchy {
   geom: Polygon | MultiPolygon;
@@ -275,8 +276,16 @@ export class GeoUnitTopology {
     };
   }
 
+  get topologyProperties() {
+    return mapValues(this.topology.objects, collection =>
+      collection.type === "GeometryCollection"
+        ? collection.geometries.map(feature => feature.properties || {})
+        : []
+    );
+  }
+
   // Generates the geounit hierarchy corresponding to a geo unit definition structure
-  getGeoUnitHierarchy() {
+  get hierarchyDefinition() {
     const geoLevelIds = this.staticMetadata.geoLevelHierarchy.map(level => level.id);
     const definition = { groups: geoLevelIds.slice().reverse() };
     return groupForHierarchy(this.topology, definition);

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add user export to organization admin screen [#812](https://github.com/PublicMapping/districtbuilder/pull/812)
 - Add support for calculating PVI / handling '16 & '20 election data [#818](https://github.com/PublicMapping/districtbuilder/pull/818)
 - Add tooltip for population deviation in project sidebar [#819](https://github.com/PublicMapping/districtbuilder/pull/819)
+- Add ability to archive regions as read-only to reduce memory requirements [#831](https://github.com/PublicMapping/districtbuilder/pull/831)
 
 ### Changed
 

@@ -226,7 +226,10 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
             const regionConfig =
               regionConfigs.resource.find(
                 config =>
-                  !config.hidden && config.regionCode === stateAbbrev && config.countryCode === "US"
+                  !config.hidden &&
+                  !config.archived &&
+                  config.regionCode === stateAbbrev &&
+                  config.countryCode === "US"
               ) || null;
             if (regionConfig) {
               setImportResource({ data: regionConfig, isPending: true });

@@ -53,6 +53,7 @@ interface StateProps {
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
   readonly isReadOnly: boolean;
+  readonly isArchived: boolean;
   readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
   readonly electionYear: ElectionYear;
@@ -84,6 +85,7 @@ const ProjectScreen = ({
   mapLabel,
   isLoading,
   isReadOnly,
+  isArchived,
   user,
   electionYear
 }: StateProps) => {
@@ -205,6 +207,7 @@ const ProjectScreen = ({
                 evaluateMode={evaluateMode}
                 evaluateMetric={evaluateMetric}
                 isReadOnly={isReadOnly}
+                isArchived={isArchived}
                 limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
                 label={mapLabel}
                 map={map}
@@ -232,7 +235,7 @@ const ProjectScreen = ({
 };
 
 function mapStateToProps(state: State): StateProps {
-  const project = destructureResource(state.project.projectData, "project");
+  const project: IProject | undefined = destructureResource(state.project.projectData, "project");
   return {
     project,
     geojson: destructureResource(state.project.projectData, "geojson"),
@@ -250,9 +253,11 @@ function mapStateToProps(state: State): StateProps {
       ("isPending" in state.project.staticData && state.project.staticData.isPending),
     projectNotFound:
       "statusCode" in state.project.projectData && state.project.projectData.statusCode === 404,
+    isArchived: project !== undefined && project.regionConfig.archived,
     isReadOnly:
       !("resource" in state.user) ||
-      (project !== undefined && state.user.resource.id !== project.user.id),
+      (project !== undefined && state.user.resource.id !== project.user.id) ||
+      (project !== undefined && project.regionConfig.archived),
     user: state.user
   };
 }

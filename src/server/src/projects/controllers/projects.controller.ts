@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Body,
+  Request,
   Res,
   UseGuards,
   UseInterceptors
@@ -28,7 +29,6 @@ import stringify from "csv-stringify/lib/sync";
 import { Response } from "express";
 import { convert } from "geojson2shp";
 import * as _ from "lodash";
-import { GeometryCollection } from "topojson-specification";
 import isUUID from "validator/lib/isUUID";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
@@ -296,7 +296,7 @@ export class ProjectsController implements CrudController<Project> {
   // Helper for obtaining a topology for a given S3 URI, throws exception if not found
   async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
     const geoCollection = await this.topologyService.get(s3URI);
-    if (!geoCollection) {
+    if (!geoCollection || !("topology" in geoCollection)) {
       throw new NotFoundException(
         `Topology ${s3URI} not found`,
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
@@ -329,26 +329,40 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/geojson")
-  async exportGeoJSON(
-    @ParsedRequest() req: CrudRequest,
-    @Param("id") projectId: ProjectId
-  ): Promise<DistrictsGeoJSON> {
-    const project = await this.getProject(req, projectId);
-    if (!project.districtsDefinition) {
+  async exportGeoJSON(@Request() req: any, @Param("id") id: ProjectId): Promise<DistrictsGeoJSON> {
+    const user = req.user as User;
+    // Not using 'getProject' because we need to select the 'districts' column
+    // Unauthenticated access is allowed for individual projects if they are
+    // visible or published, and not archived.
+    const commonFilter = { id, archived: false };
+    const project = await this.service.findOne({
+      where: [
+        { ...commonFilter, user: { id: user.id } },
+        { ...commonFilter, visibility: ProjectVisibility.Published },
+        { ...commonFilter, visibility: ProjectVisibility.Visible }
+      ],
+      loadEagerRelations: false,
+      relations: ["regionConfig"]
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${id} not found`);
+    }
+    // If the region is archived we can't calculate districts
+    if (project.regionConfig.archived && !project.districts) {
       throw new BadRequestException(
-        "District definition is invalid",
+        "Saved district is not available and cannot be calculated",
         MakeDistrictsErrors.INVALID_DEFINITION
       );
     }
 
-    return project.districts || (await this.getGeojson({ ...project }));
+    return project.districts;
   }
 
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/shp")
   async exportShapefile(
-    @ParsedRequest() req: CrudRequest,
+    @Request() req: any,
     @Param("id") projectId: ProjectId,
     @Res() response: Response
   ): Promise<void> {
@@ -381,9 +395,15 @@ export class ProjectsController implements CrudController<Project> {
     @Param("id") projectId: ProjectId
   ): Promise<string> {
     const project = await this.getProject(req, projectId);
-    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
+    const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
+    if (!geoCollection) {
+      throw new NotFoundException(
+        `Topology ${project.regionConfig.s3URI} not found`,
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+      );
+    }
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const baseGeoUnitLayer = geoCollection.topology.objects[baseGeoLevel] as GeometryCollection;
+    const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
 
     // First column is the base geounit id, second column is the district id
     const mutableCsvRows: [number, number][] = [];
@@ -400,7 +420,7 @@ export class ProjectsController implements CrudController<Project> {
         if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
           // The numbers found in the hierarchy are the base geounit indices of the topology.
           // Access this item in the topology to find it's base geounit id.
-          const props: any = baseGeoUnitLayer.geometries[hierarchyNumOrArray].properties;
+          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
           mutableCsvRows.push([props[baseGeoLevel], districtOrArray]);
         } else if (typeof hierarchyNumOrArray !== "number") {
           // Keep recursing into the hierarchy until we reach the end
@@ -416,7 +436,7 @@ export class ProjectsController implements CrudController<Project> {
         }
       });
     };
-    accumulateCsvRows(project.districtsDefinition, geoCollection.getGeoUnitHierarchy());
+    accumulateCsvRows(project.districtsDefinition, geoCollection.hierarchyDefinition);
 
     return stringify(mutableCsvRows, {
       header: true,

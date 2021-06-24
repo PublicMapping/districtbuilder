@@ -76,6 +76,7 @@ import { State } from "../../reducers";
 import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
+import Icon from "../Icon";
 
 function removeEvaluateMetricLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
@@ -184,6 +185,7 @@ interface Props {
   readonly evaluateMetric?: EvaluateMetric;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
+  readonly isArchived: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
@@ -201,6 +203,21 @@ type Label = Feature<Point, LabelId>;
 type Labels = FeatureCollection<Point, LabelId>;
 
 const style: ThemeUIStyleObject = {
+  archivedMessage: {
+    position: "absolute",
+    bg: "muted",
+    width: "auto",
+    top: 3,
+    left: 3,
+    border: "1px solid",
+    borderColor: "gray.2",
+    borderRadius: "small",
+    boxShadow: "large",
+    p: 3,
+    display: "inline-block",
+    minWidth: "fit-content",
+    zIndex: "200"
+  },
   legendBox: {
     position: "absolute",
     bg: "muted",
@@ -259,6 +276,7 @@ const DistrictsMap = ({
   geoLevelIndex,
   lockedDistricts,
   isReadOnly,
+  isArchived,
   limitSelectionToCounty,
   findMenuOpen,
   evaluateMetric,
@@ -896,6 +914,12 @@ const DistrictsMap = ({
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
+      {!evaluateMode && isArchived && (
+        <Box sx={style.archivedMessage}>
+          <Icon name="alert-triangle" /> This map is using an archived region and can no longer be
+          edited.
+        </Box>
+      )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
           <Flex sx={{ alignItems: "center" }}>

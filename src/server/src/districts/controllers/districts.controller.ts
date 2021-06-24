@@ -9,7 +9,6 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import csvParse from "csv-parse";
 import { Express } from "express";
-import { GeometryCollection } from "topojson-specification";
 
 import {
   DistrictsDefinition,
@@ -99,13 +98,17 @@ export class DistrictsController {
     const blockToDistricts = Object.fromEntries(unflaggedRows);
 
     const regionCode = FIPS[stateFips];
-    const regionConfig = await this.regionConfigService.findOne({ regionCode, hidden: false });
+    const regionConfig = await this.regionConfigService.findOne({
+      regionCode,
+      hidden: false,
+      archived: false
+    });
     const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
     if (!geoCollection) {
       throw new InternalServerErrorException();
     }
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const baseGeoUnitLayer = geoCollection.topology.objects[baseGeoLevel] as GeometryCollection;
+    const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
 
     // The geounit hierarchy and district definition have the same structure (except the
     // hierarchy always goes out to the base geounit level), so we use it as a starting point
@@ -115,7 +118,7 @@ export class DistrictsController {
         if (typeof hierarchyNumOrArray === "number") {
           // The numbers found in the hierarchy are the base geounit indices of the topology.
           // Access this item in the topology to find it's base geounit id.
-          const props: any = baseGeoUnitLayer.geometries[hierarchyNumOrArray].properties;
+          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
           const id = props[baseGeoLevel];
           const districtAssignment = parseInt(blockToDistricts[id], 10);
           if (blockToDistricts[id]) {
@@ -135,7 +138,7 @@ export class DistrictsController {
         }
       });
 
-    const districtsDefinition = mapToDefinition(geoCollection.getGeoUnitHierarchy());
+    const districtsDefinition = mapToDefinition(geoCollection.hierarchyDefinition);
     // Find unmatched records
     records.forEach((record, i) => {
       if (!matchingRows[record[0]] && !flaggedRows[i]) {
