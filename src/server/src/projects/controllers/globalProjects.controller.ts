@@ -1,4 +1,5 @@
-// eslint-disable-next-line
+// Not sure why, but eslint thinks these decorators are unused
+/* eslint-disable */
 import {
   Controller,
   Get,
@@ -7,6 +8,8 @@ import {
   ParseBoolPipe,
   DefaultValuePipe
 } from "@nestjs/common";
+/* eslint-enable */
+
 import { Project } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
 
