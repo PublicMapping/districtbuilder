@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add button to display keyboard shortcuts modal [#787](https://github.com/PublicMapping/districtbuilder/pull/787)
 - Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
 - Display target population symbols in sidebar [#720](https://github.com/PublicMapping/districtbuilder/issues/720)
-- List all published maps in new screen [#796](https://github.com/PublicMapping/districtbuilder/pull/796)
+- List all published maps in new screen [#796](https://github.com/PublicMapping/districtbuilder/pull/796) & [#836](https://github.com/PublicMapping/districtbuilder/pull/836)
 - Add map export to organization admin screen [#805](https://github.com/PublicMapping/districtbuilder/pull/805)
 - Add support for Vagrant Development Environment [#729](https://github.com/PublicMapping/districtbuilder/pull/729)
 - Add user export to organization admin screen [#812](https://github.com/PublicMapping/districtbuilder/pull/812)

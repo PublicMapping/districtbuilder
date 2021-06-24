@@ -181,7 +181,7 @@ export async function fetchAllPublishedProjects(
   page: number,
   limit: number
 ): Promise<PaginatedResponse<IProject>> {
-  const endpoint = "/api/globalProjects?page=" + page.toString() + "&limit=" + limit.toString();
+  const endpoint = `/api/globalProjects?page=${page}&limit=${limit}&completed=true`;
   return new Promise((resolve, reject) => {
     apiAxios
       .get(endpoint)

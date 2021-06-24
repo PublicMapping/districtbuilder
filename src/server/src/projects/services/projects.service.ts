@@ -7,6 +7,10 @@ import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { paginate, Pagination, IPaginationOptions } from "nestjs-typeorm-paginate";
 
+type AllProjectsOptions = IPaginationOptions & {
+  readonly completed?: boolean;
+};
+
 @Injectable()
 export class ProjectsService extends TypeOrmCrudService<Project> {
   constructor(@InjectRepository(Project) repo: Repository<Project>) {
@@ -18,7 +22,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   }
 
   async findAllPublishedProjectsPaginated(
-    options: IPaginationOptions
+    options: AllProjectsOptions
   ): Promise<Pagination<Project>> {
     // Returns admin-only listing of all organization projects
     const builder = this.repo
@@ -39,6 +43,12 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
         "user.name"
       ])
       .orderBy("project.updatedDt", "DESC");
-    return paginate<Project>(builder, options);
+    const builderWithFilter = options.completed
+      ? // Completed projects are defined as having no population in the unassigned district
+        builder.andWhere(
+          "(project.districts->'features'->0->'properties'->'demographics'->'population')::integer = 0"
+        )
+      : builder;
+    return paginate<Project>(builderWithFilter, options);
   }
 }
