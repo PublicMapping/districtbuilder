@@ -6,7 +6,7 @@ import {
 } from "../../../../shared/entities";
 import { GeoUnitTopology } from "./geo-unit-topology.entity";
 
-// A slimmed down version of GeoUniTopology without the geometries, only the feature properties
+// A slimmed down version of GeoUnitTopology without the geometries, only the feature properties
 export class GeoUnitProperties {
   public readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
   static fromTopology(geoUnitTopology: GeoUnitTopology): GeoUnitProperties {

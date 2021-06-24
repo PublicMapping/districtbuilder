@@ -51,7 +51,7 @@ export class RegionConfig implements IRegionConfig {
   @Column({ type: "boolean", default: false })
   hidden: boolean;
 
-  // Archived regions are hidden, and also do not have data loaded and so their projects cannot be editted
+  // Archived regions are hidden, and also do not have data loaded and so their projects cannot be edited
   @Column({ type: "boolean", default: false })
   archived: boolean;
 }

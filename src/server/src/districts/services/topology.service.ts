@@ -109,7 +109,6 @@ export class TopologyService {
           voting,
           geoLevels
         );
-        this.logger.debug(`finished calculating computed data for s3URI ${s3URI}`);
         // For archived read-only regions, we get the properties of the topology (which are used for exports)
         // and let the much larger TopoJSON geometries get garbage collected
         return archived ? GeoUnitProperties.fromTopology(geoUnitTopology) : geoUnitTopology;
