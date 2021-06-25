@@ -35,7 +35,8 @@ import {
   computeDemographicSplit,
   has16Election,
   has20Election,
-  demographicsHasOther
+  demographicsHasOther,
+  isMajorityMinority
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -547,7 +548,6 @@ const SidebarRow = memo(
     const intermediateDeviation = Math.ceil(deviation + selectedDifference);
     const absoluteDeviation = Math.floor(Math.abs(deviation + selectedDifference));
     const populationDisplay = intermediatePopulation.toLocaleString();
-    const isMinorityMajority = demographics.white / demographics.population < 0.5;
     const deviationDisplay =
       intermediateDeviation === 0
         ? "0"
@@ -674,7 +674,7 @@ const SidebarRow = memo(
                 demographics.population > 0 ? (
                   <DemographicsTooltip
                     demographics={demographics}
-                    isMinorityMajority={isMinorityMajority}
+                    isMajorityMinority={isMajorityMinority(district)}
                   />
                 ) : (
                   <em>
@@ -688,7 +688,7 @@ const SidebarRow = memo(
                 <span sx={style.chart}>
                   <DemographicsChart demographics={demographics} />
                 </span>
-                {isMinorityMajority && <span sx={style.minorityMajorityFlag}>*</span>}
+                {isMajorityMinority(district) && <span sx={style.minorityMajorityFlag}>*</span>}
               </span>
             </Tooltip>
           </Styled.td>

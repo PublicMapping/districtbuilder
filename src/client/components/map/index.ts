@@ -40,6 +40,8 @@ export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness"
 export const DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID = "districts-competitiveness";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID = "districts-equal-population";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID = "districts-majority-race";
 // Id for district labels layer used in evaluate mode
 export const DISTRICTS_EVALUATE_LABELS_LAYER_ID = "districts-evaluate-labels";
 // Id for topmost geolevel layer in Evaluate
@@ -89,7 +91,7 @@ export function getPviSteps(): ChoroplethSteps {
   return [
     [-100, "#a52a0d"],
     [-20, "#ed512c"],
-    [-5, "#CDCDCD"],
+    [-5, "#cdcdcd"],
     [5, "#6491b5"],
     [20, "#385d7a"]
   ];
@@ -106,14 +108,33 @@ export function getEqualPopulationStops(
   const popThreshold = popThresholdNum / 100;
   const isAvgFractional = avgPopulation % 1 !== 0;
   return [
-    [-1.0 * avgPopulation, "#D1E5F0"],
-    [-1 * (popThreshold + 0.02) * avgPopulation, "#66A9CF"],
-    [-1 * (popThreshold + 0.01) * avgPopulation, "#2166AC"],
-    [-1 * popThreshold * avgPopulation - (isAvgFractional ? 1 : 0.1), "#01665E"],
-    [popThreshold === 0 ? (isAvgFractional ? 1 : 0.1) : popThreshold * avgPopulation, "#EFBE60"],
-    [(popThreshold + 0.01) * avgPopulation, "#F5D092"],
-    [(popThreshold + 0.02) * avgPopulation, "#F7E1C3"]
+    [-1.0 * avgPopulation, "#c1e5f0"],
+    [-1 * (popThreshold + 0.02) * avgPopulation, "#66a9cf"],
+    [-1 * (popThreshold + 0.01) * avgPopulation, "#2166ac"],
+    [-1 * popThreshold * avgPopulation - (isAvgFractional ? 1 : 0.1), "#01665e"],
+    [popThreshold === 0 ? (isAvgFractional ? 1 : 0.1) : popThreshold * avgPopulation, "#efbe60"],
+    [(popThreshold + 0.01) * avgPopulation, "#f5d092"],
+    [(popThreshold + 0.02) * avgPopulation, "#f7e1c3"]
   ];
+}
+
+export function getMajorityRaceSplitFill(majorityRace: string, majorityRaceSplit: number): string {
+  const fills = getMajorityRaceFills();
+  return fills[majorityRace]
+    ? majorityRaceSplit > 0.65
+      ? fills[majorityRace][0]
+      : fills[majorityRace][1]
+    : "#ffffff";
+}
+
+export function getMajorityRaceFills(): { readonly [id: string]: readonly [string, string] } {
+  return {
+    white: ["#4a9dd4", "#aac3d4"],
+    black: ["#8dd3c5", "#c4e8e1"],
+    asian: ["#fdb35c", "#fcead6"],
+    hispanic: ["#cf6ade", "#dabdde"],
+    "minority coalition": ["#898989", "#ebe8eb"]
+  };
 }
 
 export function getEqualPopulationLabels(popThreshold: number) {
@@ -240,6 +261,22 @@ export function generateMapLayers(
           type: "interval",
           stops: getPviSteps()
         },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
+      }
+    },
+    DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
+      paint: {
+        "fill-color": { type: "identity", property: "majorityRaceFill" },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
       }

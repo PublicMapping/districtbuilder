@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Flex, Text, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Flex, Text, jsx, ThemeUIStyleObject, Styled } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
@@ -66,12 +66,15 @@ import {
   DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
   DISTRICTS_OUTLINE_LAYER_ID,
   getCompactnessStops,
-  getEqualPopulationStops,
   getCompactnessLabels,
+  getEqualPopulationStops,
   getEqualPopulationLabels,
-  DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
   getPviSteps,
-  getPviLabels
+  getPviLabels,
+  getMajorityRaceSplitFill,
+  getMajorityRaceFills,
+  DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
+  DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -270,6 +273,9 @@ const style: ThemeUIStyleObject = {
     color: "gray.8",
     flex: "0 0 auto",
     display: "inline-block"
+  },
+  raceHeader: {
+    pr: "20px"
   }
 };
 
@@ -471,9 +477,9 @@ const DistrictsMap = ({
     // Add a color property to the geojson, so it can be used for styling
     geojson.features.forEach((feature, id) => {
       const districtColor = getDistrictColor(id);
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.id = id;
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.outlineColor =
         findMenuOpen &&
         ((findTool === FindTool.Unassigned && id === 0) ||
@@ -483,7 +489,7 @@ const DistrictsMap = ({
           ? // Set pink outline to make unassigned/non-contiguous districts stand out
             "#F25DFE"
           : "transparent";
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.color = districtColor;
 
       // The population goal for the unassigned district is 0,
@@ -493,7 +499,7 @@ const DistrictsMap = ({
           ? feature.properties.demographics.population
           : feature.properties.demographics.population - avgPopulation;
 
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.percentDeviation =
         feature.properties.demographics.population > 0 && feature.id !== 0
           ? populationDeviation / avgPopulation
@@ -511,6 +517,42 @@ const DistrictsMap = ({
 
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
+      if (
+        feature.properties.demographics.population &&
+        feature.properties.demographics.population > 0
+      ) {
+        const demographics = Object.keys(feature.properties.demographics);
+        demographics.forEach(demographicKey => {
+          if (demographicKey !== "population") {
+            const popSplit =
+              feature.properties.demographics[demographicKey] /
+              feature.properties.demographics.population;
+            if (popSplit > 0.5) {
+              // eslint-disable-next-line
+              feature.properties.majorityRace = demographicKey;
+              // eslint-disable-next-line
+              feature.properties.majorityRaceSplit = popSplit;
+            }
+          }
+        });
+        if (!feature.properties.majorityRace) {
+          // eslint-disable-next-line
+          feature.properties.majorityRace = "minority coalition";
+          const whiteSplit =
+            feature.properties.demographics.white / feature.properties.demographics.population;
+          // eslint-disable-next-line
+          feature.properties.majorityRaceSplit = 1 - whiteSplit;
+        }
+        // eslint-disable-next-line
+        feature.properties.majorityRaceFill =
+          feature.properties.majorityRace && feature.properties.majorityRaceSplit
+            ? getMajorityRaceSplitFill(
+                feature.properties.majorityRace,
+                feature.properties.majorityRaceSplit
+              )
+            : "ffffff";
+      }
+
       // eslint-disable-next-line
       feature.properties.outlineWidthScaleFactor = findMenuOpen ? 1 : 2;
     });
@@ -684,7 +726,12 @@ const DistrictsMap = ({
               "visible"
             );
             break;
-          case "minorityMajority":
+          case "majorityMinority":
+            map.setLayoutProperty(
+              DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID,
+              "visibility",
+              "visible"
+            );
             break;
           // Summary view
           case undefined:
@@ -1064,6 +1111,52 @@ const DistrictsMap = ({
                 <Box sx={style.legendLabel}>Non-contiguous</Box>
               </Flex>
             </Box>
+          </Flex>
+        </Box>
+      )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "majorityMinority" && (
+        <Box sx={style.legendBox}>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Majority Race</Text>
+            <Styled.table sx={{ margin: "0", width: "100%" }}>
+              <thead>
+                <Styled.tr>
+                  {Object.keys(getMajorityRaceFills()).map(race => (
+                    <Styled.th sx={style.raceHeader} key={race}>
+                      {race.charAt(0).toUpperCase() + race.slice(1)}
+                    </Styled.th>
+                  ))}
+                </Styled.tr>
+              </thead>
+              <tbody>
+                <Styled.tr>
+                  {Object.keys(getMajorityRaceFills()).map(race => (
+                    <Styled.td sx={style.td} key={race}>
+                      <Box
+                        sx={{
+                          ...style.legendColorSwatch,
+                          backgroundColor: getMajorityRaceFills()[race][0]
+                        }}
+                      ></Box>
+                      <Box sx={style.legendLabel}>&gt; 65%</Box>
+                    </Styled.td>
+                  ))}
+                </Styled.tr>
+                <Styled.tr>
+                  {Object.keys(getMajorityRaceFills()).map(race => (
+                    <Styled.td sx={style.td} key={race}>
+                      <Box
+                        sx={{
+                          ...style.legendColorSwatch,
+                          backgroundColor: getMajorityRaceFills()[race][1]
+                        }}
+                      ></Box>
+                      <Box sx={style.legendLabel}>50-65%</Box>
+                    </Styled.td>
+                  ))}
+                </Styled.tr>
+              </tbody>
+            </Styled.table>
           </Flex>
         </Box>
       )}

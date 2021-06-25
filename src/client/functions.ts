@@ -12,7 +12,7 @@ import {
   NestedArray,
   IStaticMetadata
 } from "../shared/entities";
-import { ChoroplethSteps, ElectionYear, Party } from "./types";
+import { ChoroplethSteps, DistrictGeoJSON, ElectionYear, Party } from "./types";
 
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
@@ -134,6 +134,12 @@ export function getPartyVoteShareDisplay(percent?: number): string {
 export function computeDemographicSplit(demographic: number, total: number): string | undefined {
   const percent = total > 0 ? (demographic / total) * 100 : undefined;
   return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
+}
+
+export function isMajorityMinority(f: DistrictGeoJSON): boolean {
+  return (
+    (f.properties.majorityRace && f.properties.majorityRace !== "white" && f.id !== 0) || false
+  );
 }
 
 /**

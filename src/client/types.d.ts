@@ -60,7 +60,7 @@ export type MetricKey =
   | "contiguity"
   | "competitiveness"
   | "compactness"
-  | "minorityMajority"
+  | "majorityMinority"
   | "countySplits";
 
 export interface BaseEvaluateMetric {

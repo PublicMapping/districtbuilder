@@ -10,7 +10,7 @@ import {
   Party
 } from "../../types";
 import store from "../../store";
-import { hasMultipleElections } from "../../functions";
+import { hasMultipleElections, isMajorityMinority } from "../../functions";
 import { regionPropertiesFetch } from "../../actions/regionConfig";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
@@ -216,18 +216,18 @@ const ProjectEvaluateSidebar = ({
       description: "are compact",
       value: avgCompactness
     },
-    // TODO: Minority-Majority updates (#750)
-    // {
-    //   key: "minorityMajority",
-    //   name: "Minority-Majority",
-    //   type: "fraction",
-    //   description: "are minority-majority",
-    //   shortText:
-    //     "A district in which the majority of the constituents are racial or ethnic minorities",
-    //   longText:
-    //     "A district in which the majority of the constituents are racial or ethnic minorities",
-    //   value: 1
-    // },
+    {
+      key: "majorityMinority",
+      name: "Majority-Minority",
+      type: "fraction",
+      description: "are majority-minority",
+      shortText:
+        "A majority-minority district is a district in which a racial minority group or groups comprise a majority of the district's total population.",
+      longText:
+        'A majority-minority district is a district in which a racial minority group or groups comprise a majority of the district\'s total population. The display indicates districts where a minority race has a simple majority (Black, Hispanic, etc.), or where the sum of multiple minority races combine to a majority (called "Coalition" districts).',
+      total: geojson?.features.filter(f => f.id !== 0).length || 0,
+      value: geojson?.features.filter(f => isMajorityMinority(f)).length || 0
+    },
     {
       key: "countySplits",
       name: `${geoLevel ? geoLevelLabelSingular(geoLevel) : ""} splits`,

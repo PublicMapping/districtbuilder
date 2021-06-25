@@ -62,11 +62,11 @@ const Row = ({
 
 const DemographicsTooltip = ({
   demographics,
-  isMinorityMajority,
+  isMajorityMinority,
   abbreviate
 }: {
   readonly demographics: { readonly [id: string]: number };
-  readonly isMinorityMajority?: boolean;
+  readonly isMajorityMinority?: boolean;
   readonly abbreviate?: boolean;
 }) => {
   const percentages = mapValues(
@@ -91,7 +91,7 @@ const DemographicsTooltip = ({
       <Styled.table sx={{ margin: "0", width: "100%" }}>
         <tbody>{rows}</tbody>
       </Styled.table>
-      {isMinorityMajority && (
+      {isMajorityMinority && (
         <Box>
           <Divider sx={{ my: 1, borderColor: "gray.6" }} />
           <Box>* Minority majority district</Box>
