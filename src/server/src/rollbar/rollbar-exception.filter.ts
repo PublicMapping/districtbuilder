@@ -13,7 +13,7 @@ import { RollbarService } from "./rollbar.service";
 export interface IGetUserAuthInfoRequest extends Request {
   user?: {
     id: number;
-  }
+  };
   socket: any;
 }
 
@@ -41,11 +41,16 @@ export class RollbarExceptionFilter extends BaseExceptionFilter {
     ) {
       const ctx = host.switchToHttp();
       const request = ctx.getRequest<IGetUserAuthInfoRequest>();
-      const customPayload = request.user ? {
-        user_id: request.user.id
-      } : {};
+      const customPayload = request.user
+        ? {
+            user_id: request.user.id
+          }
+        : {};
 
-      this.rollbar.error(exception, request, { ...customPayload, ip_address: request.headers.get('x-forwarded-for') || request.socket.remoteAddress });
+      this.rollbar.error(exception, request, {
+        ...customPayload,
+        ip_address: request.headers.get("x-forwarded-for") || request.socket.remoteAddress
+      });
     }
 
     // Delegate error messaging and response to default global exception filter
