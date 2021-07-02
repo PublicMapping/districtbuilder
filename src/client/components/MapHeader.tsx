@@ -145,10 +145,34 @@ const MapHeader = ({
   const topGeoLevelName = metadata
     ? metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id
     : undefined;
-  const labelOptions = metadata
-    ? metadata.demographics.map(val => (
+  const labelFields =
+    metadata && metadata.demographics
+      ? [
+          ...metadata.demographics.map(file => {
+            return {
+              id: file.id,
+              label: file.id
+            };
+          }),
+          ...(metadata.voting
+            ? metadata.voting.map(file => {
+                return {
+                  id: file.id,
+                  // Fix suffix on voting IDs if needed
+                  label:
+                    file.id.endsWith("16") || file.id.endsWith("20")
+                      ? file.id.slice(0, -2) + " '" + file.id.slice(-2)
+                      : file.id
+                };
+              })
+            : [])
+        ]
+      : undefined;
+
+  const labelOptions = labelFields
+    ? labelFields.map(val => (
         <option key={val.id} value={val.id}>
-          {capitalizeFirstLetter(val.id)}
+          {capitalizeFirstLetter(val.label)}
         </option>
       ))
     : [];
