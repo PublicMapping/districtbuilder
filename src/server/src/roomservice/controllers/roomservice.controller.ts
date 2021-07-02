@@ -4,7 +4,7 @@ import { Controller, Post, Req, Res, HttpService } from "@nestjs/common";
 export class RoomserviceController {
   constructor(private readonly httpService: HttpService) {}
 
-  @Post()
+  @Post("/connect")
   async connect(@Req() req: any, @Res() res: any) {
     const { project, user } = req.body;
 

@@ -5,9 +5,11 @@ import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { Box, Button, Flex, Heading, Input, jsx, Styled, Text } from "theme-ui";
-import { IProject, IProjectTemplate } from "../../shared/entities";
+import { IProject, IProjectTemplate, IUser } from "../../shared/entities";
 import { setProjectNameEditing, updateProjectName } from "../actions/projectData";
+import { roomserviceJoin } from "../api";
 import { State } from "../reducers";
+import { Resource } from "../resource";
 import store from "../store";
 import { SavingState } from "../types";
 import Icon from "./Icon";
@@ -40,7 +42,7 @@ const style = {
 enum MenuKeys {
   Rename = "Rename",
   AboutTemplate = "AboutTemplate",
-  RoomService = "RoomService",
+  RoomService = "RoomService"
 }
 
 const ProjectName = ({
@@ -48,17 +50,18 @@ const ProjectName = ({
   projectNameSaving,
   saving,
   isReadOnly,
-  user
+  userResource
 }: {
   readonly project: IProject;
   readonly saving: SavingState;
   readonly projectNameSaving: SavingState;
   readonly isReadOnly: boolean;
-  readonly user: any;
+  readonly userResource: Resource<IUser>;
 }) => {
   const [name, setName] = useState(project.name);
   const [modalVisible, setModalVisibility] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const user = "resource" in userResource ? userResource.resource : null;
 
   useEffect(() => {
     projectNameSaving === "saved" && setName(project.name);
@@ -78,7 +81,12 @@ const ProjectName = ({
         } else if (menuKey === MenuKeys.AboutTemplate) {
           setModalVisibility(true);
         } else if (menuKey === MenuKeys.RoomService) {
-
+          // TODO Hide RoomService if user is not logged in
+          if (user) {
+            // TODO Do something with the roomservice response
+            roomserviceJoin(project.id, user.id)
+              .then(console.log);
+          }
         }
       }}
     >
@@ -198,7 +206,7 @@ function mapStateToProps(state: State) {
   return {
     projectNameSaving: state.project.projectNameSaving,
     saving: state.project.saving,
-    user: state.user,
+    userResource: state.user
   };
 }
 
