@@ -200,6 +200,10 @@ const ProjectEvaluateSidebar = ({
       name: "Competitiveness",
       description: "are competitive",
       type: "pvi",
+      shortText:
+        "A competitiveness metric evaluates the plan based on the average partisan lean of each district.",
+      longText:
+        "A competitiveness metric evaluates the plan based on the average partisan lean of each district, calculated using the Partisan Voting Index (PVI). A partisan lean of the district plan which deviates from the overall lean of the state can be indicative of gerrymandering.",
       party: party,
       value: avgCompetitiveness,
       hasMultipleElections: multipleElections,
