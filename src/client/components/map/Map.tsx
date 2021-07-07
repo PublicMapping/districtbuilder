@@ -14,8 +14,7 @@ import {
   SelectionTool,
   replaceSelectedGeounits,
   FindTool,
-  setZoomToDistrictId,
-  ElectionYear
+  setZoomToDistrictId
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -23,17 +22,23 @@ import {
   GeoUnits,
   IProject,
   IStaticMetadata,
-  LockedDistricts,
-  EvaluateMetric
+  LockedDistricts
 } from "../../../shared/entities";
-import { DistrictsGeoJSON, DistrictGeoJSON } from "../../types";
+import {
+  DistrictsGeoJSON,
+  DistrictGeoJSON,
+  EvaluateMetric,
+  ElectionYear,
+  EvaluateMetricWithValue
+} from "../../types";
 import {
   areAnyGeoUnitsSelected,
   getSelectedGeoLevel,
   getTargetPopulation,
   geoLevelLabelSingular,
   assertNever,
-  hasMultipleElections
+  hasMultipleElections,
+  calculatePVI
 } from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -63,7 +68,10 @@ import {
   getCompactnessStops,
   getEqualPopulationStops,
   getCompactnessLabels,
-  getEqualPopulationLabels
+  getEqualPopulationLabels,
+  DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
+  getPviSteps,
+  getPviLabels
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -80,6 +88,7 @@ import Icon from "../Icon";
 
 function removeEvaluateMetricLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+  map.setLayoutProperty(DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID, "visibility", "none");
   map.setLayoutProperty(DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID, "visibility", "none");
   map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
   map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
@@ -182,7 +191,7 @@ interface Props {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
-  readonly evaluateMetric?: EvaluateMetric;
+  readonly evaluateMetric?: EvaluateMetric | EvaluateMetricWithValue;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
   readonly isArchived: boolean;
@@ -483,6 +492,17 @@ const DistrictsMap = ({
         feature.properties.demographics.population > 0 && feature.id !== 0
           ? populationDeviation / avgPopulation
           : undefined;
+      const electionYear =
+        evaluateMetric && "electionYear" in evaluateMetric
+          ? evaluateMetric.electionYear
+          : undefined;
+      // eslint-disable-next-line
+      feature.properties.pvi = feature.properties.voting
+        ? evaluateMetric && "electionYear" in evaluateMetric
+          ? calculatePVI(feature.properties.voting, evaluateMetric.electionYear)
+          : calculatePVI(feature.properties.voting, electionYear)
+        : undefined;
+
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
       // eslint-disable-next-line
@@ -491,7 +511,7 @@ const DistrictsMap = ({
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool, avgPopulation]);
+  }, [map, geojson, findMenuOpen, findTool, avgPopulation, evaluateMetric]);
 
   // Update layer styles when district is selected/hovered
   useEffect(() => {
@@ -634,6 +654,11 @@ const DistrictsMap = ({
             );
             break;
           case "competitiveness":
+            map.setLayoutProperty(
+              DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
+              "visibility",
+              "visible"
+            );
             break;
           case "contiguity":
             map.setLayoutProperty(
@@ -985,6 +1010,26 @@ const DistrictsMap = ({
                   </Flex>
                 )
               )}
+            </Box>
+          </Flex>
+        </Box>
+      )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "competitiveness" && (
+        <Box sx={style.legendBox}>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Competitiveness</Text>
+            <Box sx={{ display: "inline-block" }}>
+              {getPviSteps().map((step, i) => (
+                <Flex sx={style.legendItem} key={i}>
+                  <Box
+                    sx={{
+                      ...style.legendColorSwatch,
+                      backgroundColor: `${step[1]}`
+                    }}
+                  ></Box>
+                  <Text sx={style.legendLabel}>{getPviLabels()[i]}</Text>
+                </Flex>
+              ))}
             </Box>
           </Flex>
         </Box>

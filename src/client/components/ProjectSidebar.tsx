@@ -26,10 +26,8 @@ import {
 import {
   areAnyGeoUnitsSelected,
   assertNever,
-  getPartyColor,
   getTargetPopulation,
   mergeGeoUnits,
-  calculatePVI,
   hasMultipleElections
 } from "../functions";
 import store from "../store";
@@ -45,7 +43,7 @@ import DistrictOptionsFlyout from "./DistrictOptionsFlyout";
 import Icon from "./Icon";
 import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
-import VotingSidebarTooltip from "./VotingSidebarTooltip";
+import PVIDisplay from "./PVIDisplay";
 
 interface LoadingProps {
   readonly isLoading: boolean;
@@ -228,6 +226,7 @@ const ProjectSidebar = ({
                 hoveredDistrictId={hoveredDistrictId}
                 selectedGeounits={selectedGeounits}
                 highlightedGeounits={highlightedGeounits}
+                hasElectionData={hasElectionData}
                 lockedDistricts={lockedDistricts}
                 saving={saving}
                 isReadOnly={isReadOnly}
@@ -296,6 +295,7 @@ const SidebarRow = memo(
     districtId,
     isDistrictLocked,
     isDistrictHovered,
+    hasElectionData,
     isReadOnly,
     popDeviation,
     popDeviationThreshold
@@ -308,6 +308,7 @@ const SidebarRow = memo(
     readonly districtId: number;
     readonly isDistrictLocked?: boolean;
     readonly isDistrictHovered: boolean;
+    readonly hasElectionData: boolean;
     readonly isReadOnly: boolean;
     readonly popDeviation: number;
     readonly popDeviationThreshold: number;
@@ -339,23 +340,6 @@ const SidebarRow = memo(
       e.stopPropagation();
       store.dispatch(toggleDistrictLocked(districtId - 1));
     };
-
-    // The voting object can be present but have no data, we treat this case as if it isn't there
-    const voting =
-      Object.keys(district.properties.voting || {}).length > 0
-        ? district.properties.voting
-        : undefined;
-    const pvi = voting && calculatePVI(voting);
-    const color = getPartyColor(pvi && pvi > 0 ? "democrat" : "republican");
-    const partyLabel = pvi && pvi > 0 ? "D" : "R";
-    const votingDisplay =
-      pvi !== undefined ? (
-        <Box sx={{ color }}>{`${partyLabel}+${Math.abs(pvi).toLocaleString(undefined, {
-          maximumFractionDigits: 0
-        })}`}</Box>
-      ) : (
-        <span sx={{ color: "gray.2" }}>{BLANK_VALUE}</span>
-      );
 
     return (
       <Styled.tr
@@ -465,25 +449,11 @@ const SidebarRow = memo(
             </span>
           </Tooltip>
         </Styled.td>
-        {voting ? (
+        {hasElectionData && (
           <Styled.td sx={{ ...style.td, ...style.number }}>
-            <Tooltip
-              placement="top-start"
-              content={
-                pvi !== undefined ? (
-                  <VotingSidebarTooltip voting={voting} />
-                ) : (
-                  <em>
-                    <strong>Empty district.</strong> Add people to this district to view the vote
-                    totals
-                  </em>
-                )
-              }
-            >
-              <span>{votingDisplay}</span>
-            </Tooltip>
+            <PVIDisplay properties={district.properties} />
           </Styled.td>
-        ) : null}
+        )}
         <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
         <Styled.td>
           {isReadOnly ? null : isDistrictLocked ? (
@@ -530,6 +500,7 @@ interface SidebarRowsProps {
   readonly selectedGeounits: GeoUnits;
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
+  readonly hasElectionData: boolean;
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
 }
@@ -542,6 +513,7 @@ const SidebarRows = ({
   hoveredDistrictId,
   selectedGeounits,
   highlightedGeounits,
+  hasElectionData,
   lockedDistricts,
   isReadOnly
 }: SidebarRowsProps) => {
@@ -621,6 +593,7 @@ const SidebarRows = ({
             key={districtId}
             isDistrictLocked={lockedDistricts[districtId - 1]}
             isDistrictHovered={districtId === hoveredDistrictId}
+            hasElectionData={hasElectionData}
             districtId={districtId}
             isReadOnly={isReadOnly}
             popDeviation={project.populationDeviation}

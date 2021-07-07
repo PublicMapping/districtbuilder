@@ -3,14 +3,11 @@ import { jsx, Checkbox, Label, Select } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu } from "react-aria-menubutton";
 import { style } from "./MenuButton.styles";
 import store from "../store";
-import {
-  toggleLimitDrawingToWithinCounty,
-  ElectionYear,
-  setElectionYear
-} from "../actions/districtDrawing";
+import { toggleLimitDrawingToWithinCounty, setElectionYear } from "../actions/districtDrawing";
 import Tooltip from "./Tooltip";
 import Icon from "./Icon";
 import { IStaticMetadata } from "../../shared/entities";
+import { ElectionYear } from "../types";
 
 const MapSelectionOptionsFlyout = ({
   limitSelectionToCounty,

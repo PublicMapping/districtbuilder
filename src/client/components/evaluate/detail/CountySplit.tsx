@@ -1,14 +1,10 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
-import {
-  EvaluateMetricWithValue,
-  IProject,
-  IStaticMetadata,
-  RegionLookupProperties
-} from "../../../../shared/entities";
+import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../../shared/entities";
 import { useState, useEffect } from "react";
 import { getLabelLookup } from "../../map/labels";
 import { Resource } from "../../../resource";
+import { EvaluateMetricWithValue } from "../../../types";
 import { geoLevelLabel, geoLevelLabelSingular } from "../../../functions";
 
 const style: ThemeUIStyleObject = {

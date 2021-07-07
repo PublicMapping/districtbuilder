@@ -4,8 +4,9 @@ import { Box, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
 
 import { getPartyColor, capitalizeFirstLetter, extractYear } from "../functions";
 import { DemographicCounts } from "../../shared/entities";
+import { ElectionYear } from "../types";
+
 import React from "react";
-import { ElectionYear } from "../actions/districtDrawing";
 
 const style: ThemeUIStyleObject = {
   header: {

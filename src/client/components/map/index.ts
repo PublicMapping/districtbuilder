@@ -18,6 +18,7 @@ import {
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible, getTargetPopulation } from "../../functions";
 import { mapValues } from "lodash";
+import { ChoroplethSteps } from "../../types";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -35,6 +36,8 @@ export const DISTRICTS_LOCK_LAYER_ID = "districts-locked";
 export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID = "districts-competitiveness";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID = "districts-equal-population";
 // Id for district labels layer used in evaluate mode
@@ -68,7 +71,7 @@ export const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getCompactnessStops() {
+export function getCompactnessStops(): ChoroplethSteps {
   return [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
@@ -78,7 +81,28 @@ export function getCompactnessStops() {
   ];
 }
 
-export function getEqualPopulationStops(popThresholdNum: number, avgPopulation: number) {
+export function getCompactnessLabels() {
+  return ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
+}
+
+export function getPviSteps(): ChoroplethSteps {
+  return [
+    [-100, "#a52a0d"],
+    [-20, "#ed512c"],
+    [-5, "#CDCDCD"],
+    [5, "#6491b5"],
+    [20, "#385d7a"]
+  ];
+}
+
+export function getPviLabels() {
+  return ["> +20R", "+5R to +20R", "Even", "+5D to +20D", "> +20D"];
+}
+
+export function getEqualPopulationStops(
+  popThresholdNum: number,
+  avgPopulation: number
+): ChoroplethSteps {
   const popThreshold = popThresholdNum / 100;
   const isAvgFractional = avgPopulation % 1 !== 0;
   return [
@@ -90,10 +114,6 @@ export function getEqualPopulationStops(popThresholdNum: number, avgPopulation: 
     [(popThreshold + 0.01) * avgPopulation, "#F5D092"],
     [(popThreshold + 0.02) * avgPopulation, "#F7E1C3"]
   ];
-}
-
-export function getCompactnessLabels() {
-  return ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
 }
 
 export function getEqualPopulationLabels(popThreshold: number) {
@@ -199,6 +219,26 @@ export function generateMapLayers(
         "fill-color": {
           property: "compactness",
           stops: getCompactnessStops()
+        },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
+      }
+    },
+    DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
+      paint: {
+        "fill-color": {
+          property: "pvi",
+          type: "interval",
+          stops: getPviSteps()
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9

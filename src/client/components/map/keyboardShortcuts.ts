@@ -1,4 +1,5 @@
 import { DistrictId } from "../../../shared/entities";
+import { ElectionYear } from "../../types";
 
 import {
   setGeoLevelIndex,
@@ -14,7 +15,6 @@ import {
   redo,
   toggleLimitDrawingToWithinCounty,
   toggleKeyboardShortcutsModal,
-  ElectionYear,
   setElectionYear
 } from "../../actions/districtDrawing";
 import store from "../../store";

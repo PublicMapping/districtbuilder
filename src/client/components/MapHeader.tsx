@@ -2,6 +2,8 @@
 import React from "react";
 import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
+import { ElectionYear } from "../types";
+
 import { geoLevelLabel, capitalizeFirstLetter, canSwitchGeoLevels } from "../functions";
 import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
@@ -11,8 +13,7 @@ import {
   setGeoLevelIndex,
   setSelectionTool,
   SelectionTool,
-  setMapLabel,
-  ElectionYear
+  setMapLabel
 } from "../actions/districtDrawing";
 import store from "../store";
 

@@ -54,3 +54,44 @@ export type SavingState = "unsaved" | "saving" | "saved" | "failed";
 export interface AuthLocationState {
   readonly from: H.Location;
 }
+
+export type MetricKey =
+  | "equalPopulation"
+  | "contiguity"
+  | "competitiveness"
+  | "compactness"
+  | "minorityMajority"
+  | "countySplits";
+
+export interface BaseEvaluateMetric {
+  readonly key: MetricKey;
+  readonly name: string;
+  readonly description: string;
+  readonly longText?: string;
+  readonly shortText?: string;
+}
+
+export type ElectionYear = "16" | "20" | "combined";
+
+export interface Party {
+  readonly color: string;
+  readonly label: "D" | "R";
+}
+
+export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
+  readonly type: "fraction" | "percent" | "count" | "pvi";
+  readonly value?: number;
+  readonly total?: number;
+  readonly party?: Party;
+  readonly hasMultipleElections?: boolean;
+  readonly electionYear?: ElectionYear;
+  readonly avgPopulation?: number;
+  readonly popThreshold?: number;
+  readonly status?: boolean;
+  // eslint-disable-next-line
+  readonly [key: string]: any;
+}
+
+export type EvaluateMetric = BaseEvaluateMetric | EvaluateMetricWithValue;
+
+export type ChoroplethSteps = readonly (readonly [number, string])[];

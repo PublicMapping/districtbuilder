@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
-import { EvaluateMetricWithValue, DistrictProperties } from "../../../../shared/entities";
 import { getEqualPopulationStops } from "../../map/index";
-import { DistrictsGeoJSON } from "../../../types";
+import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
+import { computeRowFill } from "../../../functions";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -65,27 +65,10 @@ const EqualPopulationMetricDetail = ({
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
 }) => {
-  function computeRowFill(row: DistrictProperties) {
-    const val = row.populationDeviation;
-    if (metric.popThreshold !== undefined && metric.avgPopulation !== undefined) {
-      const choroplethStops = getEqualPopulationStops(metric.popThreshold, metric.avgPopulation);
-      // eslint-disable-next-line
-      for (let i = 0; i < choroplethStops.length; i++) {
-        const r = choroplethStops[i];
-        if (val !== undefined && val >= r[0]) {
-          if (i < choroplethStops.length - 1) {
-            const r1 = choroplethStops[i + 1];
-            if (val < r1[0]) {
-              return r[1];
-            }
-          } else {
-            return r[1];
-          }
-        }
-      }
-    }
-    return "#fff";
-  }
+  const choroplethStops =
+    metric.popThreshold && metric.avgPopulation
+      ? getEqualPopulationStops(metric.popThreshold, metric.avgPopulation)
+      : undefined;
 
   return (
     <Box>
@@ -93,7 +76,7 @@ const EqualPopulationMetricDetail = ({
         {metric.value?.toString() || " "} of {metric.total} districts are within{" "}
         {"popThreshold" in metric &&
           metric.popThreshold !== undefined &&
-          ` ${Math.floor(metric.popThreshold * 100)}%`}{" "}
+          ` ${Math.floor(metric.popThreshold)}%`}{" "}
         of the target ({metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()})
       </Heading>
       <Styled.table sx={style.table}>
@@ -121,7 +104,13 @@ const EqualPopulationMetricDetail = ({
                             width: "15px",
                             height: "15px",
                             borderRadius: "small",
-                            bg: computeRowFill(feature.properties)
+                            bg:
+                              choroplethStops &&
+                              computeRowFill(
+                                choroplethStops,
+                                feature.properties.populationDeviation,
+                                true
+                              )
                           }}
                         ></Styled.div>
                         <Box>{Math.floor(feature.properties.percentDeviation * 1000) / 10}%</Box>

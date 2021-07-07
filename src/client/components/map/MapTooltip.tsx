@@ -6,6 +6,8 @@ import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
 import { DemographicCounts, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
+import { ElectionYear } from "../../types";
+
 import {
   areAnyGeoUnitsSelected,
   destructureResource,
@@ -19,7 +21,6 @@ import DemographicsTooltip from "../DemographicsTooltip";
 import VotingMapTooltip from "../VotingMapTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 import { getLabel } from "./labels";
-import { ElectionYear } from "../../actions/districtDrawing";
 
 const style: ThemeUIStyleObject = {
   tooltip: {

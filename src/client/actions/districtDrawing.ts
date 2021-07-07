@@ -1,8 +1,6 @@
 import { createAction } from "typesafe-actions";
-import { DistrictId, EvaluateMetric, GeoUnits } from "../../shared/entities";
-import { SavingState } from "../types";
-
-export type ElectionYear = "16" | "20";
+import { DistrictId, GeoUnits } from "../../shared/entities";
+import { SavingState, ElectionYear, EvaluateMetric } from "../types";
 
 export enum SelectionTool {
   Default = "DEFAULT",
