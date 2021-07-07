@@ -64,6 +64,25 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
               ON CONFLICT DO NOTHING;
             "
 
+        # Add chambers to the database
+        docker-compose \
+            exec database psql -U districtbuilder districtbuilder -c "
+              INSERT INTO chamber
+              VALUES (
+                'e7f5999f-88d9-4c58-ab85-f65eae843ea1',
+                'House of Representatives',
+                 18,
+                '6c440b8d-c26e-4bae-850f-dbff37fe0209'
+              ),
+              (
+                '2202e945-161b-4f84-a282-5d65c7ba16b7',
+                'House of Representatives',
+                 18,
+                '96bca832-99b3-4c4d-8913-ab4ca82ec442'
+              )
+              ON CONFLICT DO NOTHING;
+            "
+
         # Add testing organization
         ./scripts/manage update-organization dev-data/azavea.yaml
         
