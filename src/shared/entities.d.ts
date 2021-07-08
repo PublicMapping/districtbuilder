@@ -213,7 +213,7 @@ export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
-  readonly chamber?: Pick<IChamber, "id">;
+  readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;
   readonly populationDeviation?: number;
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
