@@ -124,7 +124,7 @@ const ProjectEvaluateMetricDetail = ({
         ) : metric && "type" in metric && metric.key === "equalPopulation" ? (
           <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
         ) : metric && "type" in metric && metric.key === "competitiveness" ? (
-          <CompetitivenessMetricDetail metric={metric} geojson={geojson} />
+          <CompetitivenessMetricDetail metric={metric} geojson={geojson} project={project} />
         ) : metric && "type" in metric && metric.key === "majorityMinority" ? (
           <MajorityRaceMetricDetail metric={metric} geojson={geojson} />
         ) : (

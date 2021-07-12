@@ -300,3 +300,8 @@ export interface DistrictsImportApiResponse {
   readonly rowFlags?: readonly ImportRowFlag[];
   readonly maxDistrictId: number;
 }
+
+export interface PlanScoreAPIResponse {
+  readonly index_url: string;
+  readonly plan_url: string;
+}

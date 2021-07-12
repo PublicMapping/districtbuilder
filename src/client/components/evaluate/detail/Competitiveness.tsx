@@ -1,9 +1,12 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading, Button, Spinner } from "theme-ui";
 import { getPviSteps } from "../../map/index";
+import { useState } from "react";
 import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
 import PVIDisplay from "../../PVIDisplay";
 import { formatPvi, computeRowFill, calculatePVI } from "../../../functions";
+import { checkPlanScoreAPI } from "../../../api";
+import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -53,17 +56,32 @@ const style: ThemeUIStyleObject = {
   },
   blankValue: {
     color: "gray.2"
+  },
+  menuButton: {
+    color: "muted"
   }
 };
 
 const CompetitivenessMetricDetail = ({
   metric,
-  geojson
+  geojson,
+  project
 }: {
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
+  readonly project?: IProject;
 }) => {
+  const [planScoreLoaded, setPlanScoreLoaded] = useState<boolean | null>(null);
+  const [planScoreLink, setPlanScoreLink] = useState<string | null>(null);
   const choroplethStops = getPviSteps();
+  function sendToPlanScore() {
+    setPlanScoreLoaded(false);
+    project &&
+      checkPlanScoreAPI(project).then((data: PlanScoreAPIResponse) => {
+        setPlanScoreLoaded(true);
+        setPlanScoreLink(data.plan_url);
+      });
+  }
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
@@ -114,6 +132,39 @@ const CompetitivenessMetricDetail = ({
           )}
         </tbody>
       </Styled.table>
+      <Box>
+        {planScoreLoaded === null || planScoreLoaded === false ? (
+          <Button
+            sx={{
+              ...{
+                variant: "buttons.primary",
+                fontWeight: "light",
+                maxHeight: "34px",
+                borderBottom: "none",
+                borderBottomColor: "blue.2"
+              },
+              ...style.menuButton
+            }}
+            disabled={planScoreLoaded === false}
+            onClick={() => sendToPlanScore()}
+          >
+            {planScoreLoaded === null ? (
+              <span>Send to PlanScore API</span>
+            ) : (
+              <span>
+                Loading...
+                <Spinner variant="spinner.small" />
+              </span>
+            )}
+          </Button>
+        ) : (
+          planScoreLink && (
+            <Styled.a href={planScoreLink} target="_blank">
+              View on PlanScore
+            </Styled.a>
+          )
+        )}
+      </Box>
     </Box>
   );
 };
