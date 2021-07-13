@@ -1,7 +1,7 @@
 import GoogleTagManager from "@redux-beacon/google-tag-manager";
 import { createMiddleware, EventsMap, EventDefinition } from "redux-beacon";
 import { updateDistrictsDefinition } from "./actions/projectData";
-import { projectsFetch } from "./actions/projects";
+import { userProjectsFetch } from "./actions/projects";
 import { projectFetch } from "./actions/projectData";
 import { regionConfigsFetch } from "./actions/regionConfig";
 import { getType } from "typesafe-actions";
@@ -10,7 +10,7 @@ import { getType } from "typesafe-actions";
 // add them to this list and they will automatically be tracked
 const trackingActionTypes = [
   projectFetch, // user loaded a project
-  projectsFetch, // user loaded the home page
+  userProjectsFetch, // user loaded the home page
   regionConfigsFetch, // user loaded the create project screen
   updateDistrictsDefinition // user saved a district
 ];

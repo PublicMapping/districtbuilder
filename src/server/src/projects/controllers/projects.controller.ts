@@ -8,6 +8,11 @@ import {
   NotFoundException,
   Param,
   Post,
+  // Not sure why, but eslint thinks these decorators are unused
+  /* eslint-disable */
+  ParseIntPipe,
+  Query,
+  /* eslint-enable */
   Body,
   Request,
   Res,
@@ -20,7 +25,6 @@ import {
   CrudController,
   CrudRequest,
   CrudRequestInterceptor,
-  GetManyDefaultResponse,
   Override,
   ParsedBody,
   ParsedRequest
@@ -30,6 +34,7 @@ import { Response } from "express";
 import { convert } from "geojson2shp";
 import * as _ from "lodash";
 import isUUID from "validator/lib/isUUID";
+import { Pagination } from "nestjs-typeorm-paginate";
 
 import { MakeDistrictsErrors } from "../../../../shared/constants";
 import {
@@ -68,8 +73,6 @@ import axios from "axios";
     }
   },
   query: {
-    // This is a pretty heavy column, and is exposed by the export/geojson endpoint separately
-    exclude: ["districts"],
     join: {
       projectTemplate: {
         exclude: ["districtsDefinition"],
@@ -172,15 +175,16 @@ export class ProjectsController implements CrudController<Project> {
     return this.getProject(req, id);
   }
 
-  // Overriden to add JwtAuthGuard
+  // Overriden to add JwtAuthGuard and support pagination
   @Override()
   @UseGuards(JwtAuthGuard)
-  getMany(@ParsedRequest() req: CrudRequest): Promise<GetManyDefaultResponse<Project> | Project[]> {
-    if (!this.base.getManyBase) {
-      this.logger.error("Routes misconfigured. Missing `getManyBase` route");
-      throw new InternalServerErrorException();
-    }
-    return this.base.getManyBase(req);
+  getMany(
+    @ParsedRequest() req: CrudRequest,
+    @Query("page", ParseIntPipe) page = 1,
+    @Query("limit", ParseIntPipe) limit = 10
+  ): Promise<Pagination<Project>> {
+    const user_id = req.parsed.authPersist.userId;
+    return this.service.findAllUserProjectsPaginated(user_id, { page, limit });
   }
 
   @Override()

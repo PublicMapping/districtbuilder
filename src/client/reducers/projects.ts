@@ -6,18 +6,19 @@ import {
   projectArchive,
   projectArchiveSuccess,
   projectArchiveFailure,
-  projectsFetch,
-  projectsFetchFailure,
-  projectsFetchSuccess,
   globalProjectsFetch,
   globalProjectsFetchPage,
   globalProjectsFetchSuccess,
   globalProjectsFetchFailure,
+  globalProjectsSetRegion,
   setDeleteProject,
-  globalProjectsSetRegion
+  userProjectsFetch,
+  userProjectsFetchSuccess,
+  userProjectsFetchFailure,
+  userProjectsFetchPage
 } from "../actions/projects";
 
-import { IProject } from "../../shared/entities";
+import { IProject, PaginationMetadata } from "../../shared/entities";
 import { fetchAllPublishedProjects, fetchProjects, patchProject } from "../api";
 import { showResourceFailedToast } from "../functions";
 import { Resource } from "../resource";
@@ -26,12 +27,8 @@ export interface ProjectsState {
   readonly projects: Resource<readonly IProject[]>;
   readonly globalProjects: Resource<readonly IProject[]>;
   readonly deleteProject?: IProject;
-  readonly globalProjectsPagination: {
-    readonly currentPage: number;
-    readonly limit: number;
-    readonly totalItems?: number;
-    readonly totalPages?: number;
-  };
+  readonly globalProjectsPagination: PaginationMetadata;
+  readonly userProjectsPagination: PaginationMetadata;
   readonly globalProjectsRegion: string | null;
   readonly archiveProjectPending: boolean;
 }
@@ -39,6 +36,12 @@ export interface ProjectsState {
 export const initialState = {
   // User projects
   projects: { isPending: false },
+  userProjectsPagination: {
+    currentPage: 1,
+    limit: 4,
+    totalItems: undefined,
+    totalPages: undefined
+  },
   // All projects
   globalProjects: { isPending: false },
   globalProjectsPagination: {
@@ -56,24 +59,43 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
   action: Action
 ): ProjectsState | Loop<ProjectsState, Action> => {
   switch (action.type) {
-    case getType(projectsFetch):
+    case getType(userProjectsFetch):
       return loop(
         {
           ...state,
           projects: { isPending: true }
         },
         Cmd.run(fetchProjects, {
-          successActionCreator: projectsFetchSuccess,
-          failActionCreator: projectsFetchFailure,
-          args: [] as Parameters<typeof fetchProjects>
+          successActionCreator: userProjectsFetchSuccess,
+          failActionCreator: userProjectsFetchFailure,
+          args: [
+            state.userProjectsPagination.currentPage,
+            state.userProjectsPagination.limit
+          ] as Parameters<typeof fetchProjects>
         })
       );
-    case getType(projectsFetchSuccess):
+    case getType(userProjectsFetchPage):
+      return loop(
+        {
+          ...state,
+          userProjectsPagination: {
+            ...state.userProjectsPagination,
+            currentPage: action.payload
+          }
+        },
+        Cmd.action(userProjectsFetch())
+      );
+    case getType(userProjectsFetchSuccess):
       return {
         ...state,
-        projects: { resource: action.payload }
+        projects: { resource: action.payload.items },
+        userProjectsPagination: {
+          ...state.userProjectsPagination,
+          totalItems: action.payload.meta.totalItems,
+          totalPages: action.payload.meta.totalPages
+        }
       };
-    case getType(projectsFetchFailure):
+    case getType(userProjectsFetchFailure):
       return loop(
         {
           ...state,
@@ -155,6 +177,7 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         deleteProject: undefined,
         archiveProjectPending: false,
         globalProjectsPagination: state.globalProjectsPagination,
+        userProjectsPagination: state.userProjectsPagination,
         projects:
           "resource" in state.projects
             ? {

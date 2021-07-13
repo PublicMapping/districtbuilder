@@ -4,6 +4,13 @@ export type UserId = string;
 
 export type PublicUserProperties = "id" | "name" | "email";
 
+export type PaginationMetadata = {
+  readonly currentPage: number;
+  readonly limit: number;
+  readonly totalItems?: number;
+  readonly totalPages?: number;
+};
+
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
 
 export type MetricField =

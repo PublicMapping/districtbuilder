@@ -41,7 +41,7 @@ import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
-import { projectsFetch } from "../actions/projects";
+import { userProjectsFetch } from "../actions/projects";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
@@ -466,7 +466,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     }
     case getType(duplicateProjectSuccess):
-      return loop(state, Cmd.action(projectsFetch()));
+      return loop(state, Cmd.action(userProjectsFetch()));
     case getType(duplicateProjectFailure):
       return loop(state, Cmd.run(showActionFailedToast));
     case getType(exportCsv):

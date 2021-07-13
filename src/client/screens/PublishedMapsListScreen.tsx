@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Flex, jsx, Spinner, Box, Heading, Text, Label, Select } from "theme-ui";
-import { IProject, ProjectNest, IRegionConfig } from "../../shared/entities";
+import { IProject, ProjectNest, IRegionConfig, PaginationMetadata } from "../../shared/entities";
 import "../App.css";
 import { State } from "../reducers";
 import store from "../store";
@@ -23,12 +23,7 @@ import { useQueryParam, StringParam } from "use-query-params";
 
 interface StateProps {
   readonly globalProjects: Resource<readonly IProject[]>;
-  readonly pagination: {
-    readonly currentPage: number;
-    readonly limit: number;
-    readonly totalItems?: number;
-    readonly totalPages?: number;
-  };
+  readonly pagination: PaginationMetadata;
   readonly user: UserState;
   readonly region: string | null;
   readonly regionConfigs?: readonly IRegionConfig[];

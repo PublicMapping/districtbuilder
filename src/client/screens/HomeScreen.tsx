@@ -1,61 +1,37 @@
 /** @jsx jsx */
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import TimeAgo from "timeago-react";
-import ProjectListFlyout from "../components/ProjectListFlyout";
 import Icon from "../components/Icon";
-import { Box, Divider, Flex, Heading, Text, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, Flex, Heading, Text, jsx, Styled, Spinner } from "theme-ui";
 import { ReactComponent as NoMapsIllustration } from "../media/no-maps-illustration.svg";
+import PaginationFooter from "../components/PaginationFooter";
 
-import { projectsFetch } from "../actions/projects";
+import { userProjectsFetch, userProjectsFetchPage } from "../actions/projects";
 import { userFetch } from "../actions/user";
 import { getJWT } from "../jwt";
 import { State } from "../reducers";
 import { UserState } from "../reducers/user";
 import { Resource } from "../resource";
 import store from "../store";
-import { IProject } from "../../shared/entities";
+import { IProject, PaginationMetadata } from "../../shared/entities";
 import DeleteProjectModal from "../components/DeleteProjectModal";
 import SiteHeader from "../components/SiteHeader";
+import HomeScreenProjectCard from "../components/HomeScreenProjectCard";
 
 interface StateProps {
   readonly projects: Resource<readonly IProject[]>;
+  readonly pagination: PaginationMetadata;
   readonly user: UserState;
 }
 
-const style: ThemeUIStyleObject = {
-  projectRow: {
-    textDecoration: "none",
-    display: "flex",
-    alignItems: "baseline",
-    borderRadius: "med",
-    marginRight: "auto",
-    px: 1,
-    "&:hover:not([disabled])": {
-      bg: "rgba(256,256,256,0.2)",
-      h2: {
-        color: "primary",
-        textDecoration: "underline"
-      },
-      p: {
-        color: "blue.6"
-      }
-    },
-    "&:focus": {
-      outline: "none",
-      boxShadow: "focus"
-    }
-  }
-};
-
-const HomeScreen = ({ projects, user }: StateProps) => {
+const HomeScreen = ({ projects, user, pagination }: StateProps) => {
   const isLoggedIn = getJWT() !== null;
   const projectList =
     "resource" in projects ? projects.resource.filter(project => !project.archived) : [];
 
   useEffect(() => {
-    isLoggedIn && store.dispatch(projectsFetch());
+    isLoggedIn && store.dispatch(userProjectsFetch());
     isLoggedIn && store.dispatch(userFetch());
   }, [isLoggedIn]);
 
@@ -92,41 +68,26 @@ const HomeScreen = ({ projects, user }: StateProps) => {
 
         {"resource" in projects ? (
           projectList.length > 0 ? (
-            projectList.map(project => (
-              <React.Fragment key={project.id}>
-                <Box>
-                  <Flex sx={{ position: "relative" }}>
-                    <Link to={`/projects/${project.id}`} sx={style.projectRow}>
-                      <Heading
-                        as="h2"
-                        sx={{
-                          fontFamily: "heading",
-                          variant: "text.h5",
-                          fontWeight: "light",
-                          mr: 3
-                        }}
-                      >
-                        {project.name}
-                      </Heading>
-                      <p sx={{ fontSize: 2, color: "gray.7" }}>
-                        ({project.regionConfig.name}, {project.numberOfDistricts} districts)
-                      </p>
-                    </Link>
-                    <ProjectListFlyout project={project} />
-                  </Flex>
-                  <div
-                    sx={{
-                      fontWeight: "light",
-                      color: "gray.5",
-                      paddingLeft: "5px"
-                    }}
-                  >
-                    Last updated <TimeAgo datetime={project.updatedDt} />
-                  </div>
-                  <Divider />
+            <Box>
+              {projectList.map((project: IProject) => (
+                <HomeScreenProjectCard project={project} key={project.id} />
+              ))}
+              {pagination.totalPages && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <PaginationFooter
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    setPage={number => store.dispatch(userProjectsFetchPage(number))}
+                  />
                 </Box>
-              </React.Fragment>
-            ))
+              )}
+            </Box>
           ) : (
             <Flex
               sx={{
@@ -172,6 +133,10 @@ const HomeScreen = ({ projects, user }: StateProps) => {
               </Flex>
             </Flex>
           )
+        ) : "isPending" in projects && projects.isPending ? (
+          <Flex sx={{ justifyContent: "center" }}>
+            <Spinner variant="spinner.large" />
+          </Flex>
         ) : null}
       </Flex>
     </Flex>
@@ -181,7 +146,8 @@ const HomeScreen = ({ projects, user }: StateProps) => {
 function mapStateToProps(state: State): StateProps {
   return {
     projects: state.projects.projects,
-    user: state.user
+    user: state.user,
+    pagination: state.projects.userProjectsPagination
   };
 }
 

@@ -7,6 +7,7 @@ import {
   GeoUnitHierarchy,
   DistrictProperties,
   DemographicCounts,
+  PaginationMetadata,
   IProject
 } from "../shared/entities";
 
@@ -20,13 +21,7 @@ export interface DynamicProjectData {
 
 export interface PaginatedResponse<T> {
   readonly items: readonly T[];
-  readonly meta: {
-    readonly currentPage: number;
-    readonly itemCount: number;
-    readonly itemsPerPage: number;
-    readonly totalItems: number;
-    readonly totalPages: number;
-  };
+  readonly meta: PaginationMetadata;
 }
 
 export interface StaticProjectData {
