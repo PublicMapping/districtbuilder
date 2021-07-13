@@ -1,11 +1,18 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-import { DistrictsDefinition, IProjectTemplateWithProjects } from "../../../../shared/entities";
+import {
+  DistrictsDefinition,
+  IProjectTemplateWithProjects,
+  MetricField
+} from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Project } from "../../projects/entities/project.entity";
-import { DEFAULT_POPULATION_DEVIATION } from "../../../../shared/constants";
+import {
+  DEFAULT_POPULATION_DEVIATION,
+  DEFAULT_PINNED_METRIC_FIELDS
+} from "../../../../shared/constants";
 
 @Entity()
 export class ProjectTemplate implements IProjectTemplateWithProjects {
@@ -56,9 +63,17 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
   @Column({
     type: "double precision",
     name: "population_deviation",
-    default: () => `${DEFAULT_POPULATION_DEVIATION}`
+    default: DEFAULT_POPULATION_DEVIATION
   })
   populationDeviation: number;
+
+  @Column({
+    type: "character varying",
+    array: true,
+    name: "pinned_metric_fields",
+    default: () => `ARRAY[${DEFAULT_PINNED_METRIC_FIELDS.map(c => `'${c}'`).join(",")}]`
+  })
+  pinnedMetricFields: MetricField[];
 
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive: boolean;

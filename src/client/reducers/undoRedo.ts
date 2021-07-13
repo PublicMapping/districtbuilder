@@ -11,6 +11,7 @@ export interface UndoableState {
   readonly geoLevelIndex: number; // Index is based off of reversed geoLevelHierarchy in static metadata
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
   readonly lockedDistricts: LockedDistricts;
+  readonly pinnedMetricFields: readonly string[];
   readonly districtsDefinition: DistrictsDefinition;
 }
 

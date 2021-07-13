@@ -2,12 +2,20 @@ import { FeatureCollection, MultiPolygon } from "geojson";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { ProjectVisibility } from "../../../../shared/constants";
-import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../shared/entities";
+import {
+  DistrictProperties,
+  DistrictsDefinition,
+  IProject,
+  MetricField
+} from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
-import { DEFAULT_POPULATION_DEVIATION } from "../../../../shared/constants";
+import {
+  DEFAULT_POPULATION_DEVIATION,
+  DEFAULT_PINNED_METRIC_FIELDS
+} from "../../../../shared/constants";
 
 // TODO #179: Move to shared/entities
 export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -86,9 +94,17 @@ export class Project implements IProject {
   @Column({
     type: "double precision",
     name: "population_deviation",
-    default: () => `${DEFAULT_POPULATION_DEVIATION}`
+    default: DEFAULT_POPULATION_DEVIATION
   })
   populationDeviation: number;
+
+  @Column({
+    type: "character varying",
+    array: true,
+    name: "pinned_metric_fields",
+    default: () => `ARRAY[${DEFAULT_PINNED_METRIC_FIELDS.map(c => `'${c}'`).join(",")}]`
+  })
+  pinnedMetricFields: MetricField[];
 
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {

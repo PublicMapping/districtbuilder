@@ -6,6 +6,27 @@ export type PublicUserProperties = "id" | "name" | "email";
 
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
 
+export type MetricField =
+  | "population"
+  | "populationDeviation"
+  | "raceChart"
+  | "whitePopulation"
+  | "blackPopulation"
+  | "asianPopulation"
+  | "hispanicPopulation"
+  | "otherPopulation"
+  | "nativePopulation"
+  | "pacificPopulation"
+  | "dem16"
+  | "rep16"
+  | "other16"
+  | "dem20"
+  | "rep20"
+  | "other20"
+  | "pvi"
+  | "compactness"
+  | "contiguity";
+
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
@@ -151,6 +172,7 @@ interface ProjectTemplateFields {
   readonly numberOfDistricts: number;
   readonly chamber?: IChamber;
   readonly populationDeviation: number;
+  readonly pinnedMetricFields: readonly MetricField[];
   readonly districtsDefinition: DistrictsDefinition;
 }
 
@@ -199,6 +221,7 @@ export type UpdateProjectData = Pick<
   | "districtsDefinition"
   | "advancedEditingEnabled"
   | "lockedDistricts"
+  | "pinnedMetricFields"
   | "visibility"
   | "archived"
 >;

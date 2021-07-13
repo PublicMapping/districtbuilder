@@ -50,6 +50,7 @@ interface StateProps {
   readonly evaluateMode: boolean;
   readonly evaluateMetric: EvaluateMetric | undefined;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
+  readonly expandedProjectMetrics?: boolean;
   readonly districtDrawing: DistrictDrawingState;
   readonly isLoading: boolean;
   readonly isReadOnly: boolean;
@@ -150,6 +151,7 @@ const ProjectScreen = ({
             selectedDistrictId={districtDrawing.selectedDistrictId}
             selectedGeounits={presentDrawingState.selectedGeounits}
             highlightedGeounits={districtDrawing.highlightedGeounits}
+            expandedProjectMetrics={districtDrawing.expandedProjectMetrics}
             geoUnitHierarchy={geoUnitHierarchy}
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
@@ -203,6 +205,7 @@ const ProjectScreen = ({
                 zoomToDistrictId={districtDrawing.zoomToDistrictId}
                 selectionTool={districtDrawing.selectionTool}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
+                expandedProjectMetrics={districtDrawing.expandedProjectMetrics}
                 lockedDistricts={presentDrawingState.lockedDistricts}
                 evaluateMode={evaluateMode}
                 evaluateMetric={evaluateMetric}

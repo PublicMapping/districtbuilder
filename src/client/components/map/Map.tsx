@@ -191,6 +191,7 @@ interface Props {
   readonly selectionTool: SelectionTool;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
+  readonly expandedProjectMetrics: boolean;
   readonly evaluateMetric?: EvaluateMetric | EvaluateMetricWithValue;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
@@ -286,6 +287,7 @@ const DistrictsMap = ({
   lockedDistricts,
   isReadOnly,
   isArchived,
+  expandedProjectMetrics,
   limitSelectionToCounty,
   findMenuOpen,
   evaluateMetric,
@@ -325,6 +327,10 @@ const DistrictsMap = ({
   const legendLabel = geoLevelLabelSingular(
     staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id
   );
+
+  useEffect(() => {
+    map && map.resize();
+  }, [expandedProjectMetrics, map]);
 
   useEffect(() => {
     // eslint-disable-next-line

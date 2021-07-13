@@ -71,6 +71,7 @@ export const setFindType = createAction("Set find menu search type")<FindTool>()
 export const setFindIndex = createAction("Set find menu polygon index")<number | undefined>();
 
 export const toggleEvaluate = createAction("Toggle evaluate mode")<boolean>();
+export const toggleExpandedMetrics = createAction("Toggle expanded metrics")<boolean>();
 export const selectEvaluationMetric = createAction("Select evaluation metric")<
   EvaluateMetric | undefined
 >();
