@@ -498,8 +498,9 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                         as="span"
                         sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
                       >
-                        Depending on whether you are making a map for learning purposes or are
-                        trying to make the exercise as realistic as possible
+                        How detailed of a map do you want to draw? Setting a lower tolerance means
+                        the population of your districts will need to be more exact. If you
+                        aren&apos;t sure, we think 5% is a good starting point.
                       </Box>
                       <Box sx={style.customInputContainer}>
                         <InputField
