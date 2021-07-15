@@ -23,8 +23,9 @@ export class GlobalProjectsController {
   async getAllGlobalProjects(
     @Query("page", ParseIntPipe) page = 1,
     @Query("limit", ParseIntPipe) limit = 10,
-    @Query("completed", new DefaultValuePipe(false), ParseBoolPipe) completed = false
+    @Query("completed", new DefaultValuePipe(false), ParseBoolPipe) completed = false,
+    @Query("region", new DefaultValuePipe(undefined)) region = undefined
   ): Promise<Pagination<Project>> {
-    return this.service.findAllPublishedProjectsPaginated({ page, limit, completed });
+    return this.service.findAllPublishedProjectsPaginated({ page, limit, completed, region });
   }
 }

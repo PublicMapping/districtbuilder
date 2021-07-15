@@ -7,6 +7,7 @@ export const projectsFetchSuccess = createAction("Projects fetch success")<reado
 export const projectsFetchFailure = createAction("Projects fetch failure")<string>();
 
 export const globalProjectsFetch = createAction("Global projects fetch")();
+export const globalProjectsSetRegion = createAction("Global projects set region")<string | null>();
 export const globalProjectsFetchPage = createAction("Global projects fetch page")<number>();
 export const globalProjectsFetchSuccess = createAction("Global projects fetch success")<
   PaginatedResponse<IProject>
