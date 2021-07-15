@@ -99,6 +99,9 @@ export type DistrictProperties = {
   percentDeviation?: number;
   pvi?: number;
   populationDeviation?: number;
+  majorityRace?: string;
+  majorityRaceSplit?: number;
+  majorityRaceFill?: string;
   outlineWidthScaleFactor?: number;
   /* eslint-enable */
 };

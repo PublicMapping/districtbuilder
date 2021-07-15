@@ -11,6 +11,7 @@ import CountySplitMetricDetail from "./detail/CountySplit";
 import EqualPopulationMetricDetail from "./detail/EqualPopulation";
 import { Resource } from "../../resource";
 import CompetitivenessMetricDetail from "./detail/Competitiveness";
+import MajorityRaceMetricDetail from "./detail/MajorityRace";
 
 const style: ThemeUIStyleObject = {
   header: {
@@ -124,6 +125,8 @@ const ProjectEvaluateMetricDetail = ({
           <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
         ) : metric && "type" in metric && metric.key === "competitiveness" ? (
           <CompetitivenessMetricDetail metric={metric} geojson={geojson} />
+        ) : metric && "type" in metric && metric.key === "majorityMinority" ? (
+          <MajorityRaceMetricDetail metric={metric} geojson={geojson} />
         ) : (
           <Box>
             <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
