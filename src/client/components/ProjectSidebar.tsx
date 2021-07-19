@@ -36,7 +36,8 @@ import {
   has16Election,
   has20Election,
   demographicsHasOther,
-  isMajorityMinority
+  isMajorityMinority,
+  getMajorityRaceDisplay
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -387,6 +388,11 @@ const ProjectSidebar = ({
   /// This is a little wonky to preserve the column ordering where PVI is displayed before compactness
   const metricHeaders: readonly MetricHeader[] = [
     ...allDemographicHeaders,
+    {
+      metric: "majorityRace",
+      text: "Majority race",
+      tooltip: "Majority race"
+    },
     ...electionMetricHeaders,
     {
       metric: "compactness",
@@ -731,6 +737,11 @@ const SidebarRow = memo(
               <span>{computeDemographicSplit(demographics.other, intermediatePopulation)}%</span>
             </Styled.td>
           )}
+        {(pinnedMetricFields.includes("majorityRace") || expandedProjectMetrics) && (
+          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+            <span>{getMajorityRaceDisplay(district)}</span>
+          </Styled.td>
+        )}
         {hasElectionData
           ? (pinnedMetricFields.includes("pvi") || expandedProjectMetrics) && (
               <Styled.td sx={{ ...style.td, ...style.number }}>

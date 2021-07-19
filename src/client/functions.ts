@@ -63,6 +63,9 @@ export const capitalizeFirstLetter = (s: string) =>
 export const getPartyColor = (party: string) =>
   party === "republican" ? "#BF4E6A" : party === "democrat" ? "#4E56BF" : "#F7AD00";
 
+export const getMajorityRaceDisplay = (feature: DistrictGeoJSON) =>
+  feature.properties.majorityRace && capitalizeFirstLetter(feature.properties.majorityRace);
+
 export function formatPvi(party?: Party, value?: number): string {
   return value !== undefined && party !== undefined
     ? `${party.label}+${Math.abs(value).toLocaleString(undefined, {

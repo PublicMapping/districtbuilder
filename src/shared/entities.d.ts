@@ -17,6 +17,7 @@ export type MetricField =
   | "otherPopulation"
   | "nativePopulation"
   | "pacificPopulation"
+  | "majorityRace"
   | "dem16"
   | "rep16"
   | "other16"
