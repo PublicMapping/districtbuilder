@@ -4,7 +4,7 @@ import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
 import Tooltip from "../../Tooltip";
 import DemographicsTooltip from "../../DemographicsTooltip";
 import DemographicsChart from "../../DemographicsChart";
-import { capitalizeFirstLetter, isMajorityMinority } from "../../../functions";
+import { getMajorityRaceDisplay, isMajorityMinority } from "../../../functions";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -101,7 +101,7 @@ const MajorityRaceMetricDetail = ({
                             bg: feature.properties.majorityRaceFill
                           }}
                         ></Styled.div>
-                        <Box>{capitalizeFirstLetter(feature.properties.majorityRace)}</Box>
+                        <Box>{getMajorityRaceDisplay(feature)}</Box>
                       </Flex>
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
