@@ -181,7 +181,9 @@ const MetricPinButton = ({
         <Button
           sx={style.pinButton}
           disabled={saving === "saving"}
-          onClick={() => store.dispatch(updatePinnedMetrics([...otherMetrics]))}
+          onClick={() => {
+            store.dispatch(updatePinnedMetrics([...otherMetrics]));
+          }}
         >
           <Icon name="thumbtack-solid" />
         </Button>
@@ -189,7 +191,9 @@ const MetricPinButton = ({
         <Button
           sx={style.pinButton}
           disabled={saving === "saving"}
-          onClick={() => store.dispatch(updatePinnedMetrics([...pinnedMetrics, metric]))}
+          onClick={() => {
+            store.dispatch(updatePinnedMetrics([...pinnedMetrics, metric]));
+          }}
         >
           <Icon name="thumbtack" />
         </Button>
