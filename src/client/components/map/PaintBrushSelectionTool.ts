@@ -93,19 +93,26 @@ const PaintBrushSelectionTool: ISelectionTool = {
     function updateSelection(e: MouseEvent) {
       // Capture the ongoing xy coordinates
       const current = mousePos(e);
-      /* eslint-disable */
-      if (brushCircle) {
-        brushCircle.style.visibility = "visible";
-        brushCircle.style.top = current.y + "px";
-        brushCircle.style.left = current.x + "px";
+      // eslint-disable-next-line
+      let features = null;
+      if (paintBrushSize > 1) {
+        /* eslint-disable */
+        if (brushCircle) {
+          brushCircle.style.visibility = "visible";
+          brushCircle.style.top = current.y + "px";
+          brushCircle.style.left = current.x + "px";
+        }
+        const brushRadius = paintBrushSize * 15;
+        const bbox: [MapboxGL.PointLike, MapboxGL.PointLike] = [
+          [current.x - brushRadius, current.y + brushRadius],
+          [current.x + brushRadius, current.y - brushRadius]
+        ];
+        features = getFeaturesAroundPoint(bbox, current, brushRadius);
+        /* eslint-enable */
+      } else {
+        features = getFeaturesAtPoint(current);
       }
-      const brushRadius = paintBrushSize * 15;
-      const bbox: [MapboxGL.PointLike, MapboxGL.PointLike] = [
-        [current.x - brushRadius, current.y + brushRadius],
-        [current.x + brushRadius, current.y - brushRadius]
-      ];
-      /* eslint-enable */
-      const features = getFeaturesAroundPoint(bbox, current, brushRadius);
+
       const geoUnits = featuresToUnlockedGeoUnits(
         features,
         staticMetadata,
@@ -173,7 +180,9 @@ const PaintBrushSelectionTool: ISelectionTool = {
       }
       /* eslint-enable */
     }
-
+    function getFeaturesAtPoint(point: MapboxGL.Point) {
+      return map.queryRenderedFeatures(point, { layers: [levelToSelectionLayerId(geoLevelId)] });
+    }
     function getFeaturesAroundPoint(
       // eslint-disable-next-line
       bbox: [MapboxGL.PointLike, MapboxGL.PointLike],
