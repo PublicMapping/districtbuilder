@@ -15,7 +15,9 @@ import {
   redo,
   toggleLimitDrawingToWithinCounty,
   toggleKeyboardShortcutsModal,
-  setElectionYear
+  setElectionYear,
+  toggleExpandedMetrics,
+  setZoomToDistrictId
 } from "../../actions/districtDrawing";
 import store from "../../store";
 import { showMapActionToast } from "../../functions";
@@ -30,6 +32,7 @@ interface MapContext {
   readonly numGeolevels: number;
   readonly limitSelectionToCounty: boolean;
   readonly evaluateMode: boolean;
+  readonly expandedProjectMetrics: boolean;
   readonly electionYear: ElectionYear;
   // eslint-disable-next-line
   readonly setTogglePan: (isSet: boolean) => void;
@@ -170,6 +173,22 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     action: ({ evaluateMode }: MapContext) => {
       store.dispatch(toggleEvaluate(!evaluateMode));
     }
+  },
+  {
+    key: "p",
+    text: "Toggle expanded project metrics",
+    action: ({ expandedProjectMetrics }: MapContext) => {
+      store.dispatch(toggleExpandedMetrics(!expandedProjectMetrics));
+    },
+    allowReadOnly: true
+  },
+  {
+    key: "l",
+    text: "Zoom to selected district",
+    action: ({ selectedDistrictId }: MapContext) => {
+      store.dispatch(setZoomToDistrictId(selectedDistrictId));
+    },
+    allowReadOnly: true
   },
   {
     key: "z",

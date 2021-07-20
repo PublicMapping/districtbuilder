@@ -433,6 +433,7 @@ const DistrictsMap = ({
           numGeolevels: staticMetadata.geoLevelHierarchy.length,
           limitSelectionToCounty,
           evaluateMode,
+          expandedProjectMetrics,
           setTogglePan,
           electionYear
         });
@@ -448,6 +449,7 @@ const DistrictsMap = ({
       staticMetadata.geoLevelHierarchy.length,
       limitSelectionToCounty,
       evaluateMode,
+      expandedProjectMetrics,
       multipleElections,
       electionYear
     ]
