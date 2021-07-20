@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add evaluate mode metric view for competitiveness [#824](https://github.com/PublicMapping/districtbuilder/pull/824)
 - Add expandable metrics viewer with ability to pin metrics to sidebar [#827](https://github.com/PublicMapping/districtbuilder/pull/827)
 - Update population deviation helper text [#848](https://github.com/PublicMapping/districtbuilder/pull/848)
+- Add user id and IP address to rollbar server side error logging [#841](https://github.com/PublicMapping/districtbuilder/pull/841)
+
 
 ### Changed
 
