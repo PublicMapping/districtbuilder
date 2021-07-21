@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
 - Tweaks to org report downloads [#832](https://github.com/PublicMapping/districtbuilder/pull/832)
 - Update population deviation helper text [#848](https://github.com/PublicMapping/districtbuilder/pull/848)
+- Update display logic for political data in expandable metrics viewer [#864](https://github.com/PublicMapping/districtbuilder/pull/864)
 
 
 ### Fixed
