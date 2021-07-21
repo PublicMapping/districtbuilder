@@ -1,6 +1,6 @@
 /** @jsx jsx */
-import React from "react";
-import { Flex, Box, Label, Button, jsx, Select, ThemeUIStyleObject } from "theme-ui";
+import React, { useState } from "react";
+import { Flex, Box, Label, Button, jsx, Select, Slider, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { ElectionYear } from "../types";
 
@@ -13,9 +13,12 @@ import {
   setGeoLevelIndex,
   setSelectionTool,
   SelectionTool,
+  PaintBrushSize,
+  setPaintBrushSize,
   setMapLabel
 } from "../actions/districtDrawing";
 import store from "../store";
+import icons from "../icons";
 
 const style: ThemeUIStyleObject = {
   buttonGroup: {
@@ -64,6 +67,19 @@ const style: ThemeUIStyleObject = {
       borderBottomColor: "blue.5",
       color: "blue.8"
     }
+  },
+  sliderContainer: {
+    position: "absolute",
+    display: "flex",
+    backgroundColor: "#fff",
+    borderRadius: "2px",
+    border: "1px solid",
+    borderColor: "gray.2",
+    padding: "5px",
+    top: "100px",
+    zIndex: 99999,
+    justifyContent: "space-evenly",
+    width: "300px"
   }
 };
 
@@ -127,6 +143,7 @@ const MapHeader = ({
   label,
   metadata,
   selectionTool,
+  paintBrushSize,
   geoLevelIndex,
   selectedGeounits,
   isReadOnly,
@@ -136,6 +153,7 @@ const MapHeader = ({
   readonly label?: string;
   readonly metadata?: IStaticMetadata;
   readonly selectionTool: SelectionTool;
+  readonly paintBrushSize: PaintBrushSize;
   readonly geoLevelIndex: number;
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
@@ -143,6 +161,7 @@ const MapHeader = ({
   readonly limitSelectionToCounty: boolean;
   readonly electionYear: ElectionYear;
 }) => {
+  const [isPaintBrushSizeSliderVisible, setPaintBrushSizeSliderVisibility] = useState(false);
   const topGeoLevelName = metadata
     ? metadata.geoLevelHierarchy[metadata.geoLevelHierarchy.length - 1].id
     : undefined;
@@ -193,40 +212,66 @@ const MapHeader = ({
           />
         ))
     : [];
+  const selectionToolIcons: ReadonlyArray<{
+    readonly tooltipContent: string;
+    readonly tool: SelectionTool;
+    readonly iconName: keyof typeof icons;
+  }> = [
+    {
+      tooltipContent: "Point-and-click selection",
+      tool: SelectionTool.Default,
+      iconName: "hand-pointer"
+    },
+    {
+      tooltipContent: "Rectangle selection",
+      tool: SelectionTool.Rectangle,
+      iconName: "draw-square"
+    },
+    {
+      tooltipContent: "Paint brush selection",
+      tool: SelectionTool.PaintBrush,
+      iconName: "paint-brush"
+    }
+  ];
   return (
     <Flex sx={style.header}>
       <Flex>
         {!isReadOnly && (
           <React.Fragment>
             <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
-              <Tooltip content="Point-and-click selection">
-                <Button
-                  sx={{ ...style.selectionButton }}
-                  className={buttonClassName(selectionTool === SelectionTool.Default)}
-                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.Default))}
-                >
-                  <Icon name="hand-pointer" />
-                </Button>
-              </Tooltip>
-              <Tooltip content="Rectangle selection">
-                <Button
-                  sx={{ ...style.selectionButton }}
-                  className={buttonClassName(selectionTool === SelectionTool.Rectangle)}
-                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.Rectangle))}
-                >
-                  <Icon name="draw-square" />
-                </Button>
-              </Tooltip>
-              <Tooltip content="Paint brush selection">
-                <Button
-                  sx={{ ...style.selectionButton }}
-                  className={buttonClassName(selectionTool === SelectionTool.PaintBrush)}
-                  onClick={() => store.dispatch(setSelectionTool(SelectionTool.PaintBrush))}
-                >
-                  <Icon name="paint-brush" />
-                </Button>
-              </Tooltip>
+              {selectionToolIcons.map(({ tooltipContent, tool, iconName }) => (
+                <Tooltip key={iconName} content={tooltipContent}>
+                  <Button
+                    sx={{ ...style.selectionButton }}
+                    className={buttonClassName(selectionTool === tool)}
+                    onClick={() => {
+                      setPaintBrushSizeSliderVisibility(tool === SelectionTool.PaintBrush);
+                      store.dispatch(setSelectionTool(tool));
+                    }}
+                  >
+                    <Icon name={iconName} />
+                  </Button>
+                </Tooltip>
+              ))}
             </Flex>
+            {isPaintBrushSizeSliderVisible ? (
+              <Box sx={style.sliderContainer}>
+                <Box sx={{ flexShrink: 0 }}>Brush size</Box>
+                <Slider
+                  min={1}
+                  max={5}
+                  step={1}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    store.dispatch(
+                      setPaintBrushSize(parseInt(e.target.value, 10) as PaintBrushSize)
+                    );
+                  }}
+                  sx={{ width: "150px" }}
+                  defaultValue={paintBrushSize}
+                />
+                <Box>{paintBrushSize}</Box>
+              </Box>
+            ) : null}
 
             <Box sx={{ position: "relative", mr: 3, pt: "6px" }}>
               <MapSelectionOptionsFlyout

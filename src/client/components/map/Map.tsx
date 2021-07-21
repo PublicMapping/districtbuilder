@@ -14,7 +14,8 @@ import {
   SelectionTool,
   replaceSelectedGeounits,
   FindTool,
-  setZoomToDistrictId
+  setZoomToDistrictId,
+  PaintBrushSize
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -192,6 +193,7 @@ interface Props {
   readonly hoveredDistrictId: number | null;
   readonly zoomToDistrictId: number | null;
   readonly selectionTool: SelectionTool;
+  readonly paintBrushSize: PaintBrushSize;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly expandedProjectMetrics: boolean;
@@ -289,6 +291,7 @@ const DistrictsMap = ({
   hoveredDistrictId,
   zoomToDistrictId,
   selectionTool,
+  paintBrushSize,
   geoLevelIndex,
   lockedDistricts,
   isReadOnly,
@@ -966,6 +969,7 @@ const DistrictsMap = ({
             project.districtsDefinition,
             lockedDistricts,
             staticGeoLevels,
+            paintBrushSize,
             setSelectionInProgress,
             limitSelectionToCounty,
             selectedGeounits
@@ -986,14 +990,37 @@ const DistrictsMap = ({
     evaluateMode,
     isPanning,
     limitSelectionToCounty,
-    selectedGeounits
+    selectedGeounits,
+    paintBrushSize
   ]);
+
+  const brushCircleRadius = 30 * paintBrushSize;
 
   return (
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
+      <div
+        id="brush-circle"
+        style={{
+          visibility: "hidden",
+          opacity: 0.5,
+          position: "absolute",
+          zIndex: 999,
+          marginTop: (brushCircleRadius / 2) * -1,
+          marginLeft: (brushCircleRadius / 2) * -1
+        }}
+      >
+        <svg height={brushCircleRadius} width={brushCircleRadius}>
+          <circle
+            cx={brushCircleRadius / 2}
+            cy={brushCircleRadius / 2}
+            r={brushCircleRadius / 2}
+            strokeWidth="0"
+          ></circle>
+        </svg>
+      </div>
       {!evaluateMode && isArchived && (
         <Box sx={style.archivedMessage}>
           <Icon name="alert-triangle" /> This map is using an archived region and can no longer be
