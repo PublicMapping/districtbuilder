@@ -16,7 +16,8 @@ import {
   UserId,
   RegionConfigId,
   ProjectNest,
-  DistrictsImportApiResponse
+  DistrictsImportApiResponse,
+  PlanScoreAPIResponse
 } from "../shared/entities";
 import { DistrictsGeoJSON, DynamicProjectData, PaginatedResponse } from "./types";
 import { getJWT, setJWT } from "./jwt";
@@ -381,6 +382,17 @@ export async function saveProjectFeatured(project: ProjectNest): Promise<IOrgani
     };
     apiAxios
       .post(`/api/projects/${project.id}/toggleFeatured`, projectPost)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
+export async function checkPlanScoreAPI(project: IProject): Promise<PlanScoreAPIResponse> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/projects/${project.id}/planScore`, project)
       .then(response => resolve(response.data))
       .catch(error => {
         reject(error.message);

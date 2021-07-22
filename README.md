@@ -94,15 +94,20 @@ BASE_URL=https://app.staging.districtbuilder.org docker-compose up client
 
 This will proxy local all requests directed at `/api` to `https://staging.districtbuilder.org`.
 
+### PlanScore API integration
+
+You will need a PlanScore API token to test the PlanScore integration in development. Please email info@planscore.org to get a token, then run `./scripts/bootstrap` to create a `.env` file in the server directory and populate the `PLAN_SCORE_API_TOKEN` environment variable with your token.
+
 ### Development Data
 
 #### Using pre-processed data for development and testing
 
 1. Sign up for an account in your local dev instance of the application at [http://localhost:3003](http://localhost:3003)(if you haven't already done so)
 1. Load testing data with `$ ./scripts/load-dev-data`. This will:
-  - Load region configs for Pennsylvania, Michigan, and Dane County WI.
-  - Create an organization, accessible at [`http://localhost:3003/o/azavea`](http://localhost:3003/o/azavea)
-  - Set the user you just created as the organization administrator
+
+- Load region configs for Pennsylvania, Michigan, and Dane County WI.
+- Create an organization, accessible at [`http://localhost:3003/o/azavea`](http://localhost:3003/o/azavea)
+- Set the user you just created as the organization administrator
 
 #### Processing your own data for custom regions
 
@@ -165,14 +170,14 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 ### Ports
 
 | Port                          | Service          |
-|-------------------------------|------------------|
+| ----------------------------- | ---------------- |
 | [3003](http://localhost:3003) | Create React App |
 | [3005](http://localhost:3005) | NestJS           |
 
 ## Scripts
 
 | Name            | Description                                                               |
-|-----------------|---------------------------------------------------------------------------|
+| --------------- | ------------------------------------------------------------------------- |
 | `cibuild`       | Build application for staging or a release.                               |
 | `cipublish`     | Publish container images to Elastic Container Registry.                   |
 | `dbshell`       | Enter a database shell.                                                   |

@@ -54,6 +54,7 @@ import { RegionConfigsService } from "../../region-configs/services/region-confi
 import { UsersService } from "../../users/services/users.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
 import { Errors } from "../../../../shared/types";
+import axios from "axios";
 
 @Crud({
   model: {
@@ -483,5 +484,36 @@ export class ProjectsController implements CrudController<Project> {
       throw new NotFoundException(`Project is not connected to an organization's template`);
     }
     return project;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Post(":id/planScore")
+  async sendToPlanScoreAPI(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<Project> {
+    const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
+    const project = await this.service.findOne(projectId, { relations: ["regionConfig"] });
+    const geojson = project && {
+      ...project.districts,
+      features: project.districts.features.filter(f => f.id !== 0)
+    };
+    return new Promise((resolve, reject) => {
+      axios({
+        method: "POST",
+        data: project && Buffer.from(JSON.stringify(geojson)),
+        url: "http://api.planscore.org/upload/",
+        headers: {
+          Authorization: `Bearer ${planScoreToken}`
+        }
+      })
+        .then(response => {
+          resolve(response.data);
+        })
+        .catch(error => {
+          reject(error.message);
+        });
+    });
   }
 }

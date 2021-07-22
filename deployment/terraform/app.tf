@@ -144,6 +144,8 @@ resource "aws_ecs_task_definition" "app" {
 
     rollbar_access_token = var.rollbar_access_token
 
+    plan_score_api_token = var.plan_score_api_token
+
     project     = var.project
     environment = var.environment
     aws_region  = var.aws_region

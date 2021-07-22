@@ -286,6 +286,10 @@ variable "rollbar_access_token" {
   type = string
 }
 
+variable "plan_score_api_token" {
+  type = string
+}
+
 variable "app_port" {
   default = 3005
   type    = number
