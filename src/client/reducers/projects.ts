@@ -13,7 +13,8 @@ import {
   globalProjectsFetchPage,
   globalProjectsFetchSuccess,
   globalProjectsFetchFailure,
-  setDeleteProject
+  setDeleteProject,
+  globalProjectsSetRegion
 } from "../actions/projects";
 
 import { IProject } from "../../shared/entities";
@@ -31,6 +32,7 @@ export interface ProjectsState {
     readonly totalItems?: number;
     readonly totalPages?: number;
   };
+  readonly globalProjectsRegion: string | null;
   readonly archiveProjectPending: boolean;
 }
 
@@ -45,6 +47,7 @@ export const initialState = {
     totalItems: undefined,
     totalPages: undefined
   },
+  globalProjectsRegion: null,
   archiveProjectPending: false
 };
 
@@ -89,7 +92,8 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
           failActionCreator: globalProjectsFetchFailure,
           args: [
             state.globalProjectsPagination.currentPage,
-            state.globalProjectsPagination.limit
+            state.globalProjectsPagination.limit,
+            state.globalProjectsRegion
           ] as Parameters<typeof fetchAllPublishedProjects>
         })
       );
@@ -105,6 +109,15 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         },
         Cmd.action(globalProjectsFetch())
       );
+    case getType(globalProjectsSetRegion):
+      return loop(
+        {
+          ...state,
+          globalProjectsRegion: action.payload || null
+        },
+        Cmd.action(globalProjectsFetch())
+      );
+
     case getType(globalProjectsFetchSuccess):
       return {
         ...state,
@@ -150,6 +163,7 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
                 )
               }
             : state.projects,
+        globalProjectsRegion: state.globalProjectsRegion,
         globalProjects:
           "resource" in state.globalProjects
             ? {

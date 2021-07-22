@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add additional keyboard shortcuts [#854](https://github.com/PublicMapping/districtbuilder/pull/854)
 - Add configurable slider to increase size of paintbrush selection tool [#835](https://github.com/PublicMapping/districtbuilder/pull/835)
 - Add populationDeviation and chamber to import project screen [#845](https://github.com/PublicMapping/districtbuilder/pull/845)
-
+- Add filter by state functionality to community maps page [#851](https://github.com/PublicMapping/districtbuilder/pull/851)
 
 ### Changed
 

@@ -179,9 +179,12 @@ export async function fetchProjects(): Promise<readonly IProject[]> {
 
 export async function fetchAllPublishedProjects(
   page: number,
-  limit: number
+  limit: number,
+  region?: string
 ): Promise<PaginatedResponse<IProject>> {
-  const endpoint = `/api/globalProjects?page=${page}&limit=${limit}&completed=true`;
+  const endpoint = region
+    ? `/api/globalProjects?page=${page}&limit=${limit}&completed=true&region=${region}`
+    : `/api/globalProjects?page=${page}&limit=${limit}&completed=true`;
   return new Promise((resolve, reject) => {
     apiAxios
       .get(endpoint)

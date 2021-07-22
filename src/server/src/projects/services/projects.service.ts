@@ -9,6 +9,7 @@ import { paginate, Pagination, IPaginationOptions } from "nestjs-typeorm-paginat
 
 type AllProjectsOptions = IPaginationOptions & {
   readonly completed?: boolean;
+  readonly region?: string;
 };
 
 @Injectable()
@@ -49,6 +50,9 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
           "(project.districts->'features'->0->'properties'->'demographics'->'population')::integer = 0"
         )
       : builder;
-    return paginate<Project>(builderWithFilter, options);
+    const builderWithRegion = options.region
+      ? builderWithFilter.andWhere("regionConfig.regionCode = :region", { region: options.region })
+      : builderWithFilter;
+    return paginate<Project>(builderWithRegion, options);
   }
 }

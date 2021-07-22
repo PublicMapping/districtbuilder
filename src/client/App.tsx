@@ -21,6 +21,8 @@ import theme from "./theme";
 import "./App.css";
 import StartProjectScreen from "./screens/StartProjectScreen";
 import PublishedMapsListScreen from "./screens/PublishedMapsListScreen";
+import { PushReplaceHistory, QueryParamProvider } from "use-query-params";
+import { createBrowserHistory } from "history";
 
 const PrivateRoute = ({ children, ...props }: RouteProps) => {
   const savedJWT = getJWT();
@@ -39,6 +41,17 @@ const PrivateRoute = ({ children, ...props }: RouteProps) => {
   );
 };
 
+const history = createBrowserHistory();
+const pushReplaceHistory: PushReplaceHistory = {
+  push: (location: Location): void => {
+    history.push(location);
+  },
+  replace: (location: Location): void => {
+    history.replace(location);
+  },
+  location: window.location
+};
+
 const App = () => (
   <ThemeProvider theme={theme}>
     <Toast />
@@ -53,7 +66,9 @@ const App = () => (
         </PrivateRoute>
         <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
         <Route path="/login" exact={true} component={LoginScreen} />
-        <Route path="/maps" exact={true} component={PublishedMapsListScreen} />
+        <QueryParamProvider history={pushReplaceHistory}>
+          <Route path="/maps" exact={true} component={PublishedMapsListScreen} />
+        </QueryParamProvider>
         <Route path="/register" exact={true} component={RegistrationScreen} />
         <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
         <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
