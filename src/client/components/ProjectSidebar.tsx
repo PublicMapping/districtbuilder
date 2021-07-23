@@ -753,7 +753,7 @@ const SidebarRow = memo(
               </Styled.td>
             )
           : null}
-        {voting && "democrat16" in voting
+        {voting && ("democrat16" in voting || "democrat" in voting)
           ? (pinnedMetricFields.includes("dem16") || expandedProjectMetrics) && (
               <Styled.td sx={{ ...style.td, ...style.number }}>
                 <Tooltip
@@ -770,18 +770,24 @@ const SidebarRow = memo(
                   }
                 >
                   <span>
-                    {getPartyVoteShareDisplay(
-                      voting.democrat16,
-                      voting.republican16,
-                      voting["other party16"]
-                    )}
+                    {"democrat16" in voting
+                      ? getPartyVoteShareDisplay(
+                          voting.democrat16,
+                          voting.republican16,
+                          voting["other party16"]
+                        )
+                      : getPartyVoteShareDisplay(
+                          voting.democrat,
+                          voting.republican,
+                          voting["other party"]
+                        )}
                     %
                   </span>
                 </Tooltip>
               </Styled.td>
             )
           : null}
-        {voting && "republican16" in voting
+        {voting && ("republican16" in voting || "republican" in voting)
           ? (pinnedMetricFields.includes("rep16") || expandedProjectMetrics) && (
               <Styled.td sx={{ ...style.td, ...style.number }}>
                 <Tooltip
@@ -798,18 +804,24 @@ const SidebarRow = memo(
                   }
                 >
                   <span>
-                    {getPartyVoteShareDisplay(
-                      voting.republican16,
-                      voting.democrat16,
-                      voting["other party16"]
-                    )}
+                    {"republican16" in voting
+                      ? getPartyVoteShareDisplay(
+                          voting.republican16,
+                          voting.democrat16,
+                          voting["other party16"]
+                        )
+                      : getPartyVoteShareDisplay(
+                          voting.republican,
+                          voting.democrat,
+                          voting["other party"]
+                        )}
                     %
                   </span>
                 </Tooltip>
               </Styled.td>
             )
           : null}
-        {voting && "other party16" in voting
+        {voting && ("other party16" in voting || "other party" in voting)
           ? (pinnedMetricFields.includes("other16") || expandedProjectMetrics) && (
               <Styled.td sx={{ ...style.td, ...style.number }}>
                 <Tooltip
@@ -826,11 +838,17 @@ const SidebarRow = memo(
                   }
                 >
                   <span>
-                    {getPartyVoteShareDisplay(
-                      voting["other party16"],
-                      voting.republican16,
-                      voting.democrat16
-                    )}
+                    {"other party16" in voting
+                      ? getPartyVoteShareDisplay(
+                          voting["other party16"],
+                          voting.republican16,
+                          voting.democrat16
+                        )
+                      : getPartyVoteShareDisplay(
+                          voting["other party"],
+                          voting.republican,
+                          voting.democrat
+                        )}
                     %
                   </span>
                 </Tooltip>

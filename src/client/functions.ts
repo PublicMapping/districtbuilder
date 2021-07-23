@@ -212,8 +212,14 @@ export const hasMultipleElections = (staticMetadata?: IStaticMetadata) =>
   staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
   staticMetadata?.voting?.some(file => file.id.endsWith("20"));
 
-export const has16Election = (staticMetadata?: IStaticMetadata) =>
-  staticMetadata?.voting?.some(file => file.id.endsWith("16"));
+export const has16Election = (staticMetadata?: IStaticMetadata) => {
+  return (
+    staticMetadata?.voting?.some(file => file.id.endsWith("16")) ||
+    (staticMetadata?.voting &&
+      Object.keys(staticMetadata?.voting || {}).length > 0 &&
+      !has20Election(staticMetadata))
+  );
+};
 
 export const demographicsHasOther = (staticMetadata?: IStaticMetadata) =>
   staticMetadata?.demographics?.some(file => file.id === "other");
