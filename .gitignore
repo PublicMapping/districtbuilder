@@ -37,4 +37,7 @@ deployment/ansible/roles/azavea.*
 *.tfvars
 .idea/
 
+# Vagrant
+.vagrant/
+
 .env

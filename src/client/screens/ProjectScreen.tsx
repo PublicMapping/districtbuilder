@@ -46,6 +46,7 @@ interface StateProps {
   readonly staticMetadata?: IStaticMetadata;
   readonly staticGeoLevels: UintArrays;
   readonly projectNotFound?: boolean;
+  readonly findMenuOpen: boolean;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly evaluateMode: boolean;
   readonly evaluateMetric: EvaluateMetric | undefined;
@@ -81,6 +82,7 @@ const ProjectScreen = ({
   evaluateMetric,
   regionProperties,
   projectNotFound,
+  findMenuOpen,
   geoUnitHierarchy,
   districtDrawing,
   mapLabel,
@@ -173,6 +175,7 @@ const ProjectScreen = ({
               label={mapLabel}
               metadata={staticMetadata}
               selectionTool={districtDrawing.selectionTool}
+              findMenuOpen={findMenuOpen}
               paintBrushSize={districtDrawing.paintBrushSize}
               geoLevelIndex={presentDrawingState.geoLevelIndex}
               selectedGeounits={presentDrawingState.selectedGeounits}
@@ -249,6 +252,7 @@ function mapStateToProps(state: State): StateProps {
     geoUnitHierarchy: destructureResource(state.project.staticData, "geoUnitHierarchy"),
     evaluateMode: state.project.evaluateMode,
     evaluateMetric: state.project.evaluateMetric,
+    findMenuOpen: state.project.findMenuOpen,
     mapLabel: state.project.mapLabel,
     electionYear: state.project.electionYear,
     districtDrawing: state.project,
