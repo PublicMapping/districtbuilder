@@ -34,14 +34,14 @@ import {
   updateProjectVisibilitySuccess,
   updatePinnedMetrics,
   updatePinnedMetricsSuccess,
-  updatedPinnedMetricsFailure
+  updatedPinnedMetricsFailure,
+  clearDuplicationState
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
-import { userProjectsFetch } from "../actions/projects";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
 import { Resource } from "../resource";
 
@@ -90,6 +90,8 @@ export type ProjectDataState = {
   readonly projectData: Resource<DynamicProjectData>;
   readonly staticData: Resource<StaticProjectData>;
   readonly projectNameSaving: SavingState;
+  readonly saving: SavingState;
+  readonly duplicatedProject: IProject | null;
 };
 
 export const initialProjectDataState = {
@@ -99,7 +101,9 @@ export const initialProjectDataState = {
   staticData: {
     isPending: false
   },
-  projectNameSaving: "saved"
+  projectNameSaving: "saved",
+  saving: "unsaved",
+  duplicatedProject: null
 } as const;
 
 const projectDataReducer: LoopReducer<ProjectState, Action> = (
@@ -455,7 +459,11 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(duplicateProject): {
       return loop(
-        state,
+        {
+          ...state,
+          saving: "saving",
+          duplicatedProject: null
+        },
         Cmd.run(
           () => createProject({ ...action.payload, name: `Copy of ${action.payload.name}` }),
           {
@@ -466,9 +474,26 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     }
     case getType(duplicateProjectSuccess):
-      return loop(state, Cmd.action(userProjectsFetch()));
+      return {
+        ...state,
+        saving: "saved",
+        duplicatedProject: action.payload
+      };
     case getType(duplicateProjectFailure):
-      return loop(state, Cmd.run(showActionFailedToast));
+      return loop(
+        {
+          ...state,
+          saving: "failed",
+          duplicatedProject: null
+        },
+        Cmd.run(showActionFailedToast)
+      );
+    case getType(clearDuplicationState):
+      return {
+        ...state,
+        saving: "unsaved",
+        duplicatedProject: null
+      };
     case getType(exportCsv):
       return loop(
         state,

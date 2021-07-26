@@ -17,7 +17,7 @@ import {
 } from "../../shared/entities";
 import { ElectionYear, EvaluateMetric } from "../types";
 
-import { projectDataFetch } from "../actions/projectData";
+import { projectDataFetch, clearDuplicationState } from "../actions/projectData";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
@@ -121,6 +121,11 @@ const ProjectScreen = ({
     },
     []
   );
+
+  // Clear duplication state when mounting, in case the user navigated to project page from a post-duplication redirect
+  useEffect(() => {
+    store.dispatch(clearDuplicationState());
+  }, []);
 
   useEffect(() => {
     isLoggedIn && store.dispatch(userFetch());
