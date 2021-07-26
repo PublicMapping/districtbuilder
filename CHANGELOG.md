@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add button to upload project to PlanScore via API [#847](https://github.com/PublicMapping/districtbuilder/pull/847)
 - Add maps to list of user projects on home screen [#850](https://github.com/PublicMapping/districtbuilder/pull/850)
 
+
 ### Changed
 
 - Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
