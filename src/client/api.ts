@@ -169,10 +169,13 @@ export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJS
   });
 }
 
-export async function fetchProjects(): Promise<readonly IProject[]> {
+export async function fetchProjects(
+  page: number,
+  limit: number
+): Promise<PaginatedResponse<IProject>> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get("/api/projects?sort=updatedDt,DESC")
+      .get(`/api/projects?page=${page}&limit=${limit}&sort=updatedDt,DESC`)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response.data));
   });
