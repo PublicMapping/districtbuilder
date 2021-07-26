@@ -73,6 +73,13 @@ export interface Party {
   readonly label: "D" | "R";
 }
 
+export interface PviBucket {
+  readonly name: string;
+  readonly label: string;
+  readonly color: string;
+  readonly count?: number;
+}
+
 export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   readonly type: "fraction" | "percent" | "count" | "pvi";
   readonly value?: number;
