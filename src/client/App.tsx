@@ -57,36 +57,36 @@ const App = () => (
     <Toast />
     <Router>
       <Switch>
-        <PrivateRoute path="/" exact={true}>
-          <HomeScreen />
-        </PrivateRoute>
-        <Route path="/o/:organizationSlug" exact={true} component={OrganizationScreen} />
-        <PrivateRoute path="/o/:organizationSlug/admin" exact={true}>
-          <OrganizationAdminScreen />
-        </PrivateRoute>
-        <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
-        <Route path="/login" exact={true} component={LoginScreen} />
         <QueryParamProvider history={pushReplaceHistory}>
+          <PrivateRoute path="/" exact={true}>
+            <HomeScreen />
+          </PrivateRoute>
+          <Route path="/o/:organizationSlug" exact={true} component={OrganizationScreen} />
+          <PrivateRoute path="/o/:organizationSlug/admin" exact={true}>
+            <OrganizationAdminScreen />
+          </PrivateRoute>
+          <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
+          <Route path="/login" exact={true} component={LoginScreen} />
           <Route path="/maps" exact={true} component={PublishedMapsListScreen} />
+          <Route path="/register" exact={true} component={RegistrationScreen} />
+          <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
+          <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
+          <Route
+            path="/activate/:token/:organizationSlug"
+            exact={true}
+            component={ActivateAccountScreen}
+          />
+          <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
+          <PrivateRoute path="/create-project" exact={true}>
+            <CreateProjectScreen />
+          </PrivateRoute>
+          <PrivateRoute path="/start-project" exact={true}>
+            <StartProjectScreen />
+          </PrivateRoute>
+          <PrivateRoute path="/import-project" exact={true}>
+            <ImportProjectScreen />
+          </PrivateRoute>
         </QueryParamProvider>
-        <Route path="/register" exact={true} component={RegistrationScreen} />
-        <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
-        <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
-        <Route
-          path="/activate/:token/:organizationSlug"
-          exact={true}
-          component={ActivateAccountScreen}
-        />
-        <Route path="/password-reset/:token" exact={true} component={ResetPasswordScreen} />
-        <PrivateRoute path="/create-project" exact={true}>
-          <CreateProjectScreen />
-        </PrivateRoute>
-        <PrivateRoute path="/start-project" exact={true}>
-          <StartProjectScreen />
-        </PrivateRoute>
-        <PrivateRoute path="/import-project" exact={true}>
-          <ImportProjectScreen />
-        </PrivateRoute>
       </Switch>
     </Router>
   </ThemeProvider>
