@@ -400,50 +400,11 @@ export class ProjectsController implements CrudController<Project> {
     @Param("id") projectId: ProjectId
   ): Promise<string> {
     const project = await this.getProject(req, projectId);
-    const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
-    if (!geoCollection) {
-      throw new NotFoundException(
-        `Topology ${project.regionConfig.s3URI} not found`,
-        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
-      );
-    }
+    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
+    const csvRows = project.exportToCsv(geoCollection);
 
-    // First column is the base geounit id, second column is the district id
-    const mutableCsvRows: [number, number][] = [];
-
-    // The geounit hierarchy and district definition have the same structure (except the
-    // hierarchy always goes out to the base geounit level). Walk them both at the same time
-    // and collect the information needed for the CSV (base geounit id and district id).
-    const accumulateCsvRows = (
-      defnSubset: number | GeoUnitHierarchy,
-      hierarchySubset: GeoUnitHierarchy
-    ) => {
-      hierarchySubset.forEach((hierarchyNumOrArray, idx) => {
-        const districtOrArray = typeof defnSubset === "number" ? defnSubset : defnSubset[idx];
-        if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
-          // The numbers found in the hierarchy are the base geounit indices of the topology.
-          // Access this item in the topology to find it's base geounit id.
-          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
-          mutableCsvRows.push([props[baseGeoLevel], districtOrArray]);
-        } else if (typeof hierarchyNumOrArray !== "number") {
-          // Keep recursing into the hierarchy until we reach the end
-          accumulateCsvRows(districtOrArray, hierarchyNumOrArray);
-        } else {
-          // This shouldn't ever happen, and would suggest a district definition/hierarchy mismatch
-          this.logger.error(
-            "Hierarchy and districts definition mismatch",
-            districtOrArray.toString(),
-            hierarchyNumOrArray.toString()
-          );
-          throw new InternalServerErrorException();
-        }
-      });
-    };
-    accumulateCsvRows(project.districtsDefinition, geoCollection.hierarchyDefinition);
-
-    return stringify(mutableCsvRows, {
+    return stringify(csvRows, {
       header: true,
       columns: [`${baseGeoLevel.toUpperCase()}ID`, "DISTRICT"]
     });
