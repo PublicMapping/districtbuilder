@@ -34,31 +34,29 @@ export class DistrictsController {
   @Post("import/csv")
   @HttpCode(200)
   async importCsv(@UploadedFile() file: Express.Multer.File): Promise<DistrictsImportApiResponse> {
-    const parser = csvParse(file.buffer, { fromLine: 2 });
-    // Seemingly the simplest way of getting all the records into an array is to iterate in a for-loop :(
     /* eslint-disable */
+    const parser = csvParse(file.buffer, { fromLine: 2 });
     let records = [];
+    // Seemingly the simplest way of getting all the records into an array is to iterate in a for-loop :(
+    for await (const record of parser) {
+      records.push(record);
+    }
+    /* eslint-enable */
+
     // Array of flagged rows to be returned
     let flaggedRows: ImportRowFlag[] = [];
     let matchingRows: boolean[] = [];
     let maxDistrictId: number = 0;
 
     function setFlag(
-      row: string[],
+      row: readonly string[],
       rowNumber: number,
       field: DistrictImportField,
       errorText: string
     ) {
       const flag = { rowNumber: rowNumber, errorText: errorText, rowValue: row, field: field };
-      // @ts-ignore
       flaggedRows[rowNumber] = flag;
     }
-
-    for await (const record of parser) {
-      records.push(record);
-    }
-
-    /* eslint-enable */
     const stateFips: string = records[0][0]?.slice(0, 2);
     if (!(stateFips in FIPS)) {
       throw new InternalServerErrorException();
