@@ -66,10 +66,10 @@ export const updatedPinnedMetricsFailure = createAction("Update pinned metrics f
 export const updateProjectFailed = createAction("Update project failure")();
 
 export const duplicateProject = createAction("Duplicate project")<IProject>();
-export const duplicateProjectSuccess = createAction("Duplicate project success")<
-  DynamicProjectData
->();
+export const duplicateProjectSuccess = createAction("Duplicate project success")<IProject>();
 export const duplicateProjectFailure = createAction("Duplicate project failure")<string>();
+
+export const clearDuplicationState = createAction("Clear duplication state")();
 
 export const exportCsv = createAction("Export project CSV")<IProject>();
 export const exportCsvFailure = createAction("Export project CSV failure")<string>();

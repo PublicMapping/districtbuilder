@@ -43,13 +43,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tweaks to org report downloads [#832](https://github.com/PublicMapping/districtbuilder/pull/832)
 - Update population deviation helper text [#848](https://github.com/PublicMapping/districtbuilder/pull/848)
 - Update display logic for political data in expandable metrics viewer [#864](https://github.com/PublicMapping/districtbuilder/pull/864)
-
+- Update UX for duplication, showing a spinner when duplication is pending and redirecting when it completes [#872](https://github.com/PublicMapping/districtbuilder/pull/872)
 
 ### Fixed
 
 - Improved padding in the sidebar district rows, which had become unbalanced [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
 - Keyboard shortcuts no longer fire when form elements are focused [#823](https://github.com/PublicMapping/districtbuilder/pull/823)
 - Fix breaking change to routing introduced with QueryParamsProvider [#869](https://github.com/PublicMapping/districtbuilder/pull/869)
+- Fix duplicate project button on home screen projects [#872](https://github.com/PublicMapping/districtbuilder/pull/872)
 - Fix find menu button so that it actually opens the find menu [#871](https://github.com/PublicMapping/districtbuilder/pull/871)
 
 
@@ -66,7 +67,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update race column to handle different race categories [#766](https://github.com/PublicMapping/districtbuilder/pull/766)
 - Cleanup text in evaluate mode [#776](https://github.com/PublicMapping/districtbuilder/pull/776)
-
 
 ### Fixed
 
@@ -90,7 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Display warnings and row-level flags for district import [#708](https://github.com/PublicMapping/districtbuilder/pull/708)
 - Add keyboard shortcuts for map functions [#718](https://github.com/PublicMapping/districtbuilder/pull/718)
 - Added voting info to sidebar [#730](https://github.com/PublicMapping/districtbuilder/pull/730)
-
 
 ### Changed
 

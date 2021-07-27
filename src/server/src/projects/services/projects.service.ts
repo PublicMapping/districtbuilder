@@ -37,6 +37,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
         "project.createdDt",
         "project.districts",
         "regionConfig.name",
+        "regionConfig.id",
         "user.id",
         "user.name"
       ])
@@ -65,10 +66,9 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     userId: string,
     options: AllProjectsOptions
   ): Promise<Pagination<Project>> {
-    const builder = this.getProjectsBase().andWhere(
-      "project.archived = FALSE AND user.id = :userId",
-      { userId }
-    );
+    const builder = this.getProjectsBase()
+      .addSelect("project.districtsDefinition")
+      .andWhere("project.archived = FALSE AND user.id = :userId", { userId });
 
     return paginate<Project>(builder, options);
   }

@@ -18,14 +18,18 @@ import { IProject, PaginationMetadata } from "../../shared/entities";
 import DeleteProjectModal from "../components/DeleteProjectModal";
 import SiteHeader from "../components/SiteHeader";
 import HomeScreenProjectCard from "../components/HomeScreenProjectCard";
+import { SavingState } from "../types";
+import { Redirect } from "react-router-dom";
 
 interface StateProps {
   readonly projects: Resource<readonly IProject[]>;
+  readonly isSaving: SavingState;
+  readonly duplicatedProject: IProject | null;
   readonly pagination: PaginationMetadata;
   readonly user: UserState;
 }
 
-const HomeScreen = ({ projects, user, pagination }: StateProps) => {
+const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }: StateProps) => {
   const isLoggedIn = getJWT() !== null;
   const projectList =
     "resource" in projects ? projects.resource.filter(project => !project.archived) : [];
@@ -35,7 +39,9 @@ const HomeScreen = ({ projects, user, pagination }: StateProps) => {
     isLoggedIn && store.dispatch(userFetch());
   }, [isLoggedIn]);
 
-  return (
+  return isSaving === "saved" && duplicatedProject !== null ? (
+    <Redirect to={`/projects/${duplicatedProject.id}`} />
+  ) : (
     <Flex sx={{ flexDirection: "column" }}>
       <DeleteProjectModal />
       <SiteHeader user={user} />
@@ -66,7 +72,7 @@ const HomeScreen = ({ projects, user, pagination }: StateProps) => {
           </Flex>
         )}
 
-        {"resource" in projects ? (
+        {"resource" in projects && isSaving === "unsaved" ? (
           projectList.length > 0 ? (
             <Box>
               {projectList.map((project: IProject) => (
@@ -133,7 +139,7 @@ const HomeScreen = ({ projects, user, pagination }: StateProps) => {
               </Flex>
             </Flex>
           )
-        ) : "isPending" in projects && projects.isPending ? (
+        ) : ("isPending" in projects && projects.isPending) || isSaving === "saving" ? (
           <Flex sx={{ justifyContent: "center" }}>
             <Spinner variant="spinner.large" />
           </Flex>
@@ -146,6 +152,8 @@ const HomeScreen = ({ projects, user, pagination }: StateProps) => {
 function mapStateToProps(state: State): StateProps {
   return {
     projects: state.projects.projects,
+    isSaving: state.project.saving,
+    duplicatedProject: state.project.duplicatedProject || null,
     user: state.user,
     pagination: state.projects.userProjectsPagination
   };
