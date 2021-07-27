@@ -13,6 +13,11 @@ export enum MakeDistrictsErrors {
   INVALID_DEFINITION = "INVALID_DEFINITION"
 }
 
+export enum ConvertProjectErrors {
+  REGION_NOT_ARCHIVED = "REGION_NOT_ARCHIVED",
+  NO_ACTIVE_REGION = "NO_ACTIVE_REGION"
+}
+
 export enum JoinOrganizationErrors {
   USER_NOT_FOUND = "USER_NOT_FOUND",
   ORGANIZATION_NOT_FOUND = "ORGANIZATION_NOT_FOUND"
@@ -113,6 +118,10 @@ export const FIPS: { readonly [fips: string]: string } = {
   "08": "CO",
   "09": "CT"
 };
+
+export const REGION_TO_FIPS = Object.fromEntries(
+  Object.entries(FIPS).map(([fips, state]) => [state, fips])
+);
 
 // Maximum allowable upload size, in bytes
 export const MaxUploadFileSize = 25_000_000;

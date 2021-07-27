@@ -36,7 +36,7 @@ import * as _ from "lodash";
 import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
-import { MakeDistrictsErrors } from "../../../../shared/constants";
+import { MakeDistrictsErrors, ConvertProjectErrors } from "../../../../shared/constants";
 import {
   DistrictsDefinition,
   GeoUnitHierarchy,
@@ -60,6 +60,8 @@ import { UsersService } from "../../users/services/users.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
 import { Errors } from "../../../../shared/types";
 import axios from "axios";
+import { CrosswalkService } from "../services/crosswalk.service";
+import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 
 @Crud({
   model: {
@@ -165,7 +167,8 @@ export class ProjectsController implements CrudController<Project> {
     public topologyService: TopologyService,
     private readonly usersService: UsersService,
     private readonly organizationService: OrganizationsService,
-    private readonly regionConfigService: RegionConfigsService
+    private readonly regionConfigService: RegionConfigsService,
+    private readonly crosswalkService: CrosswalkService
   ) {}
 
   // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
@@ -300,8 +303,20 @@ export class ProjectsController implements CrudController<Project> {
 
   // Helper for obtaining a topology for a given S3 URI, throws exception if not found
   async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
+    const geoCollection = await this.getGeoUnitProperties(s3URI);
+    if (!("topology" in geoCollection)) {
+      throw new NotFoundException(
+        `Topology ${s3URI} is archived`,
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+      );
+    }
+    return geoCollection;
+  }
+
+  // Helper for obtaining a topology or props for a given S3 URI, throws exception if not found
+  async getGeoUnitProperties(s3URI: string): Promise<GeoUnitTopology | GeoUnitProperties> {
     const geoCollection = await this.topologyService.get(s3URI);
-    if (!geoCollection || !("topology" in geoCollection)) {
+    if (!geoCollection) {
       throw new NotFoundException(
         `Topology ${s3URI} not found`,
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
@@ -400,7 +415,7 @@ export class ProjectsController implements CrudController<Project> {
     @Param("id") projectId: ProjectId
   ): Promise<string> {
     const project = await this.getProject(req, projectId);
-    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
+    const geoCollection = await this.getGeoUnitProperties(project.regionConfig.s3URI);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
     const csvRows = project.exportToCsv(geoCollection);
 
@@ -408,6 +423,97 @@ export class ProjectsController implements CrudController<Project> {
       header: true,
       columns: [`${baseGeoLevel.toUpperCase()}ID`, "DISTRICT"]
     });
+  }
+
+  // Creates a copy of a project in an archived 2010-census region,
+  // with it's districts converted to use a new 2020-census region
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Post(":id/convert-and-copy")
+  async convertAndCopy(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<Project> {
+    const project = await this.getProject(req, projectId);
+    const regionCode = project.regionConfig.regionCode;
+    if (!project.regionConfig.archived) {
+      throw new BadRequestException(
+        "The project region must be archived to convert it",
+        ConvertProjectErrors.REGION_NOT_ARCHIVED
+      );
+    }
+    const newRegion = await this.regionConfigService.findOne({
+      where: { archived: false, regionCode }
+    });
+    if (newRegion === undefined || newRegion.archived) {
+      throw new BadRequestException(
+        `There is not an unarchived region for ${regionCode}`,
+        ConvertProjectErrors.NO_ACTIVE_REGION
+      );
+    }
+    const crosswalk = await this.crosswalkService.getCrosswalk(regionCode);
+    if (crosswalk === undefined) {
+      throw new BadRequestException(
+        `There is not an unarchived region for ${regionCode}`,
+        ConvertProjectErrors.NO_ACTIVE_REGION
+      );
+    }
+
+    const archivedTopoProperties = await this.getGeoUnitProperties(project.regionConfig.s3URI);
+    const newGeoUnitTopology = await this.getGeoUnitTopology(newRegion.s3URI);
+
+    const oldBlockToDistricts = Object.fromEntries(project.exportToCsv(archivedTopoProperties));
+
+    // CSV export contains every block<->district pair
+    // Crosswalk maps new block -> old in many<->many fashion, specifying percent of old block in new block
+    // Sum district share for each new block and assign block to the district w/ largest share
+
+    // Written in non-functional style for higher perf.
+    let blockSums: { [blockId: string]: { readonly [districtId: number]: number } } = {};
+    for (const [newFips, oldBlocks] of Object.entries(crosswalk)) {
+      for (const { fips, amount } of oldBlocks) {
+        const districtId = oldBlockToDistricts[fips];
+        const districtSums = blockSums[newFips] || {};
+        const sum = (districtSums[districtId] || 0) + amount;
+        blockSums[newFips] = { ...districtSums, [districtId]: sum };
+      }
+    }
+
+    const blockToDistricts = _.mapValues(blockSums, districtSums => {
+      const [largestDistrict, percent] = _.maxBy(
+        Object.entries(districtSums),
+        ([districtId, sum]) => sum
+      ) || [0, 0];
+      return Number(largestDistrict);
+    });
+
+    const districtsDefinition = newGeoUnitTopology.importFromCSV(blockToDistricts);
+
+    const districts = await this.getGeojson({
+      numberOfDistricts: project.numberOfDistricts,
+      regionConfig: newRegion,
+      districtsDefinition
+    });
+
+    try {
+      return this.service.save({
+        name: `${project.name} (2020)`,
+        regionConfig: newRegion,
+        chamber: project.chamber,
+        projectTemplate: project.projectTemplate,
+        numberOfDistricts: project.numberOfDistricts,
+        user: req.parsed.authPersist.userId,
+        visibility: project.visibility,
+        lockedDistricts: project.lockedDistricts,
+        populationDeviation: project.populationDeviation,
+        pinnedMetricFields: project.pinnedMetricFields,
+        districtsDefinition,
+        districts
+      });
+    } catch (error) {
+      this.logger.error(`Error creating converted project: ${error}`);
+      throw new InternalServerErrorException();
+    }
   }
 
   @UseInterceptors(CrudRequestInterceptor)

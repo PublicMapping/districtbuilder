@@ -19,16 +19,19 @@ import {
   GeoUnitDefinition,
   HierarchyDefinition,
   IStaticMetadata,
-  UintArrays
+  UintArrays,
+  DistrictsDefinition,
+  GeoUnitHierarchy
 } from "../../../../shared/entities";
 import { getAllBaseIndices, getDemographics, getVoting } from "../../../../shared/functions";
 import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
 import { mapValues } from "lodash";
+import { GeoUnitProperties } from "./geo-unit-properties.entity";
 
-interface GeoUnitHierarchy {
+interface GeoUnitPolygonHierarchy {
   geom: Polygon | MultiPolygon;
-  children: ReadonlyArray<GeoUnitHierarchy>;
+  children: ReadonlyArray<GeoUnitPolygonHierarchy>;
 }
 
 /*
@@ -63,7 +66,10 @@ function calcPolsbyPopper(feature: Feature): [number, Contiguity] {
 //
 // We'll walk this hierarchy in conjuction with the district definition later
 // to get the geometries needed to build our GeoJSON
-function group(topology: Topology, definition: GeoUnitDefinition): ReadonlyArray<GeoUnitHierarchy> {
+function group(
+  topology: Topology,
+  definition: GeoUnitDefinition
+): ReadonlyArray<GeoUnitPolygonHierarchy> {
   // Run through all topology objects in a single pass and build up a list of
   // them keyed by their parent geometries ID, which we'll use to quickly look
   // up child geometries when we build up our list of trees later in getNode
@@ -102,7 +108,7 @@ function getNode(
   geounitsByParentId: {
     [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
   }
-): GeoUnitHierarchy {
+): GeoUnitPolygonHierarchy {
   const firstGroup = definition.groups[0];
   const remainingGroups = definition.groups.slice(1);
   const geomId = geometry.properties[firstGroup];
@@ -112,7 +118,7 @@ function getNode(
     children: childGeoms.map(childGeom =>
       getNode(childGeom, { ...definition, groups: remainingGroups }, geounitsByParentId)
     )
-  } as GeoUnitHierarchy;
+  } as GeoUnitPolygonHierarchy;
 }
 
 // Groups a topology into a hierarchy of geounits corresponding to a geo unit definition structure.
@@ -176,7 +182,7 @@ function getNodeForHierarchy(
 type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 
 export class GeoUnitTopology {
-  public readonly hierarchy: ReadonlyArray<GeoUnitHierarchy>;
+  public readonly hierarchy: ReadonlyArray<GeoUnitPolygonHierarchy>;
 
   constructor(
     public readonly topology: Topology,
@@ -201,7 +207,7 @@ export class GeoUnitTopology {
     ).map(_ => this.staticMetadata.geoLevelHierarchy.map(_ => []));
     const addToDistrict = (
       elem: GeoUnitCollection,
-      hierarchy: GeoUnitHierarchy,
+      hierarchy: GeoUnitPolygonHierarchy,
       level = 0
     ): boolean => {
       if (Array.isArray(elem)) {
@@ -274,6 +280,32 @@ export class GeoUnitTopology {
         };
       })
     };
+  }
+
+  importFromCSV(blockToDistricts: { readonly [block: string]: number }): DistrictsDefinition {
+    const baseGeoLevel = this.definition.groups.slice().reverse()[0];
+    const baseGeoUnitProperties = this.topologyProperties[baseGeoLevel];
+
+    // The geounit hierarchy and district definition have the same structure (except the
+    // hierarchy always goes out to the base geounit level), so we use it as a starting point
+    // and transform it into our districts definition.
+    const mapToDefinition = (hierarchySubset: GeoUnitHierarchy): DistrictsDefinition =>
+      hierarchySubset.map(hierarchyNumOrArray => {
+        if (typeof hierarchyNumOrArray === "number") {
+          // The numbers found in the hierarchy are the base geounit indices of the topology.
+          // Access this item in the topology to find it's base geounit id.
+          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
+          const id = props[baseGeoLevel];
+          return blockToDistricts[id] || 0;
+        } else {
+          // Keep recursing into the hierarchy until we reach the end
+          const results = mapToDefinition(hierarchyNumOrArray);
+          // Simplify if possible
+          return results.every(item => item === results[0]) ? results[0] : results;
+        }
+      });
+
+    return mapToDefinition(this.hierarchyDefinition);
   }
 
   get topologyProperties() {

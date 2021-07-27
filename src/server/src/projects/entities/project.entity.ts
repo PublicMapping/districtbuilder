@@ -19,6 +19,7 @@ import {
 } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { InternalServerErrorException, Logger } from "@nestjs/common";
+import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 
 // TODO #179: Move to shared/entities
 export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
@@ -116,12 +117,12 @@ export class Project implements IProject {
     return { ...this, lockedDistricts: new Array(this.numberOfDistricts).fill(false) };
   }
 
-  exportToCsv(geoCollection: GeoUnitTopology): [number, number][] {
+  exportToCsv(geoCollection: GeoUnitTopology | GeoUnitProperties): [string, number][] {
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
     const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
 
     // First column is the base geounit id, second column is the district id
-    const mutableCsvRows: [number, number][] = [];
+    const mutableCsvRows: [string, number][] = [];
 
     // The geounit hierarchy and district definition have the same structure (except the
     // hierarchy always goes out to the base geounit level). Walk them both at the same time

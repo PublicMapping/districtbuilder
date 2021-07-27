@@ -7,34 +7,9 @@ import { Repository } from "typeorm";
 
 import { RegionConfig } from "../entities/region-config.entity";
 
-// eslint-disable functional/immutable-data
 @Injectable()
 export class RegionConfigsService extends TypeOrmCrudService<RegionConfig> {
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
     super(repo);
-  }
-
-  async getMany(
-    @ParsedRequest() req: CrudRequest
-  ): Promise<GetManyDefaultResponse<RegionConfig> | RegionConfig[]> {
-    const regionConfigs = await super.getMany(req);
-    if (!("length" in regionConfigs)) {
-      return regionConfigs;
-    }
-    return this.onlyLatestRegionConfigs(regionConfigs);
-  }
-
-  /*
-   * Only return latest version of each region config.
-   */
-  private onlyLatestRegionConfigs(regionConfigs: RegionConfig[]): RegionConfig[] {
-    return map(
-      groupBy(regionConfigs, (regionConfig: RegionConfig) => [
-        regionConfig.countryCode,
-        regionConfig.regionCode,
-        regionConfig.name
-      ]),
-      (regionConfigs: RegionConfig[]) => last(sortBy(regionConfigs, "version")) as RegionConfig
-    );
   }
 }

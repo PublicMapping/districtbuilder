@@ -6,6 +6,7 @@ import { Repository, SelectQueryBuilder } from "typeorm";
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { paginate, Pagination, IPaginationOptions } from "nestjs-typeorm-paginate";
+import { IProject } from "../../../../shared/entities";
 
 type AllProjectsOptions = IPaginationOptions & {
   readonly completed?: boolean;
@@ -18,7 +19,8 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   constructor(@InjectRepository(Project) repo: Repository<Project>) {
     super(repo);
   }
-  save(project: Project): Promise<Project> {
+
+  save(project: Partial<Project>): Promise<Project> {
     // @ts-ignore
     return this.repo.save(project);
   }
