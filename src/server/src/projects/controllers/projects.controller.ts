@@ -419,35 +419,29 @@ export class ProjectsController implements CrudController<Project> {
     @Body() projectFeatured: { isFeatured: boolean }
   ): Promise<Project> {
     const project = await this.getProject(req, projectId);
-    if (project.projectTemplate) {
-      const orgId = project.projectTemplate.organization.id;
-      if (orgId) {
-        const userId = req.parsed.authPersist.userId || null;
-        const org = await this.organizationService.findOne({ id: orgId }, { relations: ["admin"] });
-        const user = await this.usersService.findOne({ id: userId });
-        if (user && org) {
-          if (org.admin) {
-            if (org.admin && org.admin.id === userId) {
-              // eslint-disable-next-line
-              project.isFeatured = projectFeatured.isFeatured;
-              await this.service.save(project);
-            } else {
-              throw new NotFoundException(
-                `User does not have admin privileges for organization: ${orgId}`
-              );
-            }
-          } else {
-            throw new NotFoundException(`Organization ${orgId} does not have an admin`);
-          }
-        } else {
-          throw new NotFoundException(`Unable to find user: ${userId}`);
-        }
-      } else {
-        throw new NotFoundException(`Project is not connected to an organization`);
-      }
-    } else {
+    if (!project.projectTemplate) {
       throw new NotFoundException(`Project is not connected to an organization's template`);
     }
+    const orgId = project.projectTemplate.organization.id;
+    if (!orgId) {
+      throw new NotFoundException(`Project is not connected to an organization`);
+    }
+    const userId = req.parsed.authPersist.userId || null;
+    const org = await this.organizationService.findOne({ id: orgId }, { relations: ["admin"] });
+    const user = await this.usersService.findOne({ id: userId });
+    if (!user || !org) {
+      throw new NotFoundException(`Unable to find user: ${userId}`);
+    }
+    if (!org.admin) {
+      throw new NotFoundException(`Organization ${orgId} does not have an admin`);
+    }
+    if (org.admin.id !== userId) {
+      throw new NotFoundException(`User does not have admin privileges for organization: ${orgId}`);
+    }
+
+    // eslint-disable-next-line
+    project.isFeatured = projectFeatured.isFeatured;
+    await this.service.save(project);
     return project;
   }
 
