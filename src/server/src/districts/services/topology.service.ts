@@ -25,7 +25,7 @@ interface Layers {
 export class TopologyService {
   private _layers?: Layers = undefined;
   private readonly logger = new Logger(TopologyService.name);
-  private s3 = new S3();
+  private readonly s3 = new S3();
 
   constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
     void repo.find().then(regionConfigs => {
