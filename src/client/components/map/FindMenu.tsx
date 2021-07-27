@@ -19,7 +19,7 @@ const style: ThemeUIStyleObject = {
   menu: {
     position: "absolute",
     top: "-1px",
-    left: 2,
+    right: 2,
     width: "350px",
     backgroundColor: "muted",
     border: "1px solid",
@@ -27,6 +27,7 @@ const style: ThemeUIStyleObject = {
     borderColor: "gray.2",
     borderBottomLeftRadius: "4px",
     borderBottomRightRadius: "4px",
+    zIndex: 1000,
     fontSize: 1,
     alignItems: "center",
     p: 2

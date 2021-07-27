@@ -364,7 +364,7 @@ const DistrictsMap = ({
         showCompass: false,
         showZoom: true
       }),
-      "top-right"
+      "bottom-right"
     );
 
     map.dragRotate.disable();

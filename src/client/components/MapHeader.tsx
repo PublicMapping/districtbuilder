@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Flex, Box, Label, Button, jsx, Select, Slider, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { ElectionYear } from "../types";
-
+import { toggleFind } from "../actions/districtDrawing";
 import { geoLevelLabel, capitalizeFirstLetter, canSwitchGeoLevels } from "../functions";
 import MapSelectionOptionsFlyout from "./MapSelectionOptionsFlyout";
 
@@ -145,6 +145,7 @@ const MapHeader = ({
   selectionTool,
   paintBrushSize,
   geoLevelIndex,
+  findMenuOpen,
   selectedGeounits,
   isReadOnly,
   limitSelectionToCounty,
@@ -158,6 +159,7 @@ const MapHeader = ({
   readonly selectedGeounits: GeoUnits;
   readonly advancedEditingEnabled?: boolean;
   readonly isReadOnly: boolean;
+  readonly findMenuOpen: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly electionYear: ElectionYear;
 }) => {
@@ -245,7 +247,9 @@ const MapHeader = ({
                     sx={{ ...style.selectionButton }}
                     className={buttonClassName(selectionTool === tool)}
                     onClick={() => {
-                      setPaintBrushSizeSliderVisibility(tool === SelectionTool.PaintBrush);
+                      setPaintBrushSizeSliderVisibility(
+                        tool === SelectionTool.PaintBrush && !isPaintBrushSizeSliderVisible
+                      );
                       store.dispatch(setSelectionTool(tool));
                     }}
                   >
@@ -285,7 +289,7 @@ const MapHeader = ({
         )}
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
-      <Box sx={{ lineHeight: "1" }}>
+      <Box sx={{ lineHeight: "1", position: "absolute", right: "150px" }}>
         <Flex sx={{ alignItems: "baseline" }}>
           <Label
             htmlFor="population-dropdown"
@@ -306,6 +310,24 @@ const MapHeader = ({
             {labelOptions}
           </Select>
         </Flex>
+      </Box>
+      <Box sx={{ position: "relative", mr: "5px" }}>
+        <Button
+          sx={{ ...style.selectionButton }}
+          onClick={() => {
+            store.dispatch(toggleFind(!findMenuOpen));
+          }}
+        >
+          <Box
+            sx={{
+              borderBottom: findMenuOpen ? "solid 1px" : "none",
+              borderBottomColor: "secondary",
+              mb: findMenuOpen ? "-1px" : "0"
+            }}
+          >
+            <Icon name="search" /> Find
+          </Box>
+        </Button>
       </Box>
     </Flex>
   );
