@@ -237,6 +237,7 @@ const ProjectScreen = ({
               <ConvertMapModal project={project} />
               <KeyboardShortcutsModal
                 isReadOnly={isReadOnly}
+                selectionTool={districtDrawing.selectionTool}
                 evaluateMode={evaluateMode}
                 staticMetadata={staticMetadata}
               />

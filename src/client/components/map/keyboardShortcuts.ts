@@ -17,7 +17,9 @@ import {
   toggleKeyboardShortcutsModal,
   setElectionYear,
   toggleExpandedMetrics,
-  setZoomToDistrictId
+  setZoomToDistrictId,
+  PaintBrushSize,
+  setPaintBrushSize
 } from "../../actions/districtDrawing";
 import store from "../../store";
 import { showMapActionToast } from "../../functions";
@@ -34,6 +36,7 @@ interface MapContext {
   readonly evaluateMode: boolean;
   readonly expandedProjectMetrics: boolean;
   readonly electionYear: ElectionYear;
+  readonly paintBrushSize: PaintBrushSize;
   // eslint-disable-next-line
   readonly setTogglePan: (isSet: boolean) => void;
 }
@@ -46,6 +49,7 @@ interface KeyboardShortcut {
   readonly allowReadOnly?: boolean;
   readonly allowInEvaluateMode?: boolean;
   readonly onlyForMultipleElections?: boolean;
+  readonly onlyForPaintBrush?: boolean;
   readonly shift?: true | "optional";
   // eslint-disable-next-line
   readonly action: (context: MapContext) => void;
@@ -181,6 +185,26 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
       store.dispatch(toggleExpandedMetrics(!expandedProjectMetrics));
     },
     allowReadOnly: true
+  },
+  {
+    key: "b",
+    text: "Decrement paintbrush size",
+    action: ({ paintBrushSize }: MapContext) => {
+      paintBrushSize > 1
+        ? store.dispatch(setPaintBrushSize((paintBrushSize - 1) as PaintBrushSize))
+        : store.dispatch(setPaintBrushSize(1));
+    },
+    onlyForPaintBrush: true
+  },
+  {
+    key: "m",
+    text: "Increment paintbrush size",
+    action: ({ paintBrushSize }: MapContext) => {
+      paintBrushSize < 5
+        ? store.dispatch(setPaintBrushSize((paintBrushSize + 1) as PaintBrushSize))
+        : store.dispatch(setPaintBrushSize(5));
+    },
+    onlyForPaintBrush: true
   },
   {
     key: "l",

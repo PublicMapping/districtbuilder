@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add maps to list of user projects on home screen [#850](https://github.com/PublicMapping/districtbuilder/pull/850)
 - Add histogram to evaluate mode metric view for competitiveness [#844](https://github.com/PublicMapping/districtbuilder/pull/844)
 - Added button to convert 2010 maps to 2020 [#878](https://github.com/PublicMapping/districtbuilder/pull/878)
+- Add keyboard shortcuts for incrementing and decrementing the paintbrush size [#874](https://github.com/PublicMapping/districtbuilder/pull/874)
 
 ### Changed
 
@@ -53,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix breaking change to routing introduced with QueryParamsProvider [#869](https://github.com/PublicMapping/districtbuilder/pull/869)
 - Fix duplicate project button on home screen projects [#872](https://github.com/PublicMapping/districtbuilder/pull/872)
 - Fix find menu button so that it actually opens the find menu [#871](https://github.com/PublicMapping/districtbuilder/pull/871)
+- Fix overlap between keyboard shortcuts and paintbrush size slider [#874](https://github.com/PublicMapping/districtbuilder/pull/874)
 - Show file error when attempting to import a CSV for an unsupported region [#875](https://github.com/PublicMapping/districtbuilder/pull/875)
 - Increased timeout on database healthcheck [#877](https://github.com/PublicMapping/districtbuilder/pull/877)
 
