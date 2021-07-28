@@ -19,6 +19,7 @@ import {
   setSelectionTool,
   showAdvancedEditingModal,
   showCopyMapModal,
+  showConvertMapModal,
   setImportFlagsModal,
   toggleDistrictLocked,
   undo,
@@ -114,6 +115,7 @@ export interface DistrictDrawingState {
   readonly paintBrushSize: PaintBrushSize;
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
+  readonly showConvertMapModal: boolean;
   readonly showKeyboardShortcutsModal: boolean;
   readonly showImportFlagsModal: boolean;
   readonly findMenuOpen: boolean;
@@ -138,6 +140,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   paintBrushSize: 1,
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
+  showConvertMapModal: false,
   showImportFlagsModal: false,
   showKeyboardShortcutsModal: false,
   findMenuOpen: false,
@@ -334,6 +337,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         showCopyMapModal: action.payload
+      };
+    case getType(showConvertMapModal):
+      return {
+        ...state,
+        showConvertMapModal: action.payload
       };
     case getType(setImportFlagsModal):
       return {
