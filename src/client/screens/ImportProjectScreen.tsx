@@ -313,6 +313,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
               }
             } else {
               setImportResource({ data: null });
+              setFileError(`State ${stateAbbrev} not currently supported`);
             }
           } else {
             setFileError("File must have at least one record");
