@@ -20,7 +20,7 @@ export class HealthcheckController {
   @HealthCheck()
   healthCheck(): Promise<HealthCheckResult> {
     return this.health.check([
-      async () => this.db.pingCheck("database"),
+      async () => this.db.pingCheck("database", { timeout: 3000 }),
       () => this.topoLoaded.isHealthy("topology")
     ]);
   }

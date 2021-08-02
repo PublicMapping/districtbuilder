@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix duplicate project button on home screen projects [#872](https://github.com/PublicMapping/districtbuilder/pull/872)
 - Fix find menu button so that it actually opens the find menu [#871](https://github.com/PublicMapping/districtbuilder/pull/871)
 - Show file error when attempting to import a CSV for an unsupported region [#875](https://github.com/PublicMapping/districtbuilder/pull/875)
+- Increased timeout on database healthcheck [#877](https://github.com/PublicMapping/districtbuilder/pull/877)
 
 
 ## [1.6.0] - 2021-05-24
