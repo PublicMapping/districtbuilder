@@ -1,9 +1,9 @@
 /** @jsx jsx */
-import React from "react";
+import React, { useState } from "react";
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
 import { useHistory } from "react-router-dom";
-import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject, Spinner } from "theme-ui";
 
 import { IProject, IUser } from "../../shared/entities";
 import { showConvertMapModal } from "../actions/districtDrawing";
@@ -47,6 +47,7 @@ const ConvertMapModal = ({
   readonly user: Resource<IUser>;
   readonly showModal: boolean;
 }) => {
+  const [saving, setSaving] = useState(false);
   const history = useHistory();
 
   const hideModal = () => store.dispatch(showConvertMapModal(false));
@@ -80,6 +81,7 @@ const ConvertMapModal = ({
               sx={{ flexDirection: "column" }}
               onSubmit={(e: React.FormEvent) => {
                 e.preventDefault();
+                setSaving(true);
                 convertAndCopyProject(project.id)
                   .then((newProject: IProject) => {
                     // Need to reset the project state here, so when the redirect kicks in we don't have any
@@ -87,6 +89,7 @@ const ConvertMapModal = ({
                     store.dispatch(resetProjectState());
                     goToProject(newProject);
                   })
+                  .finally(() => setSaving(false))
                   .catch(showActionFailedToast);
               }}
             >
@@ -96,9 +99,23 @@ const ConvertMapModal = ({
                 version.
               </Box>
               <Flex sx={style.footer}>
-                <Button id="primary-action" sx={{ marginBottom: 3 }} type="submit">
-                  Yes, copy to my account
-                </Button>
+                {saving ? (
+                  <React.Fragment>
+                    <Spinner variant="spinner.large" sx={{ alignSelf: "center", mb: 4 }} />
+                    <Button
+                      id="primary-action"
+                      sx={{ marginBottom: 3 }}
+                      type="submit"
+                      disabled={true}
+                    >
+                      Converting
+                    </Button>
+                  </React.Fragment>
+                ) : (
+                  <Button id="primary-action" sx={{ marginBottom: 3 }} type="submit">
+                    Yes, copy to my account
+                  </Button>
+                )}
                 <Button
                   id="cancel-convert-map-modal"
                   onClick={hideModal}
