@@ -27,7 +27,6 @@ import { getAllBaseIndices, getDemographics, getVoting } from "../../../../share
 import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
 import { DistrictsDefinitionDto } from "./district-definition.dto";
 import { mapValues } from "lodash";
-import { GeoUnitProperties } from "./geo-unit-properties.entity";
 
 interface GeoUnitPolygonHierarchy {
   geom: Polygon | MultiPolygon;

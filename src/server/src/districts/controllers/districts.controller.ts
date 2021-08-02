@@ -11,14 +11,11 @@ import csvParse from "csv-parse";
 import { Express } from "express";
 
 import {
-  DistrictsDefinition,
-  GeoUnitHierarchy,
   ImportRowFlag,
   DistrictsImportApiResponse,
   DistrictImportField
 } from "../../../../shared/entities";
 import { FIPS } from "../../../../shared/constants";
-import {} from "../../../../shared/entities";
 import { TopologyService } from "../services/topology.service";
 
 import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
@@ -44,7 +41,7 @@ export class DistrictsController {
     /* eslint-enable */
 
     // Array of flagged rows to be returned
-    let flaggedRows: ImportRowFlag[] = [];
+    const flaggedRows: ImportRowFlag[] = [];
 
     function setFlag(
       row: readonly string[],
@@ -53,6 +50,7 @@ export class DistrictsController {
       errorText: string
     ) {
       const flag = { rowNumber: rowNumber, errorText: errorText, rowValue: row, field: field };
+      // eslint-disable-next-line functional/immutable-data
       flaggedRows[rowNumber] = flag;
     }
     const stateFips: string = records[0][0]?.slice(0, 2);
@@ -67,7 +65,7 @@ export class DistrictsController {
     records.forEach((record, i) => {
       const rowFips = record[0]?.slice(0, 2);
       const blockId = record[0];
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       blockIdCounts[blockId] = blockIdCounts[blockId] ? blockIdCounts[blockId] + 1 : 1;
       // Check to see if row fips is valid
       if (!(rowFips in FIPS)) {
@@ -114,7 +112,10 @@ export class DistrictsController {
     const districtsDefinition = geoCollection.importFromCSV(blockToDistricts);
 
     // Find unmatched records
-    const allBlockIds = new Set(baseGeoUnitProperties.map((props: any) => props[baseGeoLevel]));
+    const allBlockIds: Set<unknown> = new Set(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      baseGeoUnitProperties.map((props: any) => props[baseGeoLevel])
+    );
     records.forEach((record, i) => {
       if (!allBlockIds.has(record[0]) && !flaggedRows[i]) {
         setFlag(record, i, "BLOCKID", "Invalid block ID");

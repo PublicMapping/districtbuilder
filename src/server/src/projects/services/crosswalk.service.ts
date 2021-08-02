@@ -21,8 +21,6 @@ export class CrosswalkService {
   private readonly logger = new Logger(CrosswalkService.name);
   private readonly s3 = new S3();
 
-  constructor() {}
-
   async getCrosswalk(regionCode: RegionCode): Promise<Crosswalk | undefined> {
     const stateFips = REGION_TO_FIPS[regionCode];
     const csvResponse = await this.s3
@@ -34,11 +32,13 @@ export class CrosswalkService {
       return;
     }
     const parser = csvParse(csvResponse.Body?.toString("utf8"), { relaxColumnCount: true });
-    let crosswalk: Crosswalk = {};
+    const crosswalk: Crosswalk = {};
+    // eslint-disable-next-line functional/no-loop-statement
     for await (const record of parser) {
       const items = record as readonly string[];
       const newFips = items[0];
       const blocks = _.chunk(items.slice(1), 2);
+      // eslint-disable-next-line functional/immutable-data
       crosswalk[newFips] = blocks.map(([fips, amount]) => ({ fips, amount: Number(amount) }));
     }
 

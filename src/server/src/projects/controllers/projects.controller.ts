@@ -37,12 +37,7 @@ import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
 import { MakeDistrictsErrors, ConvertProjectErrors } from "../../../../shared/constants";
-import {
-  DistrictsDefinition,
-  GeoUnitHierarchy,
-  ProjectId,
-  PublicUserProperties
-} from "../../../../shared/entities";
+import { DistrictsDefinition, ProjectId, PublicUserProperties } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
@@ -469,21 +464,21 @@ export class ProjectsController implements CrudController<Project> {
     // Sum district share for each new block and assign block to the district w/ largest share
 
     // Written in non-functional style for higher perf.
-    let blockSums: { [blockId: string]: { readonly [districtId: number]: number } } = {};
+    const blockSums: { [blockId: string]: { readonly [districtId: number]: number } } = {};
+    // eslint-disable-next-line functional/no-loop-statement
     for (const [newFips, oldBlocks] of Object.entries(crosswalk)) {
+      // eslint-disable-next-line functional/no-loop-statement
       for (const { fips, amount } of oldBlocks) {
         const districtId = oldBlockToDistricts[fips];
         const districtSums = blockSums[newFips] || {};
         const sum = (districtSums[districtId] || 0) + amount;
+        // eslint-disable-next-line functional/immutable-data
         blockSums[newFips] = { ...districtSums, [districtId]: sum };
       }
     }
 
     const blockToDistricts = _.mapValues(blockSums, districtSums => {
-      const [largestDistrict, percent] = _.maxBy(
-        Object.entries(districtSums),
-        ([districtId, sum]) => sum
-      ) || [0, 0];
+      const [largestDistrict] = _.maxBy(Object.entries(districtSums), ([, sum]) => sum) || [0, 0];
       return Number(largestDistrict);
     });
 
@@ -554,10 +549,7 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(JwtAuthGuard)
   @Post(":id/planScore")
-  async sendToPlanScoreAPI(
-    @ParsedRequest() req: CrudRequest,
-    @Param("id") projectId: ProjectId
-  ): Promise<Project> {
+  async sendToPlanScoreAPI(@Param("id") projectId: ProjectId): Promise<Project> {
     const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
     const project = await this.service.findOne(projectId, { relations: ["regionConfig"] });
     const geojson = project && {

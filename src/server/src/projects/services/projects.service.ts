@@ -6,7 +6,6 @@ import { Repository, SelectQueryBuilder } from "typeorm";
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { paginate, Pagination, IPaginationOptions } from "nestjs-typeorm-paginate";
-import { IProject } from "../../../../shared/entities";
 
 type AllProjectsOptions = IPaginationOptions & {
   readonly completed?: boolean;
