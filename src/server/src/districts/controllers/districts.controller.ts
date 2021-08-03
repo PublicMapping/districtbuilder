@@ -15,7 +15,7 @@ import {
   DistrictsImportApiResponse,
   DistrictImportField
 } from "../../../../shared/entities";
-import { FIPS } from "../../../../shared/constants";
+import { FIPS, MAX_IMPORT_ERRORS } from "../../../../shared/constants";
 import { TopologyService } from "../services/topology.service";
 
 import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
@@ -126,11 +126,13 @@ export class DistrictsController {
       ...districtsDefinition.flat(geoCollection.staticMetadata.geoLevels.length)
     );
     const rowFlags = flaggedRows.filter(r => !!r);
+    const numFlags = rowFlags.length;
 
     return {
-      districtsDefinition: districtsDefinition,
-      maxDistrictId: maxDistrictId,
-      rowFlags: rowFlags.length > 0 ? rowFlags : undefined
+      districtsDefinition,
+      maxDistrictId,
+      numFlags: numFlags || undefined,
+      rowFlags: numFlags > 0 ? rowFlags.slice(0, MAX_IMPORT_ERRORS) : undefined
     };
   }
 }

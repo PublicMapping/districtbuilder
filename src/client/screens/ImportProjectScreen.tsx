@@ -17,13 +17,13 @@ import {
   Radio
 } from "theme-ui";
 
-import { DEFAULT_POPULATION_DEVIATION, FIPS, MaxUploadFileSize } from "../../shared/constants";
+import { DEFAULT_POPULATION_DEVIATION, FIPS, MAX_UPLOAD_FILE_SIZE } from "../../shared/constants";
 import {
   DistrictsDefinition,
-  ImportRowFlag,
   IProject,
   IRegionConfig,
-  IChamber
+  IChamber,
+  DistrictsImportApiSuccess
 } from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -42,13 +42,11 @@ interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
 }
 
-const validate = (
-  form: ConfigurableForm,
-  importResource: ImportResource,
-  maxDistrictId?: number
-): ProjectForm => {
+const validate = (form: ConfigurableForm, importResource: ImportResource): ProjectForm => {
   const regionConfig = importResource.data;
-  const districtsDefinition = "resource" in importResource ? importResource.resource : null;
+  const districtsDefinition =
+    "resource" in importResource ? importResource.resource.districtsDefinition : null;
+  const maxDistrictId = "resource" in importResource ? importResource.resource.maxDistrictId : null;
   const numberOfDistricts = form.numberOfDistricts;
   const populationDeviation = form.populationDeviation;
   const chamber = form.chamber;
@@ -79,7 +77,7 @@ const validate = (
       };
 };
 
-type ImportResource = WriteResource<IRegionConfig | null, DistrictsDefinition>;
+type ImportResource = WriteResource<IRegionConfig | null, DistrictsImportApiSuccess>;
 
 interface ConfigurableForm {
   readonly numberOfDistricts: number | null;
@@ -238,8 +236,10 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
   const [importResource, setImportResource] = useState<ImportResource>({
     data: null
   });
-  const [rowFlags, setRowFlags] = useState<readonly ImportRowFlag[] | undefined>(undefined);
-  const [maxDistrictId, setMaxDistrictId] = useState<number | undefined>(undefined);
+  const rowFlags = "resource" in importResource && importResource.resource.rowFlags;
+  const maxDistrictId = "resource" in importResource && importResource.resource.maxDistrictId;
+  const numFlags = "resource" in importResource && importResource.resource.numFlags;
+
   const [createProjectResource, setCreateProjectResource] = useState<
     WriteResource<ConfigurableForm, IProject>
   >({
@@ -272,8 +272,8 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
     (file: File) => {
       async function setConfigFromFile() {
         if (file && "resource" in regionConfigs) {
-          // Check file size (must be less than MaxUploadFileSize)
-          if (file.size > MaxUploadFileSize) {
+          // Check file size (must be less than MAX_UPLOAD_FILE_SIZE)
+          if (file.size > MAX_UPLOAD_FILE_SIZE) {
             setFileError("File must be less than 25mb");
             return;
           }
@@ -318,10 +318,8 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
             } else {
               setImportResource({
                 data: regionConfig,
-                resource: importResponse.districtsDefinition
+                resource: importResponse
               });
-              importResponse.rowFlags && setRowFlags(importResponse.rowFlags);
-              importResponse.maxDistrictId && setMaxDistrictId(importResponse.maxDistrictId);
             }
           }
         }
@@ -363,10 +361,8 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
       data: null
     });
     setImportFlagsModal(false);
-    setRowFlags(undefined);
     setFileError(undefined);
     setCreateProjectResource({ data: blankForm });
-    setMaxDistrictId(undefined);
   }
 
   return "resource" in createProjectResource ? (
@@ -405,7 +401,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
             sx={{ flexDirection: "column" }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              const validatedForm = validate(formData, importResource, maxDistrictId);
+              const validatedForm = validate(formData, importResource);
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data: formData, isPending: true });
                 createProject({
@@ -448,16 +444,16 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                       : style.uploadSuccessWithFlags
                   }
                 >
-                  {"resource" in importResource && !rowFlags && !fileError ? (
+                  {"resource" in importResource && !numFlags && !fileError ? (
                     <b>Upload success</b>
-                  ) : "resource" in importResource && rowFlags ? (
+                  ) : "resource" in importResource && numFlags ? (
                     <b>
                       Upload success, with
                       <span
                         sx={style.rowFlagsLink}
                         onClick={() => rowFlags && store.dispatch(setImportFlagsModal(true))}
                       >
-                        &nbsp;{rowFlags.length} flags
+                        &nbsp;{numFlags} flags
                       </span>
                     </b>
                   ) : fileError ? (
@@ -636,7 +632,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                   <Button
                     type="submit"
                     disabled={
-                      !validate(formData, importResource, maxDistrictId).valid &&
+                      !validate(formData, importResource).valid &&
                       !("errorMessage" in createProjectResource)
                     }
                   >
@@ -651,6 +647,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
       {rowFlags && (
         <ImportFlagsModal
           importFlags={rowFlags}
+          numFlags={numFlags || 0}
           onContinue={() => store.dispatch(setImportFlagsModal(false))}
           onCancel={() => resetForm()}
         ></ImportFlagsModal>

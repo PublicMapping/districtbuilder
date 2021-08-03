@@ -306,6 +306,7 @@ export interface ImportRowFlag {
 export interface DistrictsImportApiResponse {
   readonly districtsDefinition?: DistrictsDefinition;
   readonly rowFlags?: readonly ImportRowFlag[];
+  readonly numFlags?: number;
   readonly maxDistrictId: number;
 }
 
