@@ -287,36 +287,42 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
 
           // Check file is not empty
           const stateAbbrev = await getStateFromCsv(file);
-          if (stateAbbrev) {
-            // eslint-disable-next-line
-            importNumberRef.current = importNumberRef.current + 1;
-            const importNumber = importNumberRef.current;
-            const regionConfig =
-              regionConfigs.resource.find(
-                config =>
-                  !config.hidden &&
-                  !config.archived &&
-                  config.regionCode === stateAbbrev &&
-                  config.countryCode === "US"
-              ) || null;
-            if (regionConfig) {
-              setImportResource({ data: regionConfig, isPending: true });
-              const importResponse = await importCsv(file);
-              // Don't set the districtsDefinition if upload was cancelled while we were fetching it
-              if (importNumberRef.current === importNumber && importResponse.districtsDefinition) {
-                setImportResource({
-                  data: regionConfig,
-                  resource: importResponse.districtsDefinition
-                });
-                importResponse.rowFlags && setRowFlags(importResponse.rowFlags);
-                importResponse.maxDistrictId && setMaxDistrictId(importResponse.maxDistrictId);
-              }
-            } else {
-              setImportResource({ data: null });
-              setFileError(`State ${stateAbbrev} not currently supported`);
-            }
-          } else {
+          if (!stateAbbrev) {
             setFileError("File must have at least one record");
+          }
+          // eslint-disable-next-line
+          importNumberRef.current = importNumberRef.current + 1;
+          const importNumber = importNumberRef.current;
+          const regionConfig =
+            regionConfigs.resource.find(
+              config =>
+                !config.hidden &&
+                !config.archived &&
+                config.regionCode === stateAbbrev &&
+                config.countryCode === "US"
+            ) || null;
+
+          if (!regionConfig) {
+            setImportResource({ data: null });
+            setFileError(`State ${stateAbbrev} not currently supported`);
+          }
+
+          setImportResource({ data: regionConfig, isPending: true });
+          const importResponse = await importCsv(file);
+
+          // Don't set the districtsDefinition if upload was cancelled while we were fetching it
+          if (importNumberRef.current === importNumber) {
+            if ("error" in importResponse) {
+              setImportResource({ data: null });
+              setFileError(importResponse.error);
+            } else {
+              setImportResource({
+                data: regionConfig,
+                resource: importResponse.districtsDefinition
+              });
+              importResponse.rowFlags && setRowFlags(importResponse.rowFlags);
+              importResponse.maxDistrictId && setMaxDistrictId(importResponse.maxDistrictId);
+            }
           }
         }
       }
