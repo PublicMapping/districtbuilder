@@ -41,7 +41,8 @@ const style: ThemeUIStyleObject = {
   },
   button: {
     mr: "3"
-  }
+  },
+  flags: { marginTop: 4, maxHeight: "60vh", overflowY: "scroll" }
 };
 
 const ImportFlagsModal = ({
@@ -76,7 +77,7 @@ const ImportFlagsModal = ({
           review the flags below and decide if you want to continue with this file or start over
           with a new file.
         </Box>
-        <Box style={{ marginTop: 4 }}>
+        <Box sx={style.flags}>
           {importFlags.map(flag => (
             <Box key={flag.rowNumber}>
               <Box>
