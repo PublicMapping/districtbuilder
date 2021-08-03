@@ -49,6 +49,11 @@ export enum ProjectVisibility {
   Published = "PUBLISHED"
 }
 
+export enum CensusDate {
+  Census2010 = "2010",
+  Census2020 = "2020"
+}
+
 export const DEFAULT_POPULATION_DEVIATION = 5;
 
 export const DEFAULT_PINNED_METRIC_FIELDS = [
