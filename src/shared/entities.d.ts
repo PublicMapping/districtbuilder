@@ -164,12 +164,13 @@ export type RegionConfigId = string;
 
 export type S3URI = string;
 export type HttpsURI = string;
+export type RegionCode = string;
 
 export interface IRegionConfig {
   readonly id: RegionConfigId;
   readonly name: string;
   readonly countryCode: string;
-  readonly regionCode: string;
+  readonly regionCode: RegionCode;
   readonly chambers: readonly IChamber[];
   readonly s3URI: S3URI;
   readonly version: Date;

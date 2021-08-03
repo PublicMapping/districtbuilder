@@ -11,14 +11,11 @@ import csvParse from "csv-parse";
 import { Express } from "express";
 
 import {
-  DistrictsDefinition,
-  GeoUnitHierarchy,
   ImportRowFlag,
   DistrictsImportApiResponse,
   DistrictImportField
 } from "../../../../shared/entities";
 import { FIPS } from "../../../../shared/constants";
-import {} from "../../../../shared/entities";
 import { TopologyService } from "../services/topology.service";
 
 import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
@@ -34,31 +31,28 @@ export class DistrictsController {
   @Post("import/csv")
   @HttpCode(200)
   async importCsv(@UploadedFile() file: Express.Multer.File): Promise<DistrictsImportApiResponse> {
-    const parser = csvParse(file.buffer, { fromLine: 2 });
-    // Seemingly the simplest way of getting all the records into an array is to iterate in a for-loop :(
     /* eslint-disable */
-    let records = [];
+    const parser = csvParse(file.buffer, { fromLine: 2 });
+    let records: [string, string][] = [];
+    // Seemingly the simplest way of getting all the records into an array is to iterate in a for-loop :(
+    for await (const record of parser) {
+      records.push(record);
+    }
+    /* eslint-enable */
+
     // Array of flagged rows to be returned
-    let flaggedRows: ImportRowFlag[] = [];
-    let matchingRows: boolean[] = [];
-    let maxDistrictId: number = 0;
+    const flaggedRows: ImportRowFlag[] = [];
 
     function setFlag(
-      row: string[],
+      row: readonly string[],
       rowNumber: number,
       field: DistrictImportField,
       errorText: string
     ) {
       const flag = { rowNumber: rowNumber, errorText: errorText, rowValue: row, field: field };
-      // @ts-ignore
+      // eslint-disable-next-line functional/immutable-data
       flaggedRows[rowNumber] = flag;
     }
-
-    for await (const record of parser) {
-      records.push(record);
-    }
-
-    /* eslint-enable */
     const stateFips: string = records[0][0]?.slice(0, 2);
     if (!(stateFips in FIPS)) {
       throw new InternalServerErrorException();
@@ -71,7 +65,7 @@ export class DistrictsController {
     records.forEach((record, i) => {
       const rowFips = record[0]?.slice(0, 2);
       const blockId = record[0];
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       blockIdCounts[blockId] = blockIdCounts[blockId] ? blockIdCounts[blockId] + 1 : 1;
       // Check to see if row fips is valid
       if (!(rowFips in FIPS)) {
@@ -88,14 +82,10 @@ export class DistrictsController {
         setFlag(record, i, "BLOCKID", "Duplicate BLOCKID included in import");
       }
 
-      if (isNaN(record[1]) && !flaggedRows[i]) {
+      if (isNaN(Number(record[1])) && !flaggedRows[i]) {
         setFlag(record, i, "DISTRICT", "Invalid district ID, must be numeric");
       }
     });
-
-    const unflaggedRows = records.filter((record, i) => !flaggedRows[i]);
-
-    const blockToDistricts = Object.fromEntries(unflaggedRows);
 
     const regionCode = FIPS[stateFips];
     const regionConfig = await this.regionConfigService.findOne({
@@ -107,45 +97,34 @@ export class DistrictsController {
     if (!geoCollection) {
       throw new InternalServerErrorException();
     }
+    if (!("topology" in geoCollection)) {
+      // Only unarchived regions support imports
+      throw new InternalServerErrorException();
+    }
+
+    const unflaggedRows = records.filter((record, i) => !flaggedRows[i]);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
     const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
 
-    // The geounit hierarchy and district definition have the same structure (except the
-    // hierarchy always goes out to the base geounit level), so we use it as a starting point
-    // and transform it into our districts definition.
-    const mapToDefinition = (hierarchySubset: GeoUnitHierarchy): DistrictsDefinition =>
-      hierarchySubset.map(hierarchyNumOrArray => {
-        if (typeof hierarchyNumOrArray === "number") {
-          // The numbers found in the hierarchy are the base geounit indices of the topology.
-          // Access this item in the topology to find it's base geounit id.
-          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
-          const id = props[baseGeoLevel];
-          const districtAssignment = parseInt(blockToDistricts[id], 10);
-          if (blockToDistricts[id]) {
-            // Allow editing of matching rows object
-            // eslint-disable-next-line
-            matchingRows[id] = true;
-          }
-          if (districtAssignment > maxDistrictId) {
-            maxDistrictId = districtAssignment;
-          }
-          return !isNaN(districtAssignment) ? districtAssignment : 0;
-        } else {
-          // Keep recursing into the hierarchy until we reach the end
-          const results = mapToDefinition(hierarchyNumOrArray);
-          // Simplify if possible
-          return results.every(item => item === results[0]) ? results[0] : results;
-        }
-      });
+    const blockToDistricts = Object.fromEntries(
+      unflaggedRows.map(([block, district]) => [block, Number(district)])
+    );
+    const districtsDefinition = geoCollection.importFromCSV(blockToDistricts);
 
-    const districtsDefinition = mapToDefinition(geoCollection.hierarchyDefinition);
     // Find unmatched records
+    const allBlockIds: Set<unknown> = new Set(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      baseGeoUnitProperties.map((props: any) => props[baseGeoLevel])
+    );
     records.forEach((record, i) => {
-      if (!matchingRows[record[0]] && !flaggedRows[i]) {
+      if (!allBlockIds.has(record[0]) && !flaggedRows[i]) {
         setFlag(record, i, "BLOCKID", "Invalid block ID");
       }
     });
 
+    const maxDistrictId = Math.max(
+      ...districtsDefinition.flat(geoCollection.staticMetadata.geoLevels.length)
+    );
     const rowFlags = flaggedRows.filter(r => !!r);
 
     return {

@@ -35,6 +35,9 @@ import * as _ from "lodash";
         persist: ["regionConfig"],
         eager: true
       }
+    },
+    filter: {
+      archived: false
     }
   },
   routes: {

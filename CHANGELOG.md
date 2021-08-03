@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add button to upload project to PlanScore via API [#847](https://github.com/PublicMapping/districtbuilder/pull/847)
 - Add maps to list of user projects on home screen [#850](https://github.com/PublicMapping/districtbuilder/pull/850)
 - Add histogram to evaluate mode metric view for competitiveness [#844](https://github.com/PublicMapping/districtbuilder/pull/844)
+- Added button to convert 2010 maps to 2020 [#878](https://github.com/PublicMapping/districtbuilder/pull/878)
 
 ### Changed
 

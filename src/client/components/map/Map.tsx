@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Flex, Text, jsx, ThemeUIStyleObject, Styled } from "theme-ui";
+import { Box, Button, Flex, Text, jsx, ThemeUIStyleObject, Styled } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
@@ -15,7 +15,8 @@ import {
   replaceSelectedGeounits,
   FindTool,
   setZoomToDistrictId,
-  PaintBrushSize
+  PaintBrushSize,
+  showConvertMapModal
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -1023,8 +1024,13 @@ const DistrictsMap = ({
       </div>
       {!evaluateMode && isArchived && (
         <Box sx={style.archivedMessage}>
-          <Icon name="alert-triangle" /> This map is using an archived region and can no longer be
-          edited.
+          <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
+          and can no longer be edited.
+          <Box>
+            <Button onClick={() => store.dispatch(showConvertMapModal(true))}>
+              Convert to 2020
+            </Button>
+          </Box>
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (

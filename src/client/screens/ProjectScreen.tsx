@@ -39,6 +39,7 @@ import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
+import ConvertMapModal from "../components/ConvertMapModal";
 
 interface StateProps {
   readonly project?: IProject;
@@ -233,6 +234,7 @@ const ProjectScreen = ({
                 />
               )}
               <CopyMapModal project={project} />
+              <ConvertMapModal project={project} />
               <KeyboardShortcutsModal
                 isReadOnly={isReadOnly}
                 evaluateMode={evaluateMode}
