@@ -202,11 +202,12 @@ export class ProjectsController implements CrudController<Project> {
       } as Errors<UpdateProjectDto>);
     }
 
-    // Update districts GeoJSON if the definition has changed or there is no cached value yet
+    // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
     const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
       (!existingProject.districts ||
+        existingProject.regionConfigVersion !== existingProject.regionConfig.version ||
         !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
         ? {
             ...dto,
@@ -214,7 +215,8 @@ export class ProjectsController implements CrudController<Project> {
               regionConfig: existingProject.regionConfig,
               numberOfDistricts: existingProject.numberOfDistricts,
               districtsDefinition: dto.districtsDefinition
-            })
+            }),
+            regionConfigVersion: existingProject.regionConfig.version
           }
         : dto;
 
