@@ -1,4 +1,4 @@
-import { ProjectVisibility, REGION_LABELS } from "./constants";
+import { ProjectVisibility, ReferenceLayerTypes, REGION_LABELS } from "./constants";
 
 export type UserId = string;
 
@@ -178,6 +178,12 @@ export interface IRegionConfig {
   readonly archived: boolean;
 }
 
+export interface IReferenceLayer {
+  readonly id: ReferenceLayerId;
+  readonly name: string;
+  readonly project: IProject;
+}
+
 interface ProjectTemplateFields {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
@@ -189,6 +195,8 @@ interface ProjectTemplateFields {
 }
 
 export type ProjectId = string;
+
+export type ReferenceLayerId = string;
 
 export type IProject = ProjectTemplateFields & {
   readonly id: ProjectId;
@@ -225,6 +233,15 @@ export interface CreateProjectData {
   readonly districtsDefinition?: DistrictsDefinition;
   readonly populationDeviation?: number;
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
+}
+
+export interface CreateReferenceLayerData {
+  readonly name: string;
+  readonly project: Pick<IProject, "id">;
+  readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
+  readonly label_field: string;
+  // eslint-disable-next-line
+  readonly layer: any;
 }
 
 export type UpdateProjectData = Pick<
