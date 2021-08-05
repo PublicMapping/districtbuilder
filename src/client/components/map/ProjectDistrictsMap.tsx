@@ -46,8 +46,11 @@ const ProjectDistrictsMap = ({
     }
 
     districts.features.forEach((feature: DistrictGeoJSON, id: number) => {
-      // eslint-disable-next-line
-      feature.properties.color = getDistrictColor(id);
+      // On the main project screen the unassigned district isn't colored in,
+      // but for the minimap we need it to be visible to define the state borders
+
+      // eslint-disable-next-line functional/immutable-data
+      feature.properties.color = id === 0 ? "#EDEDED" : getDistrictColor(id);
     });
 
     const bounds = districts && (bbox(districts) as BBox2d);
