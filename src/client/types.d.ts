@@ -8,7 +8,9 @@ import {
   DistrictProperties,
   DemographicCounts,
   PaginationMetadata,
-  IProject
+  IProject,
+  IReferenceLayer,
+  ProjectId
 } from "../shared/entities";
 
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;
@@ -96,3 +98,25 @@ export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
 }
 
 export type ChoroplethSteps = readonly (readonly [number, string])[];
+
+export type ReferenceLayerGeojson =
+  | FeatureCollection<MultiPolygon, ReferenceLayerProperties>
+  | FeatureCollection<Point, ReferenceLayerProperties>
+  | null;
+
+export interface ReferenceLayerImportResponse {
+  readonly geojson?: ReferenceLayerGeojson;
+  readonly valid: boolean;
+  readonly fields?: readonly string[];
+}
+
+export interface CreateReferenceLayerData {
+  readonly layer: ReferenceLayerGeojson;
+  readonly name: string;
+  readonly label_field: string;
+  readonly project: ProjectId;
+}
+
+export interface ReferenceLayerWithGeojson extends IReferenceLayer {
+  readonly layer: ReferenceLayerGeojson;
+}
