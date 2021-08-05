@@ -19,7 +19,6 @@ import { FIPS, MAX_IMPORT_ERRORS } from "../../../../shared/constants";
 import { TopologyService } from "../services/topology.service";
 
 import { RegionConfigsService } from "../../region-configs/services/region-configs.service";
-import _ from "lodash";
 
 @Controller("api/districts")
 export class DistrictsController {
