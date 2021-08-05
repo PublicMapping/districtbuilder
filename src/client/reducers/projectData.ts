@@ -58,7 +58,8 @@ import {
   fetchProjectData,
   fetchProjectGeoJson,
   createProject,
-  patchProject
+  patchProject,
+  copyProject
 } from "../api";
 import { fetchAllStaticData } from "../s3";
 
@@ -464,13 +465,10 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           saving: "saving",
           duplicatedProject: null
         },
-        Cmd.run(
-          () => createProject({ ...action.payload, name: `Copy of ${action.payload.name}` }),
-          {
-            successActionCreator: duplicateProjectSuccess,
-            failActionCreator: duplicateProjectFailure
-          }
-        )
+        Cmd.run(() => copyProject(action.payload.id), {
+          successActionCreator: duplicateProjectSuccess,
+          failActionCreator: duplicateProjectFailure
+        })
       );
     }
     case getType(duplicateProjectSuccess):

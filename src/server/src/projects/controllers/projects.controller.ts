@@ -253,23 +253,67 @@ export class ProjectsController implements CrudController<Project> {
         );
       }
 
-      // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
-      const districtsDefinition =
-        dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
-      const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
-      const districts = await this.getGeojson({
-        numberOfDistricts: dto.numberOfDistricts,
-        districtsDefinition,
-        regionConfig
-      });
+      return await this.service.createOne(
+        req,
+        await this.formatCreateProjectDto(dto, geoCollection, regionConfig, req)
+      );
+    } catch (error) {
+      this.logger.error(`Error creating project: ${error}`);
+      throw new InternalServerErrorException();
+    }
+  }
 
-      return this.service.createOne(req, {
-        ...dto,
-        districtsDefinition,
-        districts,
-        lockedDistricts,
-        user: req.parsed.authPersist.userId
-      });
+  private async formatCreateProjectDto(
+    dto: CreateProjectDto,
+    geoCollection: GeoUnitTopology | GeoUnitProperties,
+    regionConfig: RegionConfig,
+    req: CrudRequest
+  ) {
+    // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
+    const districtsDefinition =
+      dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
+    const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
+    const districts = await this.getGeojson({
+      numberOfDistricts: dto.numberOfDistricts,
+      districtsDefinition,
+      regionConfig
+    });
+    return {
+      ...dto,
+      districtsDefinition,
+      districts,
+      lockedDistricts,
+      user: req.parsed.authPersist.userId
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(CrudRequestInterceptor)
+  @Post(":id/duplicate")
+  async duplicate(@ParsedRequest() req: CrudRequest, @Param("id") id: ProjectId): Promise<Project> {
+    try {
+      const project = await this.getProject(req, id);
+      const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
+      if (!geoCollection) {
+        throw new NotFoundException(
+          `Topology ${project.regionConfig.s3URI} not found`,
+          MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+        );
+      }
+      // Set any fields we don't want duplicated to be undefined
+      const dto = {
+        ...project,
+        name: `Copy of ${project.name}`,
+        id: undefined,
+        user: undefined,
+        createdDt: undefined,
+        updatedDt: undefined,
+        isFeatured: undefined
+      };
+
+      return await this.service.save(
+        await this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
+      );
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);
       throw new InternalServerErrorException();

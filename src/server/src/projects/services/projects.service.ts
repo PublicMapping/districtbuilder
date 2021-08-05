@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
-import { Repository, SelectQueryBuilder } from "typeorm";
+import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
 
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
@@ -19,7 +19,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     super(repo);
   }
 
-  save(project: Partial<Project>): Promise<Project> {
+  save(project: DeepPartial<Project>): Promise<Project> {
     // @ts-ignore
     return this.repo.save(project);
   }
@@ -27,13 +27,13 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   getProjectsBase(): SelectQueryBuilder<Project> {
     return this.repo
       .createQueryBuilder("project")
-      .innerJoinAndSelect("project.regionConfig", "regionConfig")
-      .innerJoinAndSelect("project.user", "user")
-      .leftJoinAndSelect("project.chamber", "chamber")
+      .innerJoin("project.regionConfig", "regionConfig")
+      .innerJoin("project.user", "user")
+      .leftJoin("project.chamber", "chamber")
       .select([
         "project.id",
-        "project.numberOfDistricts",
         "project.name",
+        "project.numberOfDistricts",
         "project.updatedDt",
         "project.createdDt",
         "project.districts",
@@ -67,9 +67,10 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     userId: string,
     options: AllProjectsOptions
   ): Promise<Pagination<Project>> {
-    const builder = this.getProjectsBase()
-      .addSelect("project.districtsDefinition")
-      .andWhere("project.archived = FALSE AND user.id = :userId", { userId });
+    const builder = this.getProjectsBase().andWhere(
+      "project.archived = FALSE AND user.id = :userId",
+      { userId }
+    );
 
     return paginate<Project>(builder, options);
   }

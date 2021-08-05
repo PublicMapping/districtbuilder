@@ -33,7 +33,7 @@ export class CreateProjectDto implements CreateProjectData {
   @Min(0, { message: "Population deviation must be between 0% and 100%" })
   readonly populationDeviation: number;
   @IsOptional()
-  readonly chamber: ChamberIdDto;
+  readonly chamber?: ChamberIdDto;
   @IsOptional()
-  readonly projectTemplate: ProjectTemplateIdDto;
+  readonly projectTemplate?: ProjectTemplateIdDto;
 }

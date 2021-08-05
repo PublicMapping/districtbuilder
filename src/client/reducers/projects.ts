@@ -173,29 +173,16 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         })
       );
     case getType(projectArchiveSuccess):
-      return {
-        deleteProject: undefined,
-        archiveProjectPending: false,
-        globalProjectsPagination: state.globalProjectsPagination,
-        userProjectsPagination: state.userProjectsPagination,
-        projects:
-          "resource" in state.projects
-            ? {
-                resource: state.projects.resource.map(project =>
-                  project.id !== action.payload.id ? project : action.payload
-                )
-              }
-            : state.projects,
-        globalProjectsRegion: state.globalProjectsRegion,
-        globalProjects:
-          "resource" in state.globalProjects
-            ? {
-                resource: state.globalProjects.resource.map(project =>
-                  project.id !== action.payload.id ? project : action.payload
-                )
-              }
-            : state.globalProjects
-      };
+      return loop(
+        {
+          ...state,
+          deleteProject: undefined,
+          archiveProjectPending: false,
+          globalProjectsPagination: initialState.globalProjectsPagination,
+          globalProjects: initialState.globalProjects
+        },
+        Cmd.action(userProjectsFetchPage(state.userProjectsPagination.currentPage))
+      );
     case getType(projectArchiveFailure):
       return loop({ ...state, archiveProjectPending: false }, Cmd.run(showResourceFailedToast));
     default:
