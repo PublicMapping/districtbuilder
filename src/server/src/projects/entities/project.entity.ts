@@ -38,6 +38,15 @@ export class Project implements IProject {
   @JoinColumn({ name: "region_config_id" })
   regionConfig: RegionConfig;
 
+  // The version of Project.regionConfig at the time of last update,
+  // used to bust cache for districts column
+  @Column({
+    type: "timestamp with time zone",
+    name: "region_config_version",
+    nullable: true
+  })
+  regionConfigVersion: Date;
+
   @ManyToOne(() => Chamber, { nullable: true })
   @JoinColumn({ name: "chamber_id" })
   chamber?: Chamber;
