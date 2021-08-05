@@ -51,10 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved padding in the sidebar district rows, which had become unbalanced [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
 - Keyboard shortcuts no longer fire when form elements are focused [#823](https://github.com/PublicMapping/districtbuilder/pull/823)
 - Fix breaking change to routing introduced with QueryParamsProvider [#869](https://github.com/PublicMapping/districtbuilder/pull/869)
-- Fix duplicate project button on home screen projects [#872](https://github.com/PublicMapping/districtbuilder/pull/872)
+- Fix duplicate project button on home screen projects [#872](https://github.com/PublicMapping/districtbuilder/pull/872) & [#892](https://github.com/PublicMapping/districtbuilder/pull/892)
 - Fix find menu button so that it actually opens the find menu [#871](https://github.com/PublicMapping/districtbuilder/pull/871)
 - Show file error when attempting to import a CSV for an unsupported region [#875](https://github.com/PublicMapping/districtbuilder/pull/875)
 - Increased timeout on database healthcheck [#877](https://github.com/PublicMapping/districtbuilder/pull/877)
+- Fix archive not updating list of projects [#892](https://github.com/PublicMapping/districtbuilder/pull/892)
 
 
 ## [1.6.0] - 2021-05-24
