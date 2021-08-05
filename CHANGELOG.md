@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
 - Display evaluate mode toggle button in read-only mode [#786](https://github.com/PublicMapping/districtbuilder/pull/786)
 - Disable keyboard shortcuts in evaluate mode [#784](https://github.com/PublicMapping/districtbuilder/pull/784)
+- Only show competitiveness summary in evaluate sidebar if elections data is available [#896](https://github.com/PublicMapping/districtbuilder/pull/896)
 - Ignore unassigned districts when computing flag for Contiguity and Equal Population [#797](https://github.com/PublicMapping/districtbuilder/pull/797)
 - Rename Support menu to Resources [#787](https://github.com/PublicMapping/districtbuilder/pull/787)
 - Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)

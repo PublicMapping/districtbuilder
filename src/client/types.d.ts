@@ -64,6 +64,7 @@ export interface BaseEvaluateMetric {
   readonly description: string;
   readonly longText?: string;
   readonly shortText?: string;
+  readonly showInSummary: boolean;
 }
 
 export type ElectionYear = "16" | "20" | "combined";
