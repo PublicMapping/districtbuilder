@@ -121,24 +121,28 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
       );
     }
     case getType(globalProjectsFetchPage):
-      return loop(
-        {
-          ...state,
-          globalProjectsPagination: {
-            ...state.globalProjectsPagination,
-            currentPage: action.payload
-          }
-        },
-        Cmd.action(globalProjectsFetch())
-      );
+      return state.globalProjectsPagination.currentPage !== action.payload
+        ? loop(
+            {
+              ...state,
+              globalProjectsPagination: {
+                ...state.globalProjectsPagination,
+                currentPage: action.payload
+              }
+            },
+            Cmd.action(globalProjectsFetch())
+          )
+        : state;
     case getType(globalProjectsSetRegion):
-      return loop(
-        {
-          ...state,
-          globalProjectsRegion: action.payload || null
-        },
-        Cmd.action(globalProjectsFetch())
-      );
+      return state.globalProjectsRegion !== action.payload
+        ? loop(
+            {
+              ...state,
+              globalProjectsRegion: action.payload || null
+            },
+            Cmd.action(globalProjectsFetch())
+          )
+        : state;
 
     case getType(globalProjectsFetchSuccess):
       return {

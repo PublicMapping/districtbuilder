@@ -65,7 +65,6 @@ const PublishedMapsListScreen = ({
   region,
   regionConfigs
 }: StateProps) => {
-  const [projects, setProjects] = useState<readonly IProject[] | undefined>(undefined);
   const [regionCode, setRegionCode] = useQueryParam("region", StringParam);
 
   useEffect(() => {
@@ -73,15 +72,8 @@ const PublishedMapsListScreen = ({
   }, [regionCode]);
 
   useEffect(() => {
-    "isPending" in globalProjects &&
-      !globalProjects.isPending &&
-      store.dispatch(globalProjectsFetch());
-    if ("resource" in globalProjects) {
-      if (!isEqual(projects, globalProjects.resource)) {
-        setProjects(globalProjects.resource);
-      }
-    }
-  }, [globalProjects, projects]);
+    store.dispatch(globalProjectsFetch());
+  }, []);
 
   useEffect(() => {
     !regionConfigs && store.dispatch(regionConfigsFetch());
@@ -129,11 +121,11 @@ const PublishedMapsListScreen = ({
               </Flex>
             </Box>
           </Box>
-          {projects && !("isPending" in globalProjects) ? (
+          {"resource" in globalProjects ? (
             <React.Fragment>
-              {projects.length > 0 ? (
+              {globalProjects.resource.length > 0 ? (
                 <Box sx={style.featuredProjectContainer}>
-                  {projects.map((project: ProjectNest) => (
+                  {globalProjects.resource.map((project: ProjectNest) => (
                     <FeaturedProjectCard project={project} key={project.id} />
                   ))}
                 </Box>
