@@ -52,9 +52,12 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       published: ProjectVisibility.Published
     });
     const builderWithFilter = options.completed
-      ? // Completed projects are defined as having no population in the unassigned district
+      ? // Completed projects are defined as having no geo units assigned to the unassigned district
+        //
+        // Note: while data updates might change what population is assigned, we don't expect them to
+        // change geometries, so this should be safe even with a stale 'districts' colum
         builder.andWhere(
-          "(project.districts->'features'->0->'properties'->'demographics'->'population')::integer = 0"
+          "jsonb_array_length(project.districts->'features'->0->'geometry'->'coordinates')::integer = 0"
         )
       : builder;
     const builderWithRegion = options.region
