@@ -56,8 +56,8 @@ const App = () => (
   <ThemeProvider theme={theme}>
     <Toast />
     <Router>
-      <Switch>
-        <QueryParamProvider history={pushReplaceHistory}>
+      <QueryParamProvider history={pushReplaceHistory}>
+        <Switch>
           <PrivateRoute path="/" exact={true}>
             <HomeScreen />
           </PrivateRoute>
@@ -86,8 +86,8 @@ const App = () => (
           <PrivateRoute path="/import-project" exact={true}>
             <ImportProjectScreen />
           </PrivateRoute>
-        </QueryParamProvider>
-      </Switch>
+        </Switch>
+      </QueryParamProvider>
     </Router>
   </ThemeProvider>
 );
