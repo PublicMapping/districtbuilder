@@ -427,6 +427,7 @@ const theme: Theme & StyledSystemTheme = {
     },
     select: {
       borderColor: "gray.2",
+      backgroundColor: "#fff",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
