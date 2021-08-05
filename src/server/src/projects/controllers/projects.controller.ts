@@ -594,17 +594,17 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(JwtAuthGuard)
   @Post(":id/planScore")
-  async sendToPlanScoreAPI(@Param("id") projectId: ProjectId): Promise<Project> {
+  async sendToPlanScoreAPI(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<Project> {
     const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
-    const project = await this.service.findOne(projectId, { relations: ["regionConfig"] });
-    const geojson = project && {
-      ...project.districts,
-      features: project.districts.features.filter(f => f.id !== 0)
-    };
+    const geojson = await this.exportGeoJSON(req, projectId);
+
     return new Promise((resolve, reject) => {
       axios({
         method: "POST",
-        data: project && Buffer.from(JSON.stringify(geojson)),
+        data: Buffer.from(JSON.stringify(geojson)),
         url: "http://api.planscore.org/upload/",
         headers: {
           Authorization: `Bearer ${planScoreToken}`
