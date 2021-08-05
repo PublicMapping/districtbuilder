@@ -77,7 +77,7 @@ export class Project implements IProject {
   })
   updatedDt: Date;
 
-  @Column({ type: "boolean", default: false })
+  @Column({ type: "boolean", default: false, name: "advanced_editing_enabled" })
   advancedEditingEnabled: boolean;
 
   @Column({
@@ -94,7 +94,7 @@ export class Project implements IProject {
   @Column({ type: "boolean", default: false })
   archived: boolean;
 
-  @Column({ type: "boolean", default: false })
+  @Column({ type: "boolean", default: false, name: "is_featured" })
   isFeatured: boolean;
 
   @Column({
