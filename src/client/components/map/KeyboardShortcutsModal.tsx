@@ -4,7 +4,7 @@ import AriaModal from "react-aria-modal";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { connect } from "react-redux";
 
-import { toggleKeyboardShortcutsModal } from "../../actions/districtDrawing";
+import { SelectionTool, toggleKeyboardShortcutsModal } from "../../actions/districtDrawing";
 import { State } from "../../reducers";
 import store from "../../store";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
@@ -30,6 +30,7 @@ const style: ThemeUIStyleObject = {
     p: 5,
     width: "small",
     maxWidth: "90vw",
+    zIndex: "10000",
     overflow: "visible"
   },
   table: {
@@ -65,11 +66,13 @@ const KeyboardShortcutsModal = ({
   showModal,
   isReadOnly,
   evaluateMode,
+  selectionTool,
   staticMetadata
 }: {
   readonly showModal: boolean;
   readonly isReadOnly: boolean;
   readonly evaluateMode: boolean;
+  readonly selectionTool?: SelectionTool;
   readonly staticMetadata?: IStaticMetadata;
 }) => {
   const hideModal = () => void store.dispatch(toggleKeyboardShortcutsModal());
@@ -100,6 +103,7 @@ const KeyboardShortcutsModal = ({
                     shortcut =>
                       (!isReadOnly || shortcut.allowReadOnly) &&
                       (!evaluateMode || shortcut.allowInEvaluateMode) &&
+                      (selectionTool === SelectionTool.PaintBrush || !shortcut.onlyForPaintBrush) &&
                       (multipleElections || !shortcut.onlyForMultipleElections)
                   ).map((shortcut, index) => {
                     const key = (

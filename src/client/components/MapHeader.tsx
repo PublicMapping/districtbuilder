@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Flex, Box, Label, Button, jsx, Select, Slider, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { ElectionYear } from "../types";
@@ -77,7 +77,7 @@ const style: ThemeUIStyleObject = {
     borderColor: "gray.2",
     padding: "5px",
     top: "100px",
-    zIndex: 99999,
+    zIndex: 1,
     justifyContent: "space-evenly",
     width: "300px"
   }
@@ -191,6 +191,15 @@ const MapHeader = ({
         ]
       : undefined;
 
+  // Close paintbrush slider if the user switches to another tool, open it if toggled from another tool
+  useEffect(() => {
+    if (selectionTool !== SelectionTool.PaintBrush) {
+      setPaintBrushSizeSliderVisibility(false);
+    } else {
+      setPaintBrushSizeSliderVisibility(true);
+    }
+  }, [selectionTool]);
+
   const labelOptions = labelFields
     ? labelFields.map(val => (
         <option key={val.id} value={val.id}>
@@ -247,9 +256,8 @@ const MapHeader = ({
                     sx={{ ...style.selectionButton }}
                     className={buttonClassName(selectionTool === tool)}
                     onClick={() => {
-                      setPaintBrushSizeSliderVisibility(
-                        tool === SelectionTool.PaintBrush && !isPaintBrushSizeSliderVisible
-                      );
+                      // Open slider on click if not already open
+                      setPaintBrushSizeSliderVisibility(tool === SelectionTool.PaintBrush);
                       store.dispatch(setSelectionTool(tool));
                     }}
                   >
@@ -271,7 +279,7 @@ const MapHeader = ({
                     );
                   }}
                   sx={{ width: "150px" }}
-                  defaultValue={paintBrushSize}
+                  value={paintBrushSize}
                 />
                 <Box>{paintBrushSize}</Box>
               </Box>
