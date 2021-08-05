@@ -70,6 +70,7 @@ import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.
     }
   },
   query: {
+    exclude: ["districts"],
     join: {
       projectTemplate: {
         exclude: ["districtsDefinition"],
