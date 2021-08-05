@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
-import { Repository, SelectQueryBuilder } from "typeorm";
+import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
 
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
@@ -19,7 +19,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     super(repo);
   }
 
-  save(project: Partial<Project>): Promise<Project> {
+  save(project: DeepPartial<Project>): Promise<Project> {
     // @ts-ignore
     return this.repo.save(project);
   }

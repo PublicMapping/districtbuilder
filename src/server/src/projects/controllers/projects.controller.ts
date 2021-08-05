@@ -287,8 +287,8 @@ export class ProjectsController implements CrudController<Project> {
     };
   }
 
-  @Override()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(CrudRequestInterceptor)
   @Post(":id/duplicate")
   async duplicate(@ParsedRequest() req: CrudRequest, @Param("id") id: ProjectId): Promise<Project> {
     try {
@@ -311,8 +311,7 @@ export class ProjectsController implements CrudController<Project> {
         isFeatured: undefined
       };
 
-      return await this.service.createOne(
-        req,
+      return await this.service.save(
         await this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
       );
     } catch (error) {
