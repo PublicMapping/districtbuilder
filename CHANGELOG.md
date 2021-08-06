@@ -58,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show file error when attempting to import a CSV for an unsupported region [#875](https://github.com/PublicMapping/districtbuilder/pull/875)
 - Increased timeout on database healthcheck [#877](https://github.com/PublicMapping/districtbuilder/pull/877)
 - Fix archive not updating list of projects [#892](https://github.com/PublicMapping/districtbuilder/pull/892)
-
+- Redirect to home screen after successful login [#895](https://github.com/PublicMapping/districtbuilder/pull/895)
 
 ## [1.6.0] - 2021-05-24
 
