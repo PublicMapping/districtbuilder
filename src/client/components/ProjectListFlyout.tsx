@@ -3,6 +3,7 @@ import { jsx, Box } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import { IProject } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
+import Icon from "./Icon";
 import store from "../store";
 import { exportCsv, exportGeoJson, exportShp, duplicateProject } from "../actions/projectData";
 import { setDeleteProject } from "../actions/projects";
@@ -43,14 +44,14 @@ const ProjectListFlyout = (props: FlyoutProps) => {
     >
       <MenuButton
         sx={{
-          ...{ variant: "buttons.ghost", fontWeight: "light" },
+          ...{ variant: "buttons.ghost", fontWeight: "light", "& > svg": { m: "0 !important" } },
           ...style.menuButton,
           ...invertStyles(props),
           ...props
         }}
         className="project-list-flyout-menu"
       >
-        ...
+        <Icon name="ellipsis" />
       </MenuButton>
       <Menu sx={{ ...style.menu }}>
         <ul sx={style.menuList}>

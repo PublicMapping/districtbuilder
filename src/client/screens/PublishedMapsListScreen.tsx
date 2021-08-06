@@ -93,7 +93,7 @@ const PublishedMapsListScreen = ({
         <Box sx={style.projects}>
           <Flex>
             <Box sx={{ flex: 1 }}>
-              <Heading as="h2" sx={{ my: "3" }}>
+              <Heading as="h1" sx={{ my: "3" }}>
                 <span>Community maps</span>
               </Heading>
               <Text>Explore published maps from across the entire DistrictBuilder community</Text>

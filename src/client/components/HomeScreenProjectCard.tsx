@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, Flex, Heading, jsx } from "theme-ui";
+import { Box, Flex, Heading, jsx, Text } from "theme-ui";
 import { useHistory } from "react-router-dom";
 
 import { IProject } from "../../shared/entities";
@@ -10,26 +10,25 @@ import ProjectDistrictsMap from "./map/ProjectDistrictsMap";
 const style = {
   featuredProject: {
     width: "100%",
-    bg: "#fff",
-    borderRadius: "2px",
-    display: "inline-block",
-    mb: "20px",
-    boxShadow: "small",
-    position: "relative"
+    bg: "transparent",
+    position: "relative",
+    borderBottom: "1px solid",
+    borderColor: "gray.2"
   },
   mapLabel: {
-    p: "15px",
-    display: "inline-block",
-    width: "600px",
-    pl: "100px",
-    borderColor: "gray.2",
-    position: "absolute"
+    p: "15px"
   },
   projectTitle: {
-    display: "inline-block",
-    width: "300px",
     "&:hover": {
       cursor: "pointer"
+    },
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      content: '""'
     }
   },
   projectRow: {
@@ -70,35 +69,32 @@ const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
 
   return (
     <Flex sx={style.featuredProject}>
-      <ProjectDistrictsMap project={project} context={"home"} />
+      <Box sx={{ height: "120px", width: "120px", position: "relative" }}>
+        <ProjectDistrictsMap project={project} context={"home"} />
+      </Box>
       <Box sx={style.mapLabel}>
         <Box sx={style.projectTitle} onClick={() => goToProject(project)}>
-          <span sx={{ display: "inline-block" }}>
-            <Heading
-              as="h2"
-              sx={{
-                fontFamily: "heading",
-                variant: "text.h5",
-                fontWeight: "light",
-                mr: 3
-              }}
-            >
-              {project.name}
-            </Heading>
-          </span>
-          <p sx={{ fontSize: 2, color: "gray.7" }}>
-            ({project.regionConfig.name}, {project.numberOfDistricts} districts)
-          </p>
+          <Heading
+            as="h2"
+            sx={{
+              fontFamily: "heading",
+              variant: "text.h5",
+              mr: 3
+            }}
+          >
+            {project.name}
+          </Heading>
+          <Text sx={{ fontSize: 2, color: "gray.7" }}>
+            {project.regionConfig.name} · {project.numberOfDistricts} districts
+          </Text>
         </Box>
-        <div
+        <Text
           sx={{
-            fontWeight: "light",
-            color: "gray.5",
-            paddingLeft: "5px"
+            color: "gray.5"
           }}
         >
           Last updated <TimeAgo datetime={project.updatedDt} />
-        </div>
+        </Text>
       </Box>
       <span sx={style.flyoutButton}>
         <ProjectListFlyout project={project} sx={{ display: "inline-block" }} />

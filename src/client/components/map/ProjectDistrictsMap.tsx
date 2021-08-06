@@ -12,10 +12,10 @@ import { getDistrictColor } from "../../constants/colors";
 
 const style = {
   mapContainer: {
-    height: "250px",
     display: "inline-block",
     position: "relative",
-    p: "15px"
+    p: "10px",
+    left: 0
   },
   map: {
     position: "absolute",
@@ -96,14 +96,11 @@ const ProjectDistrictsMap = ({
       <Box
         sx={
           context === "communityMaps"
-            ? { ...style.mapContainer, width: "100%" }
-            : { ...style.mapContainer, width: "300px" }
+            ? { ...style.mapContainer, width: "100%", height: "200px" }
+            : { ...style.mapContainer, width: "100%", height: "120px" }
         }
       >
-        <Box
-          ref={mapRef}
-          sx={context === "communityMaps" ? style.map : { ...style.map, pl: "20px" }}
-        ></Box>
+        <Box ref={mapRef} sx={style.map}></Box>
       </Box>
       {!mapLoaded && (
         <Box sx={{ ...style.mapContainer, ...{ position: "absolute" } }}>
