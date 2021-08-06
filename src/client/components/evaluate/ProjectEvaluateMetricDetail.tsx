@@ -2,7 +2,7 @@
 import { Box, Button, Flex, jsx, ThemeUIStyleObject, Heading, Text, Select } from "theme-ui";
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
 import Icon from "../Icon";
-import { DistrictsGeoJSON, EvaluateMetric, ElectionYear } from "../../types";
+import { DistrictsGeoJSON, ElectionYear, EvaluateMetricWithValue } from "../../types";
 import store from "../../store";
 import { selectEvaluationMetric } from "../../actions/districtDrawing";
 import ContiguityMetricDetail from "./detail/Contiguity";
@@ -40,7 +40,7 @@ const ProjectEvaluateMetricDetail = ({
   staticMetadata
 }: {
   readonly geojson?: DistrictsGeoJSON;
-  readonly metric: EvaluateMetric;
+  readonly metric: EvaluateMetricWithValue;
   readonly project?: IProject;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly geoLevel: string;

@@ -2,13 +2,7 @@
 import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
-import {
-  DistrictsGeoJSON,
-  EvaluateMetric,
-  EvaluateMetricWithValue,
-  ElectionYear,
-  Party
-} from "../../types";
+import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, Party } from "../../types";
 import store from "../../store";
 import { hasMultipleElections, isMajorityMinority } from "../../functions";
 import { regionPropertiesFetch } from "../../actions/regionConfig";
@@ -45,7 +39,7 @@ const ProjectEvaluateSidebar = ({
   staticMetadata
 }: {
   readonly geojson?: DistrictsGeoJSON;
-  readonly metric: EvaluateMetric | undefined;
+  readonly metric: EvaluateMetricWithValue | undefined;
   readonly project?: IProject;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
@@ -249,13 +243,7 @@ const ProjectEvaluateSidebar = ({
       showInSummary: true,
       value: project?.districtsDefinition.filter(x => Array.isArray(x)).length || 0,
       total: project ? project.districtsDefinition.length : 0,
-      splitCounties: project?.districtsDefinition.map(c => {
-        if (Array.isArray(c)) {
-          return c;
-        } else {
-          return undefined;
-        }
-      })
+      splitCounties: project?.districtsDefinition.map(c => Array.isArray(c))
     }
   ];
   return (

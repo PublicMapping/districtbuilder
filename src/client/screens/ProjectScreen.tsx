@@ -15,7 +15,7 @@ import {
   IUser,
   UintArrays
 } from "../../shared/entities";
-import { ElectionYear, EvaluateMetric } from "../types";
+import { ElectionYear, EvaluateMetricWithValue } from "../types";
 
 import { projectDataFetch, clearDuplicationState } from "../actions/projectData";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
@@ -50,7 +50,7 @@ interface StateProps {
   readonly findMenuOpen: boolean;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly evaluateMode: boolean;
-  readonly evaluateMetric: EvaluateMetric | undefined;
+  readonly evaluateMetric: EvaluateMetricWithValue | undefined;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly expandedProjectMetrics?: boolean;
   readonly districtDrawing: DistrictDrawingState;

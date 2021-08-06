@@ -2,7 +2,7 @@ import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { SavingState, EvaluateMetric, ElectionYear } from "../types";
+import { SavingState, EvaluateMetricWithValue, ElectionYear } from "../types";
 
 import {
   addSelectedGeounits,
@@ -121,7 +121,7 @@ export interface DistrictDrawingState {
   readonly findMenuOpen: boolean;
   readonly expandedProjectMetrics: boolean;
   readonly evaluateMode: boolean;
-  readonly evaluateMetric: EvaluateMetric | undefined;
+  readonly evaluateMetric: EvaluateMetricWithValue | undefined;
   readonly findIndex?: number;
   readonly findTool: FindTool;
   readonly limitSelectionToCounty: boolean;

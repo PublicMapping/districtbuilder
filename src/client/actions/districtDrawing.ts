@@ -1,6 +1,6 @@
 import { createAction } from "typesafe-actions";
 import { DistrictId, GeoUnits } from "../../shared/entities";
-import { SavingState, ElectionYear, EvaluateMetric } from "../types";
+import { SavingState, ElectionYear, EvaluateMetricWithValue } from "../types";
 
 export enum SelectionTool {
   Default = "DEFAULT",
@@ -76,7 +76,7 @@ export const setFindIndex = createAction("Set find menu polygon index")<number |
 export const toggleEvaluate = createAction("Toggle evaluate mode")<boolean>();
 export const toggleExpandedMetrics = createAction("Toggle expanded metrics")<boolean>();
 export const selectEvaluationMetric = createAction("Select evaluation metric")<
-  EvaluateMetric | undefined
+  EvaluateMetricWithValue | undefined
 >();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();

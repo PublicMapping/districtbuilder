@@ -95,6 +95,4 @@ export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   readonly [key: string]: any;
 }
 
-export type EvaluateMetric = BaseEvaluateMetric | EvaluateMetricWithValue;
-
 export type ChoroplethSteps = readonly (readonly [number, string])[];

@@ -3,7 +3,7 @@ import { Box, IconButton, Flex, jsx, ThemeUIStyleObject, Heading, Text } from "t
 
 import Icon from "../Icon";
 import store from "../../store";
-import { EvaluateMetric, EvaluateMetricWithValue } from "../../types";
+import { EvaluateMetricWithValue } from "../../types";
 import { formatPvi } from "../../functions";
 import { selectEvaluationMetric, toggleEvaluate } from "../../actions/districtDrawing";
 
@@ -57,9 +57,8 @@ const ProjectEvaluateView = ({
   requiredMetrics,
   optionalMetrics
 }: {
-  // Still working out what the type should be here
-  readonly requiredMetrics: readonly EvaluateMetric[];
-  readonly optionalMetrics: readonly EvaluateMetric[];
+  readonly requiredMetrics: readonly EvaluateMetricWithValue[];
+  readonly optionalMetrics: readonly EvaluateMetricWithValue[];
 }) => {
   function formatMetricValue(metric: EvaluateMetricWithValue): string {
     switch (metric.type) {
