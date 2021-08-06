@@ -37,7 +37,12 @@ import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
 import { MakeDistrictsErrors, ConvertProjectErrors } from "../../../../shared/constants";
-import { DistrictsDefinition, ProjectId, PublicUserProperties } from "../../../../shared/entities";
+import {
+  DistrictsDefinition,
+  ProjectId,
+  PublicUserProperties,
+  UserId
+} from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
@@ -193,8 +198,7 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: UpdateProjectDto
   ) {
-    // @ts-ignore
-    const existingProject = await this.service.findOne({ id }, { relations: ["regionConfig"] });
+    const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
     if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
@@ -343,6 +347,30 @@ export class ProjectsController implements CrudController<Project> {
     return project;
   }
 
+  // Helper for obtaining a project for a given project request, throws exception if not found
+  async getProjectWithDistricts(id: ProjectId, userId: UserId): Promise<Project> {
+    if (!isUUID(id)) {
+      throw new NotFoundException(`Project ${id} is not a valid UUID`);
+    }
+    // Not using 'getProject' because we need to select the 'districts' column
+    // Unauthenticated access is allowed for individual projects if they are
+    // visible or published, and not archived.
+    const commonFilter = { id, archived: false };
+    const project = await this.service.findOne({
+      where: [
+        { ...commonFilter, user: { id: userId } },
+        { ...commonFilter, visibility: ProjectVisibility.Published },
+        { ...commonFilter, visibility: ProjectVisibility.Visible }
+      ] as const,
+      loadEagerRelations: false,
+      relations: ["regionConfig"]
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${id} not found`);
+    }
+    return project;
+  }
+
   // Helper for obtaining a topology for a given S3 URI, throws exception if not found
   async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
     const geoCollection = await this.getGeoUnitProperties(s3URI);
@@ -393,22 +421,8 @@ export class ProjectsController implements CrudController<Project> {
   @Get(":id/export/geojson")
   async exportGeoJSON(@Request() req: any, @Param("id") id: ProjectId): Promise<DistrictsGeoJSON> {
     const user = req.user as User;
-    // Not using 'getProject' because we need to select the 'districts' column
-    // Unauthenticated access is allowed for individual projects if they are
-    // visible or published, and not archived.
-    const commonFilter = { id, archived: false };
-    const project = await this.service.findOne({
-      where: [
-        { ...commonFilter, user: { id: user.id } },
-        { ...commonFilter, visibility: ProjectVisibility.Published },
-        { ...commonFilter, visibility: ProjectVisibility.Visible }
-      ],
-      loadEagerRelations: false,
-      relations: ["regionConfig"]
-    });
-    if (!project) {
-      throw new NotFoundException(`Project ${id} not found`);
-    }
+    const project = await this.getProjectWithDistricts(id, user.id);
+
     // If the region is archived we can't calculate districts
     if (project.regionConfig.archived && !project.districts) {
       throw new BadRequestException(
