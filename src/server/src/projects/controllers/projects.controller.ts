@@ -633,7 +633,11 @@ export class ProjectsController implements CrudController<Project> {
     @Param("id") projectId: ProjectId
   ): Promise<Project> {
     const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
-    const geojson = await this.exportGeoJSON(req, projectId);
+    const districts = await this.exportGeoJSON(req, projectId);
+    const geojson = districts && {
+      ...districts,
+      features: districts.features.filter(f => f.id !== 0)
+    };
 
     return new Promise((resolve, reject) => {
       axios({
