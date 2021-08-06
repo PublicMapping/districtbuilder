@@ -170,8 +170,9 @@ const theme: Theme & StyledSystemTheme = {
     flat: {
       borderRadius: "small",
       backgroundColor: "muted",
-      my: 4,
-      p: 24
+      my: 3,
+      p: 24,
+      boxShadow: "small"
     },
     disabled: {
       borderRadius: "small",

@@ -132,16 +132,17 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     },
     cardLabel: {
       textTransform: "none",
-      variant: "text.h4",
+      variant: "text.h5",
       display: "block",
       mb: 1
     },
     cardHint: {
       display: "block",
       textTransform: "none",
-      fontWeight: "normal",
+      fontWeight: "500",
       fontSize: 1,
-      mb: 4
+      mt: 2,
+      mb: 3
     },
     radioHeading: {
       textTransform: "none",
@@ -156,7 +157,8 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     radioSubHeading: {
       fontSize: 1,
       letterSpacing: "0",
-      textTransform: "none"
+      textTransform: "none",
+      fontWeight: "500"
     },
     customInputContainer: {
       mt: 2,
@@ -194,7 +196,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       width: "100%",
       maxWidth: "large",
       borderTop: "1px solid lightgray",
-      my: 7
+      my: 8
     }
   };
 
@@ -225,21 +227,21 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
               }
             }}
           >
-            <Logo sx={{ width: "2rem" }} />
+            <Logo sx={{ width: "1.8rem" }} />
           </Link>
         </Box>
         <Heading as="h2" sx={{ variant: "text.h4", color: "blue.0", my: 0 }}>
-          New Map
+          New map
         </Heading>
       </Flex>
       <Flex as="main" sx={{ width: "100%", display: "block" }}>
-        <Flex sx={style.formContainer}>
+        <Flex sx={{ ...style.formContainer, ...{ marginBottom: "-36px" } }}>
           {"resource" in user && user.resource.organizations.length > 0 && (
             <Card sx={{ variant: "card.flat" }}>
-              <Heading as="h3" sx={style.orgCardLabel}>
+              <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                 Organization
-              </Heading>
-              <Box sx={style.orgCardSubtitle}>
+              </legend>
+              <Box sx={style.cardHint}>
                 Are you making a new map with an organization you&apos;ve joined?
               </Box>
               <div
