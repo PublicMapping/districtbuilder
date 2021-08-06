@@ -57,7 +57,6 @@ import {
   exportProjectShp,
   fetchProjectData,
   fetchProjectGeoJson,
-  createProject,
   patchProject,
   copyProject
 } from "../api";
