@@ -431,6 +431,24 @@ export class ProjectsController implements CrudController<Project> {
       );
     }
 
+    // If the districts are out-of-date, recalculate them and save
+    if (project.regionConfigVersion !== project.regionConfig.version) {
+      const districts = await this.getGeojson({
+        regionConfig: project.regionConfig,
+        numberOfDistricts: project.numberOfDistricts,
+        districtsDefinition: project.districtsDefinition
+      });
+
+      // Note we don't wait for save to return, and we throw away it's result
+      void this.service.save({
+        ...project,
+        districts,
+        regionConfigVersion: project.regionConfig.version
+      });
+
+      return districts;
+    }
+
     return project.districts;
   }
 
