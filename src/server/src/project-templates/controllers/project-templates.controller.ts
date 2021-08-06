@@ -102,6 +102,9 @@ export class ProjectTemplatesController {
         `User does not have admin privileges for organization: ${org.id}`
       );
     }
+    // The associated 'districts' column may be out-of-date if the RegionConfig has been updated
+    // We don't make an attempt to regenerate those here, and accept that we will return whatever data was
+    // available when the user last updated their project
     const projectRows = await this.service.findAdminOrgProjectsWithDistrictProperties(slug);
     const regionURIs = new Set(projectRows.map(row => row.regionS3URI));
     const topoLayers: { [s3uri: string]: GeoUnitTopology | GeoUnitProperties } = {};
