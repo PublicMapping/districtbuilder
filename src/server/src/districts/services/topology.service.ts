@@ -12,6 +12,7 @@ import _ from "lodash";
 
 // Number of state TopoJSON files to load at a time
 const BATCH_SIZE = 5;
+const STATE_ORDER = ["CA", "TX", "FL", "NY", "PA", "IL", "OH", "GA", "NC", "MI"];
 
 function s3Options(path: S3URI, fileName: string): GetObjectRequest {
   const url = new URL(path);
@@ -40,8 +41,14 @@ export class TopologyService {
           }),
           {}
         );
+        // Get largest states first
+        const sortedRegions = _.sortBy(regionConfigs, region =>
+          STATE_ORDER.includes(region.regionCode)
+            ? STATE_ORDER.indexOf(region.regionCode)
+            : undefined
+        );
         // eslint-disable-next-line functional/no-loop-statement
-        for (const batch of _.chunk(regionConfigs, BATCH_SIZE)) {
+        for (const batch of _.chunk(sortedRegions, BATCH_SIZE)) {
           const layers = Object.fromEntries(
             batch.map(region => [region.s3URI, this.fetchLayer(region.s3URI, region.archived)])
           );
