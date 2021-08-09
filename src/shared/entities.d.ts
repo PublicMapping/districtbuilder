@@ -303,11 +303,18 @@ export interface ImportRowFlag {
   readonly rowValue: readonly string[];
 }
 
-export interface DistrictsImportApiResponse {
-  readonly districtsDefinition?: DistrictsDefinition;
+export interface DistrictsImportApiError {
+  readonly error: string;
+}
+
+export interface DistrictsImportApiSuccess {
+  readonly districtsDefinition: DistrictsDefinition;
   readonly rowFlags?: readonly ImportRowFlag[];
+  readonly numFlags?: number;
   readonly maxDistrictId: number;
 }
+
+export type DistrictsImportApiResponse = DistrictsImportApiSuccess | DistrictsImportApiError;
 
 export interface PlanScoreAPIResponse {
   readonly index_url: string;

@@ -8,6 +8,7 @@ import { setImportFlagsModal } from "../actions/districtDrawing";
 import { State } from "../reducers";
 import store from "../store";
 import { ImportRowFlag } from "../../shared/entities";
+import { MAX_IMPORT_ERRORS } from "../../shared/constants";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -41,16 +42,19 @@ const style: ThemeUIStyleObject = {
   },
   button: {
     mr: "3"
-  }
+  },
+  flags: { marginTop: 4, maxHeight: "60vh", overflowY: "scroll" }
 };
 
 const ImportFlagsModal = ({
   importFlags,
+  numFlags,
   showModal,
   onContinue,
   onCancel
 }: {
   readonly importFlags: readonly ImportRowFlag[];
+  readonly numFlags: number;
   readonly showModal: boolean;
   readonly onContinue: () => void;
   readonly onCancel: () => void;
@@ -69,14 +73,20 @@ const ImportFlagsModal = ({
     >
       <Box sx={style.modal}>
         <Heading sx={style.heading}>
-          There are {importFlags.length} rows with flags in your import{" "}
+          There are {numFlags > importFlags.length ? `${MAX_IMPORT_ERRORS}+` : numFlags} rows with
+          flags in your import{" "}
         </Heading>
         <Box>
           We were able to read your block equivalency file, but we ran into a few issues. Please
           review the flags below and decide if you want to continue with this file or start over
           with a new file.
         </Box>
-        <Box style={{ marginTop: 4 }}>
+        {numFlags > importFlags.length && (
+          <Box sx={{ pt: 2 }}>
+            Displaying the first <b>{importFlags.length}</b> of <b>{numFlags}</b> errors
+          </Box>
+        )}
+        <Box sx={style.flags}>
           {importFlags.map(flag => (
             <Box key={flag.rowNumber}>
               <Box>

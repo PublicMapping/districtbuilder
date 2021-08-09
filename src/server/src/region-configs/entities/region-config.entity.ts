@@ -10,6 +10,7 @@ import {
 import { IRegionConfig } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
+import { CensusDate } from "../../../../shared/constants";
 
 @Entity()
 @Unique(["name", "countryCode", "regionCode", "version"])
@@ -54,4 +55,7 @@ export class RegionConfig implements IRegionConfig {
   // Archived regions are hidden, and also do not have data loaded and so their projects cannot be edited
   @Column({ type: "boolean", default: false })
   archived: boolean;
+
+  @Column({ type: "enum", enum: CensusDate, default: CensusDate.Census2020 })
+  census: CensusDate;
 }
