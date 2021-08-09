@@ -175,76 +175,86 @@ const ProjectScreen = ({
             staticMetadata={staticMetadata}
           />
         )}
-        <Flex sx={{ flexDirection: "column", flex: 1, background: "#fff" }}>
-          {!evaluateMode ? (
-            <MapHeader
-              label={mapLabel}
-              metadata={staticMetadata}
-              selectionTool={districtDrawing.selectionTool}
-              findMenuOpen={findMenuOpen}
-              paintBrushSize={districtDrawing.paintBrushSize}
-              geoLevelIndex={presentDrawingState.geoLevelIndex}
-              selectedGeounits={presentDrawingState.selectedGeounits}
-              limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
-              advancedEditingEnabled={project?.advancedEditingEnabled}
-              isReadOnly={isReadOnly}
-              electionYear={electionYear}
-            />
-          ) : (
-            <Flex></Flex>
-          )}
-
-          {project && staticMetadata && staticGeoLevels && geojson ? (
-            <React.Fragment>
-              {!isReadOnly && "resource" in user && (
-                <Tour
-                  geojson={geojson}
-                  project={project}
-                  staticMetadata={staticMetadata}
-                  user={user.resource}
-                />
-              )}
-              <Map
-                project={project}
-                geojson={geojson}
-                staticMetadata={staticMetadata}
-                staticGeoLevels={staticGeoLevels}
-                selectedGeounits={presentDrawingState.selectedGeounits}
-                selectedDistrictId={districtDrawing.selectedDistrictId}
-                hoveredDistrictId={districtDrawing.hoveredDistrictId}
-                zoomToDistrictId={districtDrawing.zoomToDistrictId}
+        {
+          <Flex
+            sx={{
+              flexDirection: "column",
+              flex: 1,
+              background: "#fff",
+              display: districtDrawing.expandedProjectMetrics ? "none" : "flex"
+            }}
+          >
+            {!evaluateMode ? (
+              <MapHeader
+                label={mapLabel}
+                metadata={staticMetadata}
                 selectionTool={districtDrawing.selectionTool}
+                findMenuOpen={findMenuOpen}
                 paintBrushSize={districtDrawing.paintBrushSize}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
-                expandedProjectMetrics={districtDrawing.expandedProjectMetrics}
-                lockedDistricts={presentDrawingState.lockedDistricts}
-                evaluateMode={evaluateMode}
-                evaluateMetric={evaluateMetric}
-                isReadOnly={isReadOnly}
-                isArchived={isArchived}
+                selectedGeounits={presentDrawingState.selectedGeounits}
                 limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
-                label={mapLabel}
-                map={map}
-                setMap={setMap}
-              />
-              {!isReadOnly && (
-                <AdvancedEditingModal
-                  id={project.id}
-                  geoLevels={staticMetadata.geoLevelHierarchy}
-                />
-              )}
-              <CopyMapModal project={project} />
-              <ConvertMapModal project={project} />
-              <KeyboardShortcutsModal
+                advancedEditingEnabled={project?.advancedEditingEnabled}
                 isReadOnly={isReadOnly}
-                selectionTool={districtDrawing.selectionTool}
                 evaluateMode={evaluateMode}
                 staticMetadata={staticMetadata}
+                electionYear={electionYear}
               />
-              <Flex id="tour-start" sx={style.tourStart}></Flex>
-            </React.Fragment>
-          ) : null}
-        </Flex>
+            ) : (
+              <Flex></Flex>
+            )}
+
+            {project && staticMetadata && staticGeoLevels && geojson ? (
+              <React.Fragment>
+                {!isReadOnly && "resource" in user && (
+                  <Tour
+                    geojson={geojson}
+                    project={project}
+                    staticMetadata={staticMetadata}
+                    user={user.resource}
+                  />
+                )}
+                <Map
+                  project={project}
+                  geojson={geojson}
+                  staticMetadata={staticMetadata}
+                  staticGeoLevels={staticGeoLevels}
+                  selectedGeounits={presentDrawingState.selectedGeounits}
+                  selectedDistrictId={districtDrawing.selectedDistrictId}
+                  hoveredDistrictId={districtDrawing.hoveredDistrictId}
+                  zoomToDistrictId={districtDrawing.zoomToDistrictId}
+                  selectionTool={districtDrawing.selectionTool}
+                  paintBrushSize={districtDrawing.paintBrushSize}
+                  geoLevelIndex={presentDrawingState.geoLevelIndex}
+                  expandedProjectMetrics={districtDrawing.expandedProjectMetrics}
+                  lockedDistricts={presentDrawingState.lockedDistricts}
+                  evaluateMode={evaluateMode}
+                  evaluateMetric={evaluateMetric}
+                  isReadOnly={isReadOnly}
+                  isArchived={isArchived}
+                  limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
+                  label={mapLabel}
+                  map={map}
+                  setMap={setMap}
+                />
+                {!isReadOnly && (
+                  <AdvancedEditingModal
+                    id={project.id}
+                    geoLevels={staticMetadata.geoLevelHierarchy}
+                  />
+                )}
+                <CopyMapModal project={project} />
+                <ConvertMapModal project={project} />
+                <KeyboardShortcutsModal
+                  isReadOnly={isReadOnly}
+                  evaluateMode={evaluateMode}
+                  staticMetadata={staticMetadata}
+                />
+                <Flex id="tour-start" sx={style.tourStart}></Flex>
+              </React.Fragment>
+            ) : null}
+          </Flex>
+        }
       </Flex>
     </Flex>
   );

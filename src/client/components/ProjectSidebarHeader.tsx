@@ -59,6 +59,14 @@ const ProjectSidebarHeader = ({
         <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
           Districts
         </Heading>
+        <Box sx={style.expandedToggle}>
+          <Button
+            sx={style.expandButton}
+            onClick={() => store.dispatch(toggleExpandedMetrics(!expandedProjectMetrics))}
+          >
+            {expandedProjectMetrics ? <Icon name="compress" /> : <Icon name="expand" />}
+          </Button>
+        </Box>
       </Flex>
       {isLoading || saving === "saving" ? (
         <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
@@ -111,14 +119,6 @@ const ProjectSidebarHeader = ({
           </Flex>
         </Tooltip>
       ) : null}
-      <Box sx={style.expandedToggle}>
-        <Button
-          sx={style.expandButton}
-          onClick={() => store.dispatch(toggleExpandedMetrics(!expandedProjectMetrics))}
-        >
-          {expandedProjectMetrics ? <Icon name="compress" /> : <Icon name="expand" />}
-        </Button>
-      </Box>
     </Flex>
   );
 };

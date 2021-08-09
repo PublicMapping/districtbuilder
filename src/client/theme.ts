@@ -384,7 +384,8 @@ const theme: Theme & StyledSystemTheme = {
           mx: 0
         },
         "&:hover:not([disabled]):not(:active)": {
-          bg: "rgba(89, 89, 89, 0.1)"
+          bg: "rgba(89, 89, 89, 0.1)",
+          color: "gray.8"
         },
         "&[disabled]": {
           bg: "transparent",
@@ -392,7 +393,8 @@ const theme: Theme & StyledSystemTheme = {
           cursor: "not-allowed"
         },
         "&:active": {
-          bg: "rgba(89, 89, 89, 0.3)"
+          bg: "rgba(89, 89, 89, 0.3)",
+          color: "gray.8"
         }
       }
     }

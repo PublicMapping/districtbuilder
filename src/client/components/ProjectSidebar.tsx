@@ -123,13 +123,9 @@ const style: ThemeUIStyleObject = {
     color: "gray.8",
     fontSize: 1,
     p: 2,
-    pt: 0,
     textAlign: "left",
     verticalAlign: "bottom",
     position: "relative"
-  },
-  chart: {
-    display: "inline-block"
   },
   minorityMajorityFlag: {
     display: "inline-block",
@@ -441,7 +437,6 @@ const ProjectSidebar = ({
                     )
                 )}
               <Styled.th sx={style.th}></Styled.th>
-              <Styled.th sx={style.th}></Styled.th>
             </Styled.tr>
           </thead>
           <tbody>
@@ -694,12 +689,12 @@ const SidebarRow = memo(
                 )
               }
             >
-              <span sx={{ display: "inline-block" }}>
+              <Flex>
                 <span sx={style.chart}>
                   <DemographicsChart demographics={demographics} />
                 </span>
                 {isMajorityMinority(district) && <span sx={style.minorityMajorityFlag}>*</span>}
-              </span>
+              </Flex>
             </Tooltip>
           </Styled.td>
         )}
