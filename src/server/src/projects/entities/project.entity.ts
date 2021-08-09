@@ -40,11 +40,7 @@ export class Project implements IProject {
 
   // The version of Project.regionConfig at the time of last update,
   // used to bust cache for districts column
-  @Column({
-    type: "timestamp with time zone",
-    name: "region_config_version",
-    nullable: true
-  })
+  @Column({ type: "timestamp with time zone", name: "region_config_version" })
   regionConfigVersion: Date;
 
   @ManyToOne(() => Chamber, { nullable: true })
