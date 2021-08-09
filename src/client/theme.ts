@@ -34,8 +34,8 @@ const appButtonStyles = {
     boxShadow: "focus"
   },
   "&[disabled]": {
-    opacity: 0.2,
-    bg: "gray.3",
+    opacity: 0.6,
+    bg: "gray.8",
     cursor: "not-allowed"
   },
   "&:visited": {

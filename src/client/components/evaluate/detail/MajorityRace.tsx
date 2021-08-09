@@ -77,9 +77,7 @@ const MajorityRaceMetricDetail = ({
           <Styled.tr>
             <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
             <Styled.th sx={style.th}>Majority Race</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.number, ...style.colLast }}>
-              Demographics
-            </Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.colLast }}>Demographics</Styled.th>
           </Styled.tr>
         </thead>
         <tbody>
@@ -108,7 +106,7 @@ const MajorityRaceMetricDetail = ({
                     )}
                   </Styled.td>
 
-                  <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
+                  <Styled.td sx={{ ...style.td, ...style.colLast }}>
                     <Tooltip
                       placement="top-start"
                       content={

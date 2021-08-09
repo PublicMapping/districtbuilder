@@ -134,7 +134,13 @@ const CompetitivenessMetricDetail = ({
           )}
         </tbody>
       </Styled.table>
-      <Box>
+      <Box
+        sx={{
+          mb: 2,
+          position: "fixed",
+          bottom: "0"
+        }}
+      >
         {planScoreLoaded === null || planScoreLoaded === false ? (
           <Button
             sx={{
@@ -154,8 +160,17 @@ const CompetitivenessMetricDetail = ({
               <span>Send to PlanScore API</span>
             ) : (
               <span>
-                Loading...
-                <Spinner variant="spinner.small" />
+                Loading&nbsp;
+                <Spinner
+                  sx={{
+                    position: "relative",
+                    top: "3px",
+                    width: "18px",
+                    height: "18px",
+                    color: "white"
+                  }}
+                  variant="spinner.small"
+                />
               </span>
             )}
           </Button>

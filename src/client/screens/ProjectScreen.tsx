@@ -181,7 +181,7 @@ const ProjectScreen = ({
               flexDirection: "column",
               flex: 1,
               background: "#fff",
-              display: districtDrawing.expandedProjectMetrics ? "none" : "flex"
+              display: !evaluateMode && districtDrawing.expandedProjectMetrics ? "none" : "flex"
             }}
           >
             {!evaluateMode ? (
