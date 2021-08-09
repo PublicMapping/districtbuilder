@@ -37,7 +37,12 @@ import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
 import { MakeDistrictsErrors, ConvertProjectErrors } from "../../../../shared/constants";
-import { DistrictsDefinition, ProjectId, PublicUserProperties } from "../../../../shared/entities";
+import {
+  DistrictsDefinition,
+  ProjectId,
+  PublicUserProperties,
+  UserId
+} from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { TopologyService } from "../../districts/services/topology.service";
@@ -70,6 +75,7 @@ import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.
     }
   },
   query: {
+    exclude: ["districts"],
     join: {
       projectTemplate: {
         exclude: ["districtsDefinition"],
@@ -192,8 +198,7 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: UpdateProjectDto
   ) {
-    // @ts-ignore
-    const existingProject = await this.service.findOne({ id }, { relations: ["regionConfig"] });
+    const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
     if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
@@ -201,11 +206,12 @@ export class ProjectsController implements CrudController<Project> {
       } as Errors<UpdateProjectDto>);
     }
 
-    // Update districts GeoJSON if the definition has changed or there is no cached value yet
+    // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
     const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
       (!existingProject.districts ||
+        existingProject.regionConfigVersion !== existingProject.regionConfig.version ||
         !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
         ? {
             ...dto,
@@ -213,7 +219,8 @@ export class ProjectsController implements CrudController<Project> {
               regionConfig: existingProject.regionConfig,
               numberOfDistricts: existingProject.numberOfDistricts,
               districtsDefinition: dto.districtsDefinition
-            })
+            }),
+            regionConfigVersion: existingProject.regionConfig.version
           }
         : dto;
 
@@ -340,6 +347,30 @@ export class ProjectsController implements CrudController<Project> {
     return project;
   }
 
+  // Helper for obtaining a project for a given project request, throws exception if not found
+  async getProjectWithDistricts(id: ProjectId, userId: UserId): Promise<Project> {
+    if (!isUUID(id)) {
+      throw new NotFoundException(`Project ${id} is not a valid UUID`);
+    }
+    // Not using 'getProject' because we need to select the 'districts' column
+    // Unauthenticated access is allowed for individual projects if they are
+    // visible or published, and not archived.
+    const commonFilter = { id, archived: false };
+    const project = await this.service.findOne({
+      where: [
+        { ...commonFilter, user: { id: userId } },
+        { ...commonFilter, visibility: ProjectVisibility.Published },
+        { ...commonFilter, visibility: ProjectVisibility.Visible }
+      ] as const,
+      loadEagerRelations: false,
+      relations: ["regionConfig"]
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${id} not found`);
+    }
+    return project;
+  }
+
   // Helper for obtaining a topology for a given S3 URI, throws exception if not found
   async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
     const geoCollection = await this.getGeoUnitProperties(s3URI);
@@ -390,28 +421,32 @@ export class ProjectsController implements CrudController<Project> {
   @Get(":id/export/geojson")
   async exportGeoJSON(@Request() req: any, @Param("id") id: ProjectId): Promise<DistrictsGeoJSON> {
     const user = req.user as User;
-    // Not using 'getProject' because we need to select the 'districts' column
-    // Unauthenticated access is allowed for individual projects if they are
-    // visible or published, and not archived.
-    const commonFilter = { id, archived: false };
-    const project = await this.service.findOne({
-      where: [
-        { ...commonFilter, user: { id: user.id } },
-        { ...commonFilter, visibility: ProjectVisibility.Published },
-        { ...commonFilter, visibility: ProjectVisibility.Visible }
-      ],
-      loadEagerRelations: false,
-      relations: ["regionConfig"]
-    });
-    if (!project) {
-      throw new NotFoundException(`Project ${id} not found`);
-    }
+    const project = await this.getProjectWithDistricts(id, user.id);
+
     // If the region is archived we can't calculate districts
     if (project.regionConfig.archived && !project.districts) {
       throw new BadRequestException(
         "Saved district is not available and cannot be calculated",
         MakeDistrictsErrors.INVALID_DEFINITION
       );
+    }
+
+    // If the districts are out-of-date, recalculate them and save
+    if (project.regionConfigVersion !== project.regionConfig.version) {
+      const districts = await this.getGeojson({
+        regionConfig: project.regionConfig,
+        numberOfDistricts: project.numberOfDistricts,
+        districtsDefinition: project.districtsDefinition
+      });
+
+      // Note we don't wait for save to return, and we throw away it's result
+      void this.service.save({
+        ...project,
+        districts,
+        regionConfigVersion: project.regionConfig.version
+      });
+
+      return districts;
     }
 
     return project.districts;
@@ -593,17 +628,21 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(JwtAuthGuard)
   @Post(":id/planScore")
-  async sendToPlanScoreAPI(@Param("id") projectId: ProjectId): Promise<Project> {
+  async sendToPlanScoreAPI(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<Project> {
     const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
-    const project = await this.service.findOne(projectId, { relations: ["regionConfig"] });
-    const geojson = project && {
-      ...project.districts,
-      features: project.districts.features.filter(f => f.id !== 0)
+    const districts = await this.exportGeoJSON(req, projectId);
+    const geojson = districts && {
+      ...districts,
+      features: districts.features.filter(f => f.id !== 0)
     };
+
     return new Promise((resolve, reject) => {
       axios({
         method: "POST",
-        data: project && Buffer.from(JSON.stringify(geojson)),
+        data: Buffer.from(JSON.stringify(geojson)),
         url: "http://api.planscore.org/upload/",
         headers: {
           Authorization: `Bearer ${planScoreToken}`

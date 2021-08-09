@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update population deviation helper text [#848](https://github.com/PublicMapping/districtbuilder/pull/848)
 - Update display logic for political data in expandable metrics viewer [#864](https://github.com/PublicMapping/districtbuilder/pull/864)
 - Update UX for duplication, showing a spinner when duplication is pending and redirecting when it completes [#872](https://github.com/PublicMapping/districtbuilder/pull/872)
+- Added cache-busting to 'districts' column [#897](https://github.com/PublicMapping/districtbuilder/pull/897)
 
 ### Fixed
 
