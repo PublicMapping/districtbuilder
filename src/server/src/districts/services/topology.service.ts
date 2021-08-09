@@ -11,7 +11,7 @@ import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 import _ from "lodash";
 
 // Number of state TopoJSON files to load at a time
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 5;
 
 function s3Options(path: S3URI, fileName: string): GetObjectRequest {
   const url = new URL(path);
