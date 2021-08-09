@@ -10,6 +10,9 @@ import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 import _ from "lodash";
 
+// Number of state TopoJSON files to load at a time
+const BATCH_SIZE = 10;
+
 function s3Options(path: S3URI, fileName: string): GetObjectRequest {
   const url = new URL(path);
   const pathWithoutLeadingSlash = url.pathname.substring(1);
@@ -18,7 +21,7 @@ function s3Options(path: S3URI, fileName: string): GetObjectRequest {
 }
 
 interface Layers {
-  [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | void>;
+  [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | undefined>;
 }
 
 @Injectable()
@@ -31,24 +34,20 @@ export class TopologyService {
     void repo.find().then(regionConfigs => {
       const getLayers = async () => {
         this._layers = regionConfigs.reduce(
-          (layers, regionConfig) => ({ ...layers, [regionConfig.s3URI]: void 0 }),
+          (layers, regionConfig) => ({
+            ...layers,
+            [regionConfig.s3URI]: Promise.resolve(undefined)
+          }),
           {}
         );
-        const archivedURIs = regionConfigs.filter(r => r.archived).map(r => r.s3URI);
-        const activeURIs = regionConfigs.filter(r => !r.archived).map(r => r.s3URI);
-
-        // Archived regions don't have high memory requirements once loaded, so we take care of them first
-        // eslint-disable-next-line
-        for (const s3URI of archivedURIs) {
-          this._layers[s3URI] = this.fetchLayer(s3URI, true);
-        }
-        // Block until loading archived layers is complete
-        await Promise.all(Object.values(_.pick(this._layers, archivedURIs)));
-
-        // Next we load all remaining (unarchived) regions
-        // eslint-disable-next-line
-        for (const s3URI of activeURIs) {
-          this._layers[s3URI] = this.fetchLayer(s3URI, false);
+        // eslint-disable-next-line functional/no-loop-statement
+        for (const batch of _.chunk(regionConfigs, BATCH_SIZE)) {
+          const layers = Object.fromEntries(
+            batch.map(region => [region.s3URI, this.fetchLayer(region.s3URI, region.archived)])
+          );
+          this._layers = { ...this._layers, ...layers };
+          // Block until this batch of regions is loaded before we continue to the next
+          await Promise.all(Object.values(layers));
         }
       };
       void getLayers();
@@ -59,7 +58,7 @@ export class TopologyService {
     return this._layers && Object.freeze(this._layers);
   }
 
-  public async get(s3URI: S3URI): Promise<GeoUnitTopology | GeoUnitProperties | void> {
+  public async get(s3URI: S3URI): Promise<GeoUnitTopology | GeoUnitProperties | undefined> {
     if (!this._layers) {
       return;
     }
@@ -78,7 +77,7 @@ export class TopologyService {
   private async fetchLayer(
     s3URI: S3URI,
     archived: boolean
-  ): Promise<GeoUnitTopology | GeoUnitProperties | void> {
+  ): Promise<GeoUnitTopology | GeoUnitProperties | undefined> {
     try {
       const [topojsonResponse, staticMetadataResponse] = await Promise.all([
         this.s3.getObject(s3Options(s3URI, "topo.json")).promise(),
