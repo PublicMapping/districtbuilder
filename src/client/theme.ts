@@ -385,7 +385,7 @@ const theme: Theme & StyledSystemTheme = {
         },
         "&:hover:not([disabled]):not(:active)": {
           bg: "rgba(89, 89, 89, 0.1)",
-          color: "gray.8"
+          color: "inherit"
         },
         "&[disabled]": {
           bg: "transparent",
@@ -394,7 +394,7 @@ const theme: Theme & StyledSystemTheme = {
         },
         "&:active": {
           bg: "rgba(89, 89, 89, 0.3)",
-          color: "gray.8"
+          color: "inherit"
         }
       }
     }
@@ -431,6 +431,9 @@ const theme: Theme & StyledSystemTheme = {
     select: {
       borderColor: "gray.2",
       backgroundColor: "#fff",
+      fontFamily: "heading",
+      width: "auto",
+      paddingRight: "30px",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
