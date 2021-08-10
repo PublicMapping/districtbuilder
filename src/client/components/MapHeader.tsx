@@ -324,30 +324,34 @@ const MapHeader = ({
           position: "relative",
           ml: 3,
           pl: 2,
+          color: "gray.7",
           borderLeft: "1px solid",
           borderLeftColor: "gray.2"
         }}
       >
-        <Button
-          sx={{
-            variant: "buttons.icon",
-            fontSize: 1,
-            py: 1,
-            border: "1px solid transparent",
-            "&:hover:not([disabled]):not(:active).selected, &.selected": {
-              bg: "blue.1",
-              color: "blue.8",
-
-              borderColor: "gray.2"
-            }
-          }}
-          onClick={() => {
-            store.dispatch(toggleFind(!findMenuOpen));
-          }}
-          className={findMenuOpen ? "selected" : ""}
-        >
-          <Icon name="search" />
-        </Button>
+        <Tooltip content="Find">
+          <Button
+            sx={{
+              variant: "buttons.icon",
+              fontSize: 1,
+              py: 1,
+              color: "gray.7",
+              border: "1px solid transparent",
+              "&:hover:not([disabled]):not(:active).selected, &.selected": {
+                bg: "blue.1",
+                color: "gray.7",
+                opacity: 1,
+                borderColor: "gray.2"
+              }
+            }}
+            onClick={() => {
+              store.dispatch(toggleFind(!findMenuOpen));
+            }}
+            className={findMenuOpen ? "selected" : ""}
+          >
+            <Icon name="search" />
+          </Button>
+        </Tooltip>
       </Box>
     </Flex>
   );

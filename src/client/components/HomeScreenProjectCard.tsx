@@ -13,7 +13,8 @@ const style = {
     bg: "transparent",
     position: "relative",
     borderBottom: "1px solid",
-    borderColor: "gray.2"
+    borderColor: "gray.2",
+    alignItems: "center"
   },
   mapLabel: {
     p: "15px"
@@ -69,7 +70,7 @@ const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
 
   return (
     <Flex sx={style.featuredProject}>
-      <Box sx={{ height: "120px", width: "120px", position: "relative" }}>
+      <Box sx={{ height: "125px", width: "125px", position: "relative", mx: 3 }}>
         <ProjectDistrictsMap project={project} context={"home"} />
       </Box>
       <Box sx={style.mapLabel}>
@@ -79,7 +80,8 @@ const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
             sx={{
               fontFamily: "heading",
               variant: "text.h5",
-              mr: 3
+              mr: 3,
+              mb: 1
             }}
           >
             {project.name}
@@ -90,7 +92,8 @@ const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
         </Box>
         <Text
           sx={{
-            color: "gray.5"
+            color: "gray.5",
+            fontSize: 1
           }}
         >
           Last updated <TimeAgo datetime={project.updatedDt} />

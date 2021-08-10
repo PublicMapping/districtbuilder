@@ -62,7 +62,7 @@ const ProjectDistrictsMap = ({
         layers: []
       },
       bounds,
-      fitBoundsOptions: { padding: 15 },
+      fitBoundsOptions: { padding: context === "communityMaps" ? 15 : 10 },
       interactive: false
     });
 
@@ -97,7 +97,7 @@ const ProjectDistrictsMap = ({
         sx={
           context === "communityMaps"
             ? { ...style.mapContainer, width: "100%", height: "200px" }
-            : { ...style.mapContainer, width: "100%", height: "120px" }
+            : { ...style.mapContainer, width: "100%", height: "125px" }
         }
       >
         <Box ref={mapRef} sx={style.map}></Box>

@@ -33,7 +33,8 @@ const style: ThemeUIStyleObject = {
   expandButton: {
     variant: "buttons.icon",
     fontSize: 1,
-    py: 1
+    py: 1,
+    ml: 1
   }
 };
 
