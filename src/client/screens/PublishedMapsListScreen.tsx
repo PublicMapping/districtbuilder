@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { Flex, jsx, Spinner, Box, Heading, Text, Label, Select } from "theme-ui";
 import { IProject, ProjectNest, IRegionConfig, PaginationMetadata } from "../../shared/entities";
@@ -15,7 +15,6 @@ import {
 import { UserState } from "../reducers/user";
 import FeaturedProjectCard from "../components/FeaturedProjectCard";
 import PaginationFooter from "../components/PaginationFooter";
-import { isEqual } from "lodash";
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { capitalizeFirstLetter } from "../functions";
 import { Resource } from "../resource";
