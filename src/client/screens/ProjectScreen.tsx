@@ -196,7 +196,6 @@ const ProjectScreen = ({
                 limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
                 advancedEditingEnabled={project?.advancedEditingEnabled}
                 isReadOnly={isReadOnly}
-                evaluateMode={evaluateMode}
                 staticMetadata={staticMetadata}
                 electionYear={electionYear}
               />
