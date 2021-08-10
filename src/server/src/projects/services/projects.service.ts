@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
+import simplify from "@turf/simplify";
 import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
 
 import { Project } from "../entities/project.entity";
@@ -45,6 +46,18 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       .orderBy("project.updatedDt", "DESC");
   }
 
+  // We only use the districts column for displaying a mini-map outside of the main Project Screen
+  // so we can simplify the geometries to save on size and improve performance
+  async simplifyDistricts(page: Promise<Pagination<Project>>): Promise<Pagination<Project>> {
+    const projects = await page;
+    projects.items.forEach(project => {
+      project.districts.features.forEach(districtFeature => {
+        simplify(districtFeature, { mutate: true, tolerance: 0.005 });
+      });
+    });
+    return projects;
+  }
+
   async findAllPublishedProjectsPaginated(
     options: AllProjectsOptions
   ): Promise<Pagination<Project>> {
@@ -63,7 +76,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     const builderWithRegion = options.region
       ? builderWithFilter.andWhere("regionConfig.regionCode = :region", { region: options.region })
       : builderWithFilter;
-    return paginate<Project>(builderWithRegion, options);
+    return this.simplifyDistricts(paginate<Project>(builderWithRegion, options));
   }
 
   async findAllUserProjectsPaginated(
@@ -75,6 +88,6 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       { userId }
     );
 
-    return paginate<Project>(builder, options);
+    return this.simplifyDistricts(paginate<Project>(builder, options));
   }
 }
