@@ -38,7 +38,7 @@ export const initialState = {
   projects: { isPending: false },
   userProjectsPagination: {
     currentPage: 1,
-    limit: 4,
+    limit: 10,
     totalItems: undefined,
     totalPages: undefined
   },
