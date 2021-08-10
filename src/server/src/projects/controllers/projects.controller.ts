@@ -290,7 +290,8 @@ export class ProjectsController implements CrudController<Project> {
       districtsDefinition,
       districts,
       lockedDistricts,
-      user: req.parsed.authPersist.userId
+      user: req.parsed.authPersist.userId,
+      regionConfigVersion: regionConfig.version
     };
   }
 
