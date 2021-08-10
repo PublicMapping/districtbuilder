@@ -3,7 +3,7 @@ import { Box, IconButton, Flex, jsx, ThemeUIStyleObject, Heading, Text } from "t
 
 import Icon from "../Icon";
 import store from "../../store";
-import { EvaluateMetric, EvaluateMetricWithValue } from "../../types";
+import { EvaluateMetricWithValue } from "../../types";
 import { formatPvi } from "../../functions";
 import { selectEvaluationMetric, toggleEvaluate } from "../../actions/districtDrawing";
 
@@ -57,9 +57,8 @@ const ProjectEvaluateView = ({
   requiredMetrics,
   optionalMetrics
 }: {
-  // Still working out what the type should be here
-  readonly requiredMetrics: readonly EvaluateMetric[];
-  readonly optionalMetrics: readonly EvaluateMetric[];
+  readonly requiredMetrics: readonly EvaluateMetricWithValue[];
+  readonly optionalMetrics: readonly EvaluateMetricWithValue[];
 }) => {
   function formatMetricValue(metric: EvaluateMetricWithValue): string {
     switch (metric.type) {
@@ -94,67 +93,71 @@ const ProjectEvaluateView = ({
           <Heading as="h3" sx={{ variant: "text.h5", mt: 2 }}>
             Required
           </Heading>
-          {requiredMetrics.map(metric => (
-            <Box
-              as="article"
-              sx={style.metricRow}
-              onClick={() => store.dispatch(selectEvaluationMetric(metric))}
-              key={metric.key}
-              tabIndex={0}
-            >
-              <Flex>
-                <Flex sx={{ alignItems: "center" }}>
-                  {"status" in metric ? (
-                    metric.status ? (
-                      <Box sx={{ lineHeight: "body", mr: 2 }}>
-                        <Icon name={"check-circle-solid"} color="success.3" />
-                      </Box>
+          {requiredMetrics
+            .filter(metric => metric.showInSummary)
+            .map(metric => (
+              <Box
+                as="article"
+                sx={style.metricRow}
+                onClick={() => store.dispatch(selectEvaluationMetric(metric))}
+                key={metric.key}
+                tabIndex={0}
+              >
+                <Flex>
+                  <Flex sx={{ alignItems: "center" }}>
+                    {"status" in metric ? (
+                      metric.status ? (
+                        <Box sx={{ lineHeight: "body", mr: 2 }}>
+                          <Icon name={"check-circle-solid"} color="success.3" />
+                        </Box>
+                      ) : (
+                        <Box sx={{ lineHeight: "body", mr: 2 }}>
+                          <Icon name={"times-circle-solid"} color="error" />
+                        </Box>
+                      )
                     ) : (
-                      <Box sx={{ lineHeight: "body", mr: 2 }}>
-                        <Icon name={"times-circle-solid"} color="error" />
-                      </Box>
-                    )
-                  ) : (
-                    <Box></Box>
-                  )}
-                  <Heading as="h4" sx={{ ...style.metricTitle, mb: 0 }}>
-                    {metric.name}
-                  </Heading>
+                      <Box></Box>
+                    )}
+                    <Heading as="h4" sx={{ ...style.metricTitle, mb: 0 }}>
+                      {metric.name}
+                    </Heading>
+                  </Flex>
+                  <Box sx={style.metricValue}>
+                    {"type" in metric ? formatMetricValue(metric) : ""}
+                  </Box>
                 </Flex>
-                <Box sx={style.metricValue}>
-                  {"type" in metric ? formatMetricValue(metric) : ""}
-                </Box>
-              </Flex>
-              <Text as="p" sx={style.metricText}>
-                {metric.shortText}
-              </Text>
-            </Box>
-          ))}
+                <Text as="p" sx={style.metricText}>
+                  {metric.shortText}
+                </Text>
+              </Box>
+            ))}
         </Box>
         <Box sx={style.evaluateMetricsList}>
           <Heading as="h3" sx={{ variant: "text.h5", mt: 2 }}>
             Optional
           </Heading>
-          {optionalMetrics.map(metric => (
-            <Flex key={metric.key}>
-              <Box
-                as="article"
-                sx={style.metricRow}
-                onClick={() => store.dispatch(selectEvaluationMetric(metric))}
-                tabIndex={0}
-              >
-                <Flex>
-                  <Heading as="h4" sx={{ ...style.metricTitle, textTransform: "capitalize" }}>
-                    {metric.name}
-                  </Heading>
-                  <Box sx={style.metricValue}>
-                    {"type" in metric ? formatMetricValue(metric) : ""}
-                  </Box>
-                </Flex>
-                <Text sx={style.metricText}>{metric.shortText || "Lorem ipsum lorem ipsum"}</Text>
-              </Box>
-            </Flex>
-          ))}
+          {optionalMetrics
+            .filter(metric => metric.showInSummary)
+            .map(metric => (
+              <Flex key={metric.key}>
+                <Box
+                  as="article"
+                  sx={style.metricRow}
+                  onClick={() => store.dispatch(selectEvaluationMetric(metric))}
+                  tabIndex={0}
+                >
+                  <Flex>
+                    <Heading as="h4" sx={{ ...style.metricTitle, textTransform: "capitalize" }}>
+                      {metric.name}
+                    </Heading>
+                    <Box sx={style.metricValue}>
+                      {"type" in metric ? formatMetricValue(metric) : ""}
+                    </Box>
+                  </Flex>
+                  <Text sx={style.metricText}>{metric.shortText || "Lorem ipsum lorem ipsum"}</Text>
+                </Box>
+              </Flex>
+            ))}
         </Box>
       </Box>
     </Flex>

@@ -29,7 +29,6 @@ import {
 import {
   DistrictsGeoJSON,
   DistrictGeoJSON,
-  EvaluateMetric,
   ElectionYear,
   EvaluateMetricWithValue
 } from "../../types";
@@ -198,7 +197,7 @@ interface Props {
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
   readonly expandedProjectMetrics: boolean;
-  readonly evaluateMetric?: EvaluateMetric | EvaluateMetricWithValue;
+  readonly evaluateMetric?: EvaluateMetricWithValue;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
   readonly isArchived: boolean;

@@ -2,13 +2,7 @@
 import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
-import {
-  DistrictsGeoJSON,
-  EvaluateMetric,
-  EvaluateMetricWithValue,
-  ElectionYear,
-  Party
-} from "../../types";
+import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, Party } from "../../types";
 import store from "../../store";
 import { hasMultipleElections, isMajorityMinority } from "../../functions";
 import { regionPropertiesFetch } from "../../actions/regionConfig";
@@ -45,7 +39,7 @@ const ProjectEvaluateSidebar = ({
   staticMetadata
 }: {
   readonly geojson?: DistrictsGeoJSON;
-  readonly metric: EvaluateMetric | undefined;
+  readonly metric: EvaluateMetricWithValue | undefined;
   readonly project?: IProject;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
@@ -170,6 +164,7 @@ const ProjectEvaluateSidebar = ({
             popThreshold
           )}%) above or below that target.`) ||
         "",
+      showInSummary: true,
       avgPopulation: avgPopulation,
       popThreshold: popThreshold,
       type: "fraction",
@@ -187,6 +182,7 @@ const ProjectEvaluateSidebar = ({
         "Each district should be contiguous, meaning it must be a single, unbroken shape. Some exceptions are allowed, such as the inclusion of islands in a coastal district. Two areas connected only by a single point (touching just their corners) are not considered contiguous.",
       shortText:
         "All parts of a district must be in physical contact with some other part of the district, to the extent possible.",
+      showInSummary: true,
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
       value:
@@ -194,7 +190,7 @@ const ProjectEvaluateSidebar = ({
           .length || 0
     }
   ];
-  const optionalMetrics: readonly EvaluateMetric[] = [
+  const optionalMetrics: readonly EvaluateMetricWithValue[] = [
     {
       key: "competitiveness",
       name: "Competitiveness",
@@ -204,6 +200,7 @@ const ProjectEvaluateSidebar = ({
         "A competitiveness metric evaluates the plan based on the average partisan lean of each district.",
       longText:
         "A competitiveness metric evaluates the plan based on the average partisan lean of each district, calculated using the Partisan Voting Index (PVI). A partisan lean of the district plan which deviates from the overall lean of the state can be indicative of gerrymandering.",
+      showInSummary: !!(staticMetadata && staticMetadata.voting),
       party: party,
       value: avgCompetitiveness,
       hasMultipleElections: multipleElections,
@@ -217,6 +214,7 @@ const ProjectEvaluateSidebar = ({
         "A district that efficiently groups constituents together has higher compactness. Low compactness or districts that branch out to different areas can be indicators of gerrymandering. Compactness is calculated using the Polsby-Popper method. Higher numbers are better.",
       shortText:
         "A district that is more spread out has a lower compactness. Low compactness can be an indicator of gerrymandering.",
+      showInSummary: true,
       description: "are compact",
       value: avgCompactness
     },
@@ -229,6 +227,7 @@ const ProjectEvaluateSidebar = ({
         "A majority-minority district is a district in which a racial minority group or groups comprise a majority of the district's total population.",
       longText:
         'A majority-minority district is a district in which a racial minority group or groups comprise a majority of the district\'s total population. The display indicates districts where a minority race has a simple majority (Black, Hispanic, etc.), or where the sum of multiple minority races combine to a majority (called "Coalition" districts).',
+      showInSummary: true,
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
       value: geojson?.features.filter(f => isMajorityMinority(f)).length || 0
     },
@@ -241,15 +240,10 @@ const ProjectEvaluateSidebar = ({
         "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
       longText:
         "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
+      showInSummary: true,
       value: project?.districtsDefinition.filter(x => Array.isArray(x)).length || 0,
       total: project ? project.districtsDefinition.length : 0,
-      splitCounties: project?.districtsDefinition.map(c => {
-        if (Array.isArray(c)) {
-          return c;
-        } else {
-          return undefined;
-        }
-      })
+      splitCounties: project?.districtsDefinition.map(c => Array.isArray(c))
     }
   ];
   return (

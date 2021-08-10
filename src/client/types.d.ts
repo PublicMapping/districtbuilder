@@ -64,6 +64,7 @@ export interface BaseEvaluateMetric {
   readonly description: string;
   readonly longText?: string;
   readonly shortText?: string;
+  readonly showInSummary: boolean;
 }
 
 export type ElectionYear = "16" | "20" | "combined";
@@ -93,7 +94,5 @@ export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   // eslint-disable-next-line
   readonly [key: string]: any;
 }
-
-export type EvaluateMetric = BaseEvaluateMetric | EvaluateMetricWithValue;
 
 export type ChoroplethSteps = readonly (readonly [number, string])[];
