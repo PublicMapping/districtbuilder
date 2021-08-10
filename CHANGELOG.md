@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix archive not updating list of projects [#892](https://github.com/PublicMapping/districtbuilder/pull/892)
 - Redirect to home screen after successful login [#895](https://github.com/PublicMapping/districtbuilder/pull/895)
 - Improved handling large number of import flags [#888](https://github.com/PublicMapping/districtbuilder/pull/888)
+- Fixed creating districts from project template [#905](https://github.com/PublicMapping/districtbuilder/pull/905)
 
 
 ## [1.6.0] - 2021-05-24
