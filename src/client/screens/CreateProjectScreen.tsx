@@ -120,7 +120,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     },
     formContainer: {
       width: "100%",
-      maxWidth: "medium",
+      maxWidth: "640px",
       my: 7,
       mx: "auto",
       display: "block",
@@ -230,7 +230,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
             <Logo sx={{ width: "1.8rem" }} />
           </Link>
         </Box>
-        <Heading as="h2" sx={{ variant: "text.h4", color: "blue.0", my: 0 }}>
+        <Heading as="h2" sx={{ variant: "text.h5", color: "blue.0", my: 0 }}>
           New map
         </Heading>
       </Flex>
@@ -346,6 +346,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
               <Card sx={{ variant: "card.flat" }}>
                 <SelectField
                   field="regionConfig"
+                  sx={{ width: "1000px" }}
                   label={
                     <Box as="span" sx={style.cardLabel}>
                       State
@@ -533,6 +534,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
               <Box sx={{ mt: 3, textAlign: "left" }}>
                 <Button
                   type="submit"
+                  sx={{ "&[disabled]": { opacity: "0.2" } }}
                   disabled={
                     (("isPending" in createProjectResource && createProjectResource.isPending) ||
                       !validate(data).valid) &&
