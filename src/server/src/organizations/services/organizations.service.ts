@@ -20,8 +20,11 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
     // Returns public data for organization screen
     const builder = this.repo.createQueryBuilder("organization");
     const data = await builder
-      .leftJoinAndSelect("organization.users", "users")
-      .leftJoinAndSelect("organization.admin", "admin")
+      .select()
+      .leftJoin("organization.users", "users")
+      .addSelect(["users.id", "users.name"])
+      .leftJoin("organization.admin", "admin")
+      .addSelect(["admin.id", "admin.name"])
       .leftJoinAndSelect(
         "organization.projectTemplates",
         "projectTemplates",
@@ -29,30 +32,6 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
       )
       .leftJoinAndSelect("projectTemplates.regionConfig", "regionConfig")
       .where("organization.slug = :slug", { slug: slug })
-      .select([
-        "organization.id",
-        "organization.slug",
-        "organization.name",
-        "organization.description",
-        "organization.linkUrl",
-        "organization.logoUrl",
-        "organization.municipality",
-        "organization.region",
-        "users.id",
-        "users.name",
-        "admin.id",
-        "admin.name",
-        "projectTemplates.id",
-        "projectTemplates.name",
-        "regionConfig.name",
-        "regionConfig.id",
-        "regionConfig.countryCode",
-        "regionConfig.regionCode",
-        "projectTemplates.numberOfDistricts",
-        "projectTemplates.description",
-        "projectTemplates.details",
-        "projectTemplates.isActive"
-      ])
       .getOne();
     return data;
   }
