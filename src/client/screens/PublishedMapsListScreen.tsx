@@ -32,6 +32,7 @@ const style = {
   projects: {
     pt: 4,
     pb: 8,
+    position: "relative",
     flexDirection: "row",
     width: "large",
     mx: "auto",
@@ -90,36 +91,37 @@ const PublishedMapsListScreen = ({
       <SiteHeader user={user} />
       <Box sx={{ flex: 1 }}>
         <Box sx={style.projects}>
-          <Heading as="h2" sx={{ my: "3" }}>
-            <span>Community maps</span>
-          </Heading>
-          <Text>Explore published maps from across the entire DistrictBuilder community</Text>
-          <Box>
-            <Box>
-              <Flex sx={{ alignItems: "baseline" }}>
-                <Label
-                  htmlFor="region-dropdown"
-                  sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
-                >
-                  Filter by state:
-                </Label>
-                <Select
-                  id="region-dropdown"
-                  value={region || "Select..."}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    const label =
-                      e.currentTarget.value !== "All states" ? e.currentTarget.value : null;
-                    setRegionCode(label);
-                    store.dispatch(globalProjectsSetRegion(label));
-                  }}
-                  sx={{ width: "150px" }}
-                >
-                  <option value={undefined}>All states</option>
-                  {regionConfigOptions}
-                </Select>
-              </Flex>
+          <Flex>
+            <Box sx={{ flex: 1 }}>
+              <Heading as="h1" sx={{ my: "3" }}>
+                <span>Community maps</span>
+              </Heading>
+              <Text>Explore published maps from across the entire DistrictBuilder community</Text>
             </Box>
-          </Box>
+
+            <Flex sx={{ alignItems: "baseline", my: "3" }}>
+              <Label
+                htmlFor="region-dropdown"
+                sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
+              >
+                Filter by state:
+              </Label>
+              <Select
+                id="region-dropdown"
+                value={region || "Select..."}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  const label =
+                    e.currentTarget.value !== "All states" ? e.currentTarget.value : null;
+                  setRegionCode(label);
+                  store.dispatch(globalProjectsSetRegion(label));
+                }}
+                sx={{ width: "150px" }}
+              >
+                <option value={undefined}>All states</option>
+                {regionConfigOptions}
+              </Select>
+            </Flex>
+          </Flex>
           {"resource" in globalProjects ? (
             <React.Fragment>
               {globalProjects.resource.length > 0 ? (

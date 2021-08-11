@@ -182,7 +182,7 @@ const SiteHeader = ({ user }: Props) => {
       <Flex as="header" sx={style.header}>
         <Heading as="h1" sx={{ mb: "0px", mr: "auto", pt: 2 }}>
           <Link to="/" sx={style.logoLink}>
-            <Logo sx={{ width: "15rem" }} />
+            <Logo sx={{ width: "12rem" }} />
           </Link>
         </Heading>
         {!isLoggedIn ? (

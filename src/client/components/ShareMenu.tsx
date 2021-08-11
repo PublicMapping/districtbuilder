@@ -18,11 +18,16 @@ const style = {
     borderRightColor: "gray.2",
     borderRadius: 0
   },
+  description: {
+    pb: 3,
+    lineHeight: "1.4"
+  },
   inputWrapper: {
     borderRadius: "small",
     border: "2px solid",
     borderColor: "gray.2"
   },
+  label: { mb: 0 },
   menuItem: {
     flexDirection: "row"
   },
@@ -97,8 +102,8 @@ const ShareMenu = ({ invert, project }: ShareProps) => {
                   />
                 </Box>
                 <Box>
-                  <Label>Private</Label>
-                  <Box as="span" id="project-share-private">
+                  <Label sx={style.label}>Private</Label>
+                  <Box sx={style.description} id="project-share-private">
                     Only you can view
                   </Box>
                 </Box>
@@ -118,8 +123,8 @@ const ShareMenu = ({ invert, project }: ShareProps) => {
                   />
                 </Box>
                 <Box>
-                  <Label>Only share with link</Label>
-                  <Box as="span" id="project-share-visible">
+                  <Label sx={style.label}>Only share with link</Label>
+                  <Box sx={style.description} id="project-share-visible">
                     Anyone with the link can view
                   </Box>
                 </Box>
@@ -139,8 +144,8 @@ const ShareMenu = ({ invert, project }: ShareProps) => {
                   />
                 </Box>
                 <Box>
-                  <Label>Published</Label>
-                  <Box as="span" id="project-share-published">
+                  <Label sx={style.label}>Published</Label>
+                  <Box sx={style.description} id="project-share-published">
                     Anyone on the DistrictBuilder website or with the link can view
                   </Box>
                 </Box>

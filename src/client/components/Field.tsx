@@ -113,7 +113,7 @@ export function SelectField<D, R>({
             {...selectProps}
             id={field.toString()}
             aria-describedby={description ? `description-${field.toString()}` : undefined}
-            sx={{ borderColor: hasErrors ? "warning" : undefined }}
+            sx={{ borderColor: hasErrors ? "warning" : undefined, width: "100%" }}
           >
             {children}
           </Select>

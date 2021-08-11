@@ -292,8 +292,8 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <p>
-              You can find additional tutorials and contact us in the <strong>Support</strong> menu.
-              Thank you for using DistrictBuilder and fighting for fair and transparent
+              You can find additional tutorials and contact us in the <strong>Resources</strong>{" "}
+              menu. Thank you for using DistrictBuilder and fighting for fair and transparent
               redistricting!
             </p>
           ),

@@ -57,14 +57,14 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
             <Styled.a
               as={Link}
               to="/import-project"
-              sx={{ variant: "links.secondaryButton", fontSize: 3, px: 4, py: 2, mr: 2 }}
+              sx={{ variant: "links.secondaryButton", fontSize: 2, px: 4, py: 2, mr: 2 }}
             >
               Import
             </Styled.a>
             <Styled.a
               as={Link}
               to="/create-project"
-              sx={{ variant: "links.button", fontSize: 3, px: 4, py: 2 }}
+              sx={{ variant: "links.button", fontSize: 2, px: 4, py: 2 }}
             >
               <Icon name="plus-circle" />
               New map
@@ -74,7 +74,14 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
 
         {"resource" in projects && isSaving === "unsaved" ? (
           projectList.length > 0 ? (
-            <Box>
+            <Box
+              sx={{
+                backgroundColor: "#fff",
+                borderRadius: "2px",
+                boxShadow: "0 0 4px rgb(0 0 0 / 13%)",
+                marginTop: "16px"
+              }}
+            >
               {projectList.map((project: IProject) => (
                 <HomeScreenProjectCard project={project} key={project.id} />
               ))}

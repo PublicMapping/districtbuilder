@@ -7,7 +7,7 @@ export interface ButtonStyleProps {
 
 export const style = {
   menuButton: {
-    py: 1,
+    py: 2,
     px: 3
   } as ThemeUIStyleObject,
   menu: {

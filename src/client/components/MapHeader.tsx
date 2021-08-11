@@ -246,7 +246,7 @@ const MapHeader = ({
   ];
   return (
     <Flex sx={style.header}>
-      <Flex>
+      <Flex sx={{ flex: 1 }}>
         {!isReadOnly && (
           <React.Fragment>
             <Flex sx={{ ...style.buttonGroup, mr: 2 }}>
@@ -297,11 +297,11 @@ const MapHeader = ({
         )}
         <Flex className="geolevel-button-group">{geoLevelOptions}</Flex>
       </Flex>
-      <Box sx={{ lineHeight: "1", position: "absolute", right: "150px" }}>
+      <Box sx={{ lineHeight: "1" }}>
         <Flex sx={{ alignItems: "baseline" }}>
           <Label
             htmlFor="population-dropdown"
-            sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
+            sx={{ display: "none", width: "auto", mb: 0, mr: 2 }}
           >
             Labels:
           </Label>
@@ -312,30 +312,46 @@ const MapHeader = ({
               const label = e.currentTarget.value;
               store.dispatch(setMapLabel(label));
             }}
-            sx={{ width: "150px" }}
+            sx={{ width: "auto", paddingRight: "30px", fontSize: 1 }}
           >
-            <option>Select...</option>
+            <option>Labels ...</option>
             {labelOptions}
           </Select>
         </Flex>
       </Box>
-      <Box sx={{ position: "relative", mr: "5px" }}>
-        <Button
-          sx={{ ...style.selectionButton }}
-          onClick={() => {
-            store.dispatch(toggleFind(!findMenuOpen));
-          }}
-        >
-          <Box
+      <Box
+        sx={{
+          position: "relative",
+          ml: 3,
+          pl: 2,
+          color: "gray.7",
+          borderLeft: "1px solid",
+          borderLeftColor: "gray.2"
+        }}
+      >
+        <Tooltip content="Find">
+          <Button
             sx={{
-              borderBottom: findMenuOpen ? "solid 1px" : "none",
-              borderBottomColor: "secondary",
-              mb: findMenuOpen ? "-1px" : "0"
+              variant: "buttons.icon",
+              fontSize: 1,
+              py: 1,
+              color: "gray.7",
+              border: "1px solid transparent",
+              "&:hover:not([disabled]):not(:active).selected, &.selected": {
+                bg: "blue.1",
+                color: "gray.7",
+                opacity: 1,
+                borderColor: "gray.2"
+              }
             }}
+            onClick={() => {
+              store.dispatch(toggleFind(!findMenuOpen));
+            }}
+            className={findMenuOpen ? "selected" : ""}
           >
-            <Icon name="search" /> Find
-          </Box>
-        </Button>
+            <Icon name="search" />
+          </Button>
+        </Tooltip>
       </Box>
     </Flex>
   );
