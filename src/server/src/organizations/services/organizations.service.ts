@@ -22,7 +22,9 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
     const data = await builder
       .select()
       .leftJoin("organization.users", "users")
+      .addSelect(["users.id", "users.name"])
       .leftJoin("organization.admin", "admin")
+      .addSelect(["admin.id", "admin.name"])
       .leftJoinAndSelect(
         "organization.projectTemplates",
         "projectTemplates",
@@ -30,7 +32,6 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
       )
       .leftJoinAndSelect("projectTemplates.regionConfig", "regionConfig")
       .where("organization.slug = :slug", { slug: slug })
-      .addSelect(["users.id", "users.name", "admin.id", "admin.name"])
       .getOne();
     return data;
   }
