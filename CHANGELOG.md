@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Only show pagination footer is more than one page is available [#915](https://github.com/PublicMapping/districtbuilder/pull/915)
 - Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
 - Display evaluate mode toggle button in read-only mode [#786](https://github.com/PublicMapping/districtbuilder/pull/786)
 - Disable keyboard shortcuts in evaluate mode [#784](https://github.com/PublicMapping/districtbuilder/pull/784)
@@ -64,7 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redirect to home screen after successful login [#895](https://github.com/PublicMapping/districtbuilder/pull/895)
 - Improved handling large number of import flags [#888](https://github.com/PublicMapping/districtbuilder/pull/888)
 - Fixed creating districts from project template [#905](https://github.com/PublicMapping/districtbuilder/pull/905)
-
 
 ## [1.6.0] - 2021-05-24
 
