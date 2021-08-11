@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add histogram to evaluate mode metric view for competitiveness [#844](https://github.com/PublicMapping/districtbuilder/pull/844)
 - Added button to convert 2010 maps to 2020 [#878](https://github.com/PublicMapping/districtbuilder/pull/878)
 - Add keyboard shortcuts for incrementing and decrementing the paintbrush size [#874](https://github.com/PublicMapping/districtbuilder/pull/874)
+- Create auto scaling group and stand up new app service [#914](https://github.com/PublicMapping/districtbuilder/pull/914)
 
 ### Changed
 
