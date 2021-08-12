@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
 import simplify from "@turf/simplify";
 import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
+import _ from "lodash";
 
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
@@ -54,17 +55,26 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     const projects = await page;
     projects.items.forEach(project => {
       project.districts.features.forEach(districtFeature => {
-        districtFeature.geometry.coordinates.forEach(coordinates => {
-          // Simplify each polygon of the multipolygon separately, and skip past any invalid geometries
-          // Some very small holes may collapse to a single point during the merge operation and cause simplify to fail
-          try {
-            simplify({ type: "Polygon", coordinates }, { mutate: true, tolerance: 0.005 });
-          } catch (e) {
-            this.logger.debug(
-              `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
-            );
-          }
-        });
+        // Some very small holes may collapse to a single point during the merge operation,
+        // and generate invalid polygons that cause simplify to fail
+        //eslint-disable-next-line functional/immutable-data
+        districtFeature.geometry.coordinates = districtFeature.geometry.coordinates
+          .map(polygonCoords =>
+            polygonCoords.flatMap(ringCoords => {
+              if (ringCoords.every(coord => _.isEqual(coord, ringCoords[0]))) {
+                return [];
+              }
+              return [ringCoords];
+            })
+          )
+          .filter(polygonCoords => polygonCoords.length > 0);
+        try {
+          simplify(districtFeature, { mutate: true, tolerance: 0.005 });
+        } catch (e) {
+          this.logger.debug(
+            `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
+          );
+        }
       });
     });
     return projects;
@@ -73,9 +83,11 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   async findAllPublishedProjectsPaginated(
     options: AllProjectsOptions
   ): Promise<Pagination<Project>> {
-    const builder = this.getProjectsBase().andWhere("project.visibility = :published", {
-      published: ProjectVisibility.Published
-    });
+    const builder = this.getProjectsBase()
+      .andWhere("project.visibility = :published", {
+        published: ProjectVisibility.Published
+      })
+      .andWhere("project.archived = FALSE");
     const builderWithFilter = options.completed
       ? // Completed projects are defined as having no geo units assigned to the unassigned district
         //
@@ -88,6 +100,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     const builderWithRegion = options.region
       ? builderWithFilter.andWhere("regionConfig.regionCode = :region", { region: options.region })
       : builderWithFilter;
+
     return this.simplifyDistricts(paginate<Project>(builderWithRegion, options));
   }
 

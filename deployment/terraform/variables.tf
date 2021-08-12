@@ -247,21 +247,6 @@ variable "container_instance_asg_health_check_grace_period" {
   type    = number
 }
 
-variable "container_instance_asg_override_desired_capacity" {
-  default = null
-  type    = number
-}
-
-variable "container_instance_asg_min_size" {
-  default = 1
-  type    = number
-}
-
-variable "container_instance_asg_max_size" {
-  default = 1
-  type    = number
-}
-
 variable "container_instance_app_desired_count" {
   default = 1
   type    = number

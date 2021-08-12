@@ -139,6 +139,8 @@ locals {
     environment = var.environment
     aws_region  = var.aws_region
   }
+
+  app_health_check_grace_period_seconds = var.districtbuilder_state_count * var.health_check_grace_period_per_state
 }
 
 resource "aws_ecs_task_definition" "app" {
@@ -174,7 +176,7 @@ resource "aws_ecs_service" "app" {
   deployment_minimum_healthy_percent = var.fargate_app_deployment_min_percent
   deployment_maximum_percent         = var.fargate_app_deployment_max_percent
 
-  health_check_grace_period_seconds = var.districtbuilder_state_count * var.health_check_grace_period_per_state
+  health_check_grace_period_seconds = local.app_health_check_grace_period_seconds
 
   launch_type      = "FARGATE"
   platform_version = var.fargate_platform_version

@@ -63,6 +63,16 @@ resource "aws_launch_template" "container_instance" {
   }
 }
 
+locals {
+  # Increase the size of the ASG to `ASG Minimums * 2 + 1` during every deploy.
+  # This doubles the capacity of the ASG to allow the new version of tasks to come
+  # online. The + 1 should be taken out of service immediately, where as it will
+  # take 10 minutes for the next instance.
+  container_instance_asg_override_desired_capacity = var.container_instance_app_desired_count * 2 + 1
+  container_instance_asg_min_size                  = var.container_instance_app_desired_count
+  container_instance_asg_max_size                  = var.container_instance_app_desired_count * 2 + 1
+}
+
 resource "aws_autoscaling_group" "container_instance" {
   lifecycle {
     create_before_destroy = true
@@ -77,10 +87,10 @@ resource "aws_autoscaling_group" "container_instance" {
 
   health_check_grace_period = var.container_instance_asg_health_check_grace_period
   health_check_type         = "EC2"
-  desired_capacity          = var.container_instance_asg_override_desired_capacity
+  desired_capacity          = local.container_instance_asg_override_desired_capacity
   termination_policies      = ["OldestLaunchConfiguration", "Default"]
-  min_size                  = var.container_instance_asg_min_size
-  max_size                  = var.container_instance_asg_max_size
+  min_size                  = local.container_instance_asg_min_size
+  max_size                  = local.container_instance_asg_max_size
   enabled_metrics = [
     "GroupMinSize",
     "GroupMaxSize",
@@ -110,6 +120,33 @@ resource "aws_autoscaling_group" "container_instance" {
     value               = var.environment
     propagate_at_launch = true
   }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_reservation" {
+  alarm_name          = "alarm${title(var.environment)}CPUReservation"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUReservation"
+  namespace           = "AWS/ECS"
+  period              = 600
+  statistic           = "Average"
+  threshold           = 100
+
+  dimensions = {
+    ClusterName = aws_ecs_cluster.app.name
+  }
+
+  alarm_actions = [aws_autoscaling_policy.container_instance_cpu_reservation.arn]
+}
+
+resource "aws_autoscaling_policy" "container_instance_cpu_reservation" {
+  name                   = "asgScalingPolicy${title(var.environment)}CPUReservation"
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.container_instance.name
+  policy_type            = "SimpleScaling"
+
+  scaling_adjustment = -1
+  cooldown           = local.app_health_check_grace_period_seconds
 }
 
 #
@@ -161,7 +198,7 @@ resource "aws_ecs_service" "app_container_instance" {
   deployment_minimum_healthy_percent = var.container_instance_app_deployment_min_percent
   deployment_maximum_percent         = var.container_instance_app_deployment_max_percent
 
-  health_check_grace_period_seconds = var.districtbuilder_state_count * var.health_check_grace_period_per_state
+  health_check_grace_period_seconds = local.app_health_check_grace_period_seconds
 
   launch_type = "EC2"
 

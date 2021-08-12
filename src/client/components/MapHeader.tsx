@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { useEffect, useState } from "react";
-import { Flex, Box, Label, Button, jsx, Select, Slider, ThemeUIStyleObject } from "theme-ui";
+import { Flex, Box, Label, Button, jsx, Select, Slider, Text, ThemeUIStyleObject } from "theme-ui";
 import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
 import { ElectionYear } from "../types";
 import { toggleFind } from "../actions/districtDrawing";
@@ -72,14 +72,13 @@ const style: ThemeUIStyleObject = {
     position: "absolute",
     display: "flex",
     backgroundColor: "#fff",
-    borderRadius: "2px",
+    borderRadius: "3px",
     border: "1px solid",
     borderColor: "gray.2",
-    padding: "5px",
-    top: "100px",
-    zIndex: 1,
-    justifyContent: "space-evenly",
-    width: "300px"
+    py: 1,
+    px: 2,
+    top: "102px",
+    zIndex: 1
   }
 };
 
@@ -268,7 +267,7 @@ const MapHeader = ({
             </Flex>
             {isPaintBrushSizeSliderVisible ? (
               <Box sx={style.sliderContainer}>
-                <Box sx={{ flexShrink: 0 }}>Brush size</Box>
+                <Text sx={{ fontSize: 1, flexShrink: 0 }}>Brush size</Text>
                 <Slider
                   min={1}
                   max={5}
@@ -278,10 +277,10 @@ const MapHeader = ({
                       setPaintBrushSize(parseInt(e.target.value, 10) as PaintBrushSize)
                     );
                   }}
-                  sx={{ width: "150px" }}
+                  sx={{ width: "110px", position: "relative", top: "2px", mx: 2 }}
                   value={paintBrushSize}
                 />
-                <Box>{paintBrushSize}</Box>
+                <Text sx={{ fontSize: 1, flexShrink: 0 }}>{paintBrushSize}</Text>
               </Box>
             ) : null}
 
