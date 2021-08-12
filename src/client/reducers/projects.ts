@@ -138,11 +138,7 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
         ? loop(
             {
               ...state,
-              globalProjectsRegion: action.payload || null,
-              globalProjectsPagination: {
-                ...state.globalProjectsPagination,
-                currentPage: 1
-              }
+              globalProjectsRegion: action.payload || null
             },
             Cmd.action(globalProjectsFetch())
           )
