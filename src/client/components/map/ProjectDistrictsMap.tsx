@@ -45,7 +45,7 @@ const ProjectDistrictsMap = ({
       return;
     }
 
-    districts.features.forEach((feature: DistrictGeoJSON, id: number) => {
+    districts && districts.features.forEach((feature: DistrictGeoJSON, id: number) => {
       // On the main project screen the unassigned district isn't colored in,
       // but for the minimap we need it to be visible to define the state borders
 

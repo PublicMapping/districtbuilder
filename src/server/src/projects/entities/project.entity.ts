@@ -66,7 +66,7 @@ export class Project implements IProject {
     name: "districts",
     nullable: true
   })
-  districts: DistrictsGeoJSON;
+  districts?: DistrictsGeoJSON;
 
   @ManyToOne(() => User, { nullable: false, eager: true })
   @JoinColumn({ name: "user_id" })
