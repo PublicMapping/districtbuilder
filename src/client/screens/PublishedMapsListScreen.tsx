@@ -68,12 +68,16 @@ const PublishedMapsListScreen = ({
   const [regionCode, setRegionCode] = useQueryParam("region", StringParam);
 
   useEffect(() => {
-    store.dispatch(globalProjectsSetRegion(regionCode || null));
-  }, [regionCode]);
+    if (regionCode) {
+      store.dispatch(globalProjectsSetRegion(regionCode));
+    } else {
+      store.dispatch(globalProjectsFetch());
+    }
+  }, []);
 
   useEffect(() => {
-    store.dispatch(globalProjectsFetch());
-  }, []);
+    store.dispatch(globalProjectsSetRegion(regionCode || null));
+  }, [regionCode]);
 
   useEffect(() => {
     !regionConfigs && store.dispatch(regionConfigsFetch());
