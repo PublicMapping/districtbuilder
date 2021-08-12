@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.7.1] - 2021-08-12
+
+### Fixed
+- Fixed loading mini-maps for Projects w/o cached districts column
+
 ## [1.7.0] - 2021-08-12
 
 ### Added
@@ -275,7 +280,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.7.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.7.1...HEAD
+[1.7.1]: https://github.com/publicmapping/districtbuilder/compare/1.7.0...1.7.1
 [1.7.0]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...1.7.0
 [1.6.0]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...1.6.0
 [1.5.0]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...1.5.0
