@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --testPathPattern=src/client",
+    "start": "npm run clear_cache:eslint && react-scripts start",
+    "build": "npm run clear_cache:eslint && react-scripts build",
+    "test": "npm run clear_cache:eslint && react-scripts test --testPathPattern=src/client",
     "eject": "react-scripts eject",
     "compile": "tsc",
     "watch": "tsc --watch",
     "fix": "eslint --fix 'src/*.{ts,tsx}' 'src/client/**/*.{ts,tsx}' 'src/shared/**/*.ts'",
     "lint": "eslint 'src/*.{ts,tsx}' 'src/client/**/*.{ts,tsx}' 'src/shared/**/*.ts'",
     "format": "prettier --write 'src/{client,shared}/**/*.{ts,tsx,json,css}'",
-    "check-format": "prettier --check 'src/{client,shared}/**/*.{ts,tsx,json,css}'"
+    "check-format": "prettier --check 'src/{client,shared}/**/*.{ts,tsx,json,css}'",
+    "clear_cache:eslint": "rm -rf node_modules/.cache/eslint-loader"
   },
   "dependencies": {
     "@redux-beacon/google-tag-manager": "1.0.1",
@@ -20,9 +21,18 @@
     "@theme-ui/color": "0.4.0-rc.1",
     "@tippyjs/react": "^4.1.0",
     "@turf/bbox": "^6.0.1",
+    "@turf/boolean-intersects": "^6.4.0",
+    "@turf/circle": "^6.4.0",
+    "@turf/distance": "^6.4.0",
     "@turf/helpers": "^6.1.4",
+    "@turf/points-within-polygon": "^6.1.4",
+    "@turf/turf": "^6.4.0",
     "@types/jwt-decode": "2.2.1",
     "@types/polylabel": "^1.0.5",
+    "@visx/axis": "^1.16.0",
+    "@visx/group": "^1.7.0",
+    "@visx/responsive": "^1.10.1",
+    "@visx/scale": "^1.14.0",
     "axios": "0.21.1",
     "date-fns": "^2.19.0",
     "file-saver": "2.0.1",
@@ -33,6 +43,7 @@
     "memoizee": "0.4.14",
     "polylabel": "^1.1.0",
     "prop-types": "15.7.2",
+    "query-string": "^7.0.1",
     "react": "16.11.0",
     "react-aria-menubutton": "^7.0.0",
     "react-aria-modal": "^4.0.0",
@@ -54,9 +65,11 @@
     "theme-ui": "0.4.0-rc.1",
     "timeago-react": "3.0.1",
     "ts.data.json": "0.3.0",
+    "turf-polygon": "^1.0.3",
     "typesafe-actions": "5.1.0",
     "typescript": "3.7.5",
-    "use-clipboard-copy": "^0.1.2"
+    "use-clipboard-copy": "^0.1.2",
+    "use-query-params": "^1.2.3"
   },
   "browserslist": {
     "production": [

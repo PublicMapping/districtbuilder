@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Flex, Text, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Text, jsx, ThemeUIStyleObject, Styled } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
@@ -14,7 +14,9 @@ import {
   SelectionTool,
   replaceSelectedGeounits,
   FindTool,
-  setZoomToDistrictId
+  setZoomToDistrictId,
+  PaintBrushSize,
+  showConvertMapModal
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
@@ -22,16 +24,22 @@ import {
   GeoUnits,
   IProject,
   IStaticMetadata,
-  LockedDistricts,
-  EvaluateMetric
+  LockedDistricts
 } from "../../../shared/entities";
-import { DistrictsGeoJSON, DistrictGeoJSON } from "../../types";
+import {
+  DistrictsGeoJSON,
+  DistrictGeoJSON,
+  ElectionYear,
+  EvaluateMetricWithValue
+} from "../../types";
 import {
   areAnyGeoUnitsSelected,
   getSelectedGeoLevel,
   getTargetPopulation,
   geoLevelLabelSingular,
-  assertNever
+  assertNever,
+  hasMultipleElections,
+  calculatePVI
 } from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -51,15 +59,23 @@ import {
   DISTRICTS_LAYER_ID,
   DISTRICTS_LABELS_SOURCE_ID,
   levelToSelectionLayerId,
-  getChoroplethLabels,
-  getChoroplethStops,
   DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID,
   CONTIGUITY_FILL_COLOR,
   COUNTY_SPLIT_FILL_COLOR,
   EVALUATE_GRAY_FILL_COLOR,
   DISTRICTS_EVALUATE_LABELS_LAYER_ID,
   DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
-  DISTRICTS_OUTLINE_LAYER_ID
+  DISTRICTS_OUTLINE_LAYER_ID,
+  getCompactnessStops,
+  getCompactnessLabels,
+  getEqualPopulationStops,
+  getEqualPopulationLabels,
+  getPviSteps,
+  getPviLabels,
+  getMajorityRaceSplitFill,
+  getMajorityRaceFills,
+  DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
+  DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -72,10 +88,13 @@ import { State } from "../../reducers";
 import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
+import Icon from "../Icon";
 
 function removeEvaluateMetricLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
+  map.setLayoutProperty(DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID, "visibility", "none");
   map.setLayoutProperty(DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID, "visibility", "none");
+  map.setLayoutProperty(DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID, "visibility", "none");
   map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_SPLIT_ID, "visibility", "none");
   map.setLayoutProperty(TOPMOST_GEOLEVEL_EVALUATE_FILL_SPLIT_ID, "visibility", "none");
   map.setLayoutProperty(DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID, "visibility", "none");
@@ -175,16 +194,20 @@ interface Props {
   readonly hoveredDistrictId: number | null;
   readonly zoomToDistrictId: number | null;
   readonly selectionTool: SelectionTool;
+  readonly paintBrushSize: PaintBrushSize;
   readonly geoLevelIndex: number;
   readonly lockedDistricts: LockedDistricts;
-  readonly evaluateMetric?: EvaluateMetric;
+  readonly expandedProjectMetrics: boolean;
+  readonly evaluateMetric?: EvaluateMetricWithValue;
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
+  readonly isArchived: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
   readonly label?: string;
   readonly map?: MapboxGL.Map;
+  readonly electionYear: ElectionYear;
   // eslint-disable-next-line
   readonly setMap: (map: MapboxGL.Map) => void;
 }
@@ -196,6 +219,21 @@ type Label = Feature<Point, LabelId>;
 type Labels = FeatureCollection<Point, LabelId>;
 
 const style: ThemeUIStyleObject = {
+  archivedMessage: {
+    position: "absolute",
+    bg: "muted",
+    width: "auto",
+    top: 3,
+    left: 3,
+    border: "1px solid",
+    borderColor: "gray.2",
+    borderRadius: "small",
+    boxShadow: "large",
+    p: 3,
+    display: "inline-block",
+    minWidth: "fit-content",
+    zIndex: "200"
+  },
   legendBox: {
     position: "absolute",
     bg: "muted",
@@ -238,6 +276,9 @@ const style: ThemeUIStyleObject = {
     color: "gray.8",
     flex: "0 0 auto",
     display: "inline-block"
+  },
+  raceHeader: {
+    pr: "20px"
   }
 };
 
@@ -251,9 +292,12 @@ const DistrictsMap = ({
   hoveredDistrictId,
   zoomToDistrictId,
   selectionTool,
+  paintBrushSize,
   geoLevelIndex,
   lockedDistricts,
   isReadOnly,
+  isArchived,
+  expandedProjectMetrics,
   limitSelectionToCounty,
   findMenuOpen,
   evaluateMetric,
@@ -261,7 +305,8 @@ const DistrictsMap = ({
   findTool,
   label,
   map,
-  setMap
+  setMap,
+  electionYear
 }: Props) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
@@ -277,6 +322,9 @@ const DistrictsMap = ({
 
   const selectedGeolevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex);
 
+  const avgPopulation = getTargetPopulation(geojson);
+  const multipleElections = hasMultipleElections(staticMetadata);
+
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
   const maxZoom = Math.max(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.maxZoom));
 
@@ -289,6 +337,10 @@ const DistrictsMap = ({
   const legendLabel = geoLevelLabelSingular(
     staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id
   );
+
+  useEffect(() => {
+    map && map.resize();
+  }, [expandedProjectMetrics, map]);
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -313,7 +365,7 @@ const DistrictsMap = ({
         showCompass: false,
         showZoom: true
       }),
-      "top-right"
+      "bottom-right"
     );
 
     map.dragRotate.disable();
@@ -323,7 +375,6 @@ const DistrictsMap = ({
     const setLevelVisibility = () => {
       store.dispatch(setGeoLevelVisibility(getGeoLevelVisibility(map, staticMetadata)));
     };
-
     const onMapLoad = () => {
       generateMapLayers(
         project.regionConfig.s3URI,
@@ -333,7 +384,7 @@ const DistrictsMap = ({
         maxZoom,
         map,
         geojson,
-        evaluateMetric && "avgPopulation" in evaluateMetric ? evaluateMetric : undefined
+        project?.populationDeviation
       );
 
       setMap(map);
@@ -356,6 +407,13 @@ const DistrictsMap = ({
 
   const downHandler = useCallback(
     (key: KeyboardEvent) => {
+      // Don't allow keyboard shortcuts to mess with form elements
+      if (
+        ["button", "select", "input"].includes(document.activeElement?.tagName.toLowerCase() || "")
+      ) {
+        return;
+      }
+
       const meta = navigator.appVersion.indexOf("Mac") !== -1 ? "metaKey" : "ctrlKey";
       const shortcut = KEYBOARD_SHORTCUTS.find(
         shortcut =>
@@ -363,7 +421,12 @@ const DistrictsMap = ({
           !!shortcut.meta === key[meta] &&
           !!shortcut.shift === key.shiftKey
       );
-      if (shortcut && (!isReadOnly || shortcut?.allowReadOnly)) {
+      if (
+        shortcut &&
+        (!isReadOnly || shortcut?.allowReadOnly) &&
+        (!evaluateMode || shortcut?.allowInEvaluateMode) &&
+        (multipleElections || !shortcut?.onlyForMultipleElections)
+      ) {
         shortcut.action({
           selectionTool,
           geoLevelIndex,
@@ -374,7 +437,10 @@ const DistrictsMap = ({
           numGeolevels: staticMetadata.geoLevelHierarchy.length,
           limitSelectionToCounty,
           evaluateMode,
-          setTogglePan
+          expandedProjectMetrics,
+          paintBrushSize,
+          setTogglePan,
+          electionYear
         });
       }
     },
@@ -387,7 +453,11 @@ const DistrictsMap = ({
       geojson.features.length,
       staticMetadata.geoLevelHierarchy.length,
       limitSelectionToCounty,
-      evaluateMode
+      evaluateMode,
+      paintBrushSize,
+      expandedProjectMetrics,
+      multipleElections,
+      electionYear
     ]
   );
   // Keyboard handlers
@@ -412,13 +482,12 @@ const DistrictsMap = ({
 
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
-    const avgPopulation = getTargetPopulation(geojson, project);
     // Add a color property to the geojson, so it can be used for styling
     geojson.features.forEach((feature, id) => {
       const districtColor = getDistrictColor(id);
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.id = id;
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.outlineColor =
         findMenuOpen &&
         ((findTool === FindTool.Unassigned && id === 0) ||
@@ -428,23 +497,77 @@ const DistrictsMap = ({
           ? // Set pink outline to make unassigned/non-contiguous districts stand out
             "#F25DFE"
           : "transparent";
-      // eslint-disable-next-line
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.color = districtColor;
-      const populationDeviation = feature.properties.demographics.population - avgPopulation;
-      // eslint-disable-next-line
+
+      // The population goal for the unassigned district is 0,
+      // so it's deviation is equal to its population
+      const populationDeviation =
+        id === 0
+          ? feature.properties.demographics.population
+          : feature.properties.demographics.population - avgPopulation;
+
+      // eslint-disable-next-line functional/immutable-data
       feature.properties.percentDeviation =
         feature.properties.demographics.population > 0 && feature.id !== 0
           ? populationDeviation / avgPopulation
           : undefined;
+      const electionYear =
+        evaluateMetric && "electionYear" in evaluateMetric
+          ? evaluateMetric.electionYear
+          : undefined;
+      // eslint-disable-next-line
+      feature.properties.pvi = feature.properties.voting
+        ? evaluateMetric && "electionYear" in evaluateMetric
+          ? calculatePVI(feature.properties.voting, evaluateMetric.electionYear)
+          : calculatePVI(feature.properties.voting, electionYear)
+        : undefined;
+
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
+      if (
+        feature.properties.demographics.population &&
+        feature.properties.demographics.population > 0
+      ) {
+        const demographics = Object.keys(feature.properties.demographics);
+        demographics.forEach(demographicKey => {
+          if (demographicKey !== "population") {
+            const popSplit =
+              feature.properties.demographics[demographicKey] /
+              feature.properties.demographics.population;
+            if (popSplit > 0.5) {
+              // eslint-disable-next-line
+              feature.properties.majorityRace = demographicKey;
+              // eslint-disable-next-line
+              feature.properties.majorityRaceSplit = popSplit;
+            }
+          }
+        });
+        if (!feature.properties.majorityRace) {
+          // eslint-disable-next-line
+          feature.properties.majorityRace = "minority coalition";
+          const whiteSplit =
+            feature.properties.demographics.white / feature.properties.demographics.population;
+          // eslint-disable-next-line
+          feature.properties.majorityRaceSplit = 1 - whiteSplit;
+        }
+        // eslint-disable-next-line
+        feature.properties.majorityRaceFill =
+          feature.properties.majorityRace && feature.properties.majorityRaceSplit
+            ? getMajorityRaceSplitFill(
+                feature.properties.majorityRace,
+                feature.properties.majorityRaceSplit
+              )
+            : "ffffff";
+      }
+
       // eslint-disable-next-line
       feature.properties.outlineWidthScaleFactor = findMenuOpen ? 1 : 2;
     });
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool, project]);
+  }, [map, geojson, findMenuOpen, findTool, avgPopulation, evaluateMetric]);
 
   // Update layer styles when district is selected/hovered
   useEffect(() => {
@@ -587,6 +710,11 @@ const DistrictsMap = ({
             );
             break;
           case "competitiveness":
+            map.setLayoutProperty(
+              DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
+              "visibility",
+              "visible"
+            );
             break;
           case "contiguity":
             map.setLayoutProperty(
@@ -606,7 +734,12 @@ const DistrictsMap = ({
               "visible"
             );
             break;
-          case "minorityMajority":
+          case "majorityMinority":
+            map.setLayoutProperty(
+              DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID,
+              "visibility",
+              "visible"
+            );
             break;
           // Summary view
           case undefined:
@@ -839,6 +972,7 @@ const DistrictsMap = ({
             project.districtsDefinition,
             lockedDistricts,
             staticGeoLevels,
+            paintBrushSize,
             setSelectionInProgress,
             limitSelectionToCounty,
             selectedGeounits
@@ -859,14 +993,48 @@ const DistrictsMap = ({
     evaluateMode,
     isPanning,
     limitSelectionToCounty,
-    selectedGeounits
+    selectedGeounits,
+    paintBrushSize
   ]);
+
+  const brushCircleRadius = 30 * paintBrushSize;
 
   return (
     <Box ref={mapRef} sx={{ width: "100%", height: "100%", position: "relative" }}>
       <MapTooltip map={map || undefined} />
       <MapMessage map={map || undefined} maxZoom={maxZoom} />
       <FindMenu map={map} />
+      <div
+        id="brush-circle"
+        style={{
+          visibility: "hidden",
+          opacity: 0.5,
+          position: "absolute",
+          zIndex: 999,
+          marginTop: (brushCircleRadius / 2) * -1,
+          marginLeft: (brushCircleRadius / 2) * -1
+        }}
+      >
+        <svg height={brushCircleRadius} width={brushCircleRadius}>
+          <circle
+            cx={brushCircleRadius / 2}
+            cy={brushCircleRadius / 2}
+            r={brushCircleRadius / 2}
+            strokeWidth="0"
+          ></circle>
+        </svg>
+      </div>
+      {!evaluateMode && isArchived && (
+        <Box sx={style.archivedMessage}>
+          <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
+          and can no longer be edited.
+          <Box>
+            <Button onClick={() => store.dispatch(showConvertMapModal(true))}>
+              Convert to 2020
+            </Button>
+          </Box>
+        </Box>
+      )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
         <Box sx={style.legendBox}>
           <Flex sx={{ alignItems: "center" }}>
@@ -897,7 +1065,7 @@ const DistrictsMap = ({
           <Flex sx={{ alignItems: "center" }}>
             <Text sx={style.legendTitle}>Compactness</Text>
             <Box sx={{ display: "inline-block" }}>
-              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+              {getCompactnessStops().map((step, i) => (
                 <Flex sx={style.legendItem} key={i}>
                   <Box
                     sx={{
@@ -905,7 +1073,7 @@ const DistrictsMap = ({
                       backgroundColor: `${step[1]}`
                     }}
                   ></Box>
-                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
+                  <Text sx={style.legendLabel}>{getCompactnessLabels()[i]}</Text>
                 </Flex>
               ))}
             </Box>
@@ -917,7 +1085,31 @@ const DistrictsMap = ({
           <Flex sx={{ alignItems: "center" }}>
             <Text sx={style.legendTitle}>Equal Population</Text>
             <Box sx={{ display: "inline-block" }}>
-              {getChoroplethStops(evaluateMetric.key).map((step, i) => (
+              {getEqualPopulationStops(project.populationDeviation, avgPopulation).map(
+                (step, i) => (
+                  <Flex sx={style.legendItem} key={i}>
+                    <Box
+                      sx={{
+                        ...style.legendColorSwatch,
+                        backgroundColor: `${step[1]}`
+                      }}
+                    ></Box>
+                    <Text sx={style.legendLabel}>
+                      {project ? getEqualPopulationLabels(project.populationDeviation)[i] : ""}
+                    </Text>
+                  </Flex>
+                )
+              )}
+            </Box>
+          </Flex>
+        </Box>
+      )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "competitiveness" && (
+        <Box sx={style.legendBox}>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Competitiveness</Text>
+            <Box sx={{ display: "inline-block" }}>
+              {getPviSteps().map((step, i) => (
                 <Flex sx={style.legendItem} key={i}>
                   <Box
                     sx={{
@@ -925,7 +1117,7 @@ const DistrictsMap = ({
                       backgroundColor: `${step[1]}`
                     }}
                   ></Box>
-                  <Text sx={style.legendLabel}>{getChoroplethLabels(evaluateMetric.key)[i]}</Text>
+                  <Text sx={style.legendLabel}>{getPviLabels()[i]}</Text>
                 </Flex>
               ))}
             </Box>
@@ -959,6 +1151,52 @@ const DistrictsMap = ({
           </Flex>
         </Box>
       )}
+      {evaluateMode && evaluateMetric && evaluateMetric.key === "majorityMinority" && (
+        <Box sx={style.legendBox}>
+          <Flex sx={{ alignItems: "center" }}>
+            <Text sx={style.legendTitle}>Majority Race</Text>
+            <Styled.table sx={{ margin: "0", width: "100%" }}>
+              <thead>
+                <Styled.tr>
+                  {Object.keys(getMajorityRaceFills()).map(race => (
+                    <Styled.th sx={style.raceHeader} key={race}>
+                      {race.charAt(0).toUpperCase() + race.slice(1)}
+                    </Styled.th>
+                  ))}
+                </Styled.tr>
+              </thead>
+              <tbody>
+                <Styled.tr>
+                  {Object.keys(getMajorityRaceFills()).map(race => (
+                    <Styled.td sx={style.td} key={race}>
+                      <Box
+                        sx={{
+                          ...style.legendColorSwatch,
+                          backgroundColor: getMajorityRaceFills()[race][0]
+                        }}
+                      ></Box>
+                      <Box sx={style.legendLabel}>&gt; 65%</Box>
+                    </Styled.td>
+                  ))}
+                </Styled.tr>
+                <Styled.tr>
+                  {Object.keys(getMajorityRaceFills()).map(race => (
+                    <Styled.td sx={style.td} key={race}>
+                      <Box
+                        sx={{
+                          ...style.legendColorSwatch,
+                          backgroundColor: getMajorityRaceFills()[race][1]
+                        }}
+                      ></Box>
+                      <Box sx={style.legendLabel}>50-65%</Box>
+                    </Styled.td>
+                  ))}
+                </Styled.tr>
+              </tbody>
+            </Styled.table>
+          </Flex>
+        </Box>
+      )}
     </Box>
   );
 };
@@ -967,6 +1205,7 @@ function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
     findTool: state.project.findTool,
+    electionYear: state.project.electionYear,
     showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal
   };
 }

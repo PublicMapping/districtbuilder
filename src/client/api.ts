@@ -16,9 +16,10 @@ import {
   UserId,
   RegionConfigId,
   ProjectNest,
-  DistrictsImportApiResponse
+  DistrictsImportApiResponse,
+  PlanScoreAPIResponse
 } from "../shared/entities";
-import { DistrictsGeoJSON, DynamicProjectData } from "./types";
+import { DistrictsGeoJSON, DynamicProjectData, PaginatedResponse } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();
@@ -129,7 +130,8 @@ export async function createProject({
   chamber,
   regionConfig,
   districtsDefinition,
-  projectTemplate
+  projectTemplate,
+  populationDeviation
 }: CreateProjectData): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
@@ -139,8 +141,27 @@ export async function createProject({
         regionConfig,
         districtsDefinition,
         chamber,
+        populationDeviation,
         projectTemplate
       })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.response?.data || error));
+  });
+}
+
+export async function convertAndCopyProject(id: ProjectId): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/projects/${id}/convert-and-copy`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.response?.data || error));
+  });
+}
+
+export async function copyProject(id: ProjectId): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/projects/${id}/duplicate`)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));
   });
@@ -166,11 +187,32 @@ export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJS
   });
 }
 
-export async function fetchProjects(): Promise<readonly IProject[]> {
+export async function fetchProjects(
+  page: number,
+  limit: number
+): Promise<PaginatedResponse<IProject>> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get("/api/projects?sort=updatedDt,DESC")
+      .get(`/api/projects?page=${page}&limit=${limit}&sort=updatedDt,DESC`)
       .then(response => resolve(response.data))
+      .catch(error => reject(error.response.data));
+  });
+}
+
+export async function fetchAllPublishedProjects(
+  page: number,
+  limit: number,
+  region?: string
+): Promise<PaginatedResponse<IProject>> {
+  const endpoint = region
+    ? `/api/globalProjects?page=${page}&limit=${limit}&completed=true&region=${region}`
+    : `/api/globalProjects?page=${page}&limit=${limit}&completed=true`;
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(endpoint)
+      .then(response => {
+        return resolve(response.data);
+      })
       .catch(error => reject(error.response.data));
   });
 }
@@ -318,6 +360,42 @@ export async function fetchOrganizationFeaturedProjects(
   });
 }
 
+export async function exportOrganizationProjectsCsv(slug: OrganizationSlug): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/project_templates/${slug}/export/maps-csv/`)
+      .then(response => {
+        const today = new Date();
+        const dateString = today.toISOString().split("T")[0];
+        return resolve(
+          saveAs(
+            new Blob([response.data], { type: "text/csv;charset=utf-8" }),
+            `${dateString}-${slug}-maps.csv`
+          )
+        );
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function exportOrganizationUsersCsv(slug: OrganizationSlug): Promise<void> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/organization/${slug}/export/users-csv/`)
+      .then(response => {
+        const today = new Date();
+        const dateString = today.toISOString().split("T")[0];
+        return resolve(
+          saveAs(
+            new Blob([response.data], { type: "text/csv;charset=utf-8" }),
+            `${dateString}-${slug}-users.csv`
+          )
+        );
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
 export async function saveProjectFeatured(project: ProjectNest): Promise<IOrganization> {
   return new Promise((resolve, reject) => {
     const projectPost = {
@@ -325,6 +403,17 @@ export async function saveProjectFeatured(project: ProjectNest): Promise<IOrgani
     };
     apiAxios
       .post(`/api/projects/${project.id}/toggleFeatured`, projectPost)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
+export async function checkPlanScoreAPI(project: IProject): Promise<PlanScoreAPIResponse> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/projects/${project.id}/planScore`, project)
       .then(response => resolve(response.data))
       .catch(error => {
         reject(error.message);

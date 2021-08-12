@@ -80,7 +80,13 @@ const ProjectName = ({
       <MenuButton
         sx={{
           ...menuButtonStyles.menuButton,
-          ...{ variant: "buttons.icon", color: "muted", ml: 2 }
+          ...{
+            variant: "buttons.icon",
+            height: "20px",
+            color: "muted",
+
+            ml: 2
+          }
         }}
         className="share-menu"
       >
@@ -127,11 +133,13 @@ const ProjectName = ({
           {template.organization.name} ›
         </Styled.a>
         <Heading>{template.name}</Heading>
-        <Text>
-          {template.regionConfig.name} · {template.numberOfDistricts}
+        <Text sx={{ mb: 2 }}>
+          {template.regionConfig.name} · {template.numberOfDistricts} districts
         </Text>
         <Text>{template.description}</Text>
-        <Heading as="h4">Details</Heading>
+        <Heading as="h4" sx={{ mt: 4 }}>
+          Details
+        </Heading>
         <Text>{template.details}</Text>
       </Flex>
     </AriaModal>

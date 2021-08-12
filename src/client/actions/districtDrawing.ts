@@ -1,12 +1,14 @@
 import { createAction } from "typesafe-actions";
-import { DistrictId, EvaluateMetric, GeoUnits } from "../../shared/entities";
-import { SavingState } from "../types";
+import { DistrictId, GeoUnits } from "../../shared/entities";
+import { SavingState, ElectionYear, EvaluateMetricWithValue } from "../types";
 
 export enum SelectionTool {
   Default = "DEFAULT",
   Rectangle = "RECTANGLE",
   PaintBrush = "PAINTBRUSH"
 }
+
+export type PaintBrushSize = 1 | 2 | 3 | 4 | 5;
 
 export enum FindTool {
   Unassigned = "UNASSIGNED",
@@ -37,6 +39,7 @@ export const setHighlightedGeounits = createAction("Add highlighted geounit ids"
 export const clearHighlightedGeounits = createAction("Clear highlighted geounit ids")();
 
 export const setSelectionTool = createAction("Set selection tool")<SelectionTool>();
+export const setPaintBrushSize = createAction("Set paint brush size")<PaintBrushSize>();
 
 export const setGeoLevelIndex = createAction("Set geoLevel index")<{
   readonly index: number;
@@ -52,13 +55,15 @@ export const toggleDistrictLocked = createAction("Toggle district locked")<Distr
 
 export const toggleLimitDrawingToWithinCounty = createAction("Limit drawing to within county")();
 
-export const showKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")<boolean>();
+export const setElectionYear = createAction("Set election year for tooltip data")<ElectionYear>();
+
+export const toggleKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")();
 
 export const showAdvancedEditingModal = createAction("Show advanced editing warning modal")<
   boolean
 >();
-
 export const showCopyMapModal = createAction("Show copy map modal")<boolean>();
+export const showConvertMapModal = createAction("Show convert map modal")<boolean>();
 export const setImportFlagsModal = createAction("Show import flags modal")<boolean>();
 
 export const undo = createAction("Undo project action")();
@@ -69,8 +74,9 @@ export const setFindType = createAction("Set find menu search type")<FindTool>()
 export const setFindIndex = createAction("Set find menu polygon index")<number | undefined>();
 
 export const toggleEvaluate = createAction("Toggle evaluate mode")<boolean>();
+export const toggleExpandedMetrics = createAction("Toggle expanded metrics")<boolean>();
 export const selectEvaluationMetric = createAction("Select evaluation metric")<
-  EvaluateMetric | undefined
+  EvaluateMetricWithValue | undefined
 >();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();

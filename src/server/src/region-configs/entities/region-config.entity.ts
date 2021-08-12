@@ -10,6 +10,7 @@ import {
 import { IRegionConfig } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
+import { CensusDate } from "../../../../shared/constants";
 
 @Entity()
 @Unique(["name", "countryCode", "regionCode", "version"])
@@ -46,6 +47,15 @@ export class RegionConfig implements IRegionConfig {
   @Column({ type: "timestamp with time zone", default: () => "NOW()" })
   version: Date;
 
+  // Hidden regions have data loaded and can be used to edit projects,
+  // but do not appear in the list of regions when creating a new project
   @Column({ type: "boolean", default: false })
   hidden: boolean;
+
+  // Archived regions are hidden, and also do not have data loaded and so their projects cannot be edited
+  @Column({ type: "boolean", default: false })
+  archived: boolean;
+
+  @Column({ type: "enum", enum: CensusDate, default: CensusDate.Census2020 })
+  census: CensusDate;
 }

@@ -4,6 +4,7 @@
 - [Publish Container Images](#publish-container-images)
 - [Terraform](#terraform)
 - [Migrations](#migrations)
+- [Restart services](#restart-services)
 
 **Note** when deploying a production release create a new issue using the [release issue template](../.github/ISSUE_TEMPLATE/release.md) and follow the checklist.
 
@@ -109,3 +110,16 @@ This will attempt to apply the plan assembled in the previous step using Amazon'
 |-------------|------------------------|-------------------------|------------------------|
 | Staging     | `ecsStagingCluster`    | `vpc-04d3fda63dfc36e58` | `sg-00b08b20f31addcc1` |
 | Production  | `ecsProductionCluster` | `vpc-039833dc732e496a1` | `sg-05a0cca2a9f5b57a3` |
+
+## Restart services
+
+After updating TopoJSON assets using the `update-region` command, you will need to restart the ECS services to refresh the cached TopoJSON assets.
+
+To do so, go to the [ECS task definition](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions) and force a new deployment for the environment (select either `StagingApp` or `ProductionApp` as appropriate).
+![image](https://user-images.githubusercontent.com/4432106/120369629-89c8cb00-c2e1-11eb-9b65-49d8edb317d5.png)
+
+On the next screen, ensure "Force new deployment" is checked and that the selected cluster matches the selected task definition:
+![image](https://user-images.githubusercontent.com/4432106/120369867-e4fabd80-c2e1-11eb-9679-c0a7fa76868d.png)
+
+For the next two screens ("Configure network" and "Set Auto Scaling") use the defaults.
+

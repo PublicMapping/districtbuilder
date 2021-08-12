@@ -2,7 +2,7 @@ import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { SavingState } from "../types";
+import { SavingState, EvaluateMetricWithValue, ElectionYear } from "../types";
 
 import {
   addSelectedGeounits,
@@ -19,6 +19,7 @@ import {
   setSelectionTool,
   showAdvancedEditingModal,
   showCopyMapModal,
+  showConvertMapModal,
   setImportFlagsModal,
   toggleDistrictLocked,
   undo,
@@ -34,18 +35,16 @@ import {
   selectEvaluationMetric,
   setZoomToDistrictId,
   setMapLabel,
-  showKeyboardShortcutsModal
+  toggleKeyboardShortcutsModal,
+  setElectionYear,
+  PaintBrushSize,
+  setPaintBrushSize,
+  toggleExpandedMetrics
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import {
-  DistrictId,
-  EvaluateMetric,
-  GeoUnits,
-  GeoUnitsForLevel,
-  LockedDistricts
-} from "../../shared/entities";
+import { DistrictId, GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import {
   pushEffect,
@@ -55,6 +54,7 @@ import {
   updateCurrentState
 } from "./undoRedo";
 import { canSwitchGeoLevels, isBaseGeoLevelAlwaysVisible } from "../functions";
+import { DEFAULT_PINNED_METRIC_FIELDS } from "../../shared/constants";
 
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
@@ -112,16 +112,20 @@ export interface DistrictDrawingState {
   readonly zoomToDistrictId: number | null;
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
+  readonly paintBrushSize: PaintBrushSize;
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
+  readonly showConvertMapModal: boolean;
   readonly showKeyboardShortcutsModal: boolean;
   readonly showImportFlagsModal: boolean;
   readonly findMenuOpen: boolean;
+  readonly expandedProjectMetrics: boolean;
   readonly evaluateMode: boolean;
-  readonly evaluateMetric: EvaluateMetric | undefined;
+  readonly evaluateMetric: EvaluateMetricWithValue | undefined;
   readonly findIndex?: number;
   readonly findTool: FindTool;
   readonly limitSelectionToCounty: boolean;
+  readonly electionYear: ElectionYear;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
   readonly mapLabel: string | undefined;
@@ -133,15 +137,19 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   zoomToDistrictId: null,
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
+  paintBrushSize: 1,
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
+  showConvertMapModal: false,
   showImportFlagsModal: false,
   showKeyboardShortcutsModal: false,
   findMenuOpen: false,
+  expandedProjectMetrics: false,
   evaluateMode: false,
   evaluateMetric: undefined,
   findTool: FindTool.Unassigned,
   limitSelectionToCounty: false,
+  electionYear: "16",
   saving: "unsaved",
   mapLabel: "undefined",
   undoHistory: {
@@ -152,6 +160,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
         geoLevelIndex: 0,
         geoLevelVisibility: [],
         lockedDistricts: [],
+        pinnedMetricFields: DEFAULT_PINNED_METRIC_FIELDS,
         districtsDefinition: []
       }
     },
@@ -245,6 +254,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         limitSelectionToCounty: !state.limitSelectionToCounty
       };
+    case getType(setElectionYear):
+      return {
+        ...state,
+        electionYear: action.payload
+      };
     case getType(setHighlightedGeounits):
       return {
         ...state,
@@ -259,6 +273,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         selectionTool: action.payload
+      };
+    case getType(setPaintBrushSize):
+      return {
+        ...state,
+        paintBrushSize: action.payload
       };
     case getType(setGeoLevelIndex): {
       if ("resource" in state.staticData && "resource" in state.projectData) {
@@ -309,15 +328,20 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         showAdvancedEditingModal: action.payload
       };
-    case getType(showKeyboardShortcutsModal):
+    case getType(toggleKeyboardShortcutsModal):
       return {
         ...state,
-        showKeyboardShortcutsModal: action.payload
+        showKeyboardShortcutsModal: !state.showKeyboardShortcutsModal
       };
     case getType(showCopyMapModal):
       return {
         ...state,
         showCopyMapModal: action.payload
+      };
+    case getType(showConvertMapModal):
+      return {
+        ...state,
+        showConvertMapModal: action.payload
       };
     case getType(setImportFlagsModal):
       return {
@@ -334,6 +358,11 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         evaluateMode: action.payload
+      };
+    case getType(toggleExpandedMetrics):
+      return {
+        ...state,
+        expandedProjectMetrics: action.payload
       };
     case getType(selectEvaluationMetric):
       return {

@@ -1,21 +1,23 @@
 /** @jsx jsx */
 import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
-import {
-  EvaluateMetric,
-  EvaluateMetricWithValue,
-  IProject,
-  IStaticMetadata,
-  RegionLookupProperties
-} from "../../../shared/entities";
+import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
+import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, Party } from "../../types";
 import store from "../../store";
+import { hasMultipleElections, isMajorityMinority } from "../../functions";
 import { regionPropertiesFetch } from "../../actions/regionConfig";
-import { DistrictsGeoJSON } from "../../types";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
 import { useState, useEffect } from "react";
 import { Resource } from "../../resource";
-import { geoLevelLabelSingular, getTargetPopulation } from "../../functions";
+import { selectEvaluationMetric } from "../../actions/districtDrawing";
+
+import {
+  geoLevelLabelSingular,
+  getTargetPopulation,
+  calculatePVI,
+  getPartyColor
+} from "../../functions";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
@@ -37,7 +39,7 @@ const ProjectEvaluateSidebar = ({
   staticMetadata
 }: {
   readonly geojson?: DistrictsGeoJSON;
-  readonly metric: EvaluateMetric | undefined;
+  readonly metric: EvaluateMetricWithValue | undefined;
   readonly project?: IProject;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
@@ -45,7 +47,10 @@ const ProjectEvaluateSidebar = ({
   const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
   const [avgPopulation, setAvgPopulation] = useState<number | undefined>(undefined);
   const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
-  const popThreshold = 0.05;
+  const [electionYear, setEvaluateElectionYear] = useState<ElectionYear>("combined");
+  const [avgCompetitiveness, setAvgCompetitiveness] = useState<number | undefined>(undefined);
+  const [party, setParty] = useState<Party | undefined>(undefined);
+  const popThreshold = project && project.populationDeviation;
   useEffect(() => {
     if (geojson && !avgCompactness) {
       const features = geojson.features.slice(1).filter(f => f.properties.compactness !== 0);
@@ -57,11 +62,10 @@ const ProjectEvaluateSidebar = ({
   }, [geojson, avgCompactness]);
 
   useEffect(() => {
-    if (geojson && !avgPopulation && project) {
-      getTargetPopulation(geojson, project);
-      setAvgPopulation(getTargetPopulation(geojson, project));
+    if (geojson && !avgPopulation) {
+      setAvgPopulation(getTargetPopulation(geojson));
     }
-  }, [geojson, avgPopulation, project]);
+  }, [geojson, avgPopulation]);
 
   useEffect(() => {
     if (staticMetadata) {
@@ -77,53 +81,108 @@ const ProjectEvaluateSidebar = ({
     }
   }, [project, geoLevel]);
 
+  const numEqualPopDistricts =
+    geojson &&
+    popThreshold !== undefined &&
+    geojson?.features.filter(f => {
+      return (
+        f.id !== 0 &&
+        f.properties.percentDeviation !== undefined &&
+        f.properties.populationDeviation !== undefined &&
+        (Math.abs(f.properties.percentDeviation) <= popThreshold / 100.0 ||
+          Math.abs(f.properties.populationDeviation) < 1)
+      );
+    }).length;
+  const numDistrictsWithPopulation =
+    geojson && geojson.features.filter(f => f.properties.demographics.population > 0).length;
+
+  useEffect(() => {
+    if (
+      (!avgCompetitiveness ||
+        (metric && "electionYear" in metric && electionYear !== metric.electionYear)) &&
+      numDistrictsWithPopulation &&
+      numDistrictsWithPopulation > 1
+    ) {
+      const numDistrictsWithPvi =
+        geojson &&
+        geojson.features
+          .filter(f => f.id !== 0 && f.properties.demographics.population > 0)
+          .filter(f => Object.keys(f.properties.voting || {}).length > 0).length;
+
+      const competitiveness =
+        geojson && geojson.features && numDistrictsWithPvi && numDistrictsWithPvi > 0
+          ? geojson.features
+              .filter(f => f.id !== 0)
+              .map(f => {
+                const voting =
+                  Object.keys(f.properties.voting || {}).length > 0
+                    ? f.properties.voting
+                    : undefined;
+                const pvi = voting && calculatePVI(voting, electionYear);
+                return pvi || 0;
+              })
+              .reduce((a, b) => a + b) / numDistrictsWithPvi
+          : undefined;
+
+      setAvgCompetitiveness(competitiveness);
+      const partyLabel = competitiveness && competitiveness > 0 ? "D" : "R";
+      const partyColor = getPartyColor(
+        competitiveness && competitiveness > 0 ? "democrat" : "republican"
+      );
+      const party: Party = { color: partyColor, label: partyLabel };
+      setParty(party);
+      if (metric && metric.key === "competitiveness") {
+        metric &&
+          store.dispatch(
+            selectEvaluationMetric({
+              ...metric,
+              electionYear: electionYear,
+              party: party,
+              value: competitiveness
+            })
+          );
+      }
+    }
+  }, [electionYear, geojson, metric, avgCompetitiveness, numDistrictsWithPopulation]);
+
+  const multipleElections = hasMultipleElections(staticMetadata);
+
   const requiredMetrics: readonly EvaluateMetricWithValue[] = [
     {
       key: "equalPopulation",
       name: "Equal Population",
       status:
-        (avgPopulation &&
-          geojson &&
-          geojson?.features.filter(f => {
-            return (
-              f.id !== 0 &&
-              f.properties.percentDeviation &&
-              Math.abs(f.properties.percentDeviation) <= popThreshold
-            );
-          }).length ===
-            geojson?.features.length - 1) ||
-        false,
+        numEqualPopDistricts !== undefined &&
+        numDistrictsWithPopulation !== undefined &&
+        numEqualPopDistricts === numDistrictsWithPopulation,
       description: "have equal population",
       shortText:
         "The U.S. constitution requires that each district have about the same population for a map to be considered valid.",
-      longText: `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
-        popThreshold * 100
-      )}%) above or below that target.`,
-      avgPopulation: avgPopulation || undefined,
+      longText:
+        (popThreshold !== undefined &&
+          `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
+            popThreshold
+          )}%) above or below that target.`) ||
+        "",
+      showInSummary: true,
+      avgPopulation: avgPopulation,
       popThreshold: popThreshold,
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
-      value:
-        avgPopulation && geojson
-          ? geojson?.features.filter(f => {
-              return (
-                f.id !== 0 &&
-                f.properties.percentDeviation &&
-                Math.abs(f.properties.percentDeviation) <= popThreshold
-              );
-            }).length
-          : 0
+      value: numEqualPopDistricts || 0
     },
     {
       key: "contiguity",
       name: "Contiguity",
       status:
-        geojson?.features.filter(f => f.properties.contiguity === "non-contiguous").length === 0,
+        geojson?.features.filter(f => f.properties.contiguity === "non-contiguous" && f.id !== 0)
+          .length === 0,
       description: "are contiguous",
       longText:
         "Each district should be contiguous, meaning it must be a single, unbroken shape. Some exceptions are allowed, such as the inclusion of islands in a coastal district. Two areas connected only by a single point (touching just their corners) are not considered contiguous.",
       shortText:
         "All parts of a district must be in physical contact with some other part of the district, to the extent possible.",
+      showInSummary: true,
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
       value:
@@ -131,13 +190,22 @@ const ProjectEvaluateSidebar = ({
           .length || 0
     }
   ];
-  const optionalMetrics: readonly EvaluateMetric[] = [
-    // TODO: Add competitiveness display (??)
-    // {
-    //   key: "competitiveness",
-    //   name: "Competitiveness",
-    //   description: "are competitive"
-    // },
+  const optionalMetrics: readonly EvaluateMetricWithValue[] = [
+    {
+      key: "competitiveness",
+      name: "Competitiveness",
+      description: "are competitive",
+      type: "pvi",
+      shortText:
+        "A competitiveness metric evaluates the plan based on the average partisan lean of each district.",
+      longText:
+        "A competitiveness metric evaluates the plan based on the average partisan lean of each district, calculated using the Partisan Voting Index (PVI). A partisan lean of the district plan which deviates from the overall lean of the state can be indicative of gerrymandering.",
+      showInSummary: !!(staticMetadata && staticMetadata.voting),
+      party: party,
+      value: avgCompetitiveness,
+      hasMultipleElections: multipleElections,
+      electionYear: electionYear
+    },
     {
       key: "compactness",
       name: "Compactness",
@@ -146,21 +214,23 @@ const ProjectEvaluateSidebar = ({
         "A district that efficiently groups constituents together has higher compactness. Low compactness or districts that branch out to different areas can be indicators of gerrymandering. Compactness is calculated using the Polsby-Popper method. Higher numbers are better.",
       shortText:
         "A district that is more spread out has a lower compactness. Low compactness can be an indicator of gerrymandering.",
+      showInSummary: true,
       description: "are compact",
       value: avgCompactness
     },
-    // TODO: Minority-Majority updates (#750)
-    // {
-    //   key: "minorityMajority",
-    //   name: "Minority-Majority",
-    //   type: "fraction",
-    //   description: "are minority-majority",
-    //   shortText:
-    //     "A district in which the majority of the constituents are racial or ethnic minorities",
-    //   longText:
-    //     "A district in which the majority of the constituents are racial or ethnic minorities",
-    //   value: 1
-    // },
+    {
+      key: "majorityMinority",
+      name: "Majority-Minority",
+      type: "fraction",
+      description: "are majority-minority",
+      shortText:
+        "A majority-minority district is a district in which a racial minority group or groups comprise a majority of the district's total population.",
+      longText:
+        'A majority-minority district is a district in which a racial minority group or groups comprise a majority of the district\'s total population. The display indicates districts where a minority race has a simple majority (Black, Hispanic, etc.), or where the sum of multiple minority races combine to a majority (called "Coalition" districts).',
+      showInSummary: true,
+      total: geojson?.features.filter(f => f.id !== 0).length || 0,
+      value: geojson?.features.filter(f => isMajorityMinority(f)).length || 0
+    },
     {
       key: "countySplits",
       name: `${geoLevel ? geoLevelLabelSingular(geoLevel) : ""} splits`,
@@ -170,15 +240,10 @@ const ProjectEvaluateSidebar = ({
         "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
       longText:
         "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
+      showInSummary: true,
       value: project?.districtsDefinition.filter(x => Array.isArray(x)).length || 0,
       total: project ? project.districtsDefinition.length : 0,
-      splitCounties: project?.districtsDefinition.map(c => {
-        if (Array.isArray(c)) {
-          return c;
-        } else {
-          return undefined;
-        }
-      })
+      splitCounties: project?.districtsDefinition.map(c => Array.isArray(c))
     }
   ];
   return (
@@ -193,6 +258,8 @@ const ProjectEvaluateSidebar = ({
           geojson={geojson}
           metric={metric}
           project={project}
+          electionYear={electionYear}
+          setElectionYear={setEvaluateElectionYear}
           geoLevel={geoLevel}
           regionProperties={regionProperties}
           staticMetadata={staticMetadata}

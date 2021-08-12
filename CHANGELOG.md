@@ -9,13 +9,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-
 ### Changed
-
 
 ### Fixed
 
+## [1.7.0] - 2021-08-12
 
+### Added
+
+- Add button to display keyboard shortcuts modal [#787](https://github.com/PublicMapping/districtbuilder/pull/787)
+- Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
+- Display target population symbols in sidebar [#720](https://github.com/PublicMapping/districtbuilder/issues/720)
+- List all published maps in new screen [#796](https://github.com/PublicMapping/districtbuilder/pull/796) & [#836](https://github.com/PublicMapping/districtbuilder/pull/836)
+- Add map export to organization admin screen [#805](https://github.com/PublicMapping/districtbuilder/pull/805)
+- Add support for Vagrant Development Environment [#729](https://github.com/PublicMapping/districtbuilder/pull/729)
+- Add user export to organization admin screen [#812](https://github.com/PublicMapping/districtbuilder/pull/812)
+- Add support for calculating PVI / handling '16 & '20 election data [#818](https://github.com/PublicMapping/districtbuilder/pull/818)
+- Add tooltip for population deviation in project sidebar [#819](https://github.com/PublicMapping/districtbuilder/pull/819)
+- Add ability to archive regions as read-only to reduce memory requirements [#831](https://github.com/PublicMapping/districtbuilder/pull/831)
+- Add voting info to labels selector [#840](https://github.com/PublicMapping/districtbuilder/pull/840)
+- Add evaluate mode metric view for competitiveness [#824](https://github.com/PublicMapping/districtbuilder/pull/824)
+- Add expandable metrics viewer with ability to pin metrics to sidebar [#827](https://github.com/PublicMapping/districtbuilder/pull/827)
+- Add user id and IP address to rollbar server side error logging [#841](https://github.com/PublicMapping/districtbuilder/pull/841)
+- Add majority race metric to project sidebar [#853](https://github.com/PublicMapping/districtbuilder/pull/853) & [#916](https://github.com/PublicMapping/districtbuilder/pull/916)
+- Add additional keyboard shortcuts [#854](https://github.com/PublicMapping/districtbuilder/pull/854)
+- Add configurable slider to increase size of paintbrush selection tool [#835](https://github.com/PublicMapping/districtbuilder/pull/835)
+- Add populationDeviation and chamber to import project screen [#845](https://github.com/PublicMapping/districtbuilder/pull/845)
+- Add filter by state functionality to community maps page [#851](https://github.com/PublicMapping/districtbuilder/pull/851)
+- Add button to upload project to PlanScore via API [#847](https://github.com/PublicMapping/districtbuilder/pull/847)
+- Add maps to list of user projects on home screen [#850](https://github.com/PublicMapping/districtbuilder/pull/850) & [#893](https://github.com/PublicMapping/districtbuilder/pull/893)
+- Add histogram to evaluate mode metric view for competitiveness [#844](https://github.com/PublicMapping/districtbuilder/pull/844)
+- Added button to convert 2010 maps to 2020 [#878](https://github.com/PublicMapping/districtbuilder/pull/878)
+- Add keyboard shortcuts for incrementing and decrementing the paintbrush size [#874](https://github.com/PublicMapping/districtbuilder/pull/874)
+- Create auto scaling group and stand up new app service [#914](https://github.com/PublicMapping/districtbuilder/pull/914)
+
+### Changed
+
+- Only show pagination footer is more than one page is available [#915](https://github.com/PublicMapping/districtbuilder/pull/915)
+- Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
+- Display evaluate mode toggle button in read-only mode [#786](https://github.com/PublicMapping/districtbuilder/pull/786)
+- Disable keyboard shortcuts in evaluate mode [#784](https://github.com/PublicMapping/districtbuilder/pull/784)
+- Only show competitiveness summary in evaluate sidebar if elections data is available [#896](https://github.com/PublicMapping/districtbuilder/pull/896)
+- Ignore unassigned districts when computing flag for Contiguity and Equal Population [#797](https://github.com/PublicMapping/districtbuilder/pull/797)
+- Rename Support menu to Resources [#787](https://github.com/PublicMapping/districtbuilder/pull/787)
+- Switched race demographic colors to a palette with fewer conflicts to our other color palettes [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
+- Tweaks to org report downloads [#832](https://github.com/PublicMapping/districtbuilder/pull/832)
+- Update population deviation helper text [#848](https://github.com/PublicMapping/districtbuilder/pull/848)
+- Update display logic for political data in expandable metrics viewer [#864](https://github.com/PublicMapping/districtbuilder/pull/864)
+- Update UX for duplication, showing a spinner when duplication is pending and redirecting when it completes [#872](https://github.com/PublicMapping/districtbuilder/pull/872)
+- Added cache-busting to 'districts' column [#897](https://github.com/PublicMapping/districtbuilder/pull/897)
+- Simplify districts used to display mini-map [#894](https://github.com/PublicMapping/districtbuilder/pull/894) & [#911](https://github.com/PublicMapping/districtbuilder/pull/911)
+
+### Fixed
+
+- Improved padding in the sidebar district rows, which had become unbalanced [#795](https://github.com/PublicMapping/districtbuilder/pull/795)
+- Keyboard shortcuts no longer fire when form elements are focused [#823](https://github.com/PublicMapping/districtbuilder/pull/823)
+- Fix breaking change to routing introduced with QueryParamsProvider [#869](https://github.com/PublicMapping/districtbuilder/pull/869)
+- Fix duplicate project button on home screen projects [#872](https://github.com/PublicMapping/districtbuilder/pull/872) & [#892](https://github.com/PublicMapping/districtbuilder/pull/892)
+- Fix find menu button so that it actually opens the find menu [#871](https://github.com/PublicMapping/districtbuilder/pull/871)
+- Fix overlap between keyboard shortcuts and paintbrush size slider [#874](https://github.com/PublicMapping/districtbuilder/pull/874)
+- Show file error when attempting to import a CSV for an unsupported region [#875](https://github.com/PublicMapping/districtbuilder/pull/875)
+- Increased timeout on database healthcheck [#877](https://github.com/PublicMapping/districtbuilder/pull/877)
+- Fix archive not updating list of projects [#892](https://github.com/PublicMapping/districtbuilder/pull/892)
+- Redirect to home screen after successful login [#895](https://github.com/PublicMapping/districtbuilder/pull/895)
+- Improved handling large number of import flags [#888](https://github.com/PublicMapping/districtbuilder/pull/888)
+- Fixed creating districts from project template [#905](https://github.com/PublicMapping/districtbuilder/pull/905)
+- Hide archived projects from community maps page [#927](https://github.com/PublicMapping/districtbuilder/pull/927)
 
 ## [1.6.0] - 2021-05-24
 
@@ -24,8 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update map view for evaluate mode [#727](https://github.com/PublicMapping/districtbuilder/pull/727)
 - Show minority-majority districts in sidebar [#763](https://github.com/PublicMapping/districtbuilder/pull/763)
 - Add voting info to map tooltip [#751](https://github.com/PublicMapping/districtbuilder/pull/751)
-- Disable some keyboard shortcuts in reads-only mode [#768](https://github.com/PublicMapping/districtbuilder/pull/768)
-
+- Add majority-minority evaluate mode view [#839](https://github.com/PublicMapping/districtbuilder/pull/839)
 
 ### Changed
 
@@ -40,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't show limit to county option in read-only mode [#777](https://github.com/PublicMapping/districtbuilder/pull/777)
 - Include unassigned district when switching using keyboard shortcuts [#779](https://github.com/PublicMapping/districtbuilder/pull/779)
 - Fix calculation of average compactness [#778](https://github.com/PublicMapping/districtbuilder/pull/778)
+- Fix computation of equal population flags for population deviation of zero [#806](https://github.com/PublicMapping/districtbuilder/pull/806)
 
 ## [1.5.0] - 2021-05-13
 
@@ -216,7 +275,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.7.0...HEAD
+[1.7.0]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...1.7.0
 [1.6.0]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...1.6.0
 [1.5.0]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...1.4.0

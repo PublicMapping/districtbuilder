@@ -13,12 +13,12 @@ import {
   MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays,
-  EvaluateMetricWithValue
+  UintArrays
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
-import { isBaseGeoLevelAlwaysVisible } from "../../functions";
+import { isBaseGeoLevelAlwaysVisible, getTargetPopulation } from "../../functions";
 import { mapValues } from "lodash";
+import { ChoroplethSteps, PviBucket } from "../../types";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -37,7 +37,11 @@ export const DISTRICTS_CONTIGUITY_CHLOROPLETH_LAYER_ID = "districts-contiguity";
 // Id for districts layer outline used in evaluate mode
 export const DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID = "districts-compactness";
 // Id for districts layer outline used in evaluate mode
+export const DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID = "districts-competitiveness";
+// Id for districts layer outline used in evaluate mode
 export const DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID = "districts-equal-population";
+// Id for districts layer outline used in evaluate mode
+export const DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID = "districts-majority-race";
 // Id for district labels layer used in evaluate mode
 export const DISTRICTS_EVALUATE_LABELS_LAYER_ID = "districts-evaluate-labels";
 // Id for topmost geolevel layer in Evaluate
@@ -69,66 +73,110 @@ export const filteredLabelLayers = [
   "poi-label"
 ];
 
-export function getChoroplethStops(metricKey: string, threshold?: number) {
-  const compactnessSteps = [
+export function getCompactnessStops(): ChoroplethSteps {
+  return [
     [0.3, "#edf8fb"],
     [0.4, "#b2e2e2"],
     [0.5, "#66c2a4"],
     [0.6, "#2ca25f"],
     [1.0, "#006d2c"]
   ];
-  const popThreshold = threshold || 0.05;
-  const equalPopulationSteps = [
-    [-1.0, "#D1E5F0"],
-    [-1 * (popThreshold + 0.02), "#66A9CF"],
-    [-1 * (popThreshold + 0.01), "#2166AC"],
-    [-1 * popThreshold, "#01665E"],
-    [popThreshold, "#EFBE60"],
-    [popThreshold + 0.01, "#F5D092"],
-    [popThreshold + 0.02, "#F7E1C3"]
-  ];
-  switch (metricKey) {
-    case "compactness":
-      return compactnessSteps;
-    case "equalPopulation":
-      return equalPopulationSteps;
-    default:
-      return [];
-  }
 }
 
-export function getChoroplethLabels(metricKey: string) {
-  const compactnessLabels = ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
-  const steps = getChoroplethStops(metricKey);
-  switch (metricKey) {
-    case "compactness":
-      return compactnessLabels;
-    case "equalPopulation":
-      return steps.map((step, i) => {
-        const stepVal = Number(step[0]);
-        if (i === 0) {
-          // Lower bound condition
-          return `< ${Math.ceil(Number(steps[1][0]) * 100)}%`;
-        } else if (i === steps.length - 1) {
-          // Upper bound condition
-          return `> ${Math.floor(stepVal * 100)}%`;
-        } else {
-          const nextStep = Number(steps[i + 1][0]);
-          if (stepVal < 0 && nextStep > 0) {
-            // Target condition
-            return `Target (+/- ${Math.floor(nextStep * 100)}%)`;
-          } else {
-            if (stepVal < 0) {
-              return `${Math.ceil(stepVal * 100)}% to ${Math.ceil(nextStep * 100)}%`;
-            } else {
-              return `${Math.floor(stepVal * 100)}% to ${Math.floor(nextStep * 100)}%`;
-            }
-          }
-        }
-      });
-    default:
-      return [];
-  }
+export function getCompactnessLabels() {
+  return ["0-30%", "30-40%", "40-50%", "50-60%", ">60%"];
+}
+
+export function getPviSteps(): ChoroplethSteps {
+  return [
+    [-100, "#a52a0d"],
+    [-20, "#ed512c"],
+    [-5, "#cdcdcd"],
+    [5, "#6491b5"],
+    [20, "#385d7a"]
+  ];
+}
+
+export function getPviLabels() {
+  return ["> +20R", "+5R to +20R", "Even", "+5D to +20D", "> +20D"];
+}
+
+export function getPviBuckets(): readonly PviBucket[] {
+  return [
+    {
+      name: "R",
+      label: "> +20R",
+      color: "#a52a0d"
+    },
+    {
+      name: "Lean R",
+      label: "+5R to +20R",
+      color: "#ed512c"
+    },
+    {
+      name: "Even",
+      label: "+5R to +20R",
+      color: "#CDCDCD"
+    },
+    {
+      name: "Lean D",
+      label: "+5D to +20D",
+      color: "#6491b5"
+    },
+    {
+      name: "D",
+      label: "> +20D",
+      color: "#385d7a"
+    }
+  ];
+}
+
+export function getEqualPopulationStops(
+  popThresholdNum: number,
+  avgPopulation: number
+): ChoroplethSteps {
+  const popThreshold = popThresholdNum / 100;
+  const isAvgFractional = avgPopulation % 1 !== 0;
+  return [
+    [-1.0 * avgPopulation, "#c1e5f0"],
+    [-1 * (popThreshold + 0.02) * avgPopulation, "#66a9cf"],
+    [-1 * (popThreshold + 0.01) * avgPopulation, "#2166ac"],
+    [-1 * popThreshold * avgPopulation - (isAvgFractional ? 1 : 0.1), "#01665e"],
+    [popThreshold === 0 ? (isAvgFractional ? 1 : 0.1) : popThreshold * avgPopulation, "#efbe60"],
+    [(popThreshold + 0.01) * avgPopulation, "#f5d092"],
+    [(popThreshold + 0.02) * avgPopulation, "#f7e1c3"]
+  ];
+}
+
+export function getMajorityRaceSplitFill(majorityRace: string, majorityRaceSplit: number): string {
+  const fills = getMajorityRaceFills();
+  return fills[majorityRace]
+    ? majorityRaceSplit > 0.65
+      ? fills[majorityRace][0]
+      : fills[majorityRace][1]
+    : "#ffffff";
+}
+
+export function getMajorityRaceFills(): { readonly [id: string]: readonly [string, string] } {
+  return {
+    white: ["#4a9dd4", "#aac3d4"],
+    black: ["#8dd3c5", "#c4e8e1"],
+    asian: ["#fdb35c", "#fcead6"],
+    hispanic: ["#cf6ade", "#dabdde"],
+    "minority coalition": ["#898989", "#ebe8eb"]
+  };
+}
+
+export function getEqualPopulationLabels(popThreshold: number) {
+  return [
+    [`< ${Math.ceil(-1 * (popThreshold + 2))}%`],
+    [`${-1 * Math.ceil(popThreshold + 2)}% to ${-1 * Math.ceil(popThreshold + 1)}%`],
+    [`${-1 * Math.ceil(popThreshold + 1)}% to ${-1 * Math.ceil(popThreshold)}%`],
+    [popThreshold !== 0 ? `Target (+/- ${Math.floor(popThreshold)}%)` : `Target (0%)`],
+    [`${Math.floor(popThreshold)}% to ${Math.floor(popThreshold + 1)}%`],
+    [`${Math.floor(popThreshold + 1)}% to ${Math.floor(popThreshold + 2)}%`],
+    [`> ${Math.floor(popThreshold + 2)}%`]
+  ];
 }
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
@@ -173,8 +221,8 @@ export function generateMapLayers(
   /* eslint-disable */
   map: any,
   geojson: any,
-  metric?: EvaluateMetricWithValue
   /* eslint-enable */
+  populationDeviation: number
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
     type: "geojson",
@@ -221,15 +269,52 @@ export function generateMapLayers(
       paint: {
         "fill-color": {
           property: "compactness",
-          stops: getChoroplethStops("compactness")
+          stops: getCompactnessStops()
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
+  map.addLayer(
+    {
+      id: DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
+      paint: {
+        "fill-color": {
+          property: "pvi",
+          type: "interval",
+          stops: getPviSteps()
+        },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
+      }
+    },
+    DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID,
+      type: "fill",
+      source: DISTRICTS_SOURCE_ID,
+      layout: { visibility: "none" },
+      filter: ["match", ["get", "color"], ["transparent"], false, true],
+      paint: {
+        "fill-color": { type: "identity", property: "majorityRaceFill" },
+        "fill-outline-color": "gray",
+        "fill-opacity": 0.9
+      }
+    },
+    DISTRICTS_PLACEHOLDER_LAYER_ID
+  );
+
+  const avgPopulation = getTargetPopulation(geojson);
   map.addLayer(
     {
       id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
@@ -239,15 +324,15 @@ export function generateMapLayers(
       filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
         "fill-color": {
-          property: "percentDeviation",
+          property: "populationDeviation",
           type: "interval",
-          stops: getChoroplethStops("equalPopulation")
+          stops: getEqualPopulationStops(populationDeviation, avgPopulation)
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer(

@@ -1,0 +1,16 @@
+---
+- name: Install Docker Compose
+  pip: name=docker-compose version="{{ docker_compose_version }}"
+
+- name: Add Ansible user to Docker group
+  user: name="{{ item }}"
+        groups=docker
+        append=yes
+  with_items: "{{ docker_users }}"
+
+- name: Increase file watching limit for Node
+  sysctl: name=fs.inotify.max_user_watches
+          value=524288
+          sysctl_set=yes
+          state=present
+          reload=yes

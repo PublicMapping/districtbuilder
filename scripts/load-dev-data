@@ -25,34 +25,79 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
             -f docker-compose.yml \
             up -d database server
 
+        # Different regions for testing different scenarios:
+        #  - Dane County is a hidden / non-state region
+        #  - PA has '16 but not '20 political data
+        #  - IL has both '16 and '20 political data
+        #  - DE appears twice, with an archived '10 census version and an unarchived '20 census version
         docker-compose \
             exec database psql -U districtbuilder districtbuilder -c "
               INSERT INTO region_config
               VALUES (
-                'e7728e7d-cf2e-45e9-a8d8-e44699d87a21',
-                'Michigan',
-                'US',
-                'MI',
-                's3://global-districtbuilder-dev-us-east-1/regions/US/MI/2020-09-08T20:15:12.635Z/',
-                DEFAULT,
-                DEFAULT
-              ), (
                 '4a48268f-ddcf-4ae9-b41f-23cda93c3eba',
                 'Dane County',
                 'US',
                 'WI',
                 's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-02-08T15:19:22.145Z/',
                 DEFAULT,
+                TRUE,
                 DEFAULT
               ), (
                 '96bca832-99b3-4c4d-8913-ab4ca82ec442',
                 'Pennsylvania',
                 'US',
                 'PA',
-                's3://global-districtbuilder-dev-us-east-1/regions/US/PA/2021-02-08T18:07:18.957Z/',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/PA/2020-09-09T19:03:58.174Z/',
+                DEFAULT,
                 DEFAULT,
                 DEFAULT
+              ), (
+                '6c440b8d-c26e-4bae-850f-dbff37fe0209',
+                'Illinois',
+                'US',
+                'IL',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/IL/2021-06-04T15:05:37.089Z/',
+                DEFAULT,
+                DEFAULT,
+                DEFAULT
+              ), (
+                '852fa086-de7c-4edd-b666-004b6ff8dc6c',
+                'Delaware',
+                'US',
+                'DE',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/DE/2020-09-09T19:50:10.921Z/',
+                DEFAULT,
+                DEFAULT,
+                FALSE
+              ), (
+                '411c5908-2a83-40e9-863b-303931a1c119',
+                'Delaware',
+                'US',
+                'DE',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/DE/2021-06-11T23:03:36.938Z/',
+                DEFAULT,
+                DEFAULT,
+                TRUE
              )
+              ON CONFLICT DO NOTHING;
+            "
+
+        # Add chambers to the database
+        docker-compose \
+            exec database psql -U districtbuilder districtbuilder -c "
+              INSERT INTO chamber
+              VALUES (
+                'e7f5999f-88d9-4c58-ab85-f65eae843ea1',
+                'House of Representatives',
+                 18,
+                '6c440b8d-c26e-4bae-850f-dbff37fe0209'
+              ),
+              (
+                '2202e945-161b-4f84-a282-5d65c7ba16b7',
+                'House of Representatives',
+                 18,
+                '96bca832-99b3-4c4d-8913-ab4ca82ec442'
+              )
               ON CONFLICT DO NOTHING;
             "
 
@@ -62,7 +107,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Add user to testing organization
         docker-compose \
             exec database psql -U districtbuilder districtbuilder -c "
-              INSERT INTO organization_users_user VALUES((SELECT id FROM organization WHERE slug = 'azavea'), (SELECT id FROM \"user\" ORDER BY id LIMIT 1));
+              INSERT INTO organization_users_user VALUES((SELECT id FROM organization WHERE slug = 'azavea'), (SELECT id FROM \"user\" ORDER BY id LIMIT 1)) ON CONFLICT DO NOTHING;
             "
 
         # Set testing organization admin (no-op if there are no users) 

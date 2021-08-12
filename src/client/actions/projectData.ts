@@ -1,6 +1,12 @@
 import { createAction } from "typesafe-actions";
 import { ProjectVisibility } from "../../shared/constants";
-import { DistrictsDefinition, IProject, LockedDistricts, ProjectId } from "../../shared/entities";
+import {
+  DistrictsDefinition,
+  IProject,
+  LockedDistricts,
+  MetricField,
+  ProjectId
+} from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { ResourceFailure } from "../resource";
 
@@ -51,13 +57,19 @@ export const updateDistrictLocksSuccess = createAction("Update district locks su
 >();
 export const updateDistrictLocksFailure = createAction("Update district locks failure")<string>();
 
+export const updatePinnedMetrics = createAction("Update pinned metrics")<readonly MetricField[]>();
+export const updatePinnedMetricsSuccess = createAction("Update pinned metrics success")<
+  DynamicProjectData
+>();
+export const updatedPinnedMetricsFailure = createAction("Update pinned metrics failure")<string>();
+
 export const updateProjectFailed = createAction("Update project failure")();
 
 export const duplicateProject = createAction("Duplicate project")<IProject>();
-export const duplicateProjectSuccess = createAction("Duplicate project success")<
-  DynamicProjectData
->();
+export const duplicateProjectSuccess = createAction("Duplicate project success")<IProject>();
 export const duplicateProjectFailure = createAction("Duplicate project failure")<string>();
+
+export const clearDuplicationState = createAction("Clear duplication state")();
 
 export const exportCsv = createAction("Export project CSV")<IProject>();
 export const exportCsvFailure = createAction("Export project CSV failure")<string>();

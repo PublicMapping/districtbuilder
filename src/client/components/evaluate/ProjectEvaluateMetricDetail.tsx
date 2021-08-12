@@ -1,13 +1,8 @@
 /** @jsx jsx */
-import { Box, Button, Flex, jsx, ThemeUIStyleObject, Heading, Text } from "theme-ui";
-import {
-  EvaluateMetric,
-  IProject,
-  IStaticMetadata,
-  RegionLookupProperties
-} from "../../../shared/entities";
+import { Box, Button, Flex, jsx, ThemeUIStyleObject, Heading, Text, Select } from "theme-ui";
+import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
 import Icon from "../Icon";
-import { DistrictsGeoJSON } from "../../types";
+import { DistrictsGeoJSON, ElectionYear, EvaluateMetricWithValue } from "../../types";
 import store from "../../store";
 import { selectEvaluationMetric } from "../../actions/districtDrawing";
 import ContiguityMetricDetail from "./detail/Contiguity";
@@ -15,6 +10,8 @@ import CompactnessMetricDetail from "./detail/Compactness";
 import CountySplitMetricDetail from "./detail/CountySplit";
 import EqualPopulationMetricDetail from "./detail/EqualPopulation";
 import { Resource } from "../../resource";
+import CompetitivenessMetricDetail from "./detail/Competitiveness";
+import MajorityRaceMetricDetail from "./detail/MajorityRace";
 
 const style: ThemeUIStyleObject = {
   header: {
@@ -38,13 +35,17 @@ const ProjectEvaluateMetricDetail = ({
   project,
   regionProperties,
   geoLevel,
+  electionYear,
+  setElectionYear,
   staticMetadata
 }: {
   readonly geojson?: DistrictsGeoJSON;
-  readonly metric: EvaluateMetric;
+  readonly metric: EvaluateMetricWithValue;
   readonly project?: IProject;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly geoLevel: string;
+  readonly electionYear: ElectionYear | undefined;
+  readonly setElectionYear: (year: ElectionYear) => void;
   readonly staticMetadata?: IStaticMetadata;
 }) => {
   return (
@@ -87,6 +88,23 @@ const ProjectEvaluateMetricDetail = ({
           <Heading as="h1" sx={{ variant: "text.h4", m: 0, textTransform: "capitalize" }}>
             {metric.name}
           </Heading>
+          {"hasMultipleElections" in metric && metric.hasMultipleElections && (
+            <Box>
+              <Select
+                id="election-dropdown"
+                value={electionYear || undefined}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  const year = e.currentTarget.value;
+                  (year === "16" || year === "20" || year === "combined") && setElectionYear(year);
+                }}
+                sx={{ width: "250px", ml: "20px" }}
+              >
+                <option value={"combined"}>Combined 2016 / 2020 PVI</option>
+                <option value={"16"}>2016 PVI</option>
+                <option value={"20"}>2020 PVI</option>
+              </Select>
+            </Box>
+          )}
         </Flex>
         <Text sx={style.metricText}>{metric.longText || "Lorem ipsum lorem ipsum"}</Text>
       </Flex>
@@ -105,6 +123,10 @@ const ProjectEvaluateMetricDetail = ({
           <ContiguityMetricDetail metric={metric} geojson={geojson} />
         ) : metric && "type" in metric && metric.key === "equalPopulation" ? (
           <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
+        ) : metric && "type" in metric && metric.key === "competitiveness" ? (
+          <CompetitivenessMetricDetail metric={metric} geojson={geojson} project={project} />
+        ) : metric && "type" in metric && metric.key === "majorityMinority" ? (
+          <MajorityRaceMetricDetail metric={metric} geojson={geojson} />
         ) : (
           <Box>
             <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>

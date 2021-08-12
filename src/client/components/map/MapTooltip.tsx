@@ -1,12 +1,19 @@
 /** @jsx jsx */
 import throttle from "lodash/throttle";
 import MapboxGL from "mapbox-gl";
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
 import { DemographicCounts, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
-import { areAnyGeoUnitsSelected, destructureResource, geoLevelLabel } from "../../functions";
+import { ElectionYear } from "../../types";
+
+import {
+  areAnyGeoUnitsSelected,
+  destructureResource,
+  geoLevelLabel,
+  extractYear
+} from "../../functions";
 import { getTotalSelectedDemographics } from "../../worker-functions";
 import { featuresToGeoUnits, SET_FEATURE_DELAY } from "./index";
 import { State } from "../../reducers";
@@ -54,13 +61,15 @@ const MapTooltip = ({
   highlightedGeounits,
   staticMetadata,
   project,
-  map
+  map,
+  electionYear
 }: {
   readonly geoLevelIndex: number;
   readonly highlightedGeounits: GeoUnits;
   readonly staticMetadata?: IStaticMetadata;
   readonly project?: IProject;
   readonly map?: MapboxGL.Map;
+  readonly electionYear: ElectionYear;
 }) => {
   const [point, setPoint] = useState({ x: 0, y: 0 });
   const [feature, setFeature] = useState<MapboxGL.MapboxGeoJSONFeature | undefined>(undefined);
@@ -70,12 +79,6 @@ const MapTooltip = ({
   const invertedGeoLevelIndex = staticMetadata
     ? staticMetadata.geoLevelHierarchy.length - geoLevelIndex - 1
     : undefined;
-
-  const votingIds = useMemo(
-    () =>
-      staticMetadata && staticMetadata.voting ? staticMetadata.voting.map(props => props.id) : [],
-    [staticMetadata]
-  );
 
   useEffect(() => {
     const throttledSetFeature = throttle(
@@ -195,6 +198,10 @@ const MapTooltip = ({
   if (map && data !== undefined) {
     const x = point.x;
     const y = point.y;
+    const votingForYear =
+      electionYear && data.voting ? extractYear(data.voting, electionYear) : data.voting;
+    const voting =
+      votingForYear && Object.keys(votingForYear).length > 0 ? votingForYear : data.voting;
 
     return (
       <Box
@@ -232,11 +239,11 @@ const MapTooltip = ({
         </Grid>
         <Divider sx={{ my: 1, borderColor: "gray.6" }} />
         <Box sx={{ width: "100%" }}>
-          <DemographicsTooltip demographics={data.demographics} />
-          {data.voting && (
+          <DemographicsTooltip demographics={data.demographics} abbreviate={true} />
+          {voting && (
             <React.Fragment>
               <Divider sx={{ my: 1, borderColor: "gray.6" }} />
-              <VotingMapTooltip voting={data.voting} votingIds={votingIds} />
+              <VotingMapTooltip voting={voting} />
             </React.Fragment>
           )}
         </Box>
@@ -251,7 +258,8 @@ function mapStateToProps(state: State) {
     geoLevelIndex: state.project.undoHistory.present.state.geoLevelIndex,
     highlightedGeounits: state.project.highlightedGeounits,
     project: destructureResource(state.project.projectData, "project"),
-    staticMetadata: destructureResource(state.project.staticData, "staticMetadata")
+    staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
+    electionYear: state.project.electionYear
   };
 }
 

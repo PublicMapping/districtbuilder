@@ -61,6 +61,8 @@ describe("DistrictsController", () => {
         .expect(200)
         .expect({
           districtsDefinition: [2, 1, 3],
+          maxDistrictId: 3,
+          numFlags: 1,
           rowFlags: [
             {
               rowNumber: 0,
@@ -68,8 +70,7 @@ describe("DistrictsController", () => {
               rowValue: ["100059900000024", "3"],
               field: "BLOCKID"
             }
-          ],
-          maxDistrictId: 3
+          ]
         });
     });
   });

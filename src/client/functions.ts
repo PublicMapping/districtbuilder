@@ -1,7 +1,8 @@
 import { toast } from "react-toastify";
-import { cloneDeep } from "lodash";
+import { cloneDeep, mapKeys, pickBy } from "lodash";
 
 import {
+  DemographicCounts,
   DistrictsDefinition,
   MutableGeoUnitCollection,
   GeoLevelHierarchy,
@@ -9,8 +10,10 @@ import {
   GeoUnitIndices,
   GeoUnitHierarchy,
   NestedArray,
-  IProject
+  IStaticMetadata
 } from "../shared/entities";
+import { ChoroplethSteps, DistrictGeoJSON, ElectionYear, Party } from "./types";
+
 import { Resource } from "./resource";
 import { DistrictsGeoJSON } from "./types";
 import { isThisYear, isToday } from "date-fns";
@@ -59,6 +62,179 @@ export const capitalizeFirstLetter = (s: string) =>
 
 export const getPartyColor = (party: string) =>
   party === "republican" ? "#BF4E6A" : party === "democrat" ? "#4E56BF" : "#F7AD00";
+
+export const getMajorityRaceDisplay = (feature: DistrictGeoJSON) =>
+  feature.properties.majorityRace && capitalizeFirstLetter(feature.properties.majorityRace);
+
+export function formatPvi(party?: Party, value?: number): string {
+  return value !== undefined && party !== undefined
+    ? `${party.label}+${Math.abs(value).toLocaleString(undefined, {
+        maximumFractionDigits: 0
+      })}`
+    : "N/A";
+}
+
+function computeRowFillInterval(stops: ChoroplethSteps, value?: number) {
+  if (value) {
+    // eslint-disable-next-line
+    for (let i = 0; i < stops.length; i++) {
+      const r = stops[i];
+      if (value >= r[0]) {
+        if (i < stops.length - 1) {
+          const r1 = stops[i + 1];
+          if (value < r1[0]) {
+            return r[1];
+          }
+        } else {
+          return r[1];
+        }
+      } else {
+        return r[1];
+      }
+    }
+  }
+  return "#fff";
+}
+
+export function computeRowFill(stops: ChoroplethSteps, value?: number, interval?: boolean): string {
+  // eslint-disable-next-line
+  let i = 0;
+  if (!interval) {
+    // eslint-disable-next-line
+    while (i < stops.length) {
+      const r = stops[i];
+      if (value && value < r[0]) {
+        return r[1];
+      } else {
+        i++;
+      }
+    }
+    return "#fff";
+  } else {
+    return computeRowFillInterval(stops, value);
+  }
+}
+
+// Source: https://cookpolitical.com/analysis/national/pvi/introducing-2021-cook-political-report-partisan-voter-index
+const nationalDemVoteShare16 = 51.1;
+const nationalDemVoteShare20 = 52.3;
+const nationalDemVoteShareAvg = nationalDemVoteShare16 + nationalDemVoteShare20 / 2;
+
+// Computes share of votes for party1
+export function calculatePartyVoteShare(
+  party1Votes: number,
+  party2Votes: number,
+  otherVotes: number
+): number | undefined {
+  const total = party1Votes + party2Votes + otherVotes;
+  return total ? (100 * party1Votes) / total : undefined;
+}
+
+export function getPartyVoteShareDisplay(percent?: number): string {
+  return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
+}
+
+export function computeDemographicSplit(demographic: number, total: number): string | undefined {
+  const percent = total > 0 ? (demographic / total) * 100 : undefined;
+  return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
+}
+
+export function isMajorityMinority(f: DistrictGeoJSON): boolean {
+  return (
+    (f.properties.majorityRace && f.properties.majorityRace !== "white" && f.id !== 0) || false
+  );
+}
+
+/**
+ * Computes the Cook Political Partisan Voting Index (PVI).
+ * Positive values indicate that a district leans Democrat,
+ * and negative values indicate that a district leans Republican.
+ * @param  {[DemographicCounts]} voting
+ * @return {[number | undefined]} pvi
+ */
+export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): number | undefined {
+  if (
+    "democrat16" in voting &&
+    "republican16" in voting &&
+    "democrat20" in voting &&
+    "republican20" in voting &&
+    year !== "16" &&
+    year !== "20"
+  ) {
+    const votes16 = calculatePartyVoteShare(
+      voting.democrat16,
+      voting.republican16,
+      voting["other party16"] || 0
+    );
+    const votes20 = calculatePartyVoteShare(
+      voting.democrat20,
+      voting.republican20,
+      voting["other party20"] || 0
+    );
+    if (votes16 !== undefined && votes20 !== undefined) {
+      const avgVoteShare = votes16 + votes20 / 2;
+      return avgVoteShare - nationalDemVoteShareAvg;
+    }
+  } else if (year === "20") {
+    const voteShare =
+      "democrat20" in voting && "republican20" in voting
+        ? calculatePartyVoteShare(
+            voting.democrat20,
+            voting.republican20,
+            voting["other party20"] || 0
+          )
+        : "democrat" in voting && "republican" in voting
+        ? calculatePartyVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        : undefined;
+    if (voteShare !== undefined) {
+      return voteShare - nationalDemVoteShare20;
+    }
+  } else {
+    // We have some states for which we anticipate having only 2016 election data
+    // We assume unspecified vote totals are from 2016
+    const voteShare =
+      "democrat16" in voting && "republican16" in voting
+        ? calculatePartyVoteShare(
+            voting.democrat16,
+            voting.republican16,
+            voting["other party16"] || 0
+          )
+        : "democrat" in voting && "republican" in voting
+        ? calculatePartyVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        : undefined;
+    if (voteShare !== undefined) {
+      return voteShare - nationalDemVoteShare16;
+    }
+  }
+}
+
+export const hasMultipleElections = (staticMetadata?: IStaticMetadata) =>
+  staticMetadata?.voting?.some(file => file.id.endsWith("16")) &&
+  staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+
+export const has16Election = (staticMetadata?: IStaticMetadata) => {
+  return (
+    staticMetadata?.voting?.some(file => file.id.endsWith("16")) ||
+    (staticMetadata?.voting &&
+      Object.keys(staticMetadata?.voting || {}).length > 0 &&
+      !has20Election(staticMetadata))
+  );
+};
+
+export const demographicsHasOther = (staticMetadata?: IStaticMetadata) =>
+  staticMetadata?.demographics?.some(file => file.id === "other");
+
+export const has20Election = (staticMetadata?: IStaticMetadata) =>
+  staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+
+export function extractYear(voting: DemographicCounts, year?: ElectionYear): DemographicCounts {
+  return year
+    ? mapKeys(
+        pickBy(voting, (val, key) => key.endsWith(year)),
+        (val, key) => key.slice(0, -2)
+      )
+    : voting;
+}
 
 /*
  * Assign nested geounit to district.
@@ -134,12 +310,13 @@ export function assignGeounitsToDistrict(
 // The target population is based on the average population of all districts,
 // not including the unassigned district, so we use the number of districts,
 // rather than the district feature count (which includes the unassigned district)
-export function getTargetPopulation(geojson: DistrictsGeoJSON, project: IProject) {
+export function getTargetPopulation(geojson: DistrictsGeoJSON) {
   return (
     geojson.features.reduce(
       (population, feature) => population + feature.properties.demographics.population,
       0
-    ) / project.numberOfDistricts
+    ) /
+    (geojson.features.length - 1)
   );
 }
 

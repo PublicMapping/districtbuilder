@@ -8,7 +8,7 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { IProject, IUser } from "../../shared/entities";
 import { showCopyMapModal } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import { createProject } from "../api";
+import { copyProject } from "../api";
 import { showActionFailedToast } from "../functions";
 import { State } from "../reducers";
 import store from "../store";
@@ -77,11 +77,7 @@ const CopyMapModal = ({
               sx={{ flexDirection: "column" }}
               onSubmit={(e: React.FormEvent) => {
                 e.preventDefault();
-                createProject({
-                  ...project,
-                  name: `Copy of ${attributedName}`,
-                  chamber: project.chamber || undefined
-                })
+                copyProject(project.id)
                   .then((project: IProject) => {
                     setCreateProjectResource({ resource: project });
 

@@ -7,7 +7,7 @@ import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
 import { Box, Button, Flex, jsx, ThemeUIStyleObject } from "theme-ui";
 import { IProject } from "../../shared/entities";
-import { undo, redo, toggleFind, toggleEvaluate } from "../actions/districtDrawing";
+import { undo, redo, toggleEvaluate } from "../actions/districtDrawing";
 import { heights } from "../theme";
 import CopyMapButton from "../components/CopyMapButton";
 import ExportMenu from "../components/ExportMenu";
@@ -51,13 +51,37 @@ const HeaderDivider = () => {
 };
 
 interface StateProps {
-  readonly findMenuOpen: boolean;
   readonly evaluateMode: boolean;
   readonly undoHistory: UndoHistory;
 }
 
+const EvaluateButton = ({ evaluateMode }: { readonly evaluateMode: boolean }) => (
+  <Box sx={{ position: "relative" }}>
+    <Button
+      sx={{
+        ...{
+          variant: "buttons.primary",
+          fontWeight: "light",
+          maxHeight: "34px",
+          borderBottom: evaluateMode ? "solid 3px" : "none",
+          borderBottomColor: "blue.2"
+        },
+        ...menuButtonStyle.menuButton
+      }}
+      onClick={() => store.dispatch(toggleEvaluate(!evaluateMode))}
+    >
+      <span
+        sx={{
+          mb: evaluateMode ? "-3px" : "0"
+        }}
+      >
+        Evaluate
+      </span>
+    </Button>
+  </Box>
+);
+
 const ProjectHeader = ({
-  findMenuOpen,
   evaluateMode,
   map,
   project,
@@ -105,58 +129,15 @@ const ProjectHeader = ({
             </React.Fragment>
           )}
           <ShareMenu invert={true} project={project} />
-          <SupportMenu invert={true} />
+          <SupportMenu invert={true} project={true} />
           {project ? <ExportMenu invert={true} project={project} /> : null}
-          <Box sx={{ position: "relative", mr: "5px" }}>
-            <Button
-              sx={{
-                ...{
-                  variant: "buttons.ghost",
-                  fontWeight: "light"
-                },
-                ...menuButtonStyle.menuButton
-              }}
-              onClick={() => store.dispatch(toggleFind(!findMenuOpen))}
-            >
-              <Box
-                sx={{
-                  borderBottom: findMenuOpen ? "solid 1px" : "none",
-                  borderBottomColor: "muted",
-                  mb: findMenuOpen ? "-1px" : "0"
-                }}
-              >
-                <Icon name="search" /> Find
-              </Box>
-            </Button>
-          </Box>
-          <Box sx={{ position: "relative" }}>
-            <Button
-              sx={{
-                ...{
-                  variant: "buttons.primary",
-                  fontWeight: "light",
-                  maxHeight: "34px",
-                  borderBottom: evaluateMode ? "solid 3px" : "none",
-                  borderBottomColor: "blue.2"
-                },
-                ...menuButtonStyle.menuButton
-              }}
-              onClick={() => store.dispatch(toggleEvaluate(!evaluateMode))}
-            >
-              <span
-                sx={{
-                  mb: evaluateMode ? "-3px" : "0"
-                }}
-              >
-                Evaluate
-              </span>
-            </Button>
-          </Box>
+          <EvaluateButton evaluateMode={evaluateMode} />
         </React.Fragment>
       ) : (
         <React.Fragment>
           <CopyMapButton invert={true} />
           {project && <ExportMenu invert={true} project={project} />}
+          <EvaluateButton evaluateMode={evaluateMode} />
         </React.Fragment>
       )}
     </Flex>
@@ -165,7 +146,6 @@ const ProjectHeader = ({
 
 function mapStateToProps(state: State): StateProps {
   return {
-    findMenuOpen: state.project.findMenuOpen,
     evaluateMode: state.project.evaluateMode,
     undoHistory: state.project.undoHistory
   };

@@ -27,9 +27,7 @@ class Tour extends Component<Props, State> {
     super(props);
 
     const numberOfDistricts = props.project.numberOfDistricts;
-    const population = Number(
-      Math.round(getTargetPopulation(props.geojson, props.project))
-    ).toLocaleString();
+    const population = Math.round(getTargetPopulation(props.geojson)).toLocaleString();
     const regionConfig = props.project.regionConfig.name;
     const geoLevelsSingular = props.staticMetadata.geoLevelHierarchy
       .map(geolevel => geolevel.id)
@@ -294,8 +292,8 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <p>
-              You can find additional tutorials and contact us in the <strong>Support</strong> menu.
-              Thank you for using DistrictBuilder and fighting for fair and transparent
+              You can find additional tutorials and contact us in the <strong>Resources</strong>{" "}
+              menu. Thank you for using DistrictBuilder and fighting for fair and transparent
               redistricting!
             </p>
           ),

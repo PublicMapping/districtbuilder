@@ -112,22 +112,11 @@ locals {
     // a Fargate container can have.
     30720
   )
-}
 
-resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.environment}App"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = var.fargate_app_cpu
-  memory                   = local.fargate_app_memory
-
-  task_role_arn      = aws_iam_role.ecs_task_role.arn
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-
-  container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", {
+  # We're splitting out some of the task definition's templated variables into a
+  # local value to avoid duplicating things for the EC2 version of the task.
+  shared_app_task_def_template_vars = {
     image = "${module.ecr.repository_url}:${var.image_tag}"
-
-    max_old_space_size = local.fargate_app_memory * 0.75
 
     postgres_host     = aws_route53_record.database.name
     postgres_port     = module.database.port
@@ -144,10 +133,32 @@ resource "aws_ecs_task_definition" "app" {
 
     rollbar_access_token = var.rollbar_access_token
 
+    plan_score_api_token = var.plan_score_api_token
+
     project     = var.project
     environment = var.environment
     aws_region  = var.aws_region
-  })
+  }
+
+  app_health_check_grace_period_seconds = var.districtbuilder_state_count * var.health_check_grace_period_per_state
+}
+
+resource "aws_ecs_task_definition" "app" {
+  family                   = "${var.environment}App"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = var.fargate_app_cpu
+  memory                   = local.fargate_app_memory
+
+  task_role_arn      = aws_iam_role.ecs_task_role.arn
+  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+
+  container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", merge(
+    local.shared_app_task_def_template_vars,
+    {
+      max_old_space_size = local.fargate_app_memory * 0.75
+    }
+  ))
 
   tags = {
     Name        = "${var.environment}App",
@@ -165,7 +176,7 @@ resource "aws_ecs_service" "app" {
   deployment_minimum_healthy_percent = var.fargate_app_deployment_min_percent
   deployment_maximum_percent         = var.fargate_app_deployment_max_percent
 
-  health_check_grace_period_seconds = var.districtbuilder_state_count * var.health_check_grace_period_per_state
+  health_check_grace_period_seconds = local.app_health_check_grace_period_seconds
 
   launch_type      = "FARGATE"
   platform_version = var.fargate_platform_version

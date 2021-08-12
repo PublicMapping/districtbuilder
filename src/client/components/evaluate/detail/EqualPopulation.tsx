@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
-import { EvaluateMetricWithValue, DistrictProperties } from "../../../../shared/entities";
-import { getChoroplethStops } from "../../map/index";
-import { DistrictsGeoJSON } from "../../../types";
+import { getEqualPopulationStops } from "../../map/index";
+import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
+import { computeRowFill } from "../../../functions";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -65,33 +65,18 @@ const EqualPopulationMetricDetail = ({
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
 }) => {
-  function computeRowFill(row: DistrictProperties) {
-    const val = row.percentDeviation;
-    const choroplethStops = getChoroplethStops(metric.key);
-    // eslint-disable-next-line
-    for (let i = 0; i < choroplethStops.length; i++) {
-      const r = choroplethStops[i];
-      if (val && val >= r[0]) {
-        if (i < choroplethStops.length - 1) {
-          const r1 = choroplethStops[i + 1];
-          if (val < r1[0]) {
-            return r[1];
-          }
-        } else {
-          return r[1];
-        }
-      }
-    }
-    return "#fff";
-  }
+  const choroplethStops =
+    metric.popThreshold && metric.avgPopulation
+      ? getEqualPopulationStops(metric.popThreshold, metric.avgPopulation)
+      : undefined;
 
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         {metric.value?.toString() || " "} of {metric.total} districts are within{" "}
         {"popThreshold" in metric &&
-          metric.popThreshold &&
-          ` ${Math.floor(metric.popThreshold * 100)}%`}{" "}
+          metric.popThreshold !== undefined &&
+          ` ${Math.floor(metric.popThreshold)}%`}{" "}
         of the target ({metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()})
       </Heading>
       <Styled.table sx={style.table}>
@@ -110,7 +95,8 @@ const EqualPopulationMetricDetail = ({
                   <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
 
                   <Styled.td sx={style.td}>
-                    {feature.properties.percentDeviation ? (
+                    {feature.properties.percentDeviation !== undefined &&
+                    feature.properties.populationDeviation !== undefined ? (
                       <Flex sx={{ alignItems: "center" }}>
                         <Styled.div
                           sx={{
@@ -118,7 +104,13 @@ const EqualPopulationMetricDetail = ({
                             width: "15px",
                             height: "15px",
                             borderRadius: "small",
-                            bg: computeRowFill(feature.properties)
+                            bg:
+                              choroplethStops &&
+                              computeRowFill(
+                                choroplethStops,
+                                feature.properties.populationDeviation,
+                                true
+                              )
                           }}
                         ></Styled.div>
                         <Box>{Math.floor(feature.properties.percentDeviation * 1000) / 10}%</Box>
@@ -129,8 +121,13 @@ const EqualPopulationMetricDetail = ({
                   </Styled.td>
 
                   <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
-                    {feature.properties.populationDeviation ? (
-                      Math.round(feature.properties.populationDeviation).toLocaleString()
+                    {feature.properties.populationDeviation !== undefined ? (
+                      Math.ceil(feature.properties.populationDeviation) === 0 ? (
+                        // Need this to handle negative 0, which Math.ceil likes to return
+                        "0"
+                      ) : (
+                        Math.ceil(feature.properties.populationDeviation).toLocaleString()
+                      )
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}

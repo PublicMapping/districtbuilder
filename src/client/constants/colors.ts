@@ -434,11 +434,11 @@ export const negativeChangeColor = "#c54d5d";
 export const selectedDistrictColor = "#f2f6f9";
 
 export const demographicsColors = {
-  white: "#FC8D62",
-  black: "#66C2A5",
-  asian: "#E78AC3",
-  hispanic: "#8DA0CB",
-  nativeAmerican: "#A6D854",
-  pacificIslander: "#FFD92F",
-  other: "#999999"
+  white: "#8DD3C6",
+  black: "#80B1D3",
+  asian: "#FDB462",
+  hispanic: "#BEBADA",
+  native: "#FB8071",
+  pacific: "#B3DE69",
+  other: "#B3DE69"
 };

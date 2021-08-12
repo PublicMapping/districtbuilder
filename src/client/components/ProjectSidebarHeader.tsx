@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { connect } from "react-redux";
-import { Button, Flex, Heading, jsx, Spinner, Text, ThemeUIStyleObject } from "theme-ui";
+import { Button, Box, Flex, Heading, jsx, Spinner, Text, ThemeUIStyleObject } from "theme-ui";
 
 import { GeoUnits } from "../../shared/entities";
 import { SavingState } from "../types";
@@ -8,7 +8,11 @@ import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
 
-import { saveDistrictsDefinition, clearSelectedGeounits } from "../actions/districtDrawing";
+import {
+  saveDistrictsDefinition,
+  clearSelectedGeounits,
+  toggleExpandedMetrics
+} from "../actions/districtDrawing";
 import { State } from "../reducers";
 import store from "../store";
 
@@ -22,6 +26,15 @@ const style: ThemeUIStyleObject = {
     borderBottom: "1px solid",
     borderColor: "gray.2",
     m: 0
+  },
+  expandedToggle: {
+    p: 1
+  },
+  expandButton: {
+    variant: "buttons.icon",
+    fontSize: 1,
+    py: 1,
+    ml: 1
   }
 };
 
@@ -32,11 +45,13 @@ interface StateProps {
 const ProjectSidebarHeader = ({
   selectedGeounits,
   isLoading,
+  expandedProjectMetrics,
   isReadOnly,
   saving
 }: {
   readonly selectedGeounits: GeoUnits;
   readonly saving: SavingState;
+  readonly expandedProjectMetrics: boolean;
 } & LoadingProps &
   StateProps) => {
   return (
@@ -45,6 +60,14 @@ const ProjectSidebarHeader = ({
         <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
           Districts
         </Heading>
+        <Box sx={style.expandedToggle}>
+          <Button
+            sx={style.expandButton}
+            onClick={() => store.dispatch(toggleExpandedMetrics(!expandedProjectMetrics))}
+          >
+            {expandedProjectMetrics ? <Icon name="compress" /> : <Icon name="expand" />}
+          </Button>
+        </Box>
       </Flex>
       {isLoading || saving === "saving" ? (
         <Flex sx={{ alignItems: "center", justifyContent: "center" }}>

@@ -4,7 +4,36 @@ export type UserId = string;
 
 export type PublicUserProperties = "id" | "name" | "email";
 
+export type PaginationMetadata = {
+  readonly currentPage: number;
+  readonly limit: number;
+  readonly totalItems?: number;
+  readonly totalPages?: number;
+};
+
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
+
+export type MetricField =
+  | "population"
+  | "populationDeviation"
+  | "raceChart"
+  | "whitePopulation"
+  | "blackPopulation"
+  | "asianPopulation"
+  | "hispanicPopulation"
+  | "otherPopulation"
+  | "nativePopulation"
+  | "pacificPopulation"
+  | "majorityRace"
+  | "dem16"
+  | "rep16"
+  | "other16"
+  | "dem20"
+  | "rep20"
+  | "other20"
+  | "pvi"
+  | "compactness"
+  | "contiguity";
 
 export interface IUser {
   readonly id: UserId;
@@ -14,35 +43,6 @@ export interface IUser {
   readonly hasSeenTour: boolean;
   readonly organizations: readonly OrganizationNest[];
 }
-
-export type MetricKey =
-  | "equalPopulation"
-  | "contiguity"
-  | "competitiveness"
-  | "compactness"
-  | "minorityMajority"
-  | "countySplits";
-
-export interface BaseEvaluateMetric {
-  readonly key: MetricKey;
-  readonly name: string;
-  readonly description: string;
-  readonly longText?: string;
-  readonly shortText?: string;
-}
-
-export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
-  readonly type: "fraction" | "percent" | "count";
-  readonly value?: number;
-  readonly total?: number;
-  readonly avgPopulation?: number;
-  readonly popThreshold?: number;
-  readonly status?: boolean;
-  // eslint-disable-next-line
-  readonly [key: string]: any;
-}
-
-export type EvaluateMetric = BaseEvaluateMetric | EvaluateMetricWithValue;
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
 
@@ -105,7 +105,11 @@ export type DistrictProperties = {
   color?: string;
   outlineColor?: string;
   percentDeviation?: number;
+  pvi?: number;
   populationDeviation?: number;
+  majorityRace?: string;
+  majorityRaceSplit?: number;
+  majorityRaceFill?: string;
   outlineWidthScaleFactor?: number;
   /* eslint-enable */
 };
@@ -160,16 +164,18 @@ export type RegionConfigId = string;
 
 export type S3URI = string;
 export type HttpsURI = string;
+export type RegionCode = string;
 
 export interface IRegionConfig {
   readonly id: RegionConfigId;
   readonly name: string;
   readonly countryCode: string;
-  readonly regionCode: string;
+  readonly regionCode: RegionCode;
   readonly chambers: readonly IChamber[];
   readonly s3URI: S3URI;
   readonly version: Date;
   readonly hidden: boolean;
+  readonly archived: boolean;
 }
 
 interface ProjectTemplateFields {
@@ -177,6 +183,8 @@ interface ProjectTemplateFields {
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly chamber?: IChamber;
+  readonly populationDeviation: number;
+  readonly pinnedMetricFields: readonly MetricField[];
   readonly districtsDefinition: DistrictsDefinition;
 }
 
@@ -184,6 +192,7 @@ export type ProjectId = string;
 
 export type IProject = ProjectTemplateFields & {
   readonly id: ProjectId;
+  readonly createdDt: Date;
   readonly updatedDt: Date;
   readonly user: Pick<IUser, PublicUserProperties>;
   readonly projectTemplate?: IProjectTemplate;
@@ -212,8 +221,9 @@ export interface CreateProjectData {
   readonly name: string;
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
-  readonly chamber?: Pick<IChamber, "id">;
+  readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;
+  readonly populationDeviation?: number;
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
 }
 
@@ -223,6 +233,7 @@ export type UpdateProjectData = Pick<
   | "districtsDefinition"
   | "advancedEditingEnabled"
   | "lockedDistricts"
+  | "pinnedMetricFields"
   | "visibility"
   | "archived"
 >;
@@ -292,8 +303,20 @@ export interface ImportRowFlag {
   readonly rowValue: readonly string[];
 }
 
-export interface DistrictsImportApiResponse {
-  readonly districtsDefinition?: DistrictsDefinition;
+export interface DistrictsImportApiError {
+  readonly error: string;
+}
+
+export interface DistrictsImportApiSuccess {
+  readonly districtsDefinition: DistrictsDefinition;
   readonly rowFlags?: readonly ImportRowFlag[];
+  readonly numFlags?: number;
   readonly maxDistrictId: number;
+}
+
+export type DistrictsImportApiResponse = DistrictsImportApiSuccess | DistrictsImportApiError;
+
+export interface PlanScoreAPIResponse {
+  readonly index_url: string;
+  readonly plan_url: string;
 }

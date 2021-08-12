@@ -17,7 +17,6 @@ const appButtonStyles = {
   fontWeight: "medium",
   borderRadius: "3px",
   cursor: "pointer",
-  transition: "0.2s background ease-out, 0.2s background-color ease-out",
   "& > svg": {
     mr: 1
   },
@@ -35,8 +34,8 @@ const appButtonStyles = {
     boxShadow: "focus"
   },
   "&[disabled]": {
-    opacity: 0.2,
-    bg: "gray.3",
+    opacity: 0.6,
+    bg: "gray.8",
     cursor: "not-allowed"
   },
   "&:visited": {
@@ -171,8 +170,9 @@ const theme: Theme & StyledSystemTheme = {
     flat: {
       borderRadius: "small",
       backgroundColor: "muted",
-      my: 4,
-      p: 24
+      my: 3,
+      p: 24,
+      boxShadow: "small"
     },
     disabled: {
       borderRadius: "small",
@@ -273,8 +273,7 @@ const theme: Theme & StyledSystemTheme = {
       ...appButtonStyles,
       ...{
         bg: "transparent",
-        color: "blue.6",
-        fontWeight: "bold",
+        color: "blue.5",
         padding: 0,
         "&:hover:not([disabled]):not(:active)": {
           textDecoration: "underline",
@@ -385,7 +384,8 @@ const theme: Theme & StyledSystemTheme = {
           mx: 0
         },
         "&:hover:not([disabled]):not(:active)": {
-          bg: "rgba(89, 89, 89, 0.1)"
+          bg: "rgba(89, 89, 89, 0.1)",
+          color: "inherit"
         },
         "&[disabled]": {
           bg: "transparent",
@@ -393,7 +393,8 @@ const theme: Theme & StyledSystemTheme = {
           cursor: "not-allowed"
         },
         "&:active": {
-          bg: "rgba(89, 89, 89, 0.3)"
+          bg: "rgba(89, 89, 89, 0.3)",
+          color: "inherit"
         }
       }
     }
@@ -429,6 +430,10 @@ const theme: Theme & StyledSystemTheme = {
     },
     select: {
       borderColor: "gray.2",
+      backgroundColor: "#fff",
+      fontFamily: "heading",
+      width: "auto",
+      paddingRight: "30px",
       "&:focus": {
         borderColor: "primary",
         boxShadow: "focus",
@@ -508,11 +513,10 @@ const theme: Theme & StyledSystemTheme = {
       color: "gray.2"
     },
     a: {
-      color: "blue.6",
-      fontWeight: "bold",
+      color: "blue.5",
       textDecoration: "none",
       "&:visited": {
-        color: "blue.6"
+        color: "blue.5"
       },
       "&:hover:not([disabled]):not(:active)": {
         textDecoration: "underline"
@@ -596,6 +600,18 @@ const theme: Theme & StyledSystemTheme = {
       flexShrink: 0,
       height: "100%",
       minWidth: "400px",
+      position: "relative",
+      color: "gray.8",
+      zIndex: 200
+    },
+    expandedWhite: {
+      bg: "muted",
+      boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
+      display: "flex",
+      flexDirection: "column",
+      flexShrink: 0,
+      height: "100%",
+      minWidth: "100%",
       position: "relative",
       color: "gray.8",
       zIndex: 200

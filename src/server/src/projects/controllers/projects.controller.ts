@@ -8,7 +8,13 @@ import {
   NotFoundException,
   Param,
   Post,
+  // Not sure why, but eslint thinks these decorators are unused
+  /* eslint-disable */
+  ParseIntPipe,
+  Query,
+  /* eslint-enable */
   Body,
+  Request,
   Res,
   UseGuards,
   UseInterceptors
@@ -19,7 +25,6 @@ import {
   CrudController,
   CrudRequest,
   CrudRequestInterceptor,
-  GetManyDefaultResponse,
   Override,
   ParsedBody,
   ParsedRequest
@@ -28,15 +33,15 @@ import stringify from "csv-stringify/lib/sync";
 import { Response } from "express";
 import { convert } from "geojson2shp";
 import * as _ from "lodash";
-import { GeometryCollection } from "topojson-specification";
 import isUUID from "validator/lib/isUUID";
+import { Pagination } from "nestjs-typeorm-paginate";
 
-import { MakeDistrictsErrors } from "../../../../shared/constants";
+import { MakeDistrictsErrors, ConvertProjectErrors } from "../../../../shared/constants";
 import {
   DistrictsDefinition,
-  GeoUnitHierarchy,
   ProjectId,
-  PublicUserProperties
+  PublicUserProperties,
+  UserId
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
@@ -54,6 +59,9 @@ import { RegionConfigsService } from "../../region-configs/services/region-confi
 import { UsersService } from "../../users/services/users.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
 import { Errors } from "../../../../shared/types";
+import axios from "axios";
+import { CrosswalkService } from "../services/crosswalk.service";
+import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 
 @Crud({
   model: {
@@ -67,7 +75,6 @@ import { Errors } from "../../../../shared/types";
     }
   },
   query: {
-    // This is a pretty heavy column, and is exposed by the export/geojson endpoint separately
     exclude: ["districts"],
     join: {
       projectTemplate: {
@@ -161,7 +168,8 @@ export class ProjectsController implements CrudController<Project> {
     public topologyService: TopologyService,
     private readonly usersService: UsersService,
     private readonly organizationService: OrganizationsService,
-    private readonly regionConfigService: RegionConfigsService
+    private readonly regionConfigService: RegionConfigsService,
+    private readonly crosswalkService: CrosswalkService
   ) {}
 
   // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
@@ -171,15 +179,16 @@ export class ProjectsController implements CrudController<Project> {
     return this.getProject(req, id);
   }
 
-  // Overriden to add JwtAuthGuard
+  // Overriden to add JwtAuthGuard and support pagination
   @Override()
   @UseGuards(JwtAuthGuard)
-  getMany(@ParsedRequest() req: CrudRequest): Promise<GetManyDefaultResponse<Project> | Project[]> {
-    if (!this.base.getManyBase) {
-      this.logger.error("Routes misconfigured. Missing `getManyBase` route");
-      throw new InternalServerErrorException();
-    }
-    return this.base.getManyBase(req);
+  getMany(
+    @ParsedRequest() req: CrudRequest,
+    @Query("page", ParseIntPipe) page = 1,
+    @Query("limit", ParseIntPipe) limit = 10
+  ): Promise<Pagination<Project>> {
+    const user_id = req.parsed.authPersist.userId;
+    return this.service.findAllUserProjectsPaginated(user_id, { page, limit });
   }
 
   @Override()
@@ -189,8 +198,7 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: UpdateProjectDto
   ) {
-    // @ts-ignore
-    const existingProject = await this.service.findOne({ id }, { relations: ["regionConfig"] });
+    const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
     if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
@@ -198,11 +206,12 @@ export class ProjectsController implements CrudController<Project> {
       } as Errors<UpdateProjectDto>);
     }
 
-    // Update districts GeoJSON if the definition has changed or there is no cached value yet
+    // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
     const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
       (!existingProject.districts ||
+        existingProject.regionConfigVersion !== existingProject.regionConfig.version ||
         !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
         ? {
             ...dto,
@@ -210,7 +219,8 @@ export class ProjectsController implements CrudController<Project> {
               regionConfig: existingProject.regionConfig,
               numberOfDistricts: existingProject.numberOfDistricts,
               districtsDefinition: dto.districtsDefinition
-            })
+            }),
+            regionConfigVersion: existingProject.regionConfig.version
           }
         : dto;
 
@@ -250,23 +260,68 @@ export class ProjectsController implements CrudController<Project> {
         );
       }
 
-      // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
-      const districtsDefinition =
-        dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
-      const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
-      const districts = await this.getGeojson({
-        numberOfDistricts: dto.numberOfDistricts,
-        districtsDefinition,
-        regionConfig
-      });
+      return await this.service.createOne(
+        req,
+        await this.formatCreateProjectDto(dto, geoCollection, regionConfig, req)
+      );
+    } catch (error) {
+      this.logger.error(`Error creating project: ${error}`);
+      throw new InternalServerErrorException();
+    }
+  }
 
-      return this.service.createOne(req, {
-        ...dto,
-        districtsDefinition,
-        districts,
-        lockedDistricts,
-        user: req.parsed.authPersist.userId
-      });
+  private async formatCreateProjectDto(
+    dto: CreateProjectDto,
+    geoCollection: GeoUnitTopology | GeoUnitProperties,
+    regionConfig: RegionConfig,
+    req: CrudRequest
+  ) {
+    // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
+    const districtsDefinition =
+      dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
+    const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
+    const districts = await this.getGeojson({
+      numberOfDistricts: dto.numberOfDistricts,
+      districtsDefinition,
+      regionConfig
+    });
+    return {
+      ...dto,
+      districtsDefinition,
+      districts,
+      lockedDistricts,
+      user: req.parsed.authPersist.userId,
+      regionConfigVersion: regionConfig.version
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(CrudRequestInterceptor)
+  @Post(":id/duplicate")
+  async duplicate(@ParsedRequest() req: CrudRequest, @Param("id") id: ProjectId): Promise<Project> {
+    try {
+      const project = await this.getProject(req, id);
+      const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
+      if (!geoCollection) {
+        throw new NotFoundException(
+          `Topology ${project.regionConfig.s3URI} not found`,
+          MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+        );
+      }
+      // Set any fields we don't want duplicated to be undefined
+      const dto = {
+        ...project,
+        name: `Copy of ${project.name}`,
+        id: undefined,
+        user: undefined,
+        createdDt: undefined,
+        updatedDt: undefined,
+        isFeatured: undefined
+      };
+
+      return await this.service.save(
+        await this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
+      );
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);
       throw new InternalServerErrorException();
@@ -293,8 +348,44 @@ export class ProjectsController implements CrudController<Project> {
     return project;
   }
 
+  // Helper for obtaining a project for a given project request, throws exception if not found
+  async getProjectWithDistricts(id: ProjectId, userId: UserId): Promise<Project> {
+    if (!isUUID(id)) {
+      throw new NotFoundException(`Project ${id} is not a valid UUID`);
+    }
+    // Not using 'getProject' because we need to select the 'districts' column
+    // Unauthenticated access is allowed for individual projects if they are
+    // visible or published, and not archived.
+    const commonFilter = { id, archived: false };
+    const project = await this.service.findOne({
+      where: [
+        { ...commonFilter, user: { id: userId } },
+        { ...commonFilter, visibility: ProjectVisibility.Published },
+        { ...commonFilter, visibility: ProjectVisibility.Visible }
+      ] as const,
+      loadEagerRelations: false,
+      relations: ["regionConfig"]
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${id} not found`);
+    }
+    return project;
+  }
+
   // Helper for obtaining a topology for a given S3 URI, throws exception if not found
   async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
+    const geoCollection = await this.getGeoUnitProperties(s3URI);
+    if (!("topology" in geoCollection)) {
+      throw new NotFoundException(
+        `Topology ${s3URI} is archived`,
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+      );
+    }
+    return geoCollection;
+  }
+
+  // Helper for obtaining a topology or props for a given S3 URI, throws exception if not found
+  async getGeoUnitProperties(s3URI: string): Promise<GeoUnitTopology | GeoUnitProperties> {
     const geoCollection = await this.topologyService.get(s3URI);
     if (!geoCollection) {
       throw new NotFoundException(
@@ -329,26 +420,44 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/geojson")
-  async exportGeoJSON(
-    @ParsedRequest() req: CrudRequest,
-    @Param("id") projectId: ProjectId
-  ): Promise<DistrictsGeoJSON> {
-    const project = await this.getProject(req, projectId);
-    if (!project.districtsDefinition) {
+  async exportGeoJSON(@Request() req: any, @Param("id") id: ProjectId): Promise<DistrictsGeoJSON> {
+    const user = req.user as User;
+    const project = await this.getProjectWithDistricts(id, user.id);
+
+    // If the region is archived we can't calculate districts
+    if (project.regionConfig.archived && !project.districts) {
       throw new BadRequestException(
-        "District definition is invalid",
+        "Saved district is not available and cannot be calculated",
         MakeDistrictsErrors.INVALID_DEFINITION
       );
     }
 
-    return project.districts || (await this.getGeojson({ ...project }));
+    // If the districts are out-of-date, recalculate them and save
+    if (project.regionConfigVersion !== project.regionConfig.version) {
+      const districts = await this.getGeojson({
+        regionConfig: project.regionConfig,
+        numberOfDistricts: project.numberOfDistricts,
+        districtsDefinition: project.districtsDefinition
+      });
+
+      // Note we don't wait for save to return, and we throw away it's result
+      void this.service.save({
+        ...project,
+        districts,
+        regionConfigVersion: project.regionConfig.version
+      });
+
+      return districts;
+    }
+
+    return project.districts;
   }
 
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/shp")
   async exportShapefile(
-    @ParsedRequest() req: CrudRequest,
+    @Request() req: any,
     @Param("id") projectId: ProjectId,
     @Res() response: Response
   ): Promise<void> {
@@ -381,47 +490,105 @@ export class ProjectsController implements CrudController<Project> {
     @Param("id") projectId: ProjectId
   ): Promise<string> {
     const project = await this.getProject(req, projectId);
-    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
+    const geoCollection = await this.getGeoUnitProperties(project.regionConfig.s3URI);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const baseGeoUnitLayer = geoCollection.topology.objects[baseGeoLevel] as GeometryCollection;
+    const csvRows = project.exportToCsv(geoCollection);
 
-    // First column is the base geounit id, second column is the district id
-    const mutableCsvRows: [number, number][] = [];
-
-    // The geounit hierarchy and district definition have the same structure (except the
-    // hierarchy always goes out to the base geounit level). Walk them both at the same time
-    // and collect the information needed for the CSV (base geounit id and district id).
-    const accumulateCsvRows = (
-      defnSubset: number | GeoUnitHierarchy,
-      hierarchySubset: GeoUnitHierarchy
-    ) => {
-      hierarchySubset.forEach((hierarchyNumOrArray, idx) => {
-        const districtOrArray = typeof defnSubset === "number" ? defnSubset : defnSubset[idx];
-        if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
-          // The numbers found in the hierarchy are the base geounit indices of the topology.
-          // Access this item in the topology to find it's base geounit id.
-          const props: any = baseGeoUnitLayer.geometries[hierarchyNumOrArray].properties;
-          mutableCsvRows.push([props[baseGeoLevel], districtOrArray]);
-        } else if (typeof hierarchyNumOrArray !== "number") {
-          // Keep recursing into the hierarchy until we reach the end
-          accumulateCsvRows(districtOrArray, hierarchyNumOrArray);
-        } else {
-          // This shouldn't ever happen, and would suggest a district definition/hierarchy mismatch
-          this.logger.error(
-            "Hierarchy and districts definition mismatch",
-            districtOrArray.toString(),
-            hierarchyNumOrArray.toString()
-          );
-          throw new InternalServerErrorException();
-        }
-      });
-    };
-    accumulateCsvRows(project.districtsDefinition, geoCollection.getGeoUnitHierarchy());
-
-    return stringify(mutableCsvRows, {
+    return stringify(csvRows, {
       header: true,
       columns: [`${baseGeoLevel.toUpperCase()}ID`, "DISTRICT"]
     });
+  }
+
+  // Creates a copy of a project in an archived 2010-census region,
+  // with it's districts converted to use a new 2020-census region
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Post(":id/convert-and-copy")
+  async convertAndCopy(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<Project> {
+    const project = await this.getProject(req, projectId);
+    const regionCode = project.regionConfig.regionCode;
+    if (!project.regionConfig.archived) {
+      throw new BadRequestException(
+        "The project region must be archived to convert it",
+        ConvertProjectErrors.REGION_NOT_ARCHIVED
+      );
+    }
+    const newRegion = await this.regionConfigService.findOne({
+      where: { archived: false, regionCode }
+    });
+    if (newRegion === undefined || newRegion.archived) {
+      throw new BadRequestException(
+        `There is not an unarchived region for ${regionCode}`,
+        ConvertProjectErrors.NO_ACTIVE_REGION
+      );
+    }
+    const crosswalk = await this.crosswalkService.getCrosswalk(regionCode);
+    if (crosswalk === undefined) {
+      throw new BadRequestException(
+        `There is not an unarchived region for ${regionCode}`,
+        ConvertProjectErrors.NO_ACTIVE_REGION
+      );
+    }
+
+    const archivedTopoProperties = await this.getGeoUnitProperties(project.regionConfig.s3URI);
+    const newGeoUnitTopology = await this.getGeoUnitTopology(newRegion.s3URI);
+
+    const oldBlockToDistricts = Object.fromEntries(project.exportToCsv(archivedTopoProperties));
+
+    // CSV export contains every block<->district pair
+    // Crosswalk maps new block -> old in many<->many fashion, specifying percent of old block in new block
+    // Sum district share for each new block and assign block to the district w/ largest share
+
+    // Written in non-functional style for higher perf.
+    const blockSums: { [blockId: string]: { readonly [districtId: number]: number } } = {};
+    // eslint-disable-next-line functional/no-loop-statement
+    for (const [newFips, oldBlocks] of Object.entries(crosswalk)) {
+      // eslint-disable-next-line functional/no-loop-statement
+      for (const { fips, amount } of oldBlocks) {
+        const districtId = oldBlockToDistricts[fips];
+        const districtSums = blockSums[newFips] || {};
+        const sum = (districtSums[districtId] || 0) + amount;
+        // eslint-disable-next-line functional/immutable-data
+        blockSums[newFips] = { ...districtSums, [districtId]: sum };
+      }
+    }
+
+    const blockToDistricts = _.mapValues(blockSums, districtSums => {
+      const [largestDistrict] = _.maxBy(Object.entries(districtSums), ([, sum]) => sum) || [0, 0];
+      return Number(largestDistrict);
+    });
+
+    const districtsDefinition = newGeoUnitTopology.importFromCSV(blockToDistricts);
+
+    const districts = await this.getGeojson({
+      numberOfDistricts: project.numberOfDistricts,
+      regionConfig: newRegion,
+      districtsDefinition
+    });
+
+    try {
+      return this.service.save({
+        name: `${project.name} (2020)`,
+        regionConfig: newRegion,
+        chamber: project.chamber,
+        projectTemplate: project.projectTemplate,
+        numberOfDistricts: project.numberOfDistricts,
+        user: req.parsed.authPersist.userId,
+        visibility: project.visibility,
+        lockedDistricts: project.lockedDistricts,
+        populationDeviation: project.populationDeviation,
+        pinnedMetricFields: project.pinnedMetricFields,
+        districtsDefinition,
+        districts
+      });
+    } catch (error) {
+      this.logger.error(`Error creating converted project: ${error}`);
+      throw new InternalServerErrorException();
+    }
   }
 
   @UseInterceptors(CrudRequestInterceptor)
@@ -433,35 +600,61 @@ export class ProjectsController implements CrudController<Project> {
     @Body() projectFeatured: { isFeatured: boolean }
   ): Promise<Project> {
     const project = await this.getProject(req, projectId);
-    if (project.projectTemplate) {
-      const orgId = project.projectTemplate.organization.id;
-      if (orgId) {
-        const userId = req.parsed.authPersist.userId || null;
-        const org = await this.organizationService.findOne({ id: orgId }, { relations: ["admin"] });
-        const user = await this.usersService.findOne({ id: userId });
-        if (user && org) {
-          if (org.admin) {
-            if (org.admin && org.admin.id === userId) {
-              // eslint-disable-next-line
-              project.isFeatured = projectFeatured.isFeatured;
-              await this.service.save(project);
-            } else {
-              throw new NotFoundException(
-                `User does not have admin privileges for organization: ${orgId}`
-              );
-            }
-          } else {
-            throw new NotFoundException(`Organization ${orgId} does not have an admin`);
-          }
-        } else {
-          throw new NotFoundException(`Unable to find user: ${userId}`);
-        }
-      } else {
-        throw new NotFoundException(`Project is not connected to an organization`);
-      }
-    } else {
+    if (!project.projectTemplate) {
       throw new NotFoundException(`Project is not connected to an organization's template`);
     }
+    const orgId = project.projectTemplate.organization.id;
+    if (!orgId) {
+      throw new NotFoundException(`Project is not connected to an organization`);
+    }
+    const userId = req.parsed.authPersist.userId || null;
+    const org = await this.organizationService.findOne({ id: orgId }, { relations: ["admin"] });
+    const user = await this.usersService.findOne({ id: userId });
+    if (!user || !org) {
+      throw new NotFoundException(`Unable to find user: ${userId}`);
+    }
+    if (!org.admin) {
+      throw new NotFoundException(`Organization ${orgId} does not have an admin`);
+    }
+    if (org.admin.id !== userId) {
+      throw new NotFoundException(`User does not have admin privileges for organization: ${orgId}`);
+    }
+
+    // eslint-disable-next-line
+    project.isFeatured = projectFeatured.isFeatured;
+    await this.service.save(project);
     return project;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Post(":id/planScore")
+  async sendToPlanScoreAPI(
+    @ParsedRequest() req: CrudRequest,
+    @Param("id") projectId: ProjectId
+  ): Promise<Project> {
+    const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
+    const districts = await this.exportGeoJSON(req, projectId);
+    const geojson = districts && {
+      ...districts,
+      features: districts.features.filter(f => f.id !== 0)
+    };
+
+    return new Promise((resolve, reject) => {
+      axios({
+        method: "POST",
+        data: Buffer.from(JSON.stringify(geojson)),
+        url: "http://api.planscore.org/upload/",
+        headers: {
+          Authorization: `Bearer ${planScoreToken}`
+        }
+      })
+        .then(response => {
+          resolve(response.data);
+        })
+        .catch(error => {
+          reject(error.message);
+        });
+    });
   }
 }

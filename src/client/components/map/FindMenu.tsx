@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import MapboxGL from "mapbox-gl";
 import { connect } from "react-redux";
-import { Box, Button, Flex, jsx, Select, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, jsx, Select, Text, ThemeUIStyleObject } from "theme-ui";
 import bbox from "@turf/bbox";
 import { polygon } from "@turf/helpers";
 
@@ -9,7 +9,7 @@ import Icon from "../Icon";
 
 import { State } from "../../reducers";
 import { DistrictsGeoJSON } from "../../types";
-import { FindTool, setFindIndex, setFindType, toggleFind } from "../../actions/districtDrawing";
+import { FindTool, setFindIndex, setFindType } from "../../actions/districtDrawing";
 import { getFindCoords } from "../../reducers/projectData";
 import store from "../../store";
 import { destructureResource } from "../../functions";
@@ -19,7 +19,7 @@ const style: ThemeUIStyleObject = {
   menu: {
     position: "absolute",
     top: "-1px",
-    left: 2,
+    right: 2,
     width: "350px",
     backgroundColor: "muted",
     border: "1px solid",
@@ -27,6 +27,7 @@ const style: ThemeUIStyleObject = {
     borderColor: "gray.2",
     borderBottomLeftRadius: "4px",
     borderBottomRightRadius: "4px",
+    zIndex: 1000,
     fontSize: 1,
     alignItems: "center",
     p: 2
@@ -79,8 +80,7 @@ const FindMenu = ({
 
   return findMenuOpen ? (
     <Flex sx={style.menu}>
-      <b>Find</b>
-      &nbsp;{" "}
+      <Text sx={{ mr: 3, fontWeight: "bold" }}>Find</Text>
       <Select
         sx={style.select}
         value={findTool}
@@ -103,7 +103,7 @@ const FindMenu = ({
             : `${num} found`
           : "—"}
       </Box>
-      <Box sx={{ px: 1 }}>
+      <Box sx={{ pl: 1 }}>
         <Button
           sx={style.button}
           disabled={num === undefined || num === 0}
@@ -125,11 +125,6 @@ const FindMenu = ({
           }
         >
           <Icon name="chevron-right" />
-        </Button>
-      </Box>
-      <Box sx={style.closeWrapper}>
-        <Button sx={style.closeButton} onClick={() => store.dispatch(toggleFind(false))}>
-          &times;
         </Button>
       </Box>
     </Flex>

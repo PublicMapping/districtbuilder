@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
-import { DistrictProperties, EvaluateMetricWithValue } from "../../../../shared/entities";
-import { DistrictsGeoJSON } from "../../../types";
+import { DistrictProperties } from "../../../../shared/entities";
+import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
 import { CONTIGUITY_FILL_COLOR, EVALUATE_GRAY_FILL_COLOR } from "../../map/index";
 
 const style: ThemeUIStyleObject = {

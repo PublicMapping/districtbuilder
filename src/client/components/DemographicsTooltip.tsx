@@ -3,6 +3,7 @@ import mapValues from "lodash/mapValues";
 import { Box, jsx, Styled, ThemeUIStyleObject, Divider } from "theme-ui";
 
 import { demographicsColors } from "../constants/colors";
+import { getDemographicLabel } from "../../shared/functions";
 
 const style: ThemeUIStyleObject = {
   label: {
@@ -10,7 +11,8 @@ const style: ThemeUIStyleObject = {
     py: 0,
     pr: 2,
     whiteSpace: "nowrap",
-    textTransform: "capitalize"
+    textTransform: "capitalize",
+    width: "70px"
   },
   number: {
     flex: "auto",
@@ -21,18 +23,16 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-function parseRowLabel(label: string) {
-  return label.split(/(?=[A-Z])/).join(" ");
-}
-
 const Row = ({
-  label,
+  id,
   percent,
-  color
+  color,
+  abbreviate
 }: {
-  readonly label: string;
+  readonly id: string;
   readonly percent?: number;
   readonly color: string;
+  readonly abbreviate?: boolean;
 }) => (
   <Styled.tr
     sx={{
@@ -40,7 +40,7 @@ const Row = ({
       border: "none"
     }}
   >
-    <Styled.td sx={style.label}>{parseRowLabel(label)}</Styled.td>
+    <Styled.td sx={style.label}>{abbreviate ? id : getDemographicLabel(id)}</Styled.td>
     <Styled.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
         style={{
@@ -62,36 +62,36 @@ const Row = ({
 
 const DemographicsTooltip = ({
   demographics,
-  isMinorityMajority
+  isMajorityMinority,
+  abbreviate
 }: {
   readonly demographics: { readonly [id: string]: number };
-  readonly isMinorityMajority?: boolean;
+  readonly isMajorityMinority?: boolean;
+  readonly abbreviate?: boolean;
 }) => {
   const percentages = mapValues(
     demographics,
     (population: number) =>
       (demographics.population ? population / demographics.population : 0) * 100
   );
-  const races = [
-    "white",
-    "black",
-    "asian",
-    "hispanic",
-    "nativeAmerican",
-    "pacificIslander",
-    "other"
-  ] as const;
+  const races = ["white", "black", "asian", "hispanic", "native", "pacific", "other"] as const;
   const rows = races
     .filter(race => percentages[race] !== undefined)
     .map((id: typeof races[number]) => (
-      <Row key={id} label={id} percent={percentages[id]} color={demographicsColors[id]} />
+      <Row
+        key={id}
+        id={id}
+        percent={percentages[id]}
+        color={demographicsColors[id]}
+        abbreviate={abbreviate}
+      />
     ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
       <Styled.table sx={{ margin: "0", width: "100%" }}>
         <tbody>{rows}</tbody>
       </Styled.table>
-      {isMinorityMajority && (
+      {isMajorityMinority && (
         <Box>
           <Divider sx={{ my: 1, borderColor: "gray.6" }} />
           <Box>* Minority majority district</Box>

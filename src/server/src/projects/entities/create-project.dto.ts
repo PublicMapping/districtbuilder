@@ -1,4 +1,14 @@
-import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsOptional, IsPositive } from "class-validator";
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsNumber,
+  Max,
+  Min
+} from "class-validator";
 
 import { CreateProjectData, DistrictsDefinition } from "../../../../shared/entities";
 import { ChamberIdDto } from "../../chambers/entities/chamber-id.dto";
@@ -18,7 +28,12 @@ export class CreateProjectDto implements CreateProjectData {
   @IsOptional()
   readonly districtsDefinition: DistrictsDefinition;
   @IsOptional()
-  readonly chamber: ChamberIdDto;
+  @IsNumber()
+  @Max(100, { message: "Population deviation must be between 0% and 100%" })
+  @Min(0, { message: "Population deviation must be between 0% and 100%" })
+  readonly populationDeviation: number;
   @IsOptional()
-  readonly projectTemplate: ProjectTemplateIdDto;
+  readonly chamber?: ChamberIdDto;
+  @IsOptional()
+  readonly projectTemplate?: ProjectTemplateIdDto;
 }

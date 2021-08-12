@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { userFetch } from "../actions/user";
+import { DEFAULT_POPULATION_DEVIATION } from "../../shared/constants";
 import {
   Box,
   Button,
@@ -47,6 +48,7 @@ interface ProjectForm {
   readonly chamber: IChamber | null;
   readonly regionConfig: IRegionConfig | null;
   readonly numberOfDistricts: number | null;
+  readonly populationDeviation: number | null;
   readonly isCustom: boolean;
 }
 
@@ -55,6 +57,7 @@ interface ValidForm {
   readonly regionConfig: IRegionConfig;
   readonly chamber?: IChamber;
   readonly numberOfDistricts: number;
+  readonly populationDeviation: number;
   readonly isCustom: boolean;
   readonly valid: true;
 }
@@ -76,6 +79,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       regionConfig: null,
       chamber: null,
       numberOfDistricts: null,
+      populationDeviation: DEFAULT_POPULATION_DEVIATION,
       isCustom: false
     }
   });
@@ -116,7 +120,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     },
     formContainer: {
       width: "100%",
-      maxWidth: "medium",
+      maxWidth: "640px",
       my: 7,
       mx: "auto",
       display: "block",
@@ -128,16 +132,17 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     },
     cardLabel: {
       textTransform: "none",
-      variant: "text.h4",
+      variant: "text.h5",
       display: "block",
       mb: 1
     },
     cardHint: {
       display: "block",
       textTransform: "none",
-      fontWeight: "normal",
+      fontWeight: "500",
       fontSize: 1,
-      mb: 4
+      mt: 2,
+      mb: 3
     },
     radioHeading: {
       textTransform: "none",
@@ -152,7 +157,8 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     radioSubHeading: {
       fontSize: 1,
       letterSpacing: "0",
-      textTransform: "none"
+      textTransform: "none",
+      fontWeight: "500"
     },
     customInputContainer: {
       mt: 2,
@@ -190,7 +196,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       width: "100%",
       maxWidth: "large",
       borderTop: "1px solid lightgray",
-      my: 7
+      my: 8
     }
   };
 
@@ -221,21 +227,21 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
               }
             }}
           >
-            <Logo sx={{ width: "2rem" }} />
+            <Logo sx={{ width: "1.8rem" }} />
           </Link>
         </Box>
-        <Heading as="h2" sx={{ variant: "text.h4", color: "blue.0", my: 0 }}>
-          New Map
+        <Heading as="h2" sx={{ variant: "text.h5", color: "blue.0", my: 0 }}>
+          New map
         </Heading>
       </Flex>
       <Flex as="main" sx={{ width: "100%", display: "block" }}>
-        <Flex sx={style.formContainer}>
+        <Flex sx={{ ...style.formContainer, ...{ marginBottom: "-36px" } }}>
           {"resource" in user && user.resource.organizations.length > 0 && (
             <Card sx={{ variant: "card.flat" }}>
-              <Heading as="h3" sx={style.orgCardLabel}>
+              <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                 Organization
-              </Heading>
-              <Box sx={style.orgCardSubtitle}>
+              </legend>
+              <Box sx={style.cardHint}>
                 Are you making a new map with an organization you&apos;ve joined?
               </Box>
               <div
@@ -303,6 +309,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                   createProject({
                     ...validatedForm,
                     chamber: validatedForm.chamber || undefined,
+                    populationDeviation: validatedForm.populationDeviation,
                     numberOfDistricts: validatedForm.numberOfDistricts
                   })
                     .then((project: IProject) =>
@@ -339,6 +346,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
               <Card sx={{ variant: "card.flat" }}>
                 <SelectField
                   field="regionConfig"
+                  sx={{ width: "1000px" }}
                   label={
                     <Box as="span" sx={style.cardLabel}>
                       State
@@ -384,109 +392,149 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                 </SelectField>
               </Card>
               {data.regionConfig ? (
-                <Card sx={{ variant: "card.flat" }}>
-                  <fieldset sx={style.fieldset}>
+                <React.Fragment>
+                  <Card sx={{ variant: "card.flat" }}>
+                    <fieldset sx={style.fieldset}>
+                      <Flex sx={{ flexWrap: "wrap" }}>
+                        <legend
+                          sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
+                        >
+                          Districts
+                        </legend>
+                        <Box
+                          id="description-districts"
+                          as="span"
+                          sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                        >
+                          How many districts do you want to map? Choose a federal or state
+                          legislative chamber or define your own.
+                        </Box>
+                        {data.regionConfig &&
+                          [...data.regionConfig.chambers]
+                            .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
+                            .map(chamber => (
+                              <Label
+                                key={chamber.id}
+                                sx={{
+                                  display: "inline-flex",
+                                  "@media screen and (min-width: 750px)": {
+                                    flex: "0 0 48%",
+                                    "&:nth-of-type(even)": {
+                                      mr: "2%"
+                                    }
+                                  }
+                                }}
+                              >
+                                <Radio
+                                  name="project-district"
+                                  value={chamber.id}
+                                  onChange={onDistrictChanged}
+                                  aria-describedby="description-districts"
+                                />
+                                <Flex
+                                  as="span"
+                                  sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                                >
+                                  <div sx={style.radioHeading}>{chamber.name}</div>
+                                  <div sx={style.radioSubHeading}>
+                                    {chamber.numberOfDistricts} districts
+                                  </div>
+                                </Flex>
+                              </Label>
+                            ))
+                            .concat(
+                              <div
+                                sx={{
+                                  flex: "0 0 50%",
+                                  "@media screen and (max-width: 770px)": {
+                                    flex: "0 0 100%"
+                                  }
+                                }}
+                                key="custom"
+                              >
+                                <Label>
+                                  <Radio
+                                    name="project-district"
+                                    value=""
+                                    onChange={onDistrictChanged}
+                                  />
+                                  <Flex as="span" sx={{ flexDirection: "column" }}>
+                                    <div sx={style.radioHeading}>Custom</div>
+                                    <div sx={style.radioSubHeading}>
+                                      Define a custom number of districts
+                                    </div>
+                                  </Flex>
+                                </Label>
+                              </div>
+                            )}
+                        {data.isCustom ? (
+                          <Box sx={style.customInputContainer}>
+                            <InputField
+                              field="numberOfDistricts"
+                              label="Number of districts"
+                              resource={createProjectResource}
+                              inputProps={{
+                                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                                  const value = parseInt(e.currentTarget.value, 10);
+                                  const numberOfDistricts = isNaN(value) ? null : value;
+                                  setCreateProjectResource({
+                                    data: {
+                                      ...data,
+                                      numberOfDistricts
+                                    }
+                                  });
+                                }
+                              }}
+                            />
+                          </Box>
+                        ) : null}
+                      </Flex>
+                    </fieldset>
+                  </Card>
+                  <Card sx={{ variant: "card.flat" }}>
                     <Flex sx={{ flexWrap: "wrap" }}>
                       <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                        Districts
+                        Population deviation tolerance
                       </legend>
                       <Box
                         id="description-districts"
                         as="span"
                         sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
                       >
-                        How many districts do you want to map? Choose a federal or state legislative
-                        chamber or define your own.
+                        How detailed of a map do you want to draw? Setting a lower tolerance means
+                        the population of your districts will need to be more exact. If you
+                        aren&apos;t sure, we think 5% is a good starting point.
                       </Box>
-                      {data.regionConfig &&
-                        [...data.regionConfig.chambers]
-                          .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
-                          .map(chamber => (
-                            <Label
-                              key={chamber.id}
-                              sx={{
-                                display: "inline-flex",
-                                "@media screen and (min-width: 750px)": {
-                                  flex: "0 0 48%",
-                                  "&:nth-of-type(even)": {
-                                    mr: "2%"
-                                  }
+                      <Box sx={style.customInputContainer}>
+                        <InputField
+                          field="populationDeviation"
+                          label="Population deviation tolerance (%)"
+                          defaultValue={DEFAULT_POPULATION_DEVIATION}
+                          resource={createProjectResource}
+                          inputProps={{
+                            onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                              const value = parseFloat(e.currentTarget.value);
+                              const populationDeviation = isNaN(value) ? null : value;
+                              setCreateProjectResource({
+                                data: {
+                                  ...data,
+                                  populationDeviation
                                 }
-                              }}
-                            >
-                              <Radio
-                                name="project-district"
-                                value={chamber.id}
-                                onChange={onDistrictChanged}
-                                aria-describedby="description-districts"
-                              />
-                              <Flex
-                                as="span"
-                                sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                              >
-                                <div sx={style.radioHeading}>{chamber.name}</div>
-                                <div sx={style.radioSubHeading}>
-                                  {chamber.numberOfDistricts} districts
-                                </div>
-                              </Flex>
-                            </Label>
-                          ))
-                          .concat(
-                            <div
-                              sx={{
-                                flex: "0 0 50%",
-                                "@media screen and (max-width: 770px)": {
-                                  flex: "0 0 100%"
-                                }
-                              }}
-                              key="custom"
-                            >
-                              <Label>
-                                <Radio
-                                  name="project-district"
-                                  value=""
-                                  onChange={onDistrictChanged}
-                                />
-                                <Flex as="span" sx={{ flexDirection: "column" }}>
-                                  <div sx={style.radioHeading}>Custom</div>
-                                  <div sx={style.radioSubHeading}>
-                                    Define a custom number of districts
-                                  </div>
-                                </Flex>
-                              </Label>
-                            </div>
-                          )}
-                      {data.isCustom ? (
-                        <Box sx={style.customInputContainer}>
-                          <InputField
-                            field="numberOfDistricts"
-                            label="Number of districts"
-                            resource={createProjectResource}
-                            inputProps={{
-                              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                const value = parseInt(e.currentTarget.value, 10);
-                                const numberOfDistricts = isNaN(value) ? null : value;
-                                setCreateProjectResource({
-                                  data: {
-                                    ...data,
-                                    numberOfDistricts,
-                                    isCustom: true
-                                  }
-                                });
-                              }
-                            }}
-                          />
-                        </Box>
-                      ) : null}
+                              });
+                            }
+                          }}
+                        />
+                      </Box>
                     </Flex>
-                  </fieldset>
-                </Card>
+                  </Card>
+                </React.Fragment>
               ) : (
                 undefined
               )}
               <Box sx={{ mt: 3, textAlign: "left" }}>
                 <Button
                   type="submit"
+                  sx={{ "&[disabled]": { opacity: "0.2" } }}
                   disabled={
                     (("isPending" in createProjectResource && createProjectResource.isPending) ||
                       !validate(data).valid) &&

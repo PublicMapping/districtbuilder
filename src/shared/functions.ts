@@ -73,3 +73,11 @@ export function getAggregatedCounts(
     return { ...data, [props.id]: count };
   }, {} as DemographicCounts);
 }
+
+export function getDemographicLabel(id: string) {
+  return id === "native"
+    ? "Native American"
+    : id === "pacific"
+    ? "Pacific Islander"
+    : id.split(/(?=[A-Z])/).join(" ");
+}

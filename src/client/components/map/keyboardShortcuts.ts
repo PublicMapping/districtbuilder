@@ -1,4 +1,5 @@
 import { DistrictId } from "../../../shared/entities";
+import { ElectionYear } from "../../types";
 
 import {
   setGeoLevelIndex,
@@ -13,7 +14,12 @@ import {
   undo,
   redo,
   toggleLimitDrawingToWithinCounty,
-  showKeyboardShortcutsModal
+  toggleKeyboardShortcutsModal,
+  setElectionYear,
+  toggleExpandedMetrics,
+  setZoomToDistrictId,
+  PaintBrushSize,
+  setPaintBrushSize
 } from "../../actions/districtDrawing";
 import store from "../../store";
 import { showMapActionToast } from "../../functions";
@@ -28,6 +34,9 @@ interface MapContext {
   readonly numGeolevels: number;
   readonly limitSelectionToCounty: boolean;
   readonly evaluateMode: boolean;
+  readonly expandedProjectMetrics: boolean;
+  readonly electionYear: ElectionYear;
+  readonly paintBrushSize: PaintBrushSize;
   // eslint-disable-next-line
   readonly setTogglePan: (isSet: boolean) => void;
 }
@@ -38,6 +47,9 @@ interface KeyboardShortcut {
   readonly label?: string;
   readonly meta?: true;
   readonly allowReadOnly?: boolean;
+  readonly allowInEvaluateMode?: boolean;
+  readonly onlyForMultipleElections?: boolean;
+  readonly onlyForPaintBrush?: boolean;
   readonly shift?: true | "optional";
   // eslint-disable-next-line
   readonly action: (context: MapContext) => void;
@@ -160,9 +172,47 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
   {
     key: "t",
     text: "Toggle evaluate mode",
+    allowReadOnly: true,
+    allowInEvaluateMode: true,
     action: ({ evaluateMode }: MapContext) => {
       store.dispatch(toggleEvaluate(!evaluateMode));
     }
+  },
+  {
+    key: "p",
+    text: "Toggle expanded project metrics",
+    action: ({ expandedProjectMetrics }: MapContext) => {
+      store.dispatch(toggleExpandedMetrics(!expandedProjectMetrics));
+    },
+    allowReadOnly: true
+  },
+  {
+    key: "b",
+    text: "Decrement paintbrush size",
+    action: ({ paintBrushSize }: MapContext) => {
+      paintBrushSize > 1
+        ? store.dispatch(setPaintBrushSize((paintBrushSize - 1) as PaintBrushSize))
+        : store.dispatch(setPaintBrushSize(1));
+    },
+    onlyForPaintBrush: true
+  },
+  {
+    key: "m",
+    text: "Increment paintbrush size",
+    action: ({ paintBrushSize }: MapContext) => {
+      paintBrushSize < 5
+        ? store.dispatch(setPaintBrushSize((paintBrushSize + 1) as PaintBrushSize))
+        : store.dispatch(setPaintBrushSize(5));
+    },
+    onlyForPaintBrush: true
+  },
+  {
+    key: "l",
+    text: "Zoom to selected district",
+    action: ({ selectedDistrictId }: MapContext) => {
+      store.dispatch(setZoomToDistrictId(selectedDistrictId));
+    },
+    allowReadOnly: true
   },
   {
     key: "z",
@@ -194,6 +244,16 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     }
   },
   {
+    key: "y",
+    text: "Toggle election year displayed in map tooltip",
+    onlyForMultipleElections: true,
+    action: ({ electionYear }: MapContext) => {
+      const newYear = electionYear === "16" ? "20" : "16";
+      store.dispatch(setElectionYear(newYear)) &&
+        showMapActionToast(`Displaying data for the 20${newYear} election`);
+    }
+  },
+  {
     key: " ",
     label: "SPACE",
     text: "Hold to pan map when using brush / rectangle",
@@ -206,8 +266,9 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcut[] = [
     text: "Show this help menu",
     shift: true,
     allowReadOnly: true,
+    allowInEvaluateMode: true,
     action: () => {
-      store.dispatch(showKeyboardShortcutsModal(true));
+      store.dispatch(toggleKeyboardShortcutsModal());
     }
   }
   // Feature not implemented yet

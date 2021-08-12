@@ -227,6 +227,51 @@ variable "image_tag" {
   type = string
 }
 
+variable "container_instance_type" {
+  default = "r5.2xlarge"
+  type    = string
+}
+
+variable "container_instance_root_block_device_type" {
+  default = "gp2"
+  type    = string
+}
+
+variable "container_instance_root_block_device_size" {
+  default = 64
+  type    = number
+}
+
+variable "container_instance_asg_health_check_grace_period" {
+  default = 600
+  type    = number
+}
+
+variable "container_instance_app_desired_count" {
+  default = 1
+  type    = number
+}
+
+variable "container_instance_app_deployment_min_percent" {
+  default = 100
+  type    = number
+}
+
+variable "container_instance_app_deployment_max_percent" {
+  default = 200
+  type    = number
+}
+
+variable "container_instance_app_cpu" {
+  default = 4096
+  type    = number
+}
+
+variable "container_instance_app_base_memory" {
+  default = 2048
+  type    = number
+}
+
 variable "fargate_platform_version" {
   default = "1.4.0"
 }
@@ -286,6 +331,10 @@ variable "rollbar_access_token" {
   type = string
 }
 
+variable "plan_score_api_token" {
+  type = string
+}
+
 variable "app_port" {
   default = 3005
   type    = number
@@ -293,6 +342,11 @@ variable "app_port" {
 
 variable "aws_ecs_task_execution_role_policy_arn" {
   default = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  type    = string
+}
+
+variable "aws_ec2_service_role_policy_arn" {
+  default = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
   type    = string
 }
 

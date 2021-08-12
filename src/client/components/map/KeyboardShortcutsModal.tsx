@@ -4,10 +4,12 @@ import AriaModal from "react-aria-modal";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { connect } from "react-redux";
 
-import { showKeyboardShortcutsModal } from "../../actions/districtDrawing";
+import { SelectionTool, toggleKeyboardShortcutsModal } from "../../actions/districtDrawing";
 import { State } from "../../reducers";
 import store from "../../store";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
+import { IStaticMetadata } from "../../../shared/entities";
+import { hasMultipleElections } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -28,40 +30,55 @@ const style: ThemeUIStyleObject = {
     p: 5,
     width: "small",
     maxWidth: "90vw",
+    zIndex: "10000",
     overflow: "visible"
   },
   table: {
-    width: "90%"
+    width: "100%"
   },
   keyRow: {
     height: 6,
     mb: 2
   },
   keyItem: {
-    ml: "5%",
-    mr: "5%",
+    ml: "0",
+    mr: "0",
     textAlign: "left",
-    height: "30px"
+    height: "30px",
+    display: "flex"
   },
   keyCode: {
-    border: "1px solid",
-    padding: "5px"
+    bg: "gray.1",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "gray.2",
+    borderRadius: "3px",
+    fontSize: "1",
+    fontFamily: "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace",
+    padding: "2px 4px"
   },
-  keyFunction: {
-    float: "right"
+  keyCombo: {
+    width: "140px"
   }
 };
 
 const KeyboardShortcutsModal = ({
   showModal,
-  isReadOnly
+  isReadOnly,
+  evaluateMode,
+  selectionTool,
+  staticMetadata
 }: {
   readonly showModal: boolean;
   readonly isReadOnly: boolean;
+  readonly evaluateMode: boolean;
+  readonly selectionTool?: SelectionTool;
+  readonly staticMetadata?: IStaticMetadata;
 }) => {
-  const hideModal = () => void store.dispatch(showKeyboardShortcutsModal(false));
+  const hideModal = () => void store.dispatch(toggleKeyboardShortcutsModal());
   const os = navigator.appVersion.indexOf("Mac") !== -1 ? "Mac" : "pc";
   const meta = os === "Mac" ? "⌘" : "CTRL";
+  const multipleElections = hasMultipleElections(staticMetadata);
 
   return showModal ? (
     <AriaModal
@@ -82,39 +99,44 @@ const KeyboardShortcutsModal = ({
             <Box>
               <table sx={style.table}>
                 <tbody>
-                  {KEYBOARD_SHORTCUTS.filter(shortcut => !isReadOnly || shortcut.allowReadOnly).map(
-                    (shortcut, index) => {
-                      const key = (
+                  {KEYBOARD_SHORTCUTS.filter(
+                    shortcut =>
+                      (!isReadOnly || shortcut.allowReadOnly) &&
+                      (!evaluateMode || shortcut.allowInEvaluateMode) &&
+                      (selectionTool === SelectionTool.PaintBrush || !shortcut.onlyForPaintBrush) &&
+                      (multipleElections || !shortcut.onlyForMultipleElections)
+                  ).map((shortcut, index) => {
+                    const key = (
+                      <span sx={style.keyCombo}>
                         <span sx={style.keyCode}>
                           {shortcut.label || shortcut.key.toUpperCase()}
                         </span>
-                      );
-                      return (
-                        <tr sx={style.keyRow} key={index}>
-                          <td>
-                            <Box sx={style.keyItem}>
-                              {shortcut.meta ? (
-                                shortcut.shift ? (
-                                  <span>
-                                    <span sx={style.keyCode}>{meta}</span>+
-                                    <span sx={style.keyCode}>SHIFT</span>+{key}
-                                  </span>
-                                ) : (
-                                  <span>
-                                    <span sx={style.keyCode}>{meta}</span>+{key}
-                                  </span>
-                                )
+                      </span>
+                    );
+                    return (
+                      <tr sx={style.keyRow} key={index}>
+                        <td>
+                          <Box sx={style.keyItem}>
+                            {shortcut.meta ? (
+                              shortcut.shift ? (
+                                <span sx={style.keyCombo}>
+                                  <span sx={style.keyCode}>{meta}</span>+
+                                  <span sx={style.keyCode}>SHIFT</span>+{key}
+                                </span>
                               ) : (
-                                key
-                              )}
-
-                              <span sx={style.keyFunction}>{shortcut.text}</span>
-                            </Box>
-                          </td>
-                        </tr>
-                      );
-                    }
-                  )}
+                                <span sx={style.keyCombo}>
+                                  <span sx={style.keyCode}>{meta}</span>+{key}
+                                </span>
+                              )
+                            ) : (
+                              key
+                            )}
+                            <span sx={style.keyFunction}>{shortcut.text}</span>
+                          </Box>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </Box>
