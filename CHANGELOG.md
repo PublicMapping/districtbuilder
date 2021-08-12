@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.7.0]
+
+### Added
+
 - Add button to display keyboard shortcuts modal [#787](https://github.com/PublicMapping/districtbuilder/pull/787)
 - Add configurable population deviation [#762](https://github.com/PublicMapping/districtbuilder/pull/762)
 - Display target population symbols in sidebar [#720](https://github.com/PublicMapping/districtbuilder/issues/720)
@@ -266,7 +274,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.7.0...HEAD
+[1.7.0]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...1.7.0
 [1.6.0]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...1.6.0
 [1.5.0]: https://github.com/publicmapping/districtbuilder/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/publicmapping/districtbuilder/compare/1.3.0...1.4.0
