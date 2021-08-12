@@ -56,6 +56,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       project.districts.features.forEach(districtFeature => {
         // Some very small holes may collapse to a single point during the merge operation,
         // and generate invalid polygons that cause simplify to fail
+        //eslint-disable-next-line functional/immutable-data
         districtFeature.geometry.coordinates = districtFeature.geometry.coordinates.flatMap(
           coordinates => {
             if (coordinates.every(coord => coord === coordinates[0])) {
