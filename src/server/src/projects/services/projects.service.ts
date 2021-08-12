@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
 import simplify from "@turf/simplify";
 import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
+import _ from "lodash";
 
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
@@ -57,14 +58,16 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
         // Some very small holes may collapse to a single point during the merge operation,
         // and generate invalid polygons that cause simplify to fail
         //eslint-disable-next-line functional/immutable-data
-        districtFeature.geometry.coordinates = districtFeature.geometry.coordinates.flatMap(
-          coordinates => {
-            if (coordinates.every(coord => coord === coordinates[0])) {
-              return [];
-            }
-            return [coordinates];
-          }
-        );
+        districtFeature.geometry.coordinates = districtFeature.geometry.coordinates
+          .map(polygonCoords =>
+            polygonCoords.flatMap(ringCoords => {
+              if (ringCoords.every(coord => _.isEqual(coord, ringCoords[0]))) {
+                return [];
+              }
+              return [ringCoords];
+            })
+          )
+          .filter(polygonCoords => polygonCoords.length > 0);
         try {
           simplify(districtFeature, { mutate: true, tolerance: 0.005 });
         } catch (e) {
