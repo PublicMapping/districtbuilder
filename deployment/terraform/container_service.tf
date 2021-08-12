@@ -125,12 +125,12 @@ resource "aws_autoscaling_group" "container_instance" {
 resource "aws_cloudwatch_metric_alarm" "cpu_reservation" {
   alarm_name          = "alarm${title(var.environment)}CPUReservation"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods  = "1"
+  evaluation_periods  = 1
   metric_name         = "CPUReservation"
   namespace           = "AWS/ECS"
-  period              = "600"
+  period              = 600
   statistic           = "Average"
-  threshold           = "100"
+  threshold           = 100
 
   dimensions = {
     ClusterName = aws_ecs_cluster.app.name
@@ -145,8 +145,8 @@ resource "aws_autoscaling_policy" "container_instance_cpu_reservation" {
   autoscaling_group_name = aws_autoscaling_group.container_instance.name
   policy_type            = "SimpleScaling"
 
-  scaling_adjustment = "-1"
-  cooldown           = "600"
+  scaling_adjustment = -1
+  cooldown           = local.app_health_check_grace_period_seconds
 }
 
 #
@@ -198,7 +198,7 @@ resource "aws_ecs_service" "app_container_instance" {
   deployment_minimum_healthy_percent = var.container_instance_app_deployment_min_percent
   deployment_maximum_percent         = var.container_instance_app_deployment_max_percent
 
-  health_check_grace_period_seconds = var.districtbuilder_state_count * var.health_check_grace_period_per_state
+  health_check_grace_period_seconds = local.app_health_check_grace_period_seconds
 
   launch_type = "EC2"
 
