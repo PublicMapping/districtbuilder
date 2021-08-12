@@ -115,8 +115,7 @@ This will attempt to apply the plan assembled in the previous step using Amazon'
 
 After updating TopoJSON assets using the `update-region` command, you will need to restart the ECS services to refresh the cached TopoJSON assets.
 
-To do so, go to the [ECS task definition](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions) and force a new deployment for the environment (select either `StagingApp` or `ProductionApp` as appropriate).
-![image](https://user-images.githubusercontent.com/4432106/120369629-89c8cb00-c2e1-11eb-9b65-49d8edb317d5.png)
+To do so, go to the [ECS task definition](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions) and force a new deployment for the environment (select either `StagingApp_EC2LaunchType` or `ProductionApp_EC2LaunchType` as appropriate).
 
 On the next screen, ensure "Force new deployment" is checked and that the selected cluster matches the selected task definition:
 ![image](https://user-images.githubusercontent.com/4432106/120369867-e4fabd80-c2e1-11eb-9679-c0a7fa76868d.png)
