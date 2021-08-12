@@ -113,14 +113,14 @@ import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.
 @CrudAuth({
   filter: (req: any) => {
     const user = req.user as User;
+    const endpoint = req.route.path.split("/").reverse()[0];
     // Restrict access to organization projects if using toggleFeatured endpoint
-    if (req.route.path.split("/").reverse()[0] === "toggleFeatured") {
+    if (endpoint === "toggleFeatured") {
       return {
         "projectTemplate.organization.admin": user.id
       };
-      // Filter to user's projects for all other update requests and for full project
-      // list.
-    } else if (req.method !== "GET" || req.route.path === "/api/projects") {
+      // Filter to user's projects for all other update requests, except for the duplicate endpoint.
+    } else if (req.method !== "GET" && endpoint !== "duplicate") {
       return {
         user_id: user ? user.id : undefined
       };
