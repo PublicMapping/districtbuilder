@@ -53,11 +53,11 @@ const PaginationFooter = ({ currentPage, totalPages, setPage }: StateProps) => {
 
   return (
     <Box>
-      {
+      {totalPages > 1 && (
         <ul id="page-numbers" sx={style.pageList}>
           {renderPageNumbers}
         </ul>
-      }
+      )}
     </Box>
   );
 };
