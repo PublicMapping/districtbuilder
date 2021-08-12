@@ -83,9 +83,11 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   async findAllPublishedProjectsPaginated(
     options: AllProjectsOptions
   ): Promise<Pagination<Project>> {
-    const builder = this.getProjectsBase().andWhere("project.visibility = :published", {
-      published: ProjectVisibility.Published
-    });
+    const builder = this.getProjectsBase()
+      .andWhere("project.visibility = :published", {
+        published: ProjectVisibility.Published
+      })
+      .andWhere("project.archived = FALSE");
     const builderWithFilter = options.completed
       ? // Completed projects are defined as having no geo units assigned to the unassigned district
         //
@@ -98,6 +100,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     const builderWithRegion = options.region
       ? builderWithFilter.andWhere("regionConfig.regionCode = :region", { region: options.region })
       : builderWithFilter;
+
     return this.simplifyDistricts(paginate<Project>(builderWithRegion, options));
   }
 
