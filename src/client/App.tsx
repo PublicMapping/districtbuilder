@@ -67,6 +67,7 @@ const App = () => (
           </PrivateRoute>
           <Route path="/projects/:projectId" exact={true} component={ProjectScreen} />
           <Route path="/login" exact={true} component={LoginScreen} />
+          <Route path="/maps" exact={true} component={PublishedMapsListScreen} />
           <Route path="/register" exact={true} component={RegistrationScreen} />
           <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
           <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
