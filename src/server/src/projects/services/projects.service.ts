@@ -54,28 +54,29 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   async simplifyDistricts(page: Promise<Pagination<Project>>): Promise<Pagination<Project>> {
     const projects = await page;
     projects.items.forEach(project => {
-      project.districts.features.forEach(districtFeature => {
-        // Some very small holes may collapse to a single point during the merge operation,
-        // and generate invalid polygons that cause simplify to fail
-        //eslint-disable-next-line functional/immutable-data
-        districtFeature.geometry.coordinates = districtFeature.geometry.coordinates
-          .map(polygonCoords =>
-            polygonCoords.flatMap(ringCoords => {
-              if (ringCoords.every(coord => _.isEqual(coord, ringCoords[0]))) {
-                return [];
-              }
-              return [ringCoords];
-            })
-          )
-          .filter(polygonCoords => polygonCoords.length > 0);
-        try {
-          simplify(districtFeature, { mutate: true, tolerance: 0.005 });
-        } catch (e) {
-          this.logger.debug(
-            `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
-          );
-        }
-      });
+      project.districts &&
+        project.districts.features.forEach(districtFeature => {
+          // Some very small holes may collapse to a single point during the merge operation,
+          // and generate invalid polygons that cause simplify to fail
+          //eslint-disable-next-line functional/immutable-data
+          districtFeature.geometry.coordinates = districtFeature.geometry.coordinates
+            .map(polygonCoords =>
+              polygonCoords.flatMap(ringCoords => {
+                if (ringCoords.every(coord => _.isEqual(coord, ringCoords[0]))) {
+                  return [];
+                }
+                return [ringCoords];
+              })
+            )
+            .filter(polygonCoords => polygonCoords.length > 0);
+          try {
+            simplify(districtFeature, { mutate: true, tolerance: 0.005 });
+          } catch (e) {
+            this.logger.debug(
+              `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
+            );
+          }
+        });
     });
     return projects;
   }
