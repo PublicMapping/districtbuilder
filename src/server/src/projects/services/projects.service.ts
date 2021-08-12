@@ -54,17 +54,23 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
     const projects = await page;
     projects.items.forEach(project => {
       project.districts.features.forEach(districtFeature => {
-        districtFeature.geometry.coordinates.forEach(coordinates => {
-          // Simplify each polygon of the multipolygon separately, and skip past any invalid geometries
-          // Some very small holes may collapse to a single point during the merge operation and cause simplify to fail
-          try {
-            simplify({ type: "Polygon", coordinates }, { mutate: true, tolerance: 0.005 });
-          } catch (e) {
-            this.logger.debug(
-              `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
-            );
+        // Some very small holes may collapse to a single point during the merge operation,
+        // and generate invalid polygons that cause simplify to fail
+        districtFeature.geometry.coordinates = districtFeature.geometry.coordinates.flatMap(
+          coordinates => {
+            if (coordinates.every(coord => coord === coordinates[0])) {
+              return [];
+            }
+            return [coordinates];
           }
-        });
+        );
+        try {
+          simplify(districtFeature, { mutate: true, tolerance: 0.005 });
+        } catch (e) {
+          this.logger.debug(
+            `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
+          );
+        }
       });
     });
     return projects;
