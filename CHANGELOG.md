@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve style for Majority-minor district indicator [#937](https://github.com/PublicMapping/districtbuilder/pull/937)
 
 ### Fixed
+- Fixed export GeoJSON endpoint cache busting [#940](https://github.com/PublicMapping/districtbuilder/pull/940)
 
 ## [1.7.1] - 2021-08-12
 
