@@ -139,7 +139,9 @@ const style: ThemeUIStyleObject = {
     mr: 2
   },
   deviationIcon: {
-    ml: "15px"
+    ml: "6px",
+    position: "relative",
+    top: "1px"
   },
   unassignedColor: {
     border: "1px solid",
@@ -690,10 +692,17 @@ const SidebarRow = memo(
               }
             >
               <Flex>
-                <span sx={style.chart}>
+                <span
+                  sx={{
+                    borderLeft: "1px dashed",
+                    borderColor: isMajorityMinority(district) ? "gray.8" : "transparent",
+                    pl: "1px",
+                    position: "relative",
+                    left: "-2px"
+                  }}
+                >
                   <DemographicsChart demographics={demographics} />
                 </span>
-                {isMajorityMinority(district) && <span sx={style.minorityMajorityFlag}>*</span>}
               </Flex>
             </Tooltip>
           </Styled.td>
