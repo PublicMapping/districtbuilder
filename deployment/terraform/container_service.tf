@@ -157,22 +157,21 @@ data "aws_ec2_instance_type" "container_instance" {
 }
 
 locals {
-  container_instance_app_memory = min(
-    # It is estimated that some larger states could use up to a gig. This math
-    # will add an additional 1024MiB for every state.
-    var.container_instance_app_base_memory + var.districtbuilder_state_count * 1024,
-    # This ensures no configuration exceeds the upper bound of available memory
-    # on a container instance.
-    data.aws_ec2_instance_type.container_instance.memory_size
-  )
+  # We reserve 4 GB of memory for the ECS container agent and other critical
+  # system processes. I observed that an r5.2xlarge running zero tasks used
+  # approximately 3.52 GB of memory. Although we could reserve this at the ECS
+  # container agent level, we still need to define a memory limit for the task
+  # that fits within the available memory on the instance.
+  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/memory-management.html
+  container_instance_app_memory = data.aws_ec2_instance_type.container_instance.memory_size - var.container_instance_reserved_memory
 }
 
 resource "aws_ecs_task_definition" "app_container_instance" {
-  family       = "${var.environment}App_EC2LaunchType"
-  network_mode = "awsvpc"
-  # These are hard limits of CPU units and memory, specified at the task level.
+  family                   = "${var.environment}App_EC2LaunchType"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  # The hard limit of memory to present to the task.
   # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
-  cpu    = var.container_instance_app_cpu
   memory = local.container_instance_app_memory
 
   container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", merge(

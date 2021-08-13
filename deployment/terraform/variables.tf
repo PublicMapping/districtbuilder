@@ -228,7 +228,7 @@ variable "image_tag" {
 }
 
 variable "container_instance_type" {
-  default = "r5.2xlarge"
+  default = "r5.4xlarge"
   type    = string
 }
 
@@ -247,6 +247,11 @@ variable "container_instance_asg_health_check_grace_period" {
   type    = number
 }
 
+variable "container_instance_reserved_memory" {
+  default = 4 * 1024
+  type    = number
+}
+
 variable "container_instance_app_desired_count" {
   default = 1
   type    = number
@@ -259,16 +264,6 @@ variable "container_instance_app_deployment_min_percent" {
 
 variable "container_instance_app_deployment_max_percent" {
   default = 200
-  type    = number
-}
-
-variable "container_instance_app_cpu" {
-  default = 4096
-  type    = number
-}
-
-variable "container_instance_app_base_memory" {
-  default = 2048
   type    = number
 }
 
