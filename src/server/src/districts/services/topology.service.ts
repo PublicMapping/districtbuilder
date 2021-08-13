@@ -56,7 +56,7 @@ export class TopologyService {
   }
 
   public layers(): Readonly<Layers> | undefined {
-    return this._layers && Object.freeze(this._layers);
+    return this._layers && Object.freeze({ ...this._layers });
   }
 
   public async get(s3URI: S3URI): Promise<GeoUnitTopology | GeoUnitProperties | void> {
