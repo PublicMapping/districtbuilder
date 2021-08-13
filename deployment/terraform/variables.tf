@@ -299,6 +299,14 @@ variable "districtbuilder_state_count" {
   type = number
 }
 
+variable "max_old_space_size_scale_factor" {
+  # The official documentation mentions setting this to 1.5 GB on a machine that
+  # has 2 GB of memory.
+  # https://nodejs.org/api/cli.html#cli_max_old_space_size_size_in_megabytes
+  default = 0.75
+  type    = number
+}
+
 variable "fargate_app_cpu" {
   type = number
 }
