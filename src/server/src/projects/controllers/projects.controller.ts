@@ -577,6 +577,7 @@ export class ProjectsController implements CrudController<Project> {
       return this.service.save({
         name: `${project.name} (2020)`,
         regionConfig: newRegion,
+        regionConfigVersion: newRegion.version,
         chamber: project.chamber,
         projectTemplate: project.projectTemplate,
         numberOfDistricts: project.numberOfDistricts,
