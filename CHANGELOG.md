@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.7.1] - 2021-08-12
 
 ### Fixed
-- Fixed loading mini-maps for Projects w/o cached districts column
+- Fixed loading mini-maps for Projects w/o cached districts column [#928](https://github.com/PublicMapping/districtbuilder/pull/928)
 
 ## [1.7.0] - 2021-08-12
 
