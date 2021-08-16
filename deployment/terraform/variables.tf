@@ -228,7 +228,7 @@ variable "image_tag" {
 }
 
 variable "container_instance_type" {
-  default = "r5.4xlarge"
+  default = "r5.2xlarge"
   type    = string
 }
 
