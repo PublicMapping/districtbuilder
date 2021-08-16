@@ -8,7 +8,22 @@ data "template_cloudinit_config" "container_instance_cloud_config" {
   part {
     content_type = "text/cloud-config"
     content = templatefile("${path.module}/cloud-config/base-container-instance.yml.tmpl", {
-      ecs_cluster_name = aws_ecs_cluster.app.name
+      ecs_cluster_name = aws_ecs_cluster.app.name,
+
+      # I graphed the memory usage of the container vs. the number of memory map
+      # areas the process consumed after we set vm.max_map_count to an
+      # arbitrarily high value. The line of best fit is f(x) = 2997.2x and has
+      # an R^2 of 0.9017. The root-mean-square deviation is 3736, and the
+      # largest difference between prediction vs. reality is 4791. Setting the
+      # intercept to 8 * 1024 appears to give us an adequate safety margin.
+      #
+      # Also, this method of determining a value for vm.max_map_count is only
+      # efficient if the container's memory usage equals the total memory of
+      # the host. So, there will always be a huge margin, but I feel that it's
+      # better than choosing an arbitrary constant.
+      #
+      # See: doc/DistrictBuilder_Memory_Usage_vs_Memory_Map_Areas.xlsx
+      vm_max_map_count = local.container_instance_app_memory * 3 + (8 * 1024)
     })
   }
 }

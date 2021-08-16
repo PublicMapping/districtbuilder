@@ -3,3 +3,5 @@
 bootcmd:
   - mkdir -p /etc/ecs
   - echo 'ECS_CLUSTER=${ecs_cluster_name}' >> /etc/ecs/ecs.config
+  - echo 'vm.max_map_count=${vm_max_map_count}' > /etc/sysctl.d/99-max-memory-map-areas.conf
+  - sysctl -p /etc/sysctl.d/99-max-memory-map-areas.conf
