@@ -77,7 +77,8 @@ export class TopologyService {
 
   private async fetchLayer(
     s3URI: S3URI,
-    archived: boolean
+    archived: boolean,
+    numRetries = 0
   ): Promise<GeoUnitTopology | GeoUnitProperties | void> {
     try {
       const [topojsonResponse, staticMetadataResponse] = await Promise.all([
@@ -116,7 +117,10 @@ export class TopologyService {
         this.logger.error("Invalid TopoJSON or metadata bodies");
       }
     } catch (err) {
-      this.logger.error(`Unable to download static files from for ${s3URI}: ${err}`);
+      this.logger.error(
+        `Failed to load topology for '${s3URI}' ${numRetries + 1} times, err ${err}`
+      );
+      return this.fetchLayer(s3URI, archived, numRetries + 1);
     }
   }
 
