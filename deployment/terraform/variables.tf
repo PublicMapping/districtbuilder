@@ -267,6 +267,11 @@ variable "container_instance_app_deployment_max_percent" {
   type    = number
 }
 
+variable "container_instance_app_cpu" {
+  default = 4096
+  type    = number
+}
+
 variable "fargate_platform_version" {
   default = "1.4.0"
 }

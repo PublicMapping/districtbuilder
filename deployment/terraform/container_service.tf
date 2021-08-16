@@ -157,6 +157,10 @@ data "aws_ec2_instance_type" "container_instance" {
 }
 
 locals {
+  # CPU units allocation at the task level cannot exceed 10 vCPUs.
+  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
+  container_instance_app_cpu = min(var.container_instance_app_cpu, 10240)
+
   # We reserve 4 GB of memory for the ECS container agent and other critical
   # system processes. I observed that an r5.2xlarge running zero tasks used
   # approximately 3.52 GB of memory. Although we could reserve this at the ECS
@@ -170,8 +174,9 @@ resource "aws_ecs_task_definition" "app_container_instance" {
   family                   = "${var.environment}App_EC2LaunchType"
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
-  # The hard limit of memory to present to the task.
+  # These are hard limits of CPU units and memory, specified at the task level.
   # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
+  cpu    = local.container_instance_app_cpu
   memory = local.container_instance_app_memory
 
   container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", merge(
