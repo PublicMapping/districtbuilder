@@ -161,7 +161,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", merge(
     local.shared_app_task_def_template_vars,
     {
-      max_old_space_size = local.fargate_app_memory * var.max_old_space_size_scale_factor
+      max_old_space_size = floor(local.fargate_app_memory * var.max_old_space_size_scale_factor)
     }
   ))
 
