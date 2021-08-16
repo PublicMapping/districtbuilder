@@ -120,7 +120,7 @@ export class TopologyService {
       this.logger.error(
         `Failed to load topology for '${s3URI}' ${numRetries + 1} times, err ${err}`
       );
-      this.fetchLayer(s3URI, archived, numRetries + 1);
+      return this.fetchLayer(s3URI, archived, numRetries + 1);
     }
   }
 
