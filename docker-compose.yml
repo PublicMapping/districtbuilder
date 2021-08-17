@@ -27,7 +27,7 @@ services:
       - JWT_SECRET=insecure
       - JWT_EXPIRATION_IN_MS=604800000 # 1 week
       - CLIENT_URL=http://localhost:3003
-      - HEALTHCHECK_DB_TIMEOUT=5000
+      - HEALTH_CHECK_DB_TIMEOUT=5000
     build:
       context: ./src/server
       dockerfile: Dockerfile

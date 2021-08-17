@@ -327,7 +327,7 @@ variable "client_url" {
   type = string
 }
 
-variable "healthcheck_db_timeout" {
+variable "health_check_db_timeout" {
   type = string
 }
 
