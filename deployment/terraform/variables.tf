@@ -327,6 +327,10 @@ variable "client_url" {
   type = string
 }
 
+variable "healthcheck_db_timeout" {
+  type = string
+}
+
 variable "rollbar_access_token" {
   type = string
 }

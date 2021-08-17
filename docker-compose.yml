@@ -25,8 +25,9 @@ services:
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - JWT_SECRET=insecure
-      - JWT_EXPIRATION_IN_MS=604800000  # 1 week
-      - CLIENT_URL=http://localhost:3003  # TODO: make this configurable per environment
+      - JWT_EXPIRATION_IN_MS=604800000 # 1 week
+      - CLIENT_URL=http://localhost:3003
+      - HEALTHCHECK_DB_TIMEOUT=5000
     build:
       context: ./src/server
       dockerfile: Dockerfile
