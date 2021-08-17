@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed export GeoJSON endpoint cache busting [#940](https://github.com/PublicMapping/districtbuilder/pull/940)
 - Fixed EC2-based ECS setup to use correct container [#938](https://github.com/PublicMapping/districtbuilder/pull/938)
 - Fixed healthcheck when archived regions are loaded [#938](https://github.com/PublicMapping/districtbuilder/pull/938)
+- Fix CSV export for other user's projects [#943](https://github.com/PublicMapping/districtbuilder/pull/943)
 
 ## [1.7.1] - 2021-08-12
 
