@@ -8,11 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
+Add levers to tune LB health check configuration [#950](https://github.com/PublicMapping/districtbuilder/pull/950)
 ### Changed
 
 ### Fixed
-
 
 ## [1.7.2] - 2021-08-13
 
