@@ -19,8 +19,12 @@ export class HealthcheckController {
   @Get()
   @HealthCheck()
   healthCheck(): Promise<HealthCheckResult> {
+    // If timeout is 'undefined' we'll use the default of 1000ms
+    const timeout = process.env.HEALTHCHECK_DB_TIMEOUT
+      ? Number(process.env.HEALTHCHECK_DB_TIMEOUT)
+      : undefined;
     return this.health.check([
-      async () => this.db.pingCheck("database", { timeout: 3000 }),
+      async () => this.db.pingCheck("database", { timeout }),
       () => this.topoLoaded.isHealthy("topology")
     ]);
   }
