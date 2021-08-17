@@ -204,11 +204,6 @@ const SiteHeader = ({ user }: Props) => {
             {user.resource.organizations.length > 0 && (
               <OrganizationDropdown organizations={user.resource.organizations} />
             )}
-            <span sx={style.linkItem}>
-              <NavLink exact to="/maps">
-                Community maps
-              </NavLink>
-            </span>
             <span
               sx={{
                 svg: { display: "none" },

@@ -5,13 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
+## [1.7.2] - 2021-08-13
 
 ### Changed
 
 - Improve style for Majority-minor district indicator [#937](https://github.com/PublicMapping/districtbuilder/pull/937)
+- Retry regions that fail to load in TopologyService [#944](https://github.com/PublicMapping/districtbuilder/pull/944)
 
 ### Fixed
 - Fixed export GeoJSON endpoint cache busting [#940](https://github.com/PublicMapping/districtbuilder/pull/940)
@@ -21,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.7.1] - 2021-08-12
 
 ### Fixed
-- Fixed loading mini-maps for Projects w/o cached districts column
+- Fixed loading mini-maps for Projects w/o cached districts column [#928](https://github.com/PublicMapping/districtbuilder/pull/928)
 
 ## [1.7.0] - 2021-08-12
 
@@ -285,7 +284,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.7.1...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.7.2...HEAD
+[1.7.2]: https://github.com/publicmapping/districtbuilder/compare/1.7.1...1.7.2
 [1.7.1]: https://github.com/publicmapping/districtbuilder/compare/1.7.0...1.7.1
 [1.7.0]: https://github.com/publicmapping/districtbuilder/compare/1.6.0...1.7.0
 [1.6.0]: https://github.com/publicmapping/districtbuilder/compare/1.5.0...1.6.0
