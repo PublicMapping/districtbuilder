@@ -94,7 +94,7 @@ const DemographicsTooltip = ({
       {isMajorityMinority && (
         <Box>
           <Divider sx={{ my: 1, borderColor: "gray.6" }} />
-          <Box>* Minority majority district</Box>
+          <Box sx={{ borderLeft: "1px dashed", pl: "6px" }}>Majority-minority district</Box>
         </Box>
       )}
     </Box>

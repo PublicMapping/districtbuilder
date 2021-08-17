@@ -192,7 +192,7 @@ resource "aws_ecs_task_definition" "app_container_instance" {
 resource "aws_ecs_service" "app_container_instance" {
   name            = "${var.environment}App_EC2LaunchType"
   cluster         = aws_ecs_cluster.app.name
-  task_definition = aws_ecs_task_definition.app.arn
+  task_definition = aws_ecs_task_definition.app_container_instance.arn
 
   desired_count                      = var.container_instance_app_desired_count
   deployment_minimum_healthy_percent = var.container_instance_app_deployment_min_percent
