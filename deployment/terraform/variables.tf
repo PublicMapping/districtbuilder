@@ -315,6 +315,31 @@ variable "fargate_app_cli_memory" {
   type = number
 }
 
+variable "target_group_health_check_healthy_threshold" {
+  default = 3
+  type    = number
+}
+
+variable "target_group_health_check_interval" {
+  default = 30
+  type    = number
+}
+
+variable "target_group_health_check_timeout" {
+  default = 3
+  type    = number
+}
+
+variable "target_group_health_check_unhealthy_threshold" {
+  default = 2
+  type    = number
+}
+
+variable "typeorm_health_check_timeout" {
+  default = 3
+  type    = number
+}
+
 variable "jwt_secret" {
   type = string
 }
@@ -324,10 +349,6 @@ variable "jwt_expiration_in_ms" {
 }
 
 variable "client_url" {
-  type = string
-}
-
-variable "health_check_db_timeout" {
   type = string
 }
 
