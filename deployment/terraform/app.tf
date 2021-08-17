@@ -128,7 +128,7 @@ locals {
     jwt_secret             = var.jwt_secret
     jwt_expiration_in_ms   = var.jwt_expiration_in_ms
     client_url             = var.client_url
-    healthcheck_db_timeout = var.healthcheck_db_timeout
+    health_check_db_timeout = var.health_check_db_timeout
 
     app_port = var.app_port
 
