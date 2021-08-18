@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix CSV export for other user's projects [#943](https://github.com/PublicMapping/districtbuilder/pull/943)
+- Disable Send to Plan Score button for incomplete projects [#957](https://github.com/PublicMapping/districtbuilder/pull/957)
 
 
 ## [1.7.2] - 2021-08-13
