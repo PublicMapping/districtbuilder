@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-Add levers to tune LB health check configuration [#950](https://github.com/PublicMapping/districtbuilder/pull/950)
+- Add levers to tune LB health check configuration [#950](https://github.com/PublicMapping/districtbuilder/pull/950)
 ### Changed
+- Parameterize `max_old_space_size` [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
+- Don't define container-level CPU reservation [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
+- Remove CPU and memory limits for tasks on EC2 [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
+- Add lever for tuning CPU allocation at the task level [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
+- Scale `vm.max_map_count` with container memory usage [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
 
 ### Fixed
 - Fix CSV export for other user's projects [#943](https://github.com/PublicMapping/districtbuilder/pull/943)

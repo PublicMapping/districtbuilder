@@ -247,6 +247,11 @@ variable "container_instance_asg_health_check_grace_period" {
   type    = number
 }
 
+variable "container_instance_reserved_memory" {
+  default = 4 * 1024
+  type    = number
+}
+
 variable "container_instance_app_desired_count" {
   default = 1
   type    = number
@@ -264,11 +269,6 @@ variable "container_instance_app_deployment_max_percent" {
 
 variable "container_instance_app_cpu" {
   default = 4096
-  type    = number
-}
-
-variable "container_instance_app_base_memory" {
-  default = 2048
   type    = number
 }
 
@@ -297,6 +297,14 @@ variable "health_check_grace_period_per_state" {
 
 variable "districtbuilder_state_count" {
   type = number
+}
+
+variable "max_old_space_size_scale_factor" {
+  # The official documentation mentions setting this to 1.5 GB on a machine that
+  # has 2 GB of memory.
+  # https://nodejs.org/api/cli.html#cli_max_old_space_size_size_in_megabytes
+  default = 0.75
+  type    = number
 }
 
 variable "fargate_app_cpu" {
