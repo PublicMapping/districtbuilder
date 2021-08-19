@@ -26,6 +26,7 @@ interface FlyoutProps {
 // of actions (e.g. archiving), so it has intentionally
 // not been unified.
 const ProjectListFlyout = (props: FlyoutProps) => {
+  const isArchived = props.project.regionConfig.archived;
   return (
     <Wrapper
       onSelection={(userMenuKey: string) => {
@@ -65,9 +66,11 @@ const ProjectListFlyout = (props: FlyoutProps) => {
             <MenuItem value={UserMenuKeys.ExportGeoJson}>
               <Box sx={style.menuListItem}>Export GeoJSON</Box>
             </MenuItem>
-            <MenuItem value={UserMenuKeys.CopyMap}>
-              <Box sx={style.menuListItem}>Duplicate Map</Box>
-            </MenuItem>
+            {!isArchived && (
+              <MenuItem value={UserMenuKeys.CopyMap}>
+                <Box sx={style.menuListItem}>Duplicate Map</Box>
+              </MenuItem>
+            )}
             <MenuItem value={UserMenuKeys.Delete}>
               <Box sx={style.menuListItem}>Delete Map</Box>
             </MenuItem>

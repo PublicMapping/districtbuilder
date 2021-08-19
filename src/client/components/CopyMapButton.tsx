@@ -7,25 +7,29 @@ import { showCopyMapModal } from "../actions/districtDrawing";
 
 interface CopyMapButtonProps {
   readonly invert?: boolean;
+  readonly isArchived: boolean;
 }
 
 const CopyMapButton = (props: CopyMapButtonProps) => {
   return (
     <Wrapper sx={{ position: "relative", pr: 1 }}>
-      <Button
-        sx={{
-          ...{ variant: "buttons.ghost", fontWeight: "light" },
-          ...style.menuButton,
-          ...invertStyles(props),
-          ...props
-        }}
-        className="copyMap-menu"
-        onClick={() => {
-          store.dispatch(showCopyMapModal(true));
-        }}
-      >
-        Copy this map
-      </Button>
+      {
+        <Button
+          sx={{
+            ...{ variant: "buttons.ghost", fontWeight: "light" },
+            ...style.menuButton,
+            ...invertStyles(props),
+            ...props
+          }}
+          className="copyMap-menu"
+          disabled={props.isArchived}
+          onClick={() => {
+            store.dispatch(showCopyMapModal(true));
+          }}
+        >
+          Copy this map
+        </Button>
+      }
     </Wrapper>
   );
 };

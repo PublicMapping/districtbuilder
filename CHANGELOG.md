@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix CSV import by increasing max JSON payload to 50mb [#951](https://github.com/PublicMapping/districtbuilder/pull/951)
 - Fix CSV export for other user's projects [#943](https://github.com/PublicMapping/districtbuilder/pull/943)
 - Disable Send to Plan Score button for incomplete projects [#957](https://github.com/PublicMapping/districtbuilder/pull/957)
+- Disable duplicate project for projects with archived regions [#963](https://github.com/PublicMapping/districtbuilder/pull/963)
 
 ## [1.7.2] - 2021-08-13
 
