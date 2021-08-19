@@ -1,18 +1,12 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { FeatureCollection, MultiPolygon, Geometry } from "geojson";
-import { IReferenceLayer } from "../../../../shared/entities";
+import { FeatureCollection, MultiPolygon, Point } from "geojson";
+import { IReferenceLayer, ReferenceLayerProperties } from "../../../../shared/entities";
 import { Project } from "../../projects/entities/project.entity";
 import { ReferenceLayerTypes } from "../../../../shared/constants";
 import { LayerType } from "aws-sdk/clients/opsworks";
 
-export interface ReferenceLayerProperties {
-  // key is a property name on the geojson
-  // value is the value for that property
-  readonly [id: string]: number;
-}
-
 export type ReferenceLayerGeojson =
-  | FeatureCollection<Geometry, ReferenceLayerProperties>
+  | FeatureCollection<Point, ReferenceLayerProperties>
   | FeatureCollection<MultiPolygon, ReferenceLayerProperties>
   | null;
 

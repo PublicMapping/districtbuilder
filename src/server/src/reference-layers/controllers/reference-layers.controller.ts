@@ -4,20 +4,19 @@ import {
   Get,
   InternalServerErrorException,
   Logger,
+  Request,
   Param,
-  UploadedFile,
-  Post,
-  UseInterceptors,
   NotFoundException,
+  UseInterceptors,
   UseGuards
 } from "@nestjs/common";
+import { IReferenceLayer } from "../../../../shared/entities";
 
-import { FileInterceptor } from "@nestjs/platform-express";
-import csvParse from "csv-parse";
 import {
   Crud,
   CrudController,
   CrudRequest,
+  CrudRequestInterceptor,
   Override,
   ParsedBody,
   ParsedRequest
@@ -26,25 +25,16 @@ import isUUID from "validator/lib/isUUID";
 import { OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { QueryFailedError } from "typeorm";
 import { ProjectId, ReferenceLayerId } from "../../../../shared/entities";
+import { User } from "../../users/entities/user.entity";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
-import {
-  ReferenceLayer,
-  ReferenceLayerGeojson,
-  ReferenceLayerProperties
-} from "../entities/reference-layer.entity";
+import { ReferenceLayer } from "../entities/reference-layer.entity";
 import { ReferenceLayersService } from "../services/reference-layers.service";
 import { ProjectsService } from "../../projects/services/projects.service";
-import { FeatureCollection, Geometry, Feature } from "geojson";
 import { CreateReferenceLayerDto } from "../entities/create-reference-layer.dto";
 
 @Crud({
   model: {
     type: ReferenceLayer
-  },
-  query: {
-    filter: {
-      archived: false
-    }
   },
   routes: {
     only: ["createOneBase", "getOneBase"]
@@ -94,54 +84,6 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     return this.getReferenceLayer(req, id);
   }
 
-  @UseInterceptors(FileInterceptor("file"))
-  @UseGuards(JwtAuthGuard)
-  @Post("import/csv")
-  async importReferenceLayerCSV(
-    @UploadedFile() file: Express.Multer.File
-  ): Promise<ReferenceLayerGeojson> {
-    /* eslint-disable */
-    const parser = csvParse(file.buffer, { fromLine: 1, columns: true });
-    let geojson: FeatureCollection<Geometry, ReferenceLayerProperties> = {
-      type: "FeatureCollection",
-      features: []
-    };
-    // Seemingly the simplest way of getting all the records into an array is to iterate in a for-loop :(
-    for await (const record of parser) {
-      let recTransformed: Feature<Geometry, ReferenceLayerProperties> = {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "Point",
-          coordinates: []
-        }
-      };
-      recTransformed.properties = record;
-      if (record.lat && record.lon) {
-        // @ts-ignore
-        recTransformed.geometry.coordinates = [record.lon, record.lat];
-      } else if (record.latitude && record.longitude) {
-        // @ts-ignore
-        recTransformed.geometry.coordinates = [record.longitude, record.latitude];
-      }
-
-      geojson.features.push(recTransformed);
-    }
-
-    /* eslint-enable */
-    return geojson;
-  }
-
-  @UseInterceptors(FileInterceptor("file"))
-  @UseGuards(JwtAuthGuard)
-  @Post("import/geojson")
-  async importReferenceLayerGeojson(
-    @UploadedFile() file: Express.Multer.File
-  ): Promise<ReferenceLayerGeojson> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return await JSON.parse(file.buffer.toString());
-  }
-
   // Helper for obtaining a project for a given project request, throws exception if not found
   async getReferenceLayer(req: CrudRequest, id: ReferenceLayerId): Promise<ReferenceLayer> {
     if (!this.base.getOneBase) {
@@ -159,11 +101,14 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(CrudRequestInterceptor)
   @Get("project/:projectId/")
   async getProjectReferenceLayers(
+    @Request() req: any,
     @Param("projectId") projectId: ProjectId
-  ): Promise<ReferenceLayer[]> {
-    const refLayers = await this.service.getProjectReferenceLayers(projectId);
+  ): Promise<IReferenceLayer[]> {
+    const user = req.user as User;
+    const refLayers = await this.service.getProjectReferenceLayers(projectId, user?.id);
     return refLayers;
   }
 }

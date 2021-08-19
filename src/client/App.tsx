@@ -20,7 +20,7 @@ import theme from "./theme";
 
 import "./App.css";
 import StartProjectScreen from "./screens/StartProjectScreen";
-import PublishedMapsListScreen from "./screens/PublishedMapsListScreen";
+// import PublishedMapsListScreen from "./screens/PublishedMapsListScreen";
 import { PushReplaceHistory, QueryParamProvider } from "use-query-params";
 import { createBrowserHistory } from "history";
 
