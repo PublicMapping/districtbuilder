@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add levers to tune LB health check configuration [#950](https://github.com/PublicMapping/districtbuilder/pull/950)
+
 ### Changed
 - Parameterize `max_old_space_size` [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
 - Don't define container-level CPU reservation [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scale `vm.max_map_count` with container memory usage [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
 
 ### Fixed
+- Fix CSV import by increasing max JSON payload to 50mb [#951](https://github.com/PublicMapping/districtbuilder/pull/951)
 - Fix CSV export for other user's projects [#943](https://github.com/PublicMapping/districtbuilder/pull/943)
 
 ## [1.7.2] - 2021-08-13
