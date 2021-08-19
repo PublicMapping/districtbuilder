@@ -54,13 +54,13 @@ resource "aws_lb_target_group" "app" {
   name = "tg${var.environment}App"
 
   health_check {
-    healthy_threshold   = "3"
-    interval            = "30"
+    healthy_threshold   = var.target_group_health_check_healthy_threshold
+    interval            = var.target_group_health_check_interval
     matcher             = "200"
     protocol            = "HTTP"
-    timeout             = "3"
+    timeout             = var.target_group_health_check_timeout
     path                = "/healthcheck"
-    unhealthy_threshold = "2"
+    unhealthy_threshold = var.target_group_health_check_unhealthy_threshold
   }
 
   port     = "80"
@@ -124,6 +124,11 @@ locals {
     postgres_password = var.rds_database_password
     postgres_db       = var.rds_database_name
 
+    # The database health check is wrapped within a promise that will reject in
+    # the specified number of milliseconds.
+    # https://github.com/nestjs/terminus/blob/d5226a9334abfe1112c523c3b92cdc7214a26025/lib/health-indicator/database/typeorm.health.ts#L90-L114
+    typeorm_health_check_timeout = var.typeorm_health_check_timeout * 1000
+
     default_from_email   = "no-reply@${var.r53_public_hosted_zone}"
     jwt_secret           = var.jwt_secret
     jwt_expiration_in_ms = var.jwt_expiration_in_ms
@@ -156,7 +161,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", merge(
     local.shared_app_task_def_template_vars,
     {
-      max_old_space_size = local.fargate_app_memory * 0.75
+      max_old_space_size = floor(local.fargate_app_memory * var.max_old_space_size_scale_factor)
     }
   ))
 

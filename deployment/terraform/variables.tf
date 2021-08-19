@@ -247,6 +247,11 @@ variable "container_instance_asg_health_check_grace_period" {
   type    = number
 }
 
+variable "container_instance_reserved_memory" {
+  default = 4 * 1024
+  type    = number
+}
+
 variable "container_instance_app_desired_count" {
   default = 1
   type    = number
@@ -264,11 +269,6 @@ variable "container_instance_app_deployment_max_percent" {
 
 variable "container_instance_app_cpu" {
   default = 4096
-  type    = number
-}
-
-variable "container_instance_app_base_memory" {
-  default = 2048
   type    = number
 }
 
@@ -299,6 +299,14 @@ variable "districtbuilder_state_count" {
   type = number
 }
 
+variable "max_old_space_size_scale_factor" {
+  # The official documentation mentions setting this to 1.5 GB on a machine that
+  # has 2 GB of memory.
+  # https://nodejs.org/api/cli.html#cli_max_old_space_size_size_in_megabytes
+  default = 0.75
+  type    = number
+}
+
 variable "fargate_app_cpu" {
   type = number
 }
@@ -313,6 +321,31 @@ variable "fargate_app_cli_cpu" {
 
 variable "fargate_app_cli_memory" {
   type = number
+}
+
+variable "target_group_health_check_healthy_threshold" {
+  default = 3
+  type    = number
+}
+
+variable "target_group_health_check_interval" {
+  default = 30
+  type    = number
+}
+
+variable "target_group_health_check_timeout" {
+  default = 3
+  type    = number
+}
+
+variable "target_group_health_check_unhealthy_threshold" {
+  default = 2
+  type    = number
+}
+
+variable "typeorm_health_check_timeout" {
+  default = 3
+  type    = number
 }
 
 variable "jwt_secret" {

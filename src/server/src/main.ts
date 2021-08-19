@@ -4,6 +4,7 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { BadRequestExceptionFilter } from "./common/bad-request-exception.filter";
 import { DEBUG } from "./common/constants";
+import * as bodyParser from "body-parser";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
@@ -19,6 +20,8 @@ async function bootstrap(): Promise<void> {
   );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalFilters(new BadRequestExceptionFilter());
+  app.use(bodyParser.json({ limit: "25mb" }));
+  app.use(bodyParser.urlencoded({ limit: "25mb", extended: true }));
 
   // Save the output of 'listen' to a variable, which is a Node http.Server
   const server = await app.listen(3005);

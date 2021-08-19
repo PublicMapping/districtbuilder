@@ -8,7 +8,22 @@ data "template_cloudinit_config" "container_instance_cloud_config" {
   part {
     content_type = "text/cloud-config"
     content = templatefile("${path.module}/cloud-config/base-container-instance.yml.tmpl", {
-      ecs_cluster_name = aws_ecs_cluster.app.name
+      ecs_cluster_name = aws_ecs_cluster.app.name,
+
+      # I graphed the memory usage of the container vs. the number of memory map
+      # areas the process consumed after we set vm.max_map_count to an
+      # arbitrarily high value. The line of best fit is f(x) = 2997.2x and has
+      # an R^2 of 0.9017. The root-mean-square deviation is 3736, and the
+      # largest difference between prediction vs. reality is 4791. Setting the
+      # intercept to 8 * 1024 appears to give us an adequate safety margin.
+      #
+      # Also, this method of determining a value for vm.max_map_count is only
+      # efficient if the container's memory usage equals the total memory of
+      # the host. So, there will always be a huge margin, but I feel that it's
+      # better than choosing an arbitrary constant.
+      #
+      # See: doc/DistrictBuilder_Memory_Usage_vs_Memory_Map_Areas.xlsx
+      vm_max_map_count = local.container_instance_app_memory * 3 + (8 * 1024)
     })
   }
 }
@@ -157,28 +172,32 @@ data "aws_ec2_instance_type" "container_instance" {
 }
 
 locals {
-  container_instance_app_memory = min(
-    # It is estimated that some larger states could use up to a gig. This math
-    # will add an additional 1024MiB for every state.
-    var.container_instance_app_base_memory + var.districtbuilder_state_count * 1024,
-    # This ensures no configuration exceeds the upper bound of available memory
-    # on a container instance.
-    data.aws_ec2_instance_type.container_instance.memory_size
-  )
+  # CPU units allocation at the task level cannot exceed 10 vCPUs.
+  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
+  container_instance_app_cpu = min(var.container_instance_app_cpu, 10240)
+
+  # We reserve 4 GB of memory for the ECS container agent and other critical
+  # system processes. I observed that an r5.2xlarge running zero tasks used
+  # approximately 3.52 GB of memory. Although we could reserve this at the ECS
+  # container agent level, we still need to define a memory limit for the task
+  # that fits within the available memory on the instance.
+  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/memory-management.html
+  container_instance_app_memory = data.aws_ec2_instance_type.container_instance.memory_size - var.container_instance_reserved_memory
 }
 
 resource "aws_ecs_task_definition" "app_container_instance" {
-  family       = "${var.environment}App_EC2LaunchType"
-  network_mode = "awsvpc"
+  family                   = "${var.environment}App_EC2LaunchType"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
   # These are hard limits of CPU units and memory, specified at the task level.
   # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#task_size
-  cpu    = var.container_instance_app_cpu
+  cpu    = local.container_instance_app_cpu
   memory = local.container_instance_app_memory
 
   container_definitions = templatefile("${path.module}/task-definitions/app.json.tmpl", merge(
     local.shared_app_task_def_template_vars,
     {
-      max_old_space_size = local.container_instance_app_memory * 0.75
+      max_old_space_size = floor(local.container_instance_app_memory * var.max_old_space_size_scale_factor)
     }
   ))
 

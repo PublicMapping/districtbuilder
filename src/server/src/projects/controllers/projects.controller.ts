@@ -41,6 +41,7 @@ import {
   DistrictsDefinition,
   ProjectId,
   PublicUserProperties,
+  GeoUnitHierarchy,
   UserId
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
@@ -162,6 +163,7 @@ export class ProjectsController implements CrudController<Project> {
   get base(): CrudController<Project> {
     return this;
   }
+
   private readonly logger = new Logger(ProjectsController.name);
   constructor(
     public service: ProjectsService,
@@ -484,6 +486,49 @@ export class ProjectsController implements CrudController<Project> {
     await convert(formattedGeojson, response, { layer: "districts" });
   }
 
+  exportToCsv(
+    geoCollection: GeoUnitTopology | GeoUnitProperties,
+    districtsDefinition: DistrictsDefinition
+  ): [string, number][] {
+    const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
+    const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
+
+    // First column is the base geounit id, second column is the district id
+    const mutableCsvRows: [string, number][] = [];
+
+    // The geounit hierarchy and district definition have the same structure (except the
+    // hierarchy always goes out to the base geounit level). Walk them both at the same time
+    // and collect the information needed for the CSV (base geounit id and district id).
+    const accumulateCsvRows = (
+      defnSubset: number | GeoUnitHierarchy,
+      hierarchySubset: GeoUnitHierarchy
+    ) => {
+      hierarchySubset.forEach((hierarchyNumOrArray, idx) => {
+        const districtOrArray = typeof defnSubset === "number" ? defnSubset : defnSubset[idx];
+        if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
+          // The numbers found in the hierarchy are the base geounit indices of the topology.
+          // Access this item in the topology to find it's base geounit id.
+          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
+          mutableCsvRows.push([props[baseGeoLevel], districtOrArray]);
+        } else if (typeof hierarchyNumOrArray !== "number") {
+          // Keep recursing into the hierarchy until we reach the end
+          accumulateCsvRows(districtOrArray, hierarchyNumOrArray);
+        } else {
+          // This shouldn't ever happen, and would suggest a district definition/hierarchy mismatch
+          this.logger.error(
+            "Hierarchy and districts definition mismatch",
+            districtOrArray.toString(),
+            hierarchyNumOrArray.toString()
+          );
+          throw new InternalServerErrorException();
+        }
+      });
+    };
+    accumulateCsvRows(districtsDefinition, geoCollection.hierarchyDefinition);
+
+    return mutableCsvRows;
+  }
+
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/csv")
@@ -495,7 +540,7 @@ export class ProjectsController implements CrudController<Project> {
     const project = await this.getProject(req, projectId);
     const geoCollection = await this.getGeoUnitProperties(project.regionConfig.s3URI);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const csvRows = project.exportToCsv(geoCollection);
+    const csvRows = this.exportToCsv(geoCollection, project.districtsDefinition);
 
     return stringify(csvRows, {
       header: true,
@@ -540,7 +585,9 @@ export class ProjectsController implements CrudController<Project> {
     const archivedTopoProperties = await this.getGeoUnitProperties(project.regionConfig.s3URI);
     const newGeoUnitTopology = await this.getGeoUnitTopology(newRegion.s3URI);
 
-    const oldBlockToDistricts = Object.fromEntries(project.exportToCsv(archivedTopoProperties));
+    const oldBlockToDistricts = Object.fromEntries(
+      this.exportToCsv(archivedTopoProperties, project.districtsDefinition)
+    );
 
     // CSV export contains every block<->district pair
     // Crosswalk maps new block -> old in many<->many fashion, specifying percent of old block in new block

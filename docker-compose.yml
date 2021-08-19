@@ -20,13 +20,14 @@ services:
       - POSTGRES_USER=districtbuilder
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
+      - TYPEORM_HEALTH_CHECK_TIMEOUT=3000
       - NODE_ENV=Development
       - NODE_OPTIONS=--max-old-space-size=16384
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - JWT_SECRET=insecure
-      - JWT_EXPIRATION_IN_MS=604800000  # 1 week
-      - CLIENT_URL=http://localhost:3003  # TODO: make this configurable per environment
+      - JWT_EXPIRATION_IN_MS=604800000 # 1 week
+      - CLIENT_URL=http://localhost:3003
     build:
       context: ./src/server
       dockerfile: Dockerfile

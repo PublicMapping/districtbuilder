@@ -2,7 +2,6 @@
   {
     "name": "app",
     "image": "${image}",
-    "cpu": 0,
     "essential": true,
     "environment": [
       {
@@ -24,6 +23,10 @@
       {
         "name": "POSTGRES_DB",
         "value": "${postgres_db}"
+      },
+      {
+        "name": "TYPEORM_HEALTH_CHECK_TIMEOUT",
+        "value": "${typeorm_health_check_timeout}"
       },
       {
         "name": "NODE_ENV",
