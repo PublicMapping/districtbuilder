@@ -259,6 +259,7 @@ const ProjectScreen = ({
                   evaluateMode={evaluateMode}
                   staticMetadata={staticMetadata}
                 />
+                <AddReferenceLayerModal project={project} />
                 <Flex id="tour-start" sx={style.tourStart}></Flex>
               </React.Fragment>
             ) : null}

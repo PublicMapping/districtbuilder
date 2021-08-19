@@ -509,7 +509,6 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           saving: "saving",
           duplicatedProject: null
         },
-        // eslint-disable-next-line
         Cmd.run(() => copyProject(action.payload.id), {
           successActionCreator: duplicateProjectSuccess,
           failActionCreator: duplicateProjectFailure

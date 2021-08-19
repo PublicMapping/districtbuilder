@@ -18,8 +18,8 @@ import {
 } from "theme-ui";
 
 import { IProject, ProjectId } from "../../shared/entities";
-import { createReferenceLayer, importReferenceLayerCsv, importReferenceLayerGeojson } from "../api";
-import { showActionFailedToast } from "../functions";
+import { createReferenceLayer } from "../api";
+import { convertCsvToGeojson, showActionFailedToast } from "../functions";
 import { State } from "../reducers";
 import store from "../store";
 import { ReferenceLayerGeojson, ReferenceLayerWithGeojson } from "../types";
@@ -28,6 +28,7 @@ import { FileDrop } from "react-file-drop";
 import { WriteResource } from "../resource";
 import { MAX_UPLOAD_FILE_SIZE, ReferenceLayerTypes } from "../../shared/constants";
 import Icon from "./Icon";
+import { readString } from "react-papaparse";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -202,6 +203,10 @@ const AddReferenceLayerModal = ({
     data: project.id
   });
 
+  const [importResponse, setImportResponse] = useState<ReferenceLayerGeojson | undefined>(
+    undefined
+  );
+
   const [createLayerResource, setCreateLayerResource] = useState<
     WriteResource<ConfigurableForm, ReferenceLayerWithGeojson>
   >({
@@ -213,8 +218,31 @@ const AddReferenceLayerModal = ({
     setImportResource({
       data: project.id
     });
+    setImportResponse(undefined);
     setFileError(undefined);
     setCreateLayerResource({ data: blankForm });
+  }
+
+  function onReaderLoadCsv(event: ProgressEvent<FileReader>) {
+    const csvText = event.target?.result && event.target.result.toString();
+    const results = csvText && readString(csvText, { header: true, transformHeader: s => s.toLowerCase() }); ,
+    const geojson = results && convertCsvToGeojson(results);
+    geojson && setImportResponse(geojson);
+  }
+
+  function onReaderLoadGeoJson(event: ProgressEvent<FileReader>) {
+    // eslint-disable-next-line
+    const obj = event.target?.result && JSON.parse(event.target?.result.toString());
+    // eslint-disable-next-line
+    setImportResponse(obj);
+  }
+
+  function parseFile(file: File, extension: string) {
+    // const contents = await new Response(file).text();
+    const reader = new FileReader();
+    /* eslint-disable functional/immutable-data */
+    reader.onload = extension === "geojson" ? onReaderLoadGeoJson : onReaderLoadCsv;
+    reader.readAsText(file);
   }
 
   const setFile = useCallback(
@@ -240,24 +268,7 @@ const AddReferenceLayerModal = ({
             }
           }
 
-          const importResponse =
-            extension === "csv"
-              ? await importReferenceLayerCsv(file)
-              : await importReferenceLayerGeojson(file);
-          const layerType =
-            extension === "csv"
-              ? ReferenceLayerTypes.Point
-              : importResponse?.features[0]?.geometry?.type === "Point"
-              ? ReferenceLayerTypes.Point
-              : importResponse?.features[0]?.geometry?.type === "Polygon"
-              ? ReferenceLayerTypes.Polygon
-              : undefined;
-          !layerType && setFileError("Geojson must be point or polygon");
-          layerType &&
-            setCreateLayerResource({
-              data: { ...createLayerResource.data, layer_type: layerType }
-            });
-          layerType && setImportResource({ ...importResource, resource: importResponse });
+          parseFile(file, extension);
         }
       }
       void setConfigFromFile();
@@ -283,6 +294,24 @@ const AddReferenceLayerModal = ({
       hideModal();
     }
   }, [createLayerResource]);
+
+  useEffect(() => {
+    if (importResponse) {
+      const layerType =
+        importResponse?.features[0]?.geometry?.type === "Point"
+          ? ReferenceLayerTypes.Point
+          : importResponse?.features[0]?.geometry?.type === "Polygon" ||
+            importResponse?.features[0]?.geometry?.type === "MultiPolygon"
+          ? ReferenceLayerTypes.Polygon
+          : undefined;
+      !layerType && setFileError("Geojson must be point or polygon");
+      layerType &&
+        setCreateLayerResource({
+          data: { ...createLayerResource.data, layer_type: layerType }
+        });
+      layerType && setImportResource({ ...importResource, resource: importResponse });
+    }
+  }, [importResponse]);
 
   const labelOptions = createLayerResource.data.fields
     ? createLayerResource.data.fields.map(val => (
@@ -315,7 +344,6 @@ const AddReferenceLayerModal = ({
               const validatedForm = validate(formData, importResource);
               if (validatedForm.valid === true) {
                 setCreateLayerResource({ data: validatedForm, isPending: true });
-                //eslint-disable-next-line
                 const referenceLayer = {
                   name: validatedForm.name,
                   label_field: validatedForm.label_field,
@@ -355,7 +383,7 @@ const AddReferenceLayerModal = ({
                         <Box sx={style.customInputContainer}>
                           <InputField
                             field="name"
-                            label="Reference layer name"
+                            label="Layer name"
                             resource={createLayerResource}
                             inputProps={{
                               onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,7 +408,7 @@ const AddReferenceLayerModal = ({
                             htmlFor="label-field-dropdown"
                             sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
                           >
-                            Label field:
+                            Label property:
                           </Label>
                           <Select
                             id="label-field-dropdown"
@@ -393,7 +421,7 @@ const AddReferenceLayerModal = ({
                             }}
                             sx={{ width: "150px" }}
                           >
-                            <option>Select label field...</option>
+                            <option>Select label property...</option>
                             {labelOptions}
                           </Select>
                         </Box>
@@ -415,7 +443,7 @@ const AddReferenceLayerModal = ({
                   onChange={event => event.target.files && setFile(event.target.files[0])}
                   ref={fileInputRef}
                   type="file"
-                  // accept={".csv" || ".geojson"}
+                  accept={".csv,.geojson"}
                   style={{ display: "none" }}
                 />
                 <FileDrop

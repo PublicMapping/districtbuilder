@@ -182,6 +182,14 @@ export interface IReferenceLayer {
   readonly id: ReferenceLayerId;
   readonly name: string;
   readonly project: IProject;
+  readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
+  readonly label_field: string;
+}
+
+export interface ReferenceLayerProperties {
+  // key is a property name on the geojson
+  // value is the value for that property
+  readonly [id: string]: number | string;
 }
 
 interface ProjectTemplateFields {
@@ -240,8 +248,6 @@ export interface CreateReferenceLayerData {
   readonly project: Pick<IProject, "id">;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly label_field: string;
-  // eslint-disable-next-line
-  readonly layer: any;
 }
 
 export type UpdateProjectData = Pick<

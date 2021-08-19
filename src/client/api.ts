@@ -25,8 +25,7 @@ import {
   DynamicProjectData,
   PaginatedResponse,
   CreateReferenceLayerData,
-  ReferenceLayerWithGeojson,
-  ReferenceLayerGeojson
+  ReferenceLayerWithGeojson
 } from "./types";
 import { getJWT, setJWT } from "./jwt";
 
@@ -329,36 +328,6 @@ export async function importCsv(file: Blob): Promise<DistrictsImportApiResponse>
   return new Promise((resolve, reject) => {
     apiAxios
       .post(`/api/districts/import/csv`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      })
-      .then(response => {
-        return resolve(response.data);
-      })
-      .catch(error => reject(error.message));
-  });
-}
-
-export async function importReferenceLayerCsv(file: Blob): Promise<ReferenceLayerGeojson> {
-  const formData = new FormData();
-  formData.append("file", file);
-  return new Promise((resolve, reject) => {
-    apiAxios
-      .post(`/api/reference-layer/import/csv`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      })
-      .then(response => {
-        return resolve(response.data);
-      })
-      .catch(error => reject(error.message));
-  });
-}
-
-export async function importReferenceLayerGeojson(file: Blob): Promise<ReferenceLayerGeojson> {
-  const formData = new FormData();
-  formData.append("file", file);
-  return new Promise((resolve, reject) => {
-    apiAxios
-      .post(`/api/reference-layer/import/geojson`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       })
       .then(response => {

@@ -4,7 +4,6 @@ import { Button, Flex, Box, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { IReferenceLayer } from "../../shared/entities";
 import Icon from "./Icon";
 import { toggleReferenceLayersModal } from "../actions/projectData";
-// import Tooltip from "./Tooltip";
 
 import store from "../store";
 
