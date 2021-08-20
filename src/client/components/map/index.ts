@@ -426,7 +426,7 @@ export function generateMapLayers(
         "fill-antialias": false
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer({
