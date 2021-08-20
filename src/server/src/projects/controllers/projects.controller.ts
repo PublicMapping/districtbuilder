@@ -63,6 +63,7 @@ import { Errors } from "../../../../shared/types";
 import axios from "axios";
 import { CrosswalkService } from "../services/crosswalk.service";
 import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
+import { Brackets } from "typeorm";
 
 @Crud({
   model: {
@@ -351,20 +352,26 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   // Helper for obtaining a project for a given project request, throws exception if not found
-  async getProjectWithDistricts(id: ProjectId, userId: UserId): Promise<Project> {
+  async getProjectWithDistricts(id: ProjectId, userId?: UserId): Promise<Project> {
     if (!isUUID(id)) {
       throw new NotFoundException(`Project ${id} is not a valid UUID`);
     }
     // Not using 'getProject' because we need to select the 'districts' column
     // Unauthenticated access is allowed for individual projects if they are
     // visible or published, and not archived.
-    const commonFilter = { id, archived: false };
     const project = await this.service.findOne({
-      where: [
-        { ...commonFilter, user: { id: userId } },
-        { ...commonFilter, visibility: ProjectVisibility.Published },
-        { ...commonFilter, visibility: ProjectVisibility.Visible }
-      ] as const,
+      where: new Brackets(qb =>
+        qb.where({ id, archived: false }).andWhere(
+          new Brackets(qb => {
+            const isVisibleFilter = qb
+              .where("visibility = :published", { published: ProjectVisibility.Published })
+              .orWhere("visibility = :visible", { visible: ProjectVisibility.Visible });
+            return userId
+              ? isVisibleFilter.orWhere("user_id = :userId", { userId })
+              : isVisibleFilter;
+          })
+        )
+      ),
       loadEagerRelations: false,
       relations: ["regionConfig"]
     });
@@ -424,7 +431,7 @@ export class ProjectsController implements CrudController<Project> {
   @Get(":id/export/geojson")
   async exportGeoJSON(@Request() req: any, @Param("id") id: ProjectId): Promise<DistrictsGeoJSON> {
     const user = req.user as User;
-    const project = await this.getProjectWithDistricts(id, user.id);
+    const project = await this.getProjectWithDistricts(id, user?.id);
 
     // If the region is archived we can't calculate districts
     if (project.regionConfig.archived && !project.districts) {
@@ -678,10 +685,10 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   @UseInterceptors(CrudRequestInterceptor)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @Post(":id/planScore")
   async sendToPlanScoreAPI(
-    @ParsedRequest() req: CrudRequest,
+    @Request() req: any,
     @Param("id") projectId: ProjectId
   ): Promise<Project> {
     const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
