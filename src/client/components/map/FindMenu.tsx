@@ -57,12 +57,14 @@ const FindMenu = ({
   findMenuOpen,
   findIndex,
   findTool,
+  evaluateMode,
   geojson,
   map
 }: {
   readonly findMenuOpen: boolean;
   readonly findIndex?: number;
   readonly findTool: FindTool;
+  readonly evaluateMode: boolean;
   readonly geojson?: DistrictsGeoJSON;
   readonly map?: MapboxGL.Map;
 }) => {
@@ -78,7 +80,7 @@ const FindMenu = ({
     }
   }, [map, findCoords, findIndex]);
 
-  return findMenuOpen ? (
+  return !evaluateMode && findMenuOpen ? (
     <Flex sx={style.menu}>
       <Text sx={{ mr: 3, fontWeight: "bold" }}>Find</Text>
       <Select
@@ -136,6 +138,7 @@ function mapStateToProps(state: State) {
     findMenuOpen: state.project.findMenuOpen,
     findIndex: state.project.findIndex,
     findTool: state.project.findTool,
+    evaluateMode: state.project.evaluateMode,
     geojson: destructureResource(state.project.projectData, "geojson")
   };
 }
