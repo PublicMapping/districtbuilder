@@ -225,7 +225,9 @@ const AddReferenceLayerModal = ({
 
   function onReaderLoadCsv(event: ProgressEvent<FileReader>) {
     const csvText = event.target?.result && event.target.result.toString();
-    const results = csvText && readString(csvText, { header: true, transformHeader: s => s.toLowerCase() }); ,
+    const results =
+      csvText &&
+      readString(csvText, { header: true, transformHeader: (s: string) => s.toLowerCase() });
     const geojson = results && convertCsvToGeojson(results);
     geojson && setImportResponse(geojson);
   }

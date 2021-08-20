@@ -84,7 +84,7 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     return this.getReferenceLayer(req, id);
   }
 
-  // Helper for obtaining a project for a given project request, throws exception if not found
+  // Helper for obtaining a reference layer for a given reference layer request, throws exception if not found
   async getReferenceLayer(req: CrudRequest, id: ReferenceLayerId): Promise<ReferenceLayer> {
     if (!this.base.getOneBase) {
       this.logger.error("Routes misconfigured. Missing `getOneBase` route");
@@ -100,14 +100,15 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     return referenceLayer;
   }
 
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(JwtAuthGuard)
   @Get("project/:projectId/")
   async getProjectReferenceLayers(
     @Request() req: any,
     @Param("projectId") projectId: ProjectId
   ): Promise<IReferenceLayer[]> {
     const user = req.user as User;
+    console.log(user);
     const refLayers = await this.service.getProjectReferenceLayers(projectId, user?.id);
     return refLayers;
   }
