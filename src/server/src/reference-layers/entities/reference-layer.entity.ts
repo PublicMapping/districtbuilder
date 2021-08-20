@@ -3,7 +3,6 @@ import { FeatureCollection, MultiPolygon, Point } from "geojson";
 import { IReferenceLayer, ReferenceLayerProperties } from "../../../../shared/entities";
 import { Project } from "../../projects/entities/project.entity";
 import { ReferenceLayerTypes } from "../../../../shared/constants";
-import { LayerType } from "aws-sdk/clients/opsworks";
 
 export type ReferenceLayerGeojson =
   | FeatureCollection<Point, ReferenceLayerProperties>
@@ -23,7 +22,7 @@ export class ReferenceLayer implements IReferenceLayer {
   project: Project;
 
   @Column({ type: "enum", enum: ReferenceLayerTypes, default: ReferenceLayerTypes.Point })
-  layer_type: LayerType;
+  layer_type: ReferenceLayerTypes;
 
   @Column({ type: "character varying" })
   label_field: string;

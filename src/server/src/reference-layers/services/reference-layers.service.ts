@@ -15,7 +15,7 @@ export class ReferenceLayersService extends TypeOrmCrudService<ReferenceLayer> {
     super(repo);
   }
 
-  async getProjectReferenceLayers(projectId: string, userId?: UserId): Promise<IReferenceLayer[]> {
+  async getProjectReferenceLayers(projectId: string, userId?: UserId): Promise<ReferenceLayer[]> {
     // Returns public data for organization screen
     const builder = this.repo.createQueryBuilder("referenceLayer");
     const data = await builder
