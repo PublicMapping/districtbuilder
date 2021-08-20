@@ -351,6 +351,7 @@ export function generateMapLayers(
       paint: {
         "line-color": { type: "identity", property: "findOutlineColor" },
         "line-opacity": 1,
+        "line-dasharray": [5, 5],
         "line-width": [
           "interpolate",
           ["linear"],
