@@ -316,9 +316,11 @@ const DistrictsMap = ({
     panToggled &&
     !selectionInProgress &&
     (selectionTool === SelectionTool.Rectangle || selectionTool === SelectionTool.PaintBrush);
-
   // Conversion from readonly -> mutable to match Mapbox interface
-  const [b0, b1, b2, b3] = staticMetadata.bbox;
+  const [b0, b1, b2, b3] =
+    project.regionConfig.regionCode !== "AK"
+      ? staticMetadata.bbox
+      : [-146.8, 47.175091, -177.999, 73.439786];
 
   const selectedGeolevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex);
 
