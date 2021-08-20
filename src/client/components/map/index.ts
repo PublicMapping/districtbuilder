@@ -18,7 +18,7 @@ import {
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible, getTargetPopulation } from "../../functions";
 import { mapValues } from "lodash";
-import { ChoroplethSteps, PviBucket } from "../../types";
+import { ChoroplethSteps, PviBucket, DistrictsGeoJSON } from "../../types";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -26,6 +26,7 @@ export const GEOLEVELS_SOURCE_ID = "db";
 export const DISTRICTS_SOURCE_ID = "districts";
 // GeoJSON district label data for district as currently drawn
 export const DISTRICTS_LABELS_SOURCE_ID = "districts-labels";
+
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
 // Id for districts layer outline, used for Find
@@ -218,10 +219,8 @@ export function generateMapLayers(
   geoLevels: readonly GeoLevelInfo[],
   minZoom: number,
   maxZoom: number,
-  /* eslint-disable */
-  map: any,
-  geojson: any,
-  /* eslint-enable */
+  map: mapboxgl.Map,
+  geojson: DistrictsGeoJSON,
   populationDeviation: number
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
@@ -260,6 +259,7 @@ export function generateMapLayers(
   );
 
   map.addLayer(
+    // @ts-ignore
     {
       id: DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -279,6 +279,7 @@ export function generateMapLayers(
   );
 
   map.addLayer(
+    // @ts-ignore
     {
       id: DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -316,6 +317,7 @@ export function generateMapLayers(
 
   const avgPopulation = getTargetPopulation(geojson);
   map.addLayer(
+    // @ts-ignore
     {
       id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -450,6 +452,7 @@ export function generateMapLayers(
 
   geoLevels.forEach(level => {
     map.addLayer(
+      // @ts-ignore
       {
         id: levelToLineLayerId(level.id),
         type: "line",
