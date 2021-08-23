@@ -1,5 +1,5 @@
 import { FeatureCollection, MultiPolygon } from "geojson";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { ProjectVisibility } from "../../../../shared/constants";
 import {
@@ -21,6 +21,8 @@ import {
 export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
 
 @Entity()
+@Index("IDX_PUBLISHED_PROJECTS", { synchronize: false })
+@Index(["updatedDt", "user"])
 export class Project implements IProject {
   @PrimaryGeneratedColumn("uuid")
   id: string;
