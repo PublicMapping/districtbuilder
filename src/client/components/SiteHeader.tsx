@@ -12,7 +12,7 @@ import { Alert, Styled, Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } fr
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { resetState } from "../actions/root";
-import { clearJWT, getJWT } from "../jwt";
+import { clearJWT, isUserLoggedIn } from "../jwt";
 import { UserState } from "../reducers/user";
 import store from "../store";
 import { resendConfirmationEmail } from "../api";
@@ -131,7 +131,7 @@ const style: ThemeUIStyleObject = {
 
 const SiteHeader = ({ user }: Props) => {
   const history = useHistory();
-  const isLoggedIn = getJWT() !== null;
+  const isLoggedIn = isUserLoggedIn();
   const [resendEmail, setResendEmail] = useState<WriteResource<void, void>>({ data: void 0 });
 
   return (
@@ -185,7 +185,7 @@ const SiteHeader = ({ user }: Props) => {
             <Logo sx={{ width: "12rem" }} />
           </Link>
         </Heading>
-        {!isLoggedIn ? (
+        {!(isLoggedIn && "resource" in user) ? (
           <React.Fragment>
             <Link to="/login" sx={{ p: 2 }}>
               Login
@@ -194,7 +194,7 @@ const SiteHeader = ({ user }: Props) => {
               Register
             </Link>
           </React.Fragment>
-        ) : "resource" in user ? (
+        ) : (
           <React.Fragment>
             <span sx={style.linkItem}>
               <NavLink exact to="/">
@@ -244,7 +244,7 @@ const SiteHeader = ({ user }: Props) => {
               </Menu>
             </Wrapper>
           </React.Fragment>
-        ) : null}
+        )}
       </Flex>
     </Flex>
   );

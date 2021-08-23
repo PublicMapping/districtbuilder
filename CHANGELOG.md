@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed pinned metrics for read-only projects [#976](https://github.com/PublicMapping/districtbuilder/pull/976)
 - Fix duplicate button for projects in archived regions [#978](https://github.com/PublicMapping/districtbuilder/pull/978)
 - Fix PVI calculation to not include third party votes & calc average correctly [#977](https://github.com/PublicMapping/districtbuilder/pull/977)
+- Fix handling of expired authentication tokens [#986](https://github.com/PublicMapping/districtbuilder/pull/986)
 
 ## [1.8.0] - 2021-08-19
 
