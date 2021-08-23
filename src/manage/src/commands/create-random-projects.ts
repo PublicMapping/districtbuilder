@@ -46,7 +46,7 @@ export default class CreateRandomProjects extends Command {
 
     const user = await userRepo.findOneOrFail();
 
-    const layers = Object.values(topologyService.layers());
+    const layers = Object.values(topologyService.layers() || {});
     this.log(`Downloading topology for ${layers.length} layers`);
     await Promise.all(layers);
 
