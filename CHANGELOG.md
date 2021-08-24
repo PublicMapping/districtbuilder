@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Disable Send to Plan Score button for incomplete projects [#957](https://github.com/PublicMapping/districtbuilder/pull/957)
 - Fix Send to Plan Score button for other users projects [#958](https://github.com/PublicMapping/districtbuilder/pull/958)
+- Restore Community Maps & fix API perf. [#969](https://github.com/PublicMapping/districtbuilder/pull/969)
 
 ## [1.8.0] - 2021-08-19
 
