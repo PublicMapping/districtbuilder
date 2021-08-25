@@ -61,6 +61,7 @@ import {
   copyProject
 } from "../api";
 import { fetchAllStaticData } from "../s3";
+import { toast } from "react-toastify";
 
 function fetchGeoJsonForProject(project: IProject) {
   return () => {
@@ -417,11 +418,13 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         const { id } = state.projectData.resource.project;
         const { geojson } = state.projectData.resource;
         const { pinnedMetricFields, isReadOnly } = action.payload;
+        const updatedState = updateCurrentState(state, { pinnedMetricFields });
         return isReadOnly
-          ? updateCurrentState(state, { pinnedMetricFields })
-          : loop(
+          ? updatedState
+          : // We update the pinned metrics right away, assuming it will succeed, to keep the UI snappy
+            loop(
               {
-                ...state,
+                ...updatedState,
                 saving: "saving"
               },
               Cmd.run(
@@ -441,25 +444,22 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       }
     }
     case getType(updatePinnedMetricsSuccess):
-      return updateCurrentState(
-        {
-          ...state,
-          saving: "saved",
-          projectData: {
-            resource: action.payload
-          }
-        },
-        {
-          pinnedMetricFields: action.payload.project.pinnedMetricFields
+      // We already updated the pinned metrics, and can't rely on the order returned by the server
+      // to be consistent with our save order, so we purposefully don't update the pinned metrics here
+      return {
+        ...state,
+        saving: "saved",
+        projectData: {
+          resource: action.payload
         }
-      );
+      };
     case getType(updatedPinnedMetricsFailure):
       return loop(
         {
           ...state,
           saving: "failed"
         },
-        Cmd.run(showActionFailedToast)
+        Cmd.run(() => toast.error("Unable to save pinned metrics."))
       );
     case getType(duplicateProject): {
       return loop(

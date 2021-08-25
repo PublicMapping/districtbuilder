@@ -165,12 +165,10 @@ const style: ThemeUIStyleObject = {
 const MetricPinButton = ({
   metric,
   pinnedMetrics,
-  saving,
   isReadOnly
 }: {
   readonly metric: MetricField;
   readonly pinnedMetrics: readonly MetricField[];
-  readonly saving: SavingState;
   readonly isReadOnly: boolean;
 }) => {
   const metricIsPinned = pinnedMetrics.includes(metric);
@@ -180,7 +178,6 @@ const MetricPinButton = ({
       {metricIsPinned ? (
         <Button
           sx={style.pinButton}
-          disabled={saving === "saving"}
           onClick={() => {
             store.dispatch(
               updatePinnedMetrics({ pinnedMetricFields: [...otherMetrics], isReadOnly })
@@ -192,7 +189,6 @@ const MetricPinButton = ({
       ) : (
         <Button
           sx={style.pinButton}
-          disabled={saving === "saving"}
           onClick={() => {
             store.dispatch(
               updatePinnedMetrics({ pinnedMetricFields: [...pinnedMetrics, metric], isReadOnly })
@@ -211,7 +207,6 @@ const PinnableMetricHeader = ({
   pinnedMetrics,
   text,
   tooltip,
-  saving,
   expandedProjectMetrics,
   isReadOnly
 }: {
@@ -219,7 +214,6 @@ const PinnableMetricHeader = ({
   readonly pinnedMetrics: readonly MetricField[];
   readonly text: string;
   readonly tooltip: string;
-  readonly saving: SavingState;
   readonly expandedProjectMetrics: boolean;
   readonly isReadOnly: boolean;
 }) => {
@@ -229,12 +223,7 @@ const PinnableMetricHeader = ({
         <span>{text}</span>
       </Tooltip>
       {pinnedMetrics && expandedProjectMetrics && (
-        <MetricPinButton
-          metric={metric}
-          pinnedMetrics={pinnedMetrics}
-          saving={saving}
-          isReadOnly={isReadOnly}
-        />
+        <MetricPinButton metric={metric} pinnedMetrics={pinnedMetrics} isReadOnly={isReadOnly} />
       )}
     </Styled.th>
   );
@@ -446,7 +435,6 @@ const ProjectSidebar = ({
                         text={metric.text}
                         tooltip={metric.tooltip}
                         pinnedMetrics={pinnedMetrics}
-                        saving={saving}
                         key={metric.metric}
                         expandedProjectMetrics={expandedProjectMetrics}
                         isReadOnly={isReadOnly}
