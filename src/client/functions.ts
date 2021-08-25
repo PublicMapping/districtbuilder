@@ -118,7 +118,7 @@ export function computeRowFill(stops: ChoroplethSteps, value?: number, interval?
 // Source: https://cookpolitical.com/analysis/national/pvi/introducing-2021-cook-political-report-partisan-voter-index
 const nationalDemVoteShare16 = 51.1;
 const nationalDemVoteShare20 = 52.3;
-const nationalDemVoteShareAvg = nationalDemVoteShare16 + nationalDemVoteShare20 / 2;
+const nationalDemVoteShareAvg = (nationalDemVoteShare16 + nationalDemVoteShare20) / 2;
 
 // Computes share of votes for party1
 export function calculatePartyVoteShare(
@@ -163,7 +163,7 @@ export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): nu
     const votes16 = calculatePartyVoteShare(voting.democrat16, voting.republican16);
     const votes20 = calculatePartyVoteShare(voting.democrat20, voting.republican20);
     if (votes16 !== undefined && votes20 !== undefined) {
-      const avgVoteShare = votes16 + votes20 / 2;
+      const avgVoteShare = (votes16 + votes20) / 2;
       return avgVoteShare - nationalDemVoteShareAvg;
     }
   } else if (year === "20") {
