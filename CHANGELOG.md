@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restore Community Maps & fix API perf. [#969](https://github.com/PublicMapping/districtbuilder/pull/969)
 - Fixed map outline ordering [#968](https://github.com/PublicMapping/districtbuilder/pull/968)
 - Fixed pinned metrics for read-only projects [#976](https://github.com/PublicMapping/districtbuilder/pull/976)
+- Fix duplicate button for projects in archived regions [#978](https://github.com/PublicMapping/districtbuilder/pull/978)
 
 ## [1.8.0] - 2021-08-19
 
