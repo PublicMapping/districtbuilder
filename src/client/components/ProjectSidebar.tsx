@@ -165,11 +165,13 @@ const style: ThemeUIStyleObject = {
 const MetricPinButton = ({
   metric,
   pinnedMetrics,
-  saving
+  saving,
+  isReadOnly
 }: {
   readonly metric: MetricField;
   readonly pinnedMetrics: readonly MetricField[];
   readonly saving: SavingState;
+  readonly isReadOnly: boolean;
 }) => {
   const metricIsPinned = pinnedMetrics.includes(metric);
   const otherMetrics = pinnedMetrics.filter(m => m !== metric);
@@ -180,7 +182,9 @@ const MetricPinButton = ({
           sx={style.pinButton}
           disabled={saving === "saving"}
           onClick={() => {
-            store.dispatch(updatePinnedMetrics([...otherMetrics]));
+            store.dispatch(
+              updatePinnedMetrics({ pinnedMetricFields: [...otherMetrics], isReadOnly })
+            );
           }}
         >
           <Icon name="thumbtack-solid" />
@@ -190,7 +194,9 @@ const MetricPinButton = ({
           sx={style.pinButton}
           disabled={saving === "saving"}
           onClick={() => {
-            store.dispatch(updatePinnedMetrics([...pinnedMetrics, metric]));
+            store.dispatch(
+              updatePinnedMetrics({ pinnedMetricFields: [...pinnedMetrics, metric], isReadOnly })
+            );
           }}
         >
           <Icon name="thumbtack" />
@@ -206,7 +212,8 @@ const PinnableMetricHeader = ({
   text,
   tooltip,
   saving,
-  expandedProjectMetrics
+  expandedProjectMetrics,
+  isReadOnly
 }: {
   readonly metric: MetricField;
   readonly pinnedMetrics: readonly MetricField[];
@@ -214,6 +221,7 @@ const PinnableMetricHeader = ({
   readonly tooltip: string;
   readonly saving: SavingState;
   readonly expandedProjectMetrics: boolean;
+  readonly isReadOnly: boolean;
 }) => {
   return (
     <Styled.th sx={{ ...style.th, ...style.number }}>
@@ -225,6 +233,7 @@ const PinnableMetricHeader = ({
           metric={metric}
           pinnedMetrics={pinnedMetrics}
           saving={saving}
+          isReadOnly={isReadOnly}
         />
       )}
     </Styled.th>
@@ -440,6 +449,7 @@ const ProjectSidebar = ({
                         saving={saving}
                         key={metric.metric}
                         expandedProjectMetrics={expandedProjectMetrics}
+                        isReadOnly={isReadOnly}
                       />
                     )
                 )}

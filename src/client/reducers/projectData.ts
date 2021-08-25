@@ -416,23 +416,26 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       if ("resource" in state.projectData) {
         const { id } = state.projectData.resource.project;
         const { geojson } = state.projectData.resource;
-        return loop(
-          {
-            ...state,
-            saving: "saving"
-          },
-          Cmd.run(
-            () =>
-              patchProject(id, { pinnedMetricFields: action.payload }).then(project => ({
-                project,
-                geojson
-              })),
-            {
-              successActionCreator: updatePinnedMetricsSuccess,
-              failActionCreator: updatedPinnedMetricsFailure
-            }
-          )
-        );
+        const { pinnedMetricFields, isReadOnly } = action.payload;
+        return isReadOnly
+          ? updateCurrentState(state, { pinnedMetricFields })
+          : loop(
+              {
+                ...state,
+                saving: "saving"
+              },
+              Cmd.run(
+                () =>
+                  patchProject(id, { pinnedMetricFields }).then(project => ({
+                    project,
+                    geojson
+                  })),
+                {
+                  successActionCreator: updatePinnedMetricsSuccess,
+                  failActionCreator: updatedPinnedMetricsFailure
+                }
+              )
+            );
       } else {
         return state;
       }
