@@ -180,7 +180,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           },
           {
             districtsDefinition: action.payload.project.districtsDefinition,
-            lockedDistricts: action.payload.project.lockedDistricts
+            lockedDistricts: action.payload.project.lockedDistricts,
+            pinnedMetricFields: action.payload.project.pinnedMetricFields
           }
         ),
         Cmd.run(fetchAllStaticData, {

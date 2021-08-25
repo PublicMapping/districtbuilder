@@ -165,6 +165,7 @@ const ProjectScreen = ({
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
             isReadOnly={isReadOnly}
+            pinnedMetrics={districtDrawing.undoHistory.present.state.pinnedMetricFields}
           />
         ) : (
           <ProjectEvaluateSidebar

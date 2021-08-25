@@ -221,7 +221,11 @@ const PinnableMetricHeader = ({
         <span>{text}</span>
       </Tooltip>
       {pinnedMetrics && expandedProjectMetrics && (
-        <MetricPinButton metric={metric} pinnedMetrics={pinnedMetrics} saving={saving} />
+        <MetricPinButton
+          metric={metric}
+          pinnedMetrics={pinnedMetrics}
+          saving={saving}
+        />
       )}
     </Styled.th>
   );
@@ -240,7 +244,8 @@ const ProjectSidebar = ({
   lockedDistricts,
   hoveredDistrictId,
   saving,
-  isReadOnly
+  isReadOnly,
+  pinnedMetrics
 }: {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -254,6 +259,7 @@ const ProjectSidebar = ({
   readonly hoveredDistrictId: number | null;
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
+  readonly pinnedMetrics?: readonly MetricField[];
 } & LoadingProps) => {
   const multElections = hasMultipleElections(staticMetadata);
   const has2016Election = has16Election(staticMetadata);
@@ -402,7 +408,6 @@ const ProjectSidebar = ({
       tooltip: "Compactness score (Polsby-Popper)"
     }
   ];
-  const pinnedMetrics: readonly MetricField[] | undefined = project?.pinnedMetricFields;
   return (
     <Flex
       sx={expandedProjectMetrics ? style.sidebarExpanded : style.sidebar}
