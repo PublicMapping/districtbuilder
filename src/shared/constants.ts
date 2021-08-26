@@ -1,3 +1,5 @@
+import { MetricField } from "./entities";
+
 export enum ForgotPasswordResponse {
   SUCCESS = "SUCCESS",
   NOT_FOUND = "NOT_FOUND"
@@ -56,7 +58,7 @@ export enum CensusDate {
 
 export const DEFAULT_POPULATION_DEVIATION = 5;
 
-export const DEFAULT_PINNED_METRIC_FIELDS = [
+export const DEFAULT_PINNED_METRIC_FIELDS: readonly MetricField[] = [
   "population",
   "populationDeviation",
   "raceChart",

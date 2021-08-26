@@ -61,6 +61,7 @@ import {
   copyProject
 } from "../api";
 import { fetchAllStaticData } from "../s3";
+import { toast } from "react-toastify";
 
 function fetchGeoJsonForProject(project: IProject) {
   return () => {
@@ -180,7 +181,8 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           },
           {
             districtsDefinition: action.payload.project.districtsDefinition,
-            lockedDistricts: action.payload.project.lockedDistricts
+            lockedDistricts: action.payload.project.lockedDistricts,
+            pinnedMetricFields: action.payload.project.pinnedMetricFields
           }
         ),
         Cmd.run(fetchAllStaticData, {
@@ -415,47 +417,49 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       if ("resource" in state.projectData) {
         const { id } = state.projectData.resource.project;
         const { geojson } = state.projectData.resource;
-        return loop(
-          {
-            ...state,
-            saving: "saving"
-          },
-          Cmd.run(
-            () =>
-              patchProject(id, { pinnedMetricFields: action.payload }).then(project => ({
-                project,
-                geojson
-              })),
-            {
-              successActionCreator: updatePinnedMetricsSuccess,
-              failActionCreator: updatedPinnedMetricsFailure
-            }
-          )
-        );
+        const { pinnedMetricFields, isReadOnly } = action.payload;
+        const updatedState = updateCurrentState(state, { pinnedMetricFields });
+        return isReadOnly
+          ? updatedState
+          : // We update the pinned metrics right away, assuming it will succeed, to keep the UI snappy
+            loop(
+              {
+                ...updatedState,
+                saving: "saving"
+              },
+              Cmd.run(
+                () =>
+                  patchProject(id, { pinnedMetricFields }).then(project => ({
+                    project,
+                    geojson
+                  })),
+                {
+                  successActionCreator: updatePinnedMetricsSuccess,
+                  failActionCreator: updatedPinnedMetricsFailure
+                }
+              )
+            );
       } else {
         return state;
       }
     }
     case getType(updatePinnedMetricsSuccess):
-      return updateCurrentState(
-        {
-          ...state,
-          saving: "saved",
-          projectData: {
-            resource: action.payload
-          }
-        },
-        {
-          pinnedMetricFields: action.payload.project.pinnedMetricFields
+      // We already updated the pinned metrics, and can't rely on the order returned by the server
+      // to be consistent with our save order, so we purposefully don't update the pinned metrics here
+      return {
+        ...state,
+        saving: "saved",
+        projectData: {
+          resource: action.payload
         }
-      );
+      };
     case getType(updatedPinnedMetricsFailure):
       return loop(
         {
           ...state,
           saving: "failed"
         },
-        Cmd.run(showActionFailedToast)
+        Cmd.run(() => toast.error("Unable to save pinned metrics."))
       );
     case getType(duplicateProject): {
       return loop(
