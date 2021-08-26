@@ -38,7 +38,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 'Dane County',
                 'US',
                 'WI',
-                's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-02-08T15:19:22.145Z/',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-08-25T19:15:41.712Z/',
                 DEFAULT,
                 TRUE,
                 DEFAULT
@@ -68,7 +68,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 's3://global-districtbuilder-dev-us-east-1/regions/US/DE/2020-09-09T19:50:10.921Z/',
                 DEFAULT,
                 DEFAULT,
-                FALSE
+                TRUE
               ), (
                 '411c5908-2a83-40e9-863b-303931a1c119',
                 'Delaware',
@@ -77,7 +77,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 's3://global-districtbuilder-dev-us-east-1/regions/US/DE/2021-06-11T23:03:36.938Z/',
                 DEFAULT,
                 DEFAULT,
-                TRUE
+                FALSE
              )
               ON CONFLICT DO NOTHING;
             "
