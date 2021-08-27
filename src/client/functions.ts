@@ -208,15 +208,13 @@ export const has16Election = (staticMetadata?: IStaticMetadata) => {
     staticMetadata?.voting?.some(file => file.id.endsWith("16")) ||
     (staticMetadata?.voting &&
       Object.keys(staticMetadata?.voting || {}).length > 0 &&
-      !has20Election(staticMetadata))
+      !has20Election(staticMetadata)) ||
+    false
   );
 };
 
-export const demographicsHasOther = (staticMetadata?: IStaticMetadata) =>
-  staticMetadata?.demographics?.some(file => file.id === "other");
-
 export const has20Election = (staticMetadata?: IStaticMetadata) =>
-  staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+  staticMetadata?.voting?.some(file => file.id.endsWith("20")) || false;
 
 export function extractYear(voting: DemographicCounts, year?: ElectionYear): DemographicCounts {
   return year

@@ -169,6 +169,11 @@ export interface ReferenceLayerProperties {
   readonly [id: string]: number | string;
 }
 
+export type VotingMetricField = "dem16" | "rep16" | "other16" | "dem20" | "rep20" | "other20";
+
+export type MetricsList = readonly (readonly [string, string])[];
+export type VotingMetricsList = readonly (readonly [string, VotingMetricField])[];
+
 interface ProjectTemplateFields {
   readonly name: string;
   readonly regionConfig: IRegionConfig;

@@ -36,7 +36,11 @@ import * as _ from "lodash";
 import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
-import { MakeDistrictsErrors, ConvertProjectErrors } from "../../../../shared/constants";
+import {
+  MakeDistrictsErrors,
+  ConvertProjectErrors,
+  CORE_METRIC_FIELDS
+} from "../../../../shared/constants";
 import {
   DistrictsDefinition,
   ProjectId,
@@ -65,16 +69,6 @@ import { CrosswalkService } from "../services/crosswalk.service";
 import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 import { Brackets } from "typeorm";
 import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
-
-const CORE_METRIC_FIELDS = [
-  "population",
-  "populationDeviation",
-  "raceChart",
-  "majorityRace",
-  "pvi",
-  "compactness",
-  "contiguity"
-];
 
 @Crud({
   model: {

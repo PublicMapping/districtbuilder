@@ -69,6 +69,26 @@ export const DEFAULT_PINNED_METRIC_FIELDS = [
   "compactness"
 ];
 
+export const CORE_METRIC_FIELDS = [
+  "population",
+  "populationDeviation",
+  "raceChart",
+  "majorityRace",
+  "pvi",
+  "compactness",
+  "contiguity"
+];
+
+export const DEMOGRAPHIC_FIELDS_ORDER = [
+  "white",
+  "black",
+  "asian",
+  "hispanic",
+  "native",
+  "pacific",
+  "other"
+] as const;
+
 export const FIPS: { readonly [fips: string]: string } = {
   "10": "DE",
   "11": "DC",
