@@ -11,7 +11,7 @@ export const jwtIsExpired = (jwt: JWT) => {
   const payload = jwtDecode(jwt) as JWTPayload;
   return payload.exp < Math.round(new Date().getTime() / 1000);
 };
-export const isUserLoggedIn = () : boolean => {
+export const isUserLoggedIn = (): boolean => {
   const token = getJWT();
   return token !== null && !jwtIsExpired(token);
 };
