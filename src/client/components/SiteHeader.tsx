@@ -185,7 +185,7 @@ const SiteHeader = ({ user }: Props) => {
             <Logo sx={{ width: "12rem" }} />
           </Link>
         </Heading>
-        {!(isLoggedIn && "resource" in user) ? (
+        {!isLoggedIn && (!("isPending" in user) || !user.isPending) ? (
           <React.Fragment>
             <Link to="/login" sx={{ p: 2 }}>
               Login
@@ -194,7 +194,7 @@ const SiteHeader = ({ user }: Props) => {
               Register
             </Link>
           </React.Fragment>
-        ) : (
+        ) : "resource" in user ? (
           <React.Fragment>
             <span sx={style.linkItem}>
               <NavLink exact to="/">
@@ -244,7 +244,7 @@ const SiteHeader = ({ user }: Props) => {
               </Menu>
             </Wrapper>
           </React.Fragment>
-        )}
+        ) : null}
       </Flex>
     </Flex>
   );
