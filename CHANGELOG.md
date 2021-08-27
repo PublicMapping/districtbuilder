@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix PVI calculation to not include third party votes & calc average correctly [#977](https://github.com/PublicMapping/districtbuilder/pull/977)
 - Fix handling of expired authentication tokens [#986](https://github.com/PublicMapping/districtbuilder/pull/986)
 - Don't show political data for regions without it on map tooltip [#987](https://github.com/PublicMapping/districtbuilder/pull/987)
+- Hide convert overlay on map screen for other users projects [#988](https://github.com/PublicMapping/districtbuilder/pull/988)
 
 ## [1.8.0] - 2021-08-19
 
