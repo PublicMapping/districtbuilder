@@ -54,7 +54,7 @@ const PVIDisplay = ({
       <span>{votingDisplay}</span>
     </Tooltip>
   ) : (
-    <span>No voting data available</span>
+    <span>N/A</span>
   );
 };
 
