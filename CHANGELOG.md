@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for uploading reference layers to a project [#902](https://github.com/PublicMapping/districtbuilder/pull/902)
 
 ### Changed
+- Support extra demographic fields on metrics viewer [#984](https://github.com/PublicMapping/districtbuilder/pull/984)
 ### Fixed
 
 ## [1.9.0] - 2021-08-30
