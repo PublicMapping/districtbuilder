@@ -9,9 +9,8 @@ import {
   GeoUnits,
   IProject,
   IStaticMetadata,
-  LockedDistricts,
   IReferenceLayer,
-  MetricField
+  LockedDistricts
 } from "../../shared/entities";
 
 import {
@@ -62,7 +61,7 @@ interface LoadingProps {
 }
 
 interface MetricHeader {
-  readonly metric: MetricField;
+  readonly metric: string;
   readonly text: string;
   readonly tooltip: string;
 }
@@ -170,8 +169,8 @@ const MetricPinButton = ({
   pinnedMetrics,
   isReadOnly
 }: {
-  readonly metric: MetricField;
-  readonly pinnedMetrics: readonly MetricField[];
+  readonly metric: string;
+  readonly pinnedMetrics: readonly string[];
   readonly isReadOnly: boolean;
 }) => {
   const metricIsPinned = pinnedMetrics.includes(metric);
@@ -213,8 +212,8 @@ const PinnableMetricHeader = ({
   expandedProjectMetrics,
   isReadOnly
 }: {
-  readonly metric: MetricField;
-  readonly pinnedMetrics: readonly MetricField[];
+  readonly metric: string;
+  readonly pinnedMetrics: readonly string[];
   readonly text: string;
   readonly tooltip: string;
   readonly expandedProjectMetrics: boolean;
@@ -262,7 +261,7 @@ const ProjectSidebar = ({
   readonly hoveredDistrictId: number | null;
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
-  readonly pinnedMetrics?: readonly MetricField[];
+  readonly pinnedMetrics?: readonly string[];
 } & LoadingProps) => {
   const multElections = hasMultipleElections(staticMetadata);
   const has2016Election = has16Election(staticMetadata);
@@ -411,6 +410,7 @@ const ProjectSidebar = ({
       tooltip: "Compactness score (Polsby-Popper)"
     }
   ];
+
   return (
     <Flex
       sx={expandedProjectMetrics ? style.sidebarExpanded : style.sidebar}
@@ -541,7 +541,7 @@ const SidebarRow = memo(
     popDeviationThreshold
   }: {
     readonly district: DistrictGeoJSON;
-    readonly pinnedMetricFields: readonly MetricField[];
+    readonly pinnedMetricFields: readonly string[];
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
     readonly expandedProjectMetrics: boolean;
@@ -593,11 +593,11 @@ const SidebarRow = memo(
         ? district.properties.voting
         : undefined;
 
-    const isVisible = (field: MetricField) =>
+    const isVisible = (field: string) =>
       pinnedMetricFields.includes(field) || expandedProjectMetrics;
-    const isDemographicVisible = (field: MetricField, key: string) =>
+    const isDemographicVisible = (field: string, key: string) =>
       isVisible(field) && key in demographics;
-    const isVotingVisible = (field: MetricField, keys: readonly string[]) =>
+    const isVotingVisible = (field: string, keys: readonly string[]) =>
       voting && isVisible(field) && keys.some(key => key in voting);
 
     return (
@@ -991,7 +991,7 @@ interface SidebarRowsProps {
   readonly hoveredDistrictId: number | null;
   readonly selectedGeounits: GeoUnits;
   readonly expandedProjectMetrics: boolean;
-  readonly pinnedMetrics: readonly MetricField[];
+  readonly pinnedMetrics: readonly string[];
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
   readonly hasElectionData: boolean;

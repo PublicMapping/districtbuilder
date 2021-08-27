@@ -5,14 +5,13 @@ import {
   IProject,
   IReferenceLayer,
   LockedDistricts,
-  MetricField,
   ProjectId
 } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { ResourceFailure } from "../resource";
 
 interface PinnedMetrics {
-  readonly pinnedMetricFields: readonly MetricField[];
+  readonly pinnedMetricFields: readonly string[];
   readonly isReadOnly: boolean;
 }
 
