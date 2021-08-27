@@ -64,6 +64,17 @@ import axios from "axios";
 import { CrosswalkService } from "../services/crosswalk.service";
 import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 import { Brackets } from "typeorm";
+import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
+
+const CORE_METRIC_FIELDS = [
+  "population",
+  "populationDeviation",
+  "raceChart",
+  "majorityRace",
+  "pvi",
+  "compactness",
+  "contiguity"
+];
 
 @Crud({
   model: {
@@ -201,11 +212,36 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: UpdateProjectDto
   ) {
+    // Start off with some validations that can't be handled easily at the DTO layer
     const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
     if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
-        message: { lockedDistricts: [`Length of array does not match "number_of_districts"`] }
+        message: { lockedDistricts: [`Length of array does not match "numberOfDistricts"`] }
+      } as Errors<UpdateProjectDto>);
+    }
+
+    const staticMetadata = (await this.getGeoUnitProperties(existingProject.regionConfig.s3URI))
+      .staticMetadata;
+    const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
+      ([, field]) => field
+    );
+    const allowedVotingFields: readonly string[] =
+      getVotingMetricFields(staticMetadata).map(([, field]) => field) || [];
+    if (
+      dto.pinnedMetricFields &&
+      dto.pinnedMetricFields.some(
+        field =>
+          !(
+            CORE_METRIC_FIELDS.includes(field) ||
+            allowedDemographicFields.includes(field) ||
+            allowedVotingFields.includes(field)
+          )
+      )
+    ) {
+      throw new BadRequestException({
+        error: "Bad Request",
+        message: { pinnedMetricFields: [`Field not allowed in "pinnedMetricFields"`] }
       } as Errors<UpdateProjectDto>);
     }
 

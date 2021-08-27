@@ -81,3 +81,29 @@ export function getDemographicLabel(id: string) {
     ? "Pacific Islander"
     : id.split(/(?=[A-Z])/).join(" ");
 }
+
+export function getDemographicsMetricFields(staticMetadata: IStaticMetadata) {
+  return staticMetadata.demographics.map(file =>
+    file.id === "population" ? file.id : `${file.id}Population`
+  );
+}
+
+export function getVotingMetricFields(staticMetadata: IStaticMetadata) {
+  return staticMetadata.voting
+    ?.map(file =>
+      file.id === "democrat" || file.id === "democrat16"
+        ? "dem16"
+        : file.id === "republican" || file.id === "republican16"
+        ? "rep16"
+        : file.id === "other party" || file.id === "other party16"
+        ? "other16"
+        : file.id === "democrat20"
+        ? "dem20"
+        : file.id === "republican20"
+        ? "rep20"
+        : file.id === "other party20"
+        ? "other party20"
+        : undefined
+    )
+    .filter(field => !field);
+}
