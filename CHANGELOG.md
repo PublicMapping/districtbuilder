@@ -6,10 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
 ### Changed
 ### Fixed
+
+## [1.9.0] - 2021-08-30
+
+### Changed
+- Updated copy on home screen for new users [#985](https://github.com/PublicMapping/districtbuilder/pull/985)
+- Disable migration transactions in order to create project indexes concurrently [#989](https://github.com/PublicMapping/districtbuilder/pull/989)
+### Fixed
+- Disable Send to Plan Score button for incomplete projects [#957](https://github.com/PublicMapping/districtbuilder/pull/957)
+- Fix Send to Plan Score button for other users projects [#958](https://github.com/PublicMapping/districtbuilder/pull/958)
+- Restore Community Maps & fix API perf. [#969](https://github.com/PublicMapping/districtbuilder/pull/969)
+- Fixed map outline ordering [#968](https://github.com/PublicMapping/districtbuilder/pull/968)
+- Fixed pinned metrics for read-only projects [#976](https://github.com/PublicMapping/districtbuilder/pull/976)
+- Fix duplicate button for projects in archived regions [#978](https://github.com/PublicMapping/districtbuilder/pull/978)
+- Fix PVI calculation to not include third party votes & calc average correctly [#977](https://github.com/PublicMapping/districtbuilder/pull/977)
+- Fix handling of expired authentication tokens [#986](https://github.com/PublicMapping/districtbuilder/pull/986)
+- Don't show political data for regions without it on map tooltip [#987](https://github.com/PublicMapping/districtbuilder/pull/987)
+- Hide convert overlay on map screen for other users projects [#988](https://github.com/PublicMapping/districtbuilder/pull/988)
 
 ## [1.8.0] - 2021-08-19
 
@@ -306,7 +322,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.8.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.9.0...HEAD
+[1.9.0]: https://github.com/publicmapping/districtbuilder/compare/1.8.0...1.9.0
 [1.8.0]: https://github.com/publicmapping/districtbuilder/compare/1.7.2...1.8.0
 [1.7.2]: https://github.com/publicmapping/districtbuilder/compare/1.7.1...1.7.2
 [1.7.1]: https://github.com/publicmapping/districtbuilder/compare/1.7.0...1.7.1

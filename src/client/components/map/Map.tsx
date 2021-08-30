@@ -65,7 +65,8 @@ import {
   EVALUATE_GRAY_FILL_COLOR,
   DISTRICTS_EVALUATE_LABELS_LAYER_ID,
   DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
-  DISTRICTS_OUTLINE_LAYER_ID,
+  DISTRICTS_EVALUATE_OUTLINE_LAYER_ID,
+  DISTRICTS_HOVER_OUTLINE_LAYER_ID,
   getCompactnessStops,
   getCompactnessLabels,
   getEqualPopulationStops,
@@ -75,7 +76,8 @@ import {
   getMajorityRaceSplitFill,
   getMajorityRaceFills,
   DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
-  DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID
+  DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID,
+  DISTRICTS_SELECTED_OUTLINE_LAYER_ID
 } from "./index";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
@@ -119,18 +121,10 @@ function disableEditMode(map: MapboxGL.Map, staticMetadata: IStaticMetadata) {
   // Hide lock layer in evaluate mode
   map.setLayoutProperty(DISTRICTS_LOCK_LAYER_ID, "visibility", "none");
 
+  // Show outlines
+  map.setLayoutProperty(DISTRICTS_EVALUATE_OUTLINE_LAYER_ID, "visibility", "visible");
+
   // Style district outline for evaluate mode
-  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-color", "#000");
-  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-opacity", 1);
-  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-width", [
-    "interpolate",
-    ["linear"],
-    ["zoom"],
-    6,
-    2,
-    14,
-    5
-  ]);
 }
 
 function enableEditmode(map: MapboxGL.Map, staticMetadata: IStaticMetadata, geoLevelIndex: number) {
@@ -147,15 +141,9 @@ function enableEditmode(map: MapboxGL.Map, staticMetadata: IStaticMetadata, geoL
     14,
     0.45
   ]);
-  map.setPaintProperty(DISTRICTS_OUTLINE_LAYER_ID, "line-width", [
-    "interpolate",
-    ["linear"],
-    ["zoom"],
-    6,
-    ["*", ["get", "outlineWidthScaleFactor"], 2],
-    14,
-    ["*", ["get", "outlineWidthScaleFactor"], 5]
-  ]);
+
+  // Hide outlines
+  map.setLayoutProperty(DISTRICTS_EVALUATE_OUTLINE_LAYER_ID, "visibility", "none");
 
   // Reset map state to default
   map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "visible");
@@ -202,6 +190,7 @@ interface Props {
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
   readonly isArchived: boolean;
+  readonly isThisUsersMap: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
@@ -297,6 +286,7 @@ const DistrictsMap = ({
   lockedDistricts,
   isReadOnly,
   isArchived,
+  isThisUsersMap,
   expandedProjectMetrics,
   limitSelectionToCounty,
   findMenuOpen,
@@ -488,7 +478,7 @@ const DistrictsMap = ({
       // eslint-disable-next-line functional/immutable-data
       feature.properties.id = id;
       // eslint-disable-next-line functional/immutable-data
-      feature.properties.outlineColor =
+      feature.properties.findOutlineColor =
         findMenuOpen &&
         ((findTool === FindTool.Unassigned && id === 0) ||
           (findTool === FindTool.NonContiguous &&
@@ -569,38 +559,30 @@ const DistrictsMap = ({
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
   }, [map, geojson, findMenuOpen, findTool, avgPopulation, evaluateMetric]);
 
-  // Update layer styles when district is selected/hovered
+  // Update layer styles when district is selected
   useEffect(() => {
-    if (map && !evaluateMode) {
-      // NOTE: It's important to fall back to the outline color set for 'Find Unassigned' so as not
-      // to loose line styles by falling back to "transparent"
-      const fallbackLineColor = ["get", "outlineColor"];
-      const selectedDistrictMatchExpression = [
+    if (map) {
+      map.setPaintProperty(DISTRICTS_SELECTED_OUTLINE_LAYER_ID, "line-color", [
         "match",
         ["id"],
         selectedDistrictId,
         getDistrictColor(selectedDistrictId),
-        fallbackLineColor
-      ];
-      map.setPaintProperty(
-        DISTRICTS_OUTLINE_LAYER_ID,
-        "line-color",
-        hoveredDistrictId
-          ? // Set both hovered district line color and selected district line color
-            [
-              "match",
-              ["id"],
-              hoveredDistrictId,
-              getDistrictColor(hoveredDistrictId),
-              selectedDistrictMatchExpression
-            ]
-          : // There's no hovered district so just set selected district line color if not in evaluate mode
-          !evaluateMode
-          ? selectedDistrictMatchExpression
-          : fallbackLineColor
-      );
+        "transparent"
+      ]);
     }
-  }, [map, selectedDistrictId, hoveredDistrictId, evaluateMode]);
+  }, [map, selectedDistrictId]);
+  // Update layer styles when district is hovered
+  useEffect(() => {
+    if (map && hoveredDistrictId) {
+      map.setPaintProperty(DISTRICTS_HOVER_OUTLINE_LAYER_ID, "line-color", [
+        "match",
+        ["id"],
+        hoveredDistrictId,
+        getDistrictColor(hoveredDistrictId),
+        "transparent"
+      ]);
+    }
+  }, [map, hoveredDistrictId]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -1024,7 +1006,7 @@ const DistrictsMap = ({
           ></circle>
         </svg>
       </div>
-      {!evaluateMode && isArchived && (
+      {!evaluateMode && isThisUsersMap && isArchived && (
         <Box sx={style.archivedMessage}>
           <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
           and can no longer be edited.
@@ -1206,7 +1188,11 @@ function mapStateToProps(state: State) {
     findMenuOpen: state.project.findMenuOpen,
     findTool: state.project.findTool,
     electionYear: state.project.electionYear,
-    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal
+    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal,
+    isThisUsersMap:
+      "resource" in state.user &&
+      "resource" in state.project.projectData &&
+      state.user.resource.id === state.project.projectData.resource.project.user.id
   };
 }
 

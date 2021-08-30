@@ -54,7 +54,6 @@ import {
   updateCurrentState
 } from "./undoRedo";
 import { canSwitchGeoLevels, isBaseGeoLevelAlwaysVisible } from "../functions";
-import { DEFAULT_PINNED_METRIC_FIELDS } from "../../shared/constants";
 
 function setGeoUnitsForLevel(
   currentGeoUnits: GeoUnitsForLevel,
@@ -160,7 +159,6 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
         geoLevelIndex: 0,
         geoLevelVisibility: [],
         lockedDistricts: [],
-        pinnedMetricFields: DEFAULT_PINNED_METRIC_FIELDS,
         districtsDefinition: []
       }
     },

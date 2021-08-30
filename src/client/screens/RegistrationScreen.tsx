@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { Alert, Box, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
+import { isUserLoggedIn } from "../jwt";
 import RegisterContent from "../components/RegisterContent";
 import CenteredContent from "../components/CenteredContent";
 import { IUser } from "../../shared/entities";
@@ -17,7 +18,7 @@ interface StateProps {
 }
 
 const RegistrationScreen = ({ user }: StateProps) => {
-  const isLoggedIn = "resource" in user;
+  const isLoggedIn = "resource" in user && isUserLoggedIn();
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
   const toParams = new URLSearchParams(to.search);

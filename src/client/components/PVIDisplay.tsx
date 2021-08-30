@@ -43,7 +43,7 @@ const PVIDisplay = ({
       placement="top-start"
       content={
         pvi !== undefined ? (
-          <VotingSidebarTooltip voting={voting} />
+          <VotingSidebarTooltip voting={voting} excludeOther={true} />
         ) : (
           <em>
             <strong>Empty district.</strong> Add people to this district to view the vote totals
@@ -54,7 +54,7 @@ const PVIDisplay = ({
       <span>{votingDisplay}</span>
     </Tooltip>
   ) : (
-    <span>No voting data available</span>
+    <span>N/A</span>
   );
 };
 

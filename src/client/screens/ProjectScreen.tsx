@@ -31,7 +31,7 @@ import MapHeader from "../components/MapHeader";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
 import Tour from "../components/Tour";
-import { getJWT } from "../jwt";
+import { isUserLoggedIn } from "../jwt";
 import { State } from "../reducers";
 import { Resource } from "../resource";
 import store from "../store";
@@ -95,7 +95,7 @@ const ProjectScreen = ({
 }: StateProps) => {
   const { projectId } = useParams();
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
-  const isLoggedIn = getJWT() !== null;
+  const isLoggedIn = isUserLoggedIn();
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
   const presentDrawingState = districtDrawing.undoHistory.present.state;
 
@@ -165,6 +165,7 @@ const ProjectScreen = ({
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
             isReadOnly={isReadOnly}
+            pinnedMetrics={districtDrawing.undoHistory.present.state.pinnedMetricFields}
           />
         ) : (
           <ProjectEvaluateSidebar

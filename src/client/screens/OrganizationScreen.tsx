@@ -10,7 +10,7 @@ import { organizationFetch } from "../actions/organization";
 import { leaveOrganization } from "../actions/organizationJoin";
 import { userFetch } from "../actions/user";
 import { organizationFeaturedProjectsFetch } from "../actions/organizationProjects";
-import { getJWT } from "../jwt";
+import { isUserLoggedIn } from "../jwt";
 import { State } from "../reducers";
 import { OrganizationState } from "../reducers/organization";
 import { UserState } from "../reducers/user";
@@ -131,7 +131,7 @@ const style = {
 const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
   const { organizationSlug } = useParams();
   const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
-  const isLoggedIn = getJWT() !== null;
+  const isLoggedIn = isUserLoggedIn();
   const userInOrg =
     "resource" in user &&
     user.resource &&

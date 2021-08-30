@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
+import { isUserLoggedIn } from "../jwt";
 import { IProject, IUser } from "../../shared/entities";
 import { showCopyMapModal } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
@@ -50,7 +51,7 @@ const CopyMapModal = ({
   const hideModal = () => store.dispatch(showCopyMapModal(false));
   const [createProjectResource, setCreateProjectResource] = useState<Resource<IProject>>();
   const attributedName = `${project.name} by ${project.user.name}`;
-  const isLoggedIn = "resource" in user;
+  const isLoggedIn = "resource" in user && isUserLoggedIn();
 
   return createProjectResource && "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />

@@ -103,7 +103,7 @@ export type DistrictProperties = {
   // NOTE: These properties are set for styling purposes
   id?: number;
   color?: string;
-  outlineColor?: string;
+  findOutlineColor?: string;
   percentDeviation?: number;
   pvi?: number;
   populationDeviation?: number;

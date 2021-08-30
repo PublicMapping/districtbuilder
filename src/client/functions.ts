@@ -118,15 +118,14 @@ export function computeRowFill(stops: ChoroplethSteps, value?: number, interval?
 // Source: https://cookpolitical.com/analysis/national/pvi/introducing-2021-cook-political-report-partisan-voter-index
 const nationalDemVoteShare16 = 51.1;
 const nationalDemVoteShare20 = 52.3;
-const nationalDemVoteShareAvg = nationalDemVoteShare16 + nationalDemVoteShare20 / 2;
+const nationalDemVoteShareAvg = (nationalDemVoteShare16 + nationalDemVoteShare20) / 2;
 
 // Computes share of votes for party1
 export function calculatePartyVoteShare(
   party1Votes: number,
-  party2Votes: number,
   otherVotes: number
 ): number | undefined {
-  const total = party1Votes + party2Votes + otherVotes;
+  const total = party1Votes + otherVotes;
   return total ? (100 * party1Votes) / total : undefined;
 }
 
@@ -161,30 +160,18 @@ export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): nu
     year !== "16" &&
     year !== "20"
   ) {
-    const votes16 = calculatePartyVoteShare(
-      voting.democrat16,
-      voting.republican16,
-      voting["other party16"] || 0
-    );
-    const votes20 = calculatePartyVoteShare(
-      voting.democrat20,
-      voting.republican20,
-      voting["other party20"] || 0
-    );
+    const votes16 = calculatePartyVoteShare(voting.democrat16, voting.republican16);
+    const votes20 = calculatePartyVoteShare(voting.democrat20, voting.republican20);
     if (votes16 !== undefined && votes20 !== undefined) {
-      const avgVoteShare = votes16 + votes20 / 2;
+      const avgVoteShare = (votes16 + votes20) / 2;
       return avgVoteShare - nationalDemVoteShareAvg;
     }
   } else if (year === "20") {
     const voteShare =
       "democrat20" in voting && "republican20" in voting
-        ? calculatePartyVoteShare(
-            voting.democrat20,
-            voting.republican20,
-            voting["other party20"] || 0
-          )
+        ? calculatePartyVoteShare(voting.democrat20, voting.republican20)
         : "democrat" in voting && "republican" in voting
-        ? calculatePartyVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        ? calculatePartyVoteShare(voting.democrat, voting.republican)
         : undefined;
     if (voteShare !== undefined) {
       return voteShare - nationalDemVoteShare20;
@@ -194,13 +181,9 @@ export function calculatePVI(voting: DemographicCounts, year?: ElectionYear): nu
     // We assume unspecified vote totals are from 2016
     const voteShare =
       "democrat16" in voting && "republican16" in voting
-        ? calculatePartyVoteShare(
-            voting.democrat16,
-            voting.republican16,
-            voting["other party16"] || 0
-          )
+        ? calculatePartyVoteShare(voting.democrat16, voting.republican16)
         : "democrat" in voting && "republican" in voting
-        ? calculatePartyVoteShare(voting.democrat, voting.republican, voting["other party"] || 0)
+        ? calculatePartyVoteShare(voting.democrat, voting.republican)
         : undefined;
     if (voteShare !== undefined) {
       return voteShare - nationalDemVoteShare16;

@@ -10,6 +10,11 @@ import {
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { ResourceFailure } from "../resource";
 
+interface PinnedMetrics {
+  readonly pinnedMetricFields: readonly MetricField[];
+  readonly isReadOnly: boolean;
+}
+
 export const projectFetch = createAction("Project fetch")<ProjectId>();
 export const projectFetchSuccess = createAction("Project fetch success")<DynamicProjectData>();
 export const projectFetchFailure = createAction("Project fetch failure")<ResourceFailure>();
@@ -57,7 +62,7 @@ export const updateDistrictLocksSuccess = createAction("Update district locks su
 >();
 export const updateDistrictLocksFailure = createAction("Update district locks failure")<string>();
 
-export const updatePinnedMetrics = createAction("Update pinned metrics")<readonly MetricField[]>();
+export const updatePinnedMetrics = createAction("Update pinned metrics")<PinnedMetrics>();
 export const updatePinnedMetricsSuccess = createAction("Update pinned metrics success")<
   DynamicProjectData
 >();

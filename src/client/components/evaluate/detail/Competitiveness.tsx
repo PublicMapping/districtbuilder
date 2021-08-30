@@ -8,6 +8,7 @@ import { formatPvi, computeRowFill, calculatePVI } from "../../../functions";
 import { checkPlanScoreAPI } from "../../../api";
 import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
 import CompetitivenessChart from "./CompetitivenessChart";
+import Tooltip from "../../Tooltip";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -75,6 +76,7 @@ const CompetitivenessMetricDetail = ({
   const [planScoreLoaded, setPlanScoreLoaded] = useState<boolean | null>(null);
   const [planScoreLink, setPlanScoreLink] = useState<string | null>(null);
   const choroplethStops = getPviSteps();
+  const projectIsComplete = geojson && geojson.features[0].geometry.coordinates.length === 0;
   function sendToPlanScore() {
     setPlanScoreLoaded(false);
     project &&
@@ -153,11 +155,17 @@ const CompetitivenessMetricDetail = ({
               },
               ...style.menuButton
             }}
-            disabled={planScoreLoaded === false}
+            disabled={planScoreLoaded === false || !projectIsComplete}
             onClick={() => sendToPlanScore()}
           >
             {planScoreLoaded === null ? (
-              <span>Send to PlanScore API</span>
+              projectIsComplete ? (
+                <span>Send to PlanScore API</span>
+              ) : (
+                <Tooltip content={"Complete your project before sending to PlanScore"}>
+                  <span>Send to PlanScore API</span>
+                </Tooltip>
+              )
             ) : (
               <span>
                 Loading&nbsp;

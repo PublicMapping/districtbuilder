@@ -63,6 +63,7 @@ import { Errors } from "../../../../shared/types";
 import axios from "axios";
 import { CrosswalkService } from "../services/crosswalk.service";
 import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
+import { Brackets } from "typeorm";
 
 @Crud({
   model: {
@@ -248,31 +249,35 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateProjectDto
   ): Promise<Project> {
-    try {
-      const regionConfig = await this.regionConfigService.findOne({ id: dto.regionConfig.id });
-      if (!regionConfig) {
-        throw new NotFoundException(`Unable to find region config: ${dto.regionConfig.id}`);
-      }
+    const regionConfig = await this.regionConfigService.findOne({ id: dto.regionConfig.id });
+    if (!regionConfig) {
+      throw new NotFoundException(`Unable to find region config: ${dto.regionConfig.id}`);
+    }
 
-      const geoCollection = await this.topologyService.get(regionConfig.s3URI);
-      if (!geoCollection) {
-        throw new NotFoundException(
-          `Topology ${regionConfig.s3URI} not found`,
-          MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
-        );
-      }
-
-      return await this.service.createOne(
-        req,
-        await this.formatCreateProjectDto(dto, geoCollection, regionConfig, req)
+    const geoCollection = await this.topologyService.get(regionConfig.s3URI);
+    if (!geoCollection) {
+      throw new NotFoundException(
+        `Topology ${regionConfig.s3URI} not found`,
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
+    }
+
+    try {
+      const data = this.formatCreateProjectDto(dto, geoCollection, regionConfig, req);
+      const districts = await this.getGeojson({
+        numberOfDistricts: data.numberOfDistricts,
+        districtsDefinition: data.districtsDefinition,
+        regionConfig
+      });
+
+      return await this.service.createOne(req, { ...data, districts });
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);
       throw new InternalServerErrorException();
     }
   }
 
-  private async formatCreateProjectDto(
+  private formatCreateProjectDto(
     dto: CreateProjectDto,
     geoCollection: GeoUnitTopology | GeoUnitProperties,
     regionConfig: RegionConfig,
@@ -282,15 +287,9 @@ export class ProjectsController implements CrudController<Project> {
     const districtsDefinition =
       dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
     const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
-    const districts = await this.getGeojson({
-      numberOfDistricts: dto.numberOfDistricts,
-      districtsDefinition,
-      regionConfig
-    });
     return {
       ...dto,
       districtsDefinition,
-      districts,
       lockedDistricts,
       user: req.parsed.authPersist.userId,
       regionConfigVersion: regionConfig.version
@@ -301,28 +300,28 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @Post(":id/duplicate")
   async duplicate(@ParsedRequest() req: CrudRequest, @Param("id") id: ProjectId): Promise<Project> {
-    try {
-      const project = await this.getProject(req, id);
-      const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
-      if (!geoCollection) {
-        throw new NotFoundException(
-          `Topology ${project.regionConfig.s3URI} not found`,
-          MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
-        );
-      }
-      // Set any fields we don't want duplicated to be undefined
-      const dto = {
-        ...project,
-        name: `Copy of ${project.name}`,
-        id: undefined,
-        user: undefined,
-        createdDt: undefined,
-        updatedDt: undefined,
-        isFeatured: undefined
-      };
+    const project = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
+    const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
+    if (!geoCollection) {
+      throw new NotFoundException(
+        `Topology ${project.regionConfig.s3URI} not found`,
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+      );
+    }
+    // Set any fields we don't want duplicated to be undefined
+    const dto = {
+      ...project,
+      name: `Copy of ${project.name}`,
+      id: undefined,
+      user: undefined,
+      createdDt: undefined,
+      updatedDt: undefined,
+      isFeatured: undefined
+    };
 
+    try {
       return await this.service.save(
-        await this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
+        this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
       );
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);
@@ -351,20 +350,26 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   // Helper for obtaining a project for a given project request, throws exception if not found
-  async getProjectWithDistricts(id: ProjectId, userId: UserId): Promise<Project> {
+  async getProjectWithDistricts(id: ProjectId, userId?: UserId): Promise<Project> {
     if (!isUUID(id)) {
       throw new NotFoundException(`Project ${id} is not a valid UUID`);
     }
     // Not using 'getProject' because we need to select the 'districts' column
     // Unauthenticated access is allowed for individual projects if they are
     // visible or published, and not archived.
-    const commonFilter = { id, archived: false };
     const project = await this.service.findOne({
-      where: [
-        { ...commonFilter, user: { id: userId } },
-        { ...commonFilter, visibility: ProjectVisibility.Published },
-        { ...commonFilter, visibility: ProjectVisibility.Visible }
-      ] as const,
+      where: new Brackets(qb =>
+        qb.where({ id, archived: false }).andWhere(
+          new Brackets(qb => {
+            const isVisibleFilter = qb
+              .where("visibility = :published", { published: ProjectVisibility.Published })
+              .orWhere("visibility = :visible", { visible: ProjectVisibility.Visible });
+            return userId
+              ? isVisibleFilter.orWhere("user_id = :userId", { userId })
+              : isVisibleFilter;
+          })
+        )
+      ),
       loadEagerRelations: false,
       relations: ["regionConfig"]
     });
@@ -424,7 +429,7 @@ export class ProjectsController implements CrudController<Project> {
   @Get(":id/export/geojson")
   async exportGeoJSON(@Request() req: any, @Param("id") id: ProjectId): Promise<DistrictsGeoJSON> {
     const user = req.user as User;
-    const project = await this.getProjectWithDistricts(id, user.id);
+    const project = await this.getProjectWithDistricts(id, user?.id);
 
     // If the region is archived we can't calculate districts
     if (project.regionConfig.archived && !project.districts) {
@@ -678,10 +683,10 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   @UseInterceptors(CrudRequestInterceptor)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @Post(":id/planScore")
   async sendToPlanScoreAPI(
-    @ParsedRequest() req: CrudRequest,
+    @Request() req: any,
     @Param("id") projectId: ProjectId
   ): Promise<Project> {
     const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";

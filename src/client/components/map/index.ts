@@ -18,7 +18,7 @@ import {
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible, getTargetPopulation } from "../../functions";
 import { mapValues } from "lodash";
-import { ChoroplethSteps, PviBucket } from "../../types";
+import { ChoroplethSteps, PviBucket, DistrictsGeoJSON } from "../../types";
 
 // Vector tiles with geolevel data for this geography
 export const GEOLEVELS_SOURCE_ID = "db";
@@ -26,10 +26,17 @@ export const GEOLEVELS_SOURCE_ID = "db";
 export const DISTRICTS_SOURCE_ID = "districts";
 // GeoJSON district label data for district as currently drawn
 export const DISTRICTS_LABELS_SOURCE_ID = "districts-labels";
+
 // Id for districts layer
 export const DISTRICTS_LAYER_ID = "districts";
 // Id for districts layer outline, used for Find
-export const DISTRICTS_OUTLINE_LAYER_ID = "districts-outline";
+export const DISTRICTS_FIND_OUTLINE_LAYER_ID = "districts-outline-find";
+// Id for districts layer outline, used for Evaluate mode
+export const DISTRICTS_EVALUATE_OUTLINE_LAYER_ID = "districts-outline-eval";
+// Id for districts layer outline, used for selection from sidebar
+export const DISTRICTS_SELECTED_OUTLINE_LAYER_ID = "districts-outline-selected";
+// Id for districts layer outline, used for hover from sidebar
+export const DISTRICTS_HOVER_OUTLINE_LAYER_ID = "districts-outline-hover";
 // Id for districts lock layer
 export const DISTRICTS_LOCK_LAYER_ID = "districts-locked";
 // Id for districts fill outline used in evaluate mode
@@ -218,10 +225,8 @@ export function generateMapLayers(
   geoLevels: readonly GeoLevelInfo[],
   minZoom: number,
   maxZoom: number,
-  /* eslint-disable */
-  map: any,
-  geojson: any,
-  /* eslint-enable */
+  map: mapboxgl.Map,
+  geojson: DistrictsGeoJSON,
   populationDeviation: number
 ) {
   map.addSource(DISTRICTS_SOURCE_ID, {
@@ -260,6 +265,7 @@ export function generateMapLayers(
   );
 
   map.addLayer(
+    // @ts-ignore
     {
       id: DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -279,6 +285,7 @@ export function generateMapLayers(
   );
 
   map.addLayer(
+    // @ts-ignore
     {
       id: DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -316,6 +323,7 @@ export function generateMapLayers(
 
   const avgPopulation = getTargetPopulation(geojson);
   map.addLayer(
+    // @ts-ignore
     {
       id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -337,12 +345,13 @@ export function generateMapLayers(
 
   map.addLayer(
     {
-      id: DISTRICTS_OUTLINE_LAYER_ID,
+      id: DISTRICTS_FIND_OUTLINE_LAYER_ID,
       type: "line",
       source: DISTRICTS_SOURCE_ID,
       paint: {
-        "line-color": { type: "identity", property: "outlineColor" },
+        "line-color": { type: "identity", property: "findOutlineColor" },
         "line-opacity": 1,
+        "line-dasharray": [5, 5],
         "line-width": [
           "interpolate",
           ["linear"],
@@ -355,6 +364,64 @@ export function generateMapLayers(
       }
     },
     DISTRICT_LINES_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_EVALUATE_OUTLINE_LAYER_ID,
+      type: "line",
+      source: DISTRICTS_SOURCE_ID,
+      paint: {
+        "line-color": "#000",
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+      }
+    },
+    DISTRICT_LINES_PLACEHOLDER_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_HOVER_OUTLINE_LAYER_ID,
+      type: "line",
+      source: DISTRICTS_SOURCE_ID,
+      paint: {
+        "line-color": "transparent",
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6,
+          ["*", ["get", "outlineWidthScaleFactor"], 2],
+          14,
+          ["*", ["get", "outlineWidthScaleFactor"], 5]
+        ]
+      }
+    },
+    DISTRICTS_FIND_OUTLINE_LAYER_ID
+  );
+
+  map.addLayer(
+    {
+      id: DISTRICTS_SELECTED_OUTLINE_LAYER_ID,
+      type: "line",
+      source: DISTRICTS_SOURCE_ID,
+      paint: {
+        "line-color": "transparent",
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6,
+          ["*", ["get", "outlineWidthScaleFactor"], 2],
+          14,
+          ["*", ["get", "outlineWidthScaleFactor"], 5]
+        ]
+      }
+    },
+    DISTRICTS_HOVER_OUTLINE_LAYER_ID
   );
 
   map.addLayer(
@@ -424,7 +491,7 @@ export function generateMapLayers(
         "fill-antialias": false
       }
     },
-    LABELS_PLACEHOLDER_LAYER_ID
+    DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
   map.addLayer({
@@ -450,6 +517,7 @@ export function generateMapLayers(
 
   geoLevels.forEach(level => {
     map.addLayer(
+      // @ts-ignore
       {
         id: levelToLineLayerId(level.id),
         type: "line",
