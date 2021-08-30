@@ -19,7 +19,8 @@ import {
   CrudRequestInterceptor,
   Override,
   ParsedBody,
-  ParsedRequest
+  ParsedRequest,
+  CrudAuth
 } from "@nestjsx/crud";
 import isUUID from "validator/lib/isUUID";
 import { OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
@@ -31,13 +32,74 @@ import { ReferenceLayer } from "../entities/reference-layer.entity";
 import { ReferenceLayersService } from "../services/reference-layers.service";
 import { ProjectsService } from "../../projects/services/projects.service";
 import { CreateReferenceLayerDto } from "../entities/create-reference-layer.dto";
+import { ProjectVisibility } from "../../../../shared/constants";
 
 @Crud({
   model: {
     type: ReferenceLayer
   },
+  params: {
+    id: {
+      type: "string",
+      primary: true,
+      field: "id"
+    },
+    projectId: {
+      type: "string",
+      primary: true,
+      field: "id"
+    }
+  },
+  query: {
+    join: {
+      project: {
+        eager: true,
+        select: false
+      }
+    }
+  },
   routes: {
     only: ["createOneBase", "getOneBase"]
+  }
+})
+@CrudAuth({
+  filter: (req: any) => {
+    const user = req.user as User;
+    // Filter to user's projects for all update requests
+    if (req.method !== "GET") {
+      return {
+        "project.user_id": user ? user.id : undefined
+      };
+    } else {
+      // Unauthenticated access is allowed for individual projects if they are
+      // visible or published, and not archived.
+      const publicallyVisible = [
+        { "project.visibility": ProjectVisibility.Published },
+        { "project.visibility": ProjectVisibility.Visible }
+      ];
+      const visibleFilter = user
+        ? [
+            // User created project
+            { "project.user_id": user.id },
+            // Or it's public
+            ...publicallyVisible
+          ]
+        : publicallyVisible;
+      return {
+        $and: [
+          {
+            $or: visibleFilter
+          },
+          { "project.archived": false }
+        ]
+      };
+    }
+  },
+  persist: (req: any) => {
+    const user = req.user as User;
+    return {
+      userId: user ? user.id : undefined
+    };
   }
 })
 @Controller("api/reference-layer")
@@ -74,18 +136,12 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     }
   }
 
-  // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
   @Override()
   @UseGuards(OptionalJwtAuthGuard)
   async getOne(
     @Param("id") id: ReferenceLayerId,
     @ParsedRequest() req: CrudRequest
   ): Promise<ReferenceLayer> {
-    return this.getReferenceLayer(req, id);
-  }
-
-  // Helper for obtaining a reference layer for a given reference layer request, throws exception if not found
-  async getReferenceLayer(req: CrudRequest, id: ReferenceLayerId): Promise<ReferenceLayer> {
     if (!this.base.getOneBase) {
       this.logger.error("Routes misconfigured. Missing `getOneBase` route");
       throw new InternalServerErrorException();
@@ -101,15 +157,15 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
   }
 
   @UseInterceptors(CrudRequestInterceptor)
-  @UseGuards(JwtAuthGuard)
-  @Get("project/:projectId/")
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get("project/:projectId")
   async getProjectReferenceLayers(
-    @Request() req: any,
+    @ParsedRequest() req: CrudRequest,
     @Param("projectId") projectId: ProjectId
   ): Promise<IReferenceLayer[]> {
-    const user = req.user as User;
-    console.log(user);
-    const refLayers = await this.service.getProjectReferenceLayers(projectId, user?.id);
+    const userId = req.parsed.authPersist.userId;
+    console.log(userId);
+    const refLayers = await this.service.getProjectReferenceLayers(projectId, userId);
     return refLayers;
   }
 }

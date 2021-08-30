@@ -199,7 +199,7 @@ export async function fetchProjectReferenceLayers(
 ): Promise<readonly IReferenceLayer[]> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get(`/api/reference-layer/project/${id}/`)
+      .get(`/api/reference-layer/project/${id}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response.data));
   });

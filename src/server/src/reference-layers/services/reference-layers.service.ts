@@ -8,14 +8,13 @@ import { UserId, IReferenceLayer } from "../../../../shared/entities";
 import { ReferenceLayer } from "../entities/reference-layer.entity";
 import { Brackets } from "typeorm";
 
-
 @Injectable()
 export class ReferenceLayersService extends TypeOrmCrudService<ReferenceLayer> {
   constructor(@InjectRepository(ReferenceLayer) repo: Repository<ReferenceLayer>) {
     super(repo);
   }
 
-  async getProjectReferenceLayers(projectId: string, userId?: UserId): Promise<ReferenceLayer[]> {
+  async getProjectReferenceLayers(projectId: string, userId?: UserId): Promise<IReferenceLayer[]> {
     // Returns public data for organization screen
     const builder = this.repo.createQueryBuilder("referenceLayer");
     const data = await builder
