@@ -9,7 +9,7 @@ import {
 import { Box, Button, Flex, Heading, jsx, Text } from "theme-ui";
 import { useHistory } from "react-router-dom";
 import { createProject } from "../api";
-import { getJWT } from "../jwt";
+import { isUserLoggedIn } from "../jwt";
 import Tooltip from "./Tooltip";
 import store from "../store";
 import { showCopyMapModal } from "../actions/districtDrawing";
@@ -48,7 +48,7 @@ const TemplateCard = ({
   readonly setTemplate: ((template: CreateProjectData) => void) | undefined;
 }) => {
   const userIsVerified = user?.isEmailVerified;
-  const isLoggedIn = getJWT() !== null;
+  const isLoggedIn = isUserLoggedIn();
   const userInOrg = user && checkIfUserInOrg(organization, user);
   const history = useHistory();
 

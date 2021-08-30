@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject, Spinner } from "theme-ui";
 
+import { isUserLoggedIn } from "../jwt";
 import { IProject, IUser } from "../../shared/entities";
 import { showConvertMapModal } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
@@ -52,7 +53,7 @@ const ConvertMapModal = ({
 
   const hideModal = () => store.dispatch(showConvertMapModal(false));
   const attributedName = `${project.name} by ${project.user.name}`;
-  const isLoggedIn = "resource" in user;
+  const isLoggedIn = "resource" in user && isUserLoggedIn();
 
   function goToProject(project: IProject) {
     history.push(`/projects/${project.id}`);

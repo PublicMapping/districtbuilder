@@ -9,7 +9,7 @@ import PaginationFooter from "../components/PaginationFooter";
 
 import { userProjectsFetch, userProjectsFetchPage } from "../actions/projects";
 import { userFetch } from "../actions/user";
-import { getJWT } from "../jwt";
+import { isUserLoggedIn } from "../jwt";
 import { State } from "../reducers";
 import { UserState } from "../reducers/user";
 import { Resource } from "../resource";
@@ -30,7 +30,7 @@ interface StateProps {
 }
 
 const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }: StateProps) => {
-  const isLoggedIn = getJWT() !== null;
+  const isLoggedIn = isUserLoggedIn();
   const projectList =
     "resource" in projects ? projects.resource.filter(project => !project.archived) : [];
 

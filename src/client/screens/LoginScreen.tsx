@@ -6,6 +6,7 @@ import { Alert, Box, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { IUser } from "../../shared/entities";
+import { isUserLoggedIn } from "../jwt";
 import { showPasswordResetNotice } from "../actions/auth";
 import { LoginContent } from "../components/AuthComponents";
 import CenteredContent from "../components/CenteredContent";
@@ -20,7 +21,7 @@ interface StateProps {
 }
 
 const LoginScreen = ({ passwordResetNoticeShown, user }: StateProps) => {
-  const isLoggedIn = "resource" in user;
+  const isLoggedIn = "resource" in user && isUserLoggedIn();
   const location = useLocation<AuthLocationState>();
   const to = location.state?.from || { pathname: "/" };
   const toParams = new URLSearchParams(to.search);

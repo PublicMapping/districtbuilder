@@ -7,13 +7,13 @@ import { ReactComponent as Logo } from "../media/logos/logo.svg";
 import { ReactComponent as SuccessIllustration } from "../media/successfully-registered-illustration.svg";
 
 import { activateAccount } from "../api";
-import { getJWT } from "../jwt";
+import { isUserLoggedIn } from "../jwt";
 import CenteredContent from "../components/CenteredContent";
 import { Resource } from "../resource";
 
 const ActivateAccountScreen = () => {
   const { token, organizationSlug } = useParams();
-  const isLoggedIn = getJWT() !== null;
+  const isLoggedIn = isUserLoggedIn();
   const history = useHistory();
   const [activationResource, setActivationResource] = useState<Resource<void>>({
     isPending: false
