@@ -190,6 +190,7 @@ interface Props {
   readonly evaluateMode: boolean;
   readonly isReadOnly: boolean;
   readonly isArchived: boolean;
+  readonly isThisUsersMap: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly findMenuOpen: boolean;
   readonly findTool: FindTool;
@@ -285,6 +286,7 @@ const DistrictsMap = ({
   lockedDistricts,
   isReadOnly,
   isArchived,
+  isThisUsersMap,
   expandedProjectMetrics,
   limitSelectionToCounty,
   findMenuOpen,
@@ -1004,7 +1006,7 @@ const DistrictsMap = ({
           ></circle>
         </svg>
       </div>
-      {!evaluateMode && isArchived && (
+      {!evaluateMode && isThisUsersMap && isArchived && (
         <Box sx={style.archivedMessage}>
           <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
           and can no longer be edited.
@@ -1186,7 +1188,11 @@ function mapStateToProps(state: State) {
     findMenuOpen: state.project.findMenuOpen,
     findTool: state.project.findTool,
     electionYear: state.project.electionYear,
-    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal
+    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal,
+    isThisUsersMap:
+      "resource" in state.user &&
+      "resource" in state.project.projectData &&
+      state.user.resource.id === state.project.projectData.resource.project.user.id
   };
 }
 
