@@ -125,7 +125,15 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
                 >
                   getting started guide
                 </Styled.a>{" "}
-                or see <Styled.a href="/maps">community maps</Styled.a>.
+                or see <Styled.a href="/maps">community maps</Styled.a>. If you want to start
+                mapping for an organization, you&rsquo;ll need to{" "}
+                <Styled.a
+                  href="https://github.com/PublicMapping/districtbuilder/wiki/Join-an-Organization"
+                  target="_blank"
+                >
+                  join the organization
+                </Styled.a>{" "}
+                first.
               </Text>
               <Flex>
                 <Styled.a

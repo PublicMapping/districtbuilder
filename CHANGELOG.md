@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 ### Changed
+- Updated copy on home screen for new users [#985](https://github.com/PublicMapping/districtbuilder/pull/985)
 ### Fixed
 - Disable Send to Plan Score button for incomplete projects [#957](https://github.com/PublicMapping/districtbuilder/pull/957)
 - Fix Send to Plan Score button for other users projects [#958](https://github.com/PublicMapping/districtbuilder/pull/958)
