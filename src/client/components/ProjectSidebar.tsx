@@ -566,7 +566,7 @@ const SidebarRow = memo(
     const otherDemographics = "other" in demographics;
 
     function getPartyVoteShareDisplay(party1: number, party2: number, party3: number): string {
-      const percent = calculatePartyVoteShare(party1, party2, party3);
+      const percent = calculatePartyVoteShare(party1, party2 + party3);
       return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
     }
 

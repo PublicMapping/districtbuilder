@@ -72,10 +72,12 @@ const Row = ({
 
 const getRows = ({
   voting,
-  year
+  year,
+  excludeOther
 }: {
   readonly voting: DemographicCounts;
   readonly year?: ElectionYear;
+  readonly excludeOther?: boolean;
 }) => {
   const votesForYear = extractYear(voting, year);
   const total = sum(Object.values(votesForYear));
@@ -86,22 +88,30 @@ const getRows = ({
   ).sort(([a], [b]) => {
     return order.indexOf(b) - order.indexOf(a);
   });
-  const rows = percentages.map(([party, percent]) => (
-    <Row
-      key={party}
-      party={party}
-      votes={votesForYear[party]}
-      percent={percent}
-      color={getPartyColor(party)}
-    />
-  ));
+  const rows = percentages.map(([party, percent]) =>
+    !excludeOther || party !== "other party" ? (
+      <Row
+        key={party}
+        party={party}
+        votes={votesForYear[party]}
+        percent={percent}
+        color={getPartyColor(party)}
+      />
+    ) : null
+  );
   return rows.length > 0 ? rows : null;
 };
 
-const VotingSidebarTooltip = ({ voting }: { readonly voting: DemographicCounts }) => {
-  const rows16 = getRows({ voting, year: "16" });
-  const rows20 = getRows({ voting, year: "20" });
-  const unspecifiedRows = !rows16 && !rows20 && getRows({ voting });
+const VotingSidebarTooltip = ({
+  voting,
+  excludeOther
+}: {
+  readonly voting: DemographicCounts;
+  readonly excludeOther?: boolean;
+}) => {
+  const rows16 = getRows({ voting, year: "16", excludeOther });
+  const rows20 = getRows({ voting, year: "20", excludeOther });
+  const unspecifiedRows = !rows16 && !rows20 && getRows({ voting, excludeOther });
 
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
