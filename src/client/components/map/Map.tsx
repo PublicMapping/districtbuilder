@@ -1192,7 +1192,7 @@ function mapStateToProps(state: State) {
     isThisUsersMap:
       "resource" in state.user &&
       "resource" in state.project.projectData &&
-      state.user.resource.id !== state.project.projectData.resource.project.user.id
+      state.user.resource.id === state.project.projectData.resource.project.user.id
   };
 }
 
