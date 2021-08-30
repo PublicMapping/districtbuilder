@@ -201,7 +201,11 @@ const MapTooltip = ({
     const votingForYear =
       electionYear && data.voting ? extractYear(data.voting, electionYear) : data.voting;
     const voting =
-      votingForYear && Object.keys(votingForYear).length > 0 ? votingForYear : data.voting;
+      votingForYear && Object.keys(votingForYear).length > 0
+        ? votingForYear
+        : data.voting && Object.keys(data.voting).length > 0
+        ? data.voting
+        : undefined;
 
     return (
       <Box
