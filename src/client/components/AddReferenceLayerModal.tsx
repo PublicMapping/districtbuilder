@@ -460,7 +460,9 @@ const AddReferenceLayerModal = ({
                   <Flex sx={{ p: 2 }}>
                     <Box sx={{ m: "auto" }}>
                       Drag and drop CSV / geojson file or{" "}
-                      <Button type="button">Browse files</Button>
+                      <Button type="button" id="primary-action">
+                        Browse files
+                      </Button>
                     </Box>
                   </Flex>
                 </FileDrop>
