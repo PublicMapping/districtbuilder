@@ -15,7 +15,7 @@ const style: ThemeUIStyleObject = {
   },
   referenceLayers: {
     minHeight: "75px",
-    position: "absolute",
+    position: "relative",
     width: "100%",
     bottom: "0px",
     display: "inline-block"
