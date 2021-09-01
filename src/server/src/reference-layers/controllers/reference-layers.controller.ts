@@ -90,7 +90,7 @@ import { ProjectVisibility } from "../../../../shared/constants";
           {
             $or: visibleFilter
           },
-          { archived: false }
+          { "project.archived": false }
         ]
       };
     }

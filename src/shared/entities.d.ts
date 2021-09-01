@@ -181,7 +181,6 @@ export interface IRegionConfig {
 export interface IReferenceLayer {
   readonly id: ReferenceLayerId;
   readonly name: string;
-  readonly project: IProject;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly label_field: string;
 }
