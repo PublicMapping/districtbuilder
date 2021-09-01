@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import { useState } from "react";
 import { Button, Flex, Box, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import { IReferenceLayer } from "../../shared/entities";
@@ -6,24 +7,27 @@ import Icon from "./Icon";
 import { toggleReferenceLayersModal } from "../actions/projectData";
 
 import store from "../store";
+import { ReferenceLayerTypes } from "../../shared/constants";
 
 const style: ThemeUIStyleObject = {
   referenceHeader: {
     p: 2,
     display: "block",
-    width: "100%"
+    width: "100%",
+    borderTop: "1px solid",
+    borderTopColor: "gray.2"
   },
   referenceLayers: {
-    minHeight: "75px",
     position: "relative",
     width: "100%",
     bottom: "0px",
     display: "inline-block"
   },
   referenceLayerList: {
-    position: "relative",
-    top: "10px",
-    display: "block"
+    flexDirection: "column",
+    alignItems: "flex-start",
+    p: 2,
+    pt: 0
   },
   selectionButton: {
     variant: "buttons.outlined",
@@ -41,35 +45,57 @@ const style: ThemeUIStyleObject = {
   }
 };
 
+const ReferenceLayer = ({ layer }: { readonly layer: IReferenceLayer }) => (
+  <Flex sx={{ alignItems: "center", pb: 1 }}>
+    <Icon
+      name={layer.layer_type === ReferenceLayerTypes.Point ? "mapPin" : "roundedSquare"}
+      color={layer.layer_type === ReferenceLayerTypes.Point ? "green" : "blue.4"}
+    ></Icon>
+    <span sx={{ pl: 1 }}>{layer.name}</span>
+  </Flex>
+);
+
 const ProjectReferenceLayers = ({
   referenceLayers
 }: {
   readonly referenceLayers?: readonly IReferenceLayer[];
 }) => {
+  const [isExpanded, setExpanded] = useState(false);
+
   return (
     <Flex sx={style.referenceLayers}>
-      <Box sx={style.referenceHeader}>
-        <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
+      <Flex sx={style.referenceHeader}>
+        <Heading as="h5" sx={{ variant: "text.h5", m: "0", fontSize: 2, display: "inline" }}>
           Reference layers
         </Heading>
         <Button
-          sx={{ ...style.selectionButton }}
+          sx={{ variant: "buttons.icon", float: "right" }}
           onClick={() => {
-            store.dispatch(toggleReferenceLayersModal());
+            setExpanded(!isExpanded);
           }}
         >
-          <Icon name="plus" />
+          <Icon name={isExpanded ? "horizontalRule" : "plus"} />
         </Button>
-      </Box>
-      <Box sx={style.referenceLayerList}>
-        {referenceLayers && (
-          <ul>
-            {referenceLayers.map(layer => (
-              <li key={layer.id}>{layer.name}</li>
-            ))}
-          </ul>
-        )}
-      </Box>
+      </Flex>
+      {isExpanded && (
+        <Flex sx={style.referenceLayerList}>
+          {referenceLayers && referenceLayers.length !== 0 ? (
+            referenceLayers.map(layer => <ReferenceLayer key={layer.id} layer={layer} />)
+          ) : referenceLayers !== undefined ? (
+            <Box sx={{ pb: 1, maxWidth: "fit-content" }}>
+              Add a polygon, line, or point layer as a reference layer for your map.
+            </Box>
+          ) : null}
+          <Button
+            sx={{ variant: "buttons.outlined" }}
+            onClick={() => {
+              store.dispatch(toggleReferenceLayersModal());
+            }}
+          >
+            <Icon name="upload" /> Upload layer
+          </Button>
+        </Flex>
+      )}
     </Flex>
   );
 };
