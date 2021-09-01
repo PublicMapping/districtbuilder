@@ -4,18 +4,7 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
 import { InputField } from "../components/Field";
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  jsx,
-  ThemeUIStyleObject,
-  Spinner,
-  Label,
-  Select,
-  Card
-} from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject, Label, Select, Card } from "theme-ui";
 
 import { IProject, ProjectId } from "../../shared/entities";
 import { createReferenceLayer } from "../api";
@@ -28,6 +17,7 @@ import { FileDrop } from "react-file-drop";
 import { WriteResource } from "../resource";
 import { MAX_UPLOAD_FILE_SIZE, ReferenceLayerTypes } from "../../shared/constants";
 import { readString } from "react-papaparse";
+import Icon from "./Icon";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -85,13 +75,8 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-type ImportLayerResource = WriteResource<ProjectId, ReferenceLayerGeojson>;
-
-const validate = (
-  form: ConfigurableForm,
-  importResource: ImportLayerResource
-): ReferenceLayerForm => {
-  const layer = "resource" in importResource ? importResource.resource : null;
+const validate = (form: ConfigurableForm): ReferenceLayerForm => {
+  const layer = form.layer;
   const name = form.name;
   const project = form.project;
   const label_field = form.label_field;
@@ -164,6 +149,22 @@ const AddReferenceLayerModal = ({
   const [fileError, setFileError] = useState<string | undefined>();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const blankForm: ConfigurableForm = {
+    name: null,
+    label_field: null,
+    project: project.id,
+    layer: null,
+    layer_type: null,
+    numberOfFeatures: null
+  };
+
+  const [createLayerResource, setCreateLayerResource] = useState<
+    WriteResource<ConfigurableForm, ReferenceLayerWithGeojson>
+  >({
+    data: blankForm
+  });
+  const formData = createLayerResource.data;
+
   async function checkCsvContainsValidPoints(file: Blob): Promise<boolean> {
     const contents = await new Response(file).text();
     const lines = contents.split("\n");
@@ -190,39 +191,30 @@ const AddReferenceLayerModal = ({
     }
   }
 
-  const blankForm: ConfigurableForm = {
-    name: null,
-    label_field: null,
-    project: project.id,
-    layer: null,
-    layer_type: null,
-    numberOfFeatures: null
-  };
-
-  const [importResource, setImportResource] = useState<
-    WriteResource<ProjectId, ReferenceLayerGeojson>
-  >({
-    data: project.id
-  });
-
-  const [importResponse, setImportResponse] = useState<ReferenceLayerGeojson | undefined>(
-    undefined
-  );
-
-  const [createLayerResource, setCreateLayerResource] = useState<
-    WriteResource<ConfigurableForm, ReferenceLayerWithGeojson>
-  >({
-    data: blankForm
-  });
-  const formData = createLayerResource.data;
-
   function resetForm() {
-    setImportResource({
-      data: project.id
-    });
-    setImportResponse(undefined);
     setFileError(undefined);
     setCreateLayerResource({ data: blankForm });
+  }
+
+  function setGeoJSON(geojson: ReferenceLayerGeojson) {
+    const layerType =
+      geojson.features[0]?.geometry?.type === "Point"
+        ? ReferenceLayerTypes.Point
+        : geojson.features[0]?.geometry?.type === "Polygon" ||
+          geojson.features[0]?.geometry?.type === "MultiPolygon"
+        ? ReferenceLayerTypes.Polygon
+        : undefined;
+    !layerType && setFileError("Geojson must be point or polygon");
+    layerType &&
+      setCreateLayerResource({
+        data: {
+          ...createLayerResource.data,
+          layer_type: layerType,
+          layer: geojson,
+          numberOfFeatures: geojson.features.length,
+          fields: Object.keys(geojson.features[0].properties) || null
+        }
+      });
   }
 
   function onReaderLoadCsv(event: ProgressEvent<FileReader>) {
@@ -231,14 +223,12 @@ const AddReferenceLayerModal = ({
       csvText &&
       readString(csvText, { header: true, transformHeader: (s: string) => s.toLowerCase() });
     const geojson = results && convertCsvToGeojson(results);
-    geojson && setImportResponse(geojson);
+    geojson && setGeoJSON(geojson);
   }
 
   function onReaderLoadGeoJson(event: ProgressEvent<FileReader>) {
-    // eslint-disable-next-line
-    const obj = event.target?.result && JSON.parse(event.target?.result.toString());
-    // eslint-disable-next-line
-    setImportResponse(obj);
+    const geojson = event.target?.result && JSON.parse(event.target?.result.toString());
+    geojson && setGeoJSON(geojson);
   }
 
   function parseFile(file: File, extension: string) {
@@ -249,47 +239,32 @@ const AddReferenceLayerModal = ({
     reader.readAsText(file);
   }
 
-  const setFile = useCallback(
-    (file: File) => {
-      async function setConfigFromFile() {
-        if (file) {
-          // Check file size (must be less than MaxUploadFileSize)
-          if (file.size > MAX_UPLOAD_FILE_SIZE) {
-            setFileError("File must be less than 25mb");
-            return;
-          }
-
-          const extension = file.name.split(".")[1];
-
-          if (extension !== "csv" && extension !== "geojson") {
-            setFileError("File must be a .csv or .geojson file");
-            return;
-          }
-          if (extension === "csv") {
-            const csvValid = await checkCsvContainsValidPoints(file);
-            if (!csvValid) {
-              return;
-            }
-          }
-
-          parseFile(file, extension);
+  const setFile = useCallback((file: File) => {
+    async function setConfigFromFile() {
+      if (file) {
+        // Check file size (must be less than MaxUploadFileSize)
+        if (file.size > MAX_UPLOAD_FILE_SIZE) {
+          setFileError("File must be less than 25mb");
+          return;
         }
+
+        const extension = file.name.split(".")[1];
+
+        if (extension !== "csv" && extension !== "geojson") {
+          setFileError("File must be a .csv or .geojson file");
+          return;
+        }
+        if (extension === "csv") {
+          const csvValid = await checkCsvContainsValidPoints(file);
+          if (!csvValid) {
+            return;
+          }
+        }
+
+        parseFile(file, extension);
       }
-      void setConfigFromFile();
-    },
-
-  useEffect(() => {
-    "resource" in importResource &&
-      importResource.resource &&
-      !createLayerResource.data.numberOfFeatures &&
-      setCreateLayerResource({
-        data: {
-          ...createLayerResource.data,
-          numberOfFeatures: importResource.resource.features.length,
-          fields: Object.keys(importResource.resource.features[0].properties) || null
-        }
-      });
-  }, [importResource]);
+    }
+    void setConfigFromFile();
   }, []);
 
   useEffect(() => {
@@ -297,24 +272,6 @@ const AddReferenceLayerModal = ({
       hideModal();
     }
   }, [createLayerResource]);
-
-  useEffect(() => {
-    if (importResponse) {
-      const layerType =
-        importResponse?.features[0]?.geometry?.type === "Point"
-          ? ReferenceLayerTypes.Point
-          : importResponse?.features[0]?.geometry?.type === "Polygon" ||
-            importResponse?.features[0]?.geometry?.type === "MultiPolygon"
-          ? ReferenceLayerTypes.Polygon
-          : undefined;
-      !layerType && setFileError("Geojson must be point or polygon");
-      layerType &&
-        setCreateLayerResource({
-          data: { ...createLayerResource.data, layer_type: layerType }
-        });
-      layerType && setImportResource({ ...importResource, resource: importResponse });
-    }
-  }, [importResponse]);
 
   const labelOptions = createLayerResource.data.fields
     ? createLayerResource.data.fields.map(val => (
@@ -344,7 +301,7 @@ const AddReferenceLayerModal = ({
             sx={{ flexDirection: "column" }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              const validatedForm = validate(formData, importResource);
+              const validatedForm = validate(formData);
               if (validatedForm.valid === true) {
                 setCreateLayerResource({ data: validatedForm, isPending: true });
                 const referenceLayer = {
@@ -364,76 +321,70 @@ const AddReferenceLayerModal = ({
               }
             }}
           >
-            {"isPending" in importResource && importResource.isPending ? (
-              <span>
-                <Spinner variant="spinner.small" /> Uploading
-              </span>
-            ) : "resource" in importResource || fileError ? (
+            {formData.layer && formData.layer_type ? (
               <Box>
-                {fileError ? (
-                  <Box sx={style.uploadError}>
-                    <b>Error: {fileError}</b>
-                  </Box>
-                ) : "resource" in importResource ? (
-                  <Box>
-                    <Box>
-                      Upload successful with {formData.numberOfFeatures}{" "}
-                      {formData.layer_type.toLowerCase()}s. Give your layer a name and choose which
-                      property to use for labels.
-                    </Box>
-                    <Card sx={{ variant: "card.flat" }}>
-                      <Flex sx={{ flexWrap: "wrap" }}>
-                        <Box sx={style.customInputContainer}>
-                          <InputField
-                            field="name"
-                            label="Layer name"
-                            resource={createLayerResource}
-                            inputProps={{
-                              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                const name = e.currentTarget.value;
-                                name !== null &&
-                                  setCreateLayerResource({
-                                    data: {
-                                      ...formData,
-                                      name
-                                    }
-                                  });
-                              }
-                            }}
-                          />
-                        </Box>
-                      </Flex>
-                    </Card>
-                    <Card sx={{ variant: "card.flat" }}>
-                      <Flex sx={{ flexWrap: "wrap" }}>
-                        <Box sx={style.customInputContainer}>
-                          <Label
-                            htmlFor="label-field-dropdown"
-                            sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
-                          >
-                            Label property:
-                          </Label>
-                          <Select
-                            id="label-field-dropdown"
-                            value={createLayerResource.data.label_field || "Select label field..."}
-                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                              const label = e.currentTarget.value;
+                <Box>
+                  Upload successful with {formData.numberOfFeatures}{" "}
+                  {formData.layer_type.toLowerCase()}s. Give your layer a name and choose which
+                  property to use for labels.
+                </Box>
+                <Card sx={{ variant: "card.flat" }}>
+                  <Flex sx={{ flexWrap: "wrap" }}>
+                    <Box sx={style.customInputContainer}>
+                      <InputField
+                        field="name"
+                        label="Layer name"
+                        resource={createLayerResource}
+                        inputProps={{
+                          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                            const name = e.currentTarget.value;
+                            name !== null &&
                               setCreateLayerResource({
-                                data: { ...createLayerResource.data, label_field: label }
+                                data: {
+                                  ...formData,
+                                  name
+                                }
                               });
-                            }}
-                            sx={{ width: "150px" }}
-                          >
-                            <option>Select label property...</option>
-                            {labelOptions}
-                          </Select>
-                        </Box>
-                      </Flex>
-                    </Card>
-                  </Box>
-                ) : (
-                  <Box></Box>
-                )}
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Flex>
+                </Card>
+                <Card sx={{ variant: "card.flat" }}>
+                  <Flex sx={{ flexWrap: "wrap" }}>
+                    <Box sx={style.customInputContainer}>
+                      <Label
+                        htmlFor="label-field-dropdown"
+                        sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
+                      >
+                        Label property:
+                      </Label>
+                      <Select
+                        id="label-field-dropdown"
+                        value={createLayerResource.data.label_field || "Select label field..."}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                          const label = e.currentTarget.value;
+                          setCreateLayerResource({
+                            data: { ...createLayerResource.data, label_field: label }
+                          });
+                        }}
+                        sx={{ width: "150px" }}
+                      >
+                        <option>Select label property...</option>
+                        {labelOptions}
+                      </Select>
+                    </Box>
+                  </Flex>
+                </Card>
+              </Box>
+            ) : fileError ? (
+              <Box sx={style.uploadError}>
+                <b>Error: {fileError}</b>
+                <Button sx={{ variant: "buttons.linkStyle" }} onClick={() => resetForm()}>
+                  <Icon name="undo" />
+                  Redo
+                </Button>
               </Box>
             ) : (
               <Box>
@@ -467,7 +418,7 @@ const AddReferenceLayerModal = ({
             )}
 
             <Flex sx={style.footer}>
-              {"resource" in importResource && (
+              {formData.layer ? (
                 <React.Fragment>
                   <Button id="primary-action" type="submit" disabled={!validate(formData).valid}>
                     Yes, add reference layer
