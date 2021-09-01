@@ -4,7 +4,7 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
 import { InputField } from "../components/Field";
-import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject, Label, Select, Card } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject, Label, Select } from "theme-ui";
 
 import { IProject, ProjectId } from "../../shared/entities";
 import { createReferenceLayer } from "../api";
@@ -37,6 +37,9 @@ const style: ThemeUIStyleObject = {
     width: "small",
     maxWidth: "90vw",
     overflow: "visible"
+  },
+  customInputContainer: {
+    width: "100%"
   },
   uploadSuccess: {
     bg: "success.0",
@@ -81,9 +84,10 @@ const validate = (form: ConfigurableForm): ReferenceLayerForm => {
   const project = form.project;
   const label_field = form.label_field;
   const layer_type = form.layer_type;
+  const fields = form.fields;
   const numberOfFeatures = layer && layer.features ? layer.features.length : 0;
 
-  return numberOfFeatures > 0 && layer && name && label_field && layer_type
+  return numberOfFeatures > 0 && layer && name && label_field && layer_type && fields
     ? {
         numberOfFeatures,
         name,
@@ -91,6 +95,7 @@ const validate = (form: ConfigurableForm): ReferenceLayerForm => {
         label_field,
         layer_type,
         layer,
+        fields,
         valid: true
       }
     : {
@@ -100,6 +105,7 @@ const validate = (form: ConfigurableForm): ReferenceLayerForm => {
         label_field,
         layer_type,
         layer,
+        fields,
         valid: false
       };
 };
@@ -112,7 +118,7 @@ interface ValidForm {
   readonly layer: ReferenceLayerGeojson;
   readonly numberOfFeatures: number;
   readonly label_field: string;
-  readonly fields?: readonly string[];
+  readonly fields: readonly string[];
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly valid: true;
 }
@@ -124,7 +130,7 @@ interface InvalidForm {
   readonly numberOfFeatures: number;
   readonly label_field: string | null;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon | null;
-  readonly fields?: readonly string[] | null;
+  readonly fields: readonly string[] | null;
   readonly valid: false;
 }
 
@@ -134,7 +140,7 @@ interface ConfigurableForm {
   readonly project: ProjectId;
   readonly layer: ReferenceLayerGeojson | null;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon | null;
-  readonly fields?: readonly string[] | null;
+  readonly fields: readonly string[] | null;
   readonly numberOfFeatures: number | null;
 }
 
@@ -155,6 +161,7 @@ const AddReferenceLayerModal = ({
     project: project.id,
     layer: null,
     layer_type: null,
+    fields: null,
     numberOfFeatures: null
   };
 
@@ -323,60 +330,56 @@ const AddReferenceLayerModal = ({
           >
             {formData.layer && formData.layer_type ? (
               <Box>
-                <Box>
+                <Box sx={{ mb: 3 }}>
                   Upload successful with {formData.numberOfFeatures}{" "}
                   {formData.layer_type.toLowerCase()}s. Give your layer a name and choose which
                   property to use for labels.
                 </Box>
-                <Card sx={{ variant: "card.flat" }}>
-                  <Flex sx={{ flexWrap: "wrap" }}>
-                    <Box sx={style.customInputContainer}>
-                      <InputField
-                        field="name"
-                        label="Layer name"
-                        resource={createLayerResource}
-                        inputProps={{
-                          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                            const name = e.currentTarget.value;
-                            name !== null &&
-                              setCreateLayerResource({
-                                data: {
-                                  ...formData,
-                                  name
-                                }
-                              });
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Flex>
-                </Card>
-                <Card sx={{ variant: "card.flat" }}>
-                  <Flex sx={{ flexWrap: "wrap" }}>
-                    <Box sx={style.customInputContainer}>
-                      <Label
-                        htmlFor="label-field-dropdown"
-                        sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
-                      >
-                        Label property:
-                      </Label>
-                      <Select
-                        id="label-field-dropdown"
-                        value={createLayerResource.data.label_field || "Select label field..."}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                          const label = e.currentTarget.value;
-                          setCreateLayerResource({
-                            data: { ...createLayerResource.data, label_field: label }
-                          });
-                        }}
-                        sx={{ width: "150px" }}
-                      >
-                        <option>Select label property...</option>
-                        {labelOptions}
-                      </Select>
-                    </Box>
-                  </Flex>
-                </Card>
+                <Flex sx={{ flexWrap: "wrap" }}>
+                  <Box sx={style.customInputContainer}>
+                    <InputField
+                      field="name"
+                      label="Layer name"
+                      resource={createLayerResource}
+                      inputProps={{
+                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                          const name = e.currentTarget.value;
+                          name !== null &&
+                            setCreateLayerResource({
+                              data: {
+                                ...formData,
+                                name
+                              }
+                            });
+                        }
+                      }}
+                    />
+                  </Box>
+                </Flex>
+                <Flex sx={{ flexWrap: "wrap" }}>
+                  <Box sx={style.customInputContainer}>
+                    <Label
+                      htmlFor="label-field-dropdown"
+                      sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
+                    >
+                      Label property:
+                    </Label>
+                    <Select
+                      id="label-field-dropdown"
+                      value={createLayerResource.data.label_field || "Select label field..."}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                        const label = e.currentTarget.value;
+                        setCreateLayerResource({
+                          data: { ...createLayerResource.data, label_field: label }
+                        });
+                      }}
+                      sx={{ width: "100%" }}
+                    >
+                      <option>Select label property...</option>
+                      {labelOptions}
+                    </Select>
+                  </Box>
+                </Flex>
               </Box>
             ) : fileError ? (
               <Box sx={style.uploadError}>
@@ -388,7 +391,6 @@ const AddReferenceLayerModal = ({
               </Box>
             ) : (
               <Box>
-                <Box>This will add a reference layer to your project.</Box>
                 <input
                   onChange={event => event.target.files && setFile(event.target.files[0])}
                   ref={fileInputRef}
@@ -405,7 +407,7 @@ const AddReferenceLayerModal = ({
                   sx={style.fileTarget}
                 >
                   {/* Clicking anywhere in this element triggers the FileDrop click handler, the <Button> is for show */}
-                  <Flex sx={{ p: 2 }}>
+                  <Flex sx={{ p: 2, minHeight: "150px" }}>
                     <Box sx={{ m: "auto" }}>
                       Drag and drop CSV / geojson file or{" "}
                       <Button type="button" id="primary-action">
@@ -418,23 +420,22 @@ const AddReferenceLayerModal = ({
             )}
 
             <Flex sx={style.footer}>
-              {formData.layer ? (
+              {formData.layer && (
                 <React.Fragment>
-                  <Button id="primary-action" type="submit" disabled={!validate(formData).valid}>
-                    Yes, add reference layer
+                  <Button
+                    id="primary-action"
+                    type="submit"
+                    disabled={
+                      !validate(formData).valid ||
+                      ("isPending" in createLayerResource && createLayerResource.isPending)
+                    }
+                  >
+                    Add to map
                   </Button>
                   <Button sx={{ ml: 2, variant: "buttons.subtle" }} onClick={() => resetForm()}>
                     Back
                   </Button>
                 </React.Fragment>
-              ) : (
-                <Button
-                  id="cancel-add-reference-layer"
-                  onClick={hideModal}
-                  sx={{ variant: "buttons.linkStyle", margin: "0 auto" }}
-                >
-                  Cancel
-                </Button>
               )}
             </Flex>
           </Flex>
