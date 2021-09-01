@@ -56,6 +56,11 @@ export enum CensusDate {
   Census2020 = "2020"
 }
 
+export enum ReferenceLayerTypes {
+  Polygon = "POLYGON",
+  Point = "POINT"
+}
+
 export const DEFAULT_POPULATION_DEVIATION = 5;
 
 export const DEFAULT_PINNED_METRIC_FIELDS: readonly MetricField[] = [

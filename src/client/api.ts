@@ -17,9 +17,16 @@ import {
   RegionConfigId,
   ProjectNest,
   DistrictsImportApiResponse,
-  PlanScoreAPIResponse
+  PlanScoreAPIResponse,
+  IReferenceLayer
 } from "../shared/entities";
-import { DistrictsGeoJSON, DynamicProjectData, PaginatedResponse } from "./types";
+import {
+  DistrictsGeoJSON,
+  DynamicProjectData,
+  PaginatedResponse,
+  CreateReferenceLayerData,
+  ReferenceLayerWithGeojson
+} from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();
@@ -187,6 +194,17 @@ export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJS
   });
 }
 
+export async function fetchProjectReferenceLayers(
+  id: ProjectId
+): Promise<readonly IReferenceLayer[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/reference-layer/project/${id}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.response.data));
+  });
+}
+
 export async function fetchProjects(
   page: number,
   limit: number
@@ -312,6 +330,19 @@ export async function importCsv(file: Blob): Promise<DistrictsImportApiResponse>
       .post(`/api/districts/import/csv`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       })
+      .then(response => {
+        return resolve(response.data);
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function createReferenceLayer(
+  referenceLayer: CreateReferenceLayerData
+): Promise<ReferenceLayerWithGeojson> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/reference-layer/`, referenceLayer)
       .then(response => {
         return resolve(response.data);
       })

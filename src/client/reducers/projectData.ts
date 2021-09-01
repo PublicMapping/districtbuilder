@@ -35,11 +35,15 @@ import {
   updatePinnedMetrics,
   updatePinnedMetricsSuccess,
   updatedPinnedMetricsFailure,
-  clearDuplicationState
+  clearDuplicationState,
+  toggleReferenceLayersModal,
+  projectReferenceLayersFetch,
+  projectReferenceLayersFetchSuccess,
+  projectReferenceLayersFetchFailure
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
-import { IProject } from "../../shared/entities";
+import { IProject, IReferenceLayer } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
@@ -56,6 +60,7 @@ import {
   exportProjectGeoJson,
   exportProjectShp,
   fetchProjectData,
+  fetchProjectReferenceLayers,
   fetchProjectGeoJson,
   patchProject,
   copyProject
@@ -92,6 +97,8 @@ export type ProjectDataState = {
   readonly staticData: Resource<StaticProjectData>;
   readonly projectNameSaving: SavingState;
   readonly saving: SavingState;
+  readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
+  readonly showReferenceLayersModal: boolean;
   readonly duplicatedProject: IProject | null;
 };
 
@@ -102,8 +109,10 @@ export const initialProjectDataState = {
   staticData: {
     isPending: false
   },
+  referenceLayers: { isPending: false },
   projectNameSaving: "saved",
   saving: "unsaved",
+  showReferenceLayersModal: false,
   duplicatedProject: null
 } as const;
 
@@ -201,12 +210,44 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           ? Cmd.run(showResourceFailedToast)
           : Cmd.none
       );
+    case getType(projectReferenceLayersFetch):
+      return loop(
+        {
+          ...state,
+          referenceLayers: { isPending: true }
+        },
+        Cmd.run(fetchProjectReferenceLayers, {
+          successActionCreator: projectReferenceLayersFetchSuccess,
+          failActionCreator: projectReferenceLayersFetchFailure,
+          args: [action.payload] as Parameters<typeof fetchProjectReferenceLayers>
+        })
+      );
+    case getType(projectReferenceLayersFetchSuccess):
+      return {
+        ...state,
+        referenceLayers: {
+          resource: action.payload
+        }
+      };
+    case getType(projectReferenceLayersFetchFailure):
+      return loop(
+        {
+          ...state,
+          referenceLayers: action.payload
+        },
+        Cmd.run(showActionFailedToast)
+      );
     case getType(staticDataFetchSuccess):
       return {
         ...state,
         staticData: {
           resource: action.payload
         }
+      };
+    case getType(toggleReferenceLayersModal):
+      return {
+        ...state,
+        showReferenceLayersModal: !state.showReferenceLayersModal
       };
     case getType(staticDataFetchFailure):
       return loop(

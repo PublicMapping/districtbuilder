@@ -16,6 +16,7 @@ import { OrganizationsModule } from "./organizations/organizations.module";
 import { ProjectsModule } from "./projects/projects.module";
 import { ProjectTemplatesModule } from "./project-templates/project-templates.module";
 import { RegionConfigsModule } from "./region-configs/region-configs.module";
+import { ReferenceLayersModule } from "./reference-layers/reference-layers.module";
 import { RollbarModule } from "./rollbar/rollbar.module";
 import { UsersModule } from "./users/users.module";
 
@@ -67,6 +68,7 @@ if (DEBUG) {
     OrganizationsModule,
     ProjectsModule,
     ProjectTemplatesModule,
+    ReferenceLayersModule,
     RegionConfigsModule,
     UsersModule
   ]

@@ -10,6 +10,7 @@ import {
   IProject,
   IStaticMetadata,
   LockedDistricts,
+  IReferenceLayer,
   MetricField
 } from "../../shared/entities";
 
@@ -53,6 +54,8 @@ import Icon from "./Icon";
 import ProjectSidebarHeader from "./ProjectSidebarHeader";
 import Tooltip from "./Tooltip";
 import PVIDisplay from "./PVIDisplay";
+import ProjectReferenceLayers from "./ProjectReferenceLayers";
+import { Resource } from "../resource";
 
 interface LoadingProps {
   readonly isLoading: boolean;
@@ -240,6 +243,7 @@ const ProjectSidebar = ({
   expandedProjectMetrics,
   geoUnitHierarchy,
   lockedDistricts,
+  referenceLayers,
   hoveredDistrictId,
   saving,
   isReadOnly,
@@ -252,6 +256,7 @@ const ProjectSidebar = ({
   readonly selectedGeounits: GeoUnits;
   readonly highlightedGeounits: GeoUnits;
   readonly expandedProjectMetrics: boolean;
+  readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
   readonly hoveredDistrictId: number | null;
@@ -465,6 +470,9 @@ const ProjectSidebar = ({
           </tbody>
         </Styled.table>
       </Box>
+      <ProjectReferenceLayers
+        referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
+      />
     </Flex>
   );
 };

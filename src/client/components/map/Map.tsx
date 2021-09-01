@@ -1011,6 +1011,7 @@ const DistrictsMap = ({
           <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
           and can no longer be edited.
           <Box>
+            {/* eslint-disable-next-line */}
             <Button onClick={() => store.dispatch(showConvertMapModal(true))}>
               Convert to 2020
             </Button>
