@@ -101,8 +101,7 @@ export type ChoroplethSteps = readonly (readonly [number, string])[];
 
 export type ReferenceLayerGeojson =
   | FeatureCollection<MultiPolygon, ReferenceLayerProperties>
-  | FeatureCollection<Point, ReferenceLayerProperties>
-  | null;
+  | FeatureCollection<Point, ReferenceLayerProperties>;
 
 export interface ReferenceLayerImportResponse {
   readonly geojson?: ReferenceLayerGeojson;
