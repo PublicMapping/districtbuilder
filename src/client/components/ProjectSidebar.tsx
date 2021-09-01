@@ -469,10 +469,10 @@ const ProjectSidebar = ({
             )}
           </tbody>
         </Styled.table>
-        <ProjectReferenceLayers
-          referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
-        />
       </Box>
+      <ProjectReferenceLayers
+        referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
+      />
     </Flex>
   );
 };

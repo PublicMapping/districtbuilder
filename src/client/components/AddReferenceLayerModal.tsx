@@ -27,13 +27,10 @@ import { projectReferenceLayersFetch, toggleReferenceLayersModal } from "../acti
 import { FileDrop } from "react-file-drop";
 import { WriteResource } from "../resource";
 import { MAX_UPLOAD_FILE_SIZE, ReferenceLayerTypes } from "../../shared/constants";
-import Icon from "./Icon";
 import { readString } from "react-papaparse";
 
 const style: ThemeUIStyleObject = {
   footer: {
-    display: "flex",
-    flexDirection: "column",
     marginTop: 5
   },
   header: {
@@ -166,16 +163,21 @@ const AddReferenceLayerModal = ({
   const hideModal = () => store.dispatch(toggleReferenceLayersModal()) && resetForm();
   const [fileError, setFileError] = useState<string | undefined>();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const importNumberRef = useRef(0);
 
   async function checkCsvContainsValidPoints(file: Blob): Promise<boolean> {
     const contents = await new Response(file).text();
     const lines = contents.split("\n");
     if (lines.length > 0) {
-      const header = lines[0].replace("\r", "").split(",");
+      const header = lines[0]
+        .replace("\r", "")
+        .split(",")
+        .map(s => s.toLowerCase());
       if (
-        (header.includes("lat") || header.includes("latitude")) &&
-        (header.includes("lon") || header.includes("long") || header.includes("longitude"))
+        (header.includes("lat") || header.includes("latitude") || header.includes("y")) &&
+        (header.includes("lon") ||
+          header.includes("long") ||
+          header.includes("longitude") ||
+          header.includes("x"))
       ) {
         return true;
       } else {
@@ -275,8 +277,6 @@ const AddReferenceLayerModal = ({
       }
       void setConfigFromFile();
     },
-    [importNumberRef]
-  );
 
   useEffect(() => {
     "resource" in importResource &&
@@ -290,6 +290,7 @@ const AddReferenceLayerModal = ({
         }
       });
   }, [importResource]);
+  }, []);
 
   useEffect(() => {
     if ("resource" in createLayerResource && createLayerResource.resource) {
@@ -375,11 +376,11 @@ const AddReferenceLayerModal = ({
                   </Box>
                 ) : "resource" in importResource ? (
                   <Box>
-                    <Box sx={style.uploadSuccess}>
-                      <b>Upload success</b>
+                    <Box>
+                      Upload successful with {formData.numberOfFeatures}{" "}
+                      {formData.layer_type.toLowerCase()}s. Give your layer a name and choose which
+                      property to use for labels.
                     </Box>
-                    <Flex>Number of features: {createLayerResource.data.numberOfFeatures}</Flex>
-                    <Flex>Layer type: {createLayerResource.data.layer_type}</Flex>
                     <Card sx={{ variant: "card.flat" }}>
                       <Flex sx={{ flexWrap: "wrap" }}>
                         <Box sx={style.customInputContainer}>
@@ -433,10 +434,6 @@ const AddReferenceLayerModal = ({
                 ) : (
                   <Box></Box>
                 )}
-                <Button sx={{ variant: "buttons.linkStyle" }} onClick={() => resetForm()}>
-                  <Icon name="undo" />
-                  Redo
-                </Button>
               </Box>
             ) : (
               <Box>
@@ -471,25 +468,23 @@ const AddReferenceLayerModal = ({
 
             <Flex sx={style.footer}>
               {"resource" in importResource && (
+                <React.Fragment>
+                  <Button id="primary-action" type="submit" disabled={!validate(formData).valid}>
+                    Yes, add reference layer
+                  </Button>
+                  <Button sx={{ ml: 2, variant: "buttons.subtle" }} onClick={() => resetForm()}>
+                    Back
+                  </Button>
+                </React.Fragment>
+              ) : (
                 <Button
-                  id="primary-action"
-                  sx={{ marginBottom: 3 }}
-                  type="submit"
-                  disabled={
-                    !validate(formData, importResource).valid &&
-                    !("errorMessage" in createLayerResource)
-                  }
+                  id="cancel-add-reference-layer"
+                  onClick={hideModal}
+                  sx={{ variant: "buttons.linkStyle", margin: "0 auto" }}
                 >
-                  Yes, add reference layer
+                  Cancel
                 </Button>
               )}
-              <Button
-                id="cancel-add-reference-layer"
-                onClick={hideModal}
-                sx={{ variant: "buttons.linkStyle", margin: "0 auto" }}
-              >
-                Cancel
-              </Button>
             </Flex>
           </Flex>
         </React.Fragment>
