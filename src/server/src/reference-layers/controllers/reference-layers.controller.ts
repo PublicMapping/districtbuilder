@@ -4,7 +4,6 @@ import {
   Get,
   InternalServerErrorException,
   Logger,
-  Request,
   Param,
   NotFoundException,
   UseInterceptors,
@@ -159,13 +158,11 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get("project/:projectId")
-  async getProjectReferenceLayers(
+  getProjectReferenceLayers(
     @ParsedRequest() req: CrudRequest,
     @Param("projectId") projectId: ProjectId
   ): Promise<IReferenceLayer[]> {
     const userId = req.parsed.authPersist.userId;
-    console.log(userId);
-    const refLayers = await this.service.getProjectReferenceLayers(projectId, userId);
-    return refLayers;
+    return this.service.getProjectReferenceLayers(projectId, userId);
   }
 }
