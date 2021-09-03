@@ -24,7 +24,9 @@ import {
   GeoUnits,
   IProject,
   IStaticMetadata,
-  LockedDistricts
+  LockedDistricts,
+  ReferenceLayerId,
+  IReferenceLayer
 } from "../../../shared/entities";
 import {
   DistrictsGeoJSON,
@@ -91,6 +93,10 @@ import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
 import Icon from "../Icon";
+import { ReferenceLayerTypes } from "../../../shared/constants";
+import { Resource } from "../../resource";
+import { getColor } from "@theme-ui/color";
+import theme from "../../theme";
 
 function removeEvaluateMetricLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
@@ -193,6 +199,8 @@ interface Props {
   readonly isThisUsersMap: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly findMenuOpen: boolean;
+  readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
+  readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
   readonly findTool: FindTool;
   readonly label?: string;
   readonly map?: MapboxGL.Map;
@@ -295,12 +303,17 @@ const DistrictsMap = ({
   findTool,
   label,
   map,
+  referenceLayers,
+  showReferenceLayers,
   setMap,
   electionYear
 }: Props) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
   const [panToggled, setTogglePan] = useState<boolean>(false);
+  const [activeReferenceLayers, setActiveReferenceLayers] = useState<readonly ReferenceLayerId[]>(
+    []
+  );
 
   const isPanning =
     panToggled &&
@@ -385,6 +398,16 @@ const DistrictsMap = ({
     setLevelVisibility();
     map.on("load", onMapLoad);
     map.on("zoomend", setLevelVisibility);
+    map.loadImage(
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      require("../../media/map-pin.png"),
+      (error: unknown, image: HTMLImageElement | ArrayBufferView | ImageData) => {
+        // eslint-disable-next-line functional/no-throw-statement
+        if (error) throw error;
+        // add image to the active style and make it SDF-enabled
+        map.addImage("map-pin", image, { sdf: true });
+      }
+    );
 
     return () => {
       map.off("load", onMapLoad);
@@ -583,6 +606,79 @@ const DistrictsMap = ({
       ]);
     }
   }, [map, hoveredDistrictId]);
+
+  // Add / remove reference layers when there are selected in the sidebar
+  useEffect(() => {
+    const getSourceId = (layerId: ReferenceLayerId) => `reference-source-${layerId}`;
+    const getLayerId = (layerId: ReferenceLayerId) => `reference-layer-${layerId}`;
+    const getLineLabelsLayerId = (layerId: ReferenceLayerId) => `reference-layer-labels-${layerId}`;
+    if (map && "resource" in referenceLayers) {
+      referenceLayers.resource.forEach(layer => {
+        if (!activeReferenceLayers.includes(layer.id) && showReferenceLayers.has(layer.id)) {
+          // If the layer isn't already visible, add it
+          map.addSource(getSourceId(layer.id), {
+            type: "geojson",
+            data: `/api/reference-layer/${layer.id}/geojson`
+          });
+          if (layer.layer_type === ReferenceLayerTypes.Polygon) {
+            map.addLayer({
+              id: getLayerId(layer.id),
+              type: "line",
+              source: getSourceId(layer.id),
+              paint: {
+                "line-color": getColor(theme, "blue.4"),
+                "line-opacity": 0.9,
+                "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
+              }
+            });
+            map.addLayer({
+              id: getLineLabelsLayerId(layer.id),
+              type: "symbol",
+              source: getSourceId(layer.id),
+              layout: {
+                "text-field": ["get", layer.label_field],
+                "symbol-placement": "point"
+              },
+              paint: {
+                "text-color": "#000",
+                "text-halo-color": "#FFF",
+                "text-halo-width": 1
+              }
+            });
+          } else if (layer.layer_type === ReferenceLayerTypes.Point) {
+            map.addLayer({
+              id: getLayerId(layer.id),
+              type: "symbol",
+              source: getSourceId(layer.id),
+              layout: {
+                "icon-image": "map-pin",
+                "text-field": ["get", layer.label_field],
+                "text-anchor": "top"
+              },
+              paint: {
+                "icon-color": getColor(theme, "green"),
+                "text-translate": [0, 12],
+                "text-color": "#000",
+                "text-halo-color": "#FFF",
+                "text-halo-width": 1
+              }
+            });
+          } else {
+            assertNever(layer.layer_type);
+          }
+          setActiveReferenceLayers([...activeReferenceLayers, layer.id]);
+        } else if (activeReferenceLayers.includes(layer.id) && !showReferenceLayers.has(layer.id)) {
+          // If the layer was visible before, remove it
+          map.removeLayer(getLayerId(layer.id));
+          if (layer.layer_type === ReferenceLayerTypes.Polygon) {
+            map.removeLayer(getLineLabelsLayerId(layer.id));
+          }
+          map.removeSource(getSourceId(layer.id));
+          setActiveReferenceLayers([...activeReferenceLayers.filter(id => id !== layer.id)]);
+        }
+      });
+    }
+  }, [map, showReferenceLayers, referenceLayers, activeReferenceLayers]);
 
   const removeSelectedFeatures = (map: MapboxGL.Map, staticMetadata: IStaticMetadata) => {
     staticMetadata.geoLevelHierarchy
@@ -1190,6 +1286,8 @@ function mapStateToProps(state: State) {
     findTool: state.project.findTool,
     electionYear: state.project.electionYear,
     showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal,
+    referenceLayers: state.project.referenceLayers,
+    showReferenceLayers: state.project.showReferenceLayers,
     isThisUsersMap:
       "resource" in state.user &&
       "resource" in state.project.projectData &&

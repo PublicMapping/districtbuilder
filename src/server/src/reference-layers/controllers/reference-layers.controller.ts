@@ -10,6 +10,7 @@ import {
   UseGuards
 } from "@nestjs/common";
 import { IReferenceLayer } from "../../../../shared/entities";
+import { FeatureCollection } from "geojson";
 
 import {
   Crud,
@@ -135,6 +136,7 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     }
   }
 
+  @UseInterceptors(CrudRequestInterceptor)
   @Override()
   @UseGuards(OptionalJwtAuthGuard)
   async getOne(
@@ -153,6 +155,17 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
       throw new NotFoundException(`Layer ${id} not found`);
     }
     return referenceLayer;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get(":id/geojson")
+  async getGeojson(
+    @Param("id") id: ReferenceLayerId,
+    @ParsedRequest() req: CrudRequest
+  ): Promise<FeatureCollection> {
+    const refLayer = await this.getOne(id, req);
+    return refLayer.layer;
   }
 
   @UseInterceptors(CrudRequestInterceptor)

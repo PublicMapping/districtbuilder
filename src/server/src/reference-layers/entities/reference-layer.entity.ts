@@ -6,8 +6,7 @@ import { ReferenceLayerTypes } from "../../../../shared/constants";
 
 export type ReferenceLayerGeojson =
   | FeatureCollection<Point, ReferenceLayerProperties>
-  | FeatureCollection<MultiPolygon, ReferenceLayerProperties>
-  | null;
+  | FeatureCollection<MultiPolygon, ReferenceLayerProperties>;
 
 @Entity()
 export class ReferenceLayer implements IReferenceLayer {

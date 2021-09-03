@@ -171,6 +171,7 @@ const ProjectScreen = ({
             expandedProjectMetrics={districtDrawing.expandedProjectMetrics}
             geoUnitHierarchy={geoUnitHierarchy}
             referenceLayers={referenceLayers}
+            showReferenceLayers={districtDrawing.showReferenceLayers}
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
