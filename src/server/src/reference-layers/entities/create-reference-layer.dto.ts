@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 import { ReferenceLayerTypes } from "../../../../shared/constants";
 
 import { CreateReferenceLayerData } from "../../../../shared/entities";
@@ -12,8 +12,8 @@ export class CreateReferenceLayerDto implements CreateReferenceLayerData {
   readonly project: ProjectIdDto;
   @IsNotEmpty({ message: "Please enter a layer type" })
   readonly layer_type: ReferenceLayerTypes;
-  @IsNotEmpty({ message: "Please enter a label field" })
-  readonly label_field: string;
+  @IsOptional()
+  readonly label_field?: string;
   @IsNotEmpty({ message: "Please enter a value field" })
   readonly layer: ReferenceLayerGeojson;
 }
