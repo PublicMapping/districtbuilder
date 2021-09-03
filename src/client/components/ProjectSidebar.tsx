@@ -423,10 +423,12 @@ const ProjectSidebar = ({
           </tbody>
         </Styled.table>
       </Box>
-      <ProjectReferenceLayers
-        referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
-        showReferenceLayers={showReferenceLayers}
-      />
+      {!expandedProjectMetrics && (
+        <ProjectReferenceLayers
+          referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
+          showReferenceLayers={showReferenceLayers}
+        />
+      )}
     </Flex>
   );
 };
