@@ -652,6 +652,9 @@ const DistrictsMap = ({
               source: getSourceId(layer.id),
               layout: {
                 "icon-image": "map-pin",
+                "icon-allow-overlap": true,
+                "icon-ignore-placement": true,
+                "text-optional": true,
                 "text-field": ["get", layer.label_field],
                 "text-anchor": "top"
               },
