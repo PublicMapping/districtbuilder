@@ -311,7 +311,7 @@ const DistrictsMap = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
   const [panToggled, setTogglePan] = useState<boolean>(false);
-  const [activeReferenceLayers, setActiveReferenceLayers] = useState<readonly ReferenceLayerId[]>(
+  const [activeReferenceLayers, setActiveReferenceLayers] = useState<readonly IReferenceLayer[]>(
     []
   );
 
@@ -613,8 +613,26 @@ const DistrictsMap = ({
     const getLayerId = (layerId: ReferenceLayerId) => `reference-layer-${layerId}`;
     const getLineLabelsLayerId = (layerId: ReferenceLayerId) => `reference-layer-labels-${layerId}`;
     if (map && "resource" in referenceLayers) {
+      activeReferenceLayers.forEach(layer => {
+        if (
+          activeReferenceLayers.some(l => l.id === layer.id) &&
+          !showReferenceLayers.has(layer.id)
+        ) {
+          // If the layer was visible before, remove it
+          map.removeLayer(getLayerId(layer.id));
+          if (layer.layer_type === ReferenceLayerTypes.Polygon) {
+            map.removeLayer(getLineLabelsLayerId(layer.id));
+          }
+          map.removeSource(getSourceId(layer.id));
+          setActiveReferenceLayers([...activeReferenceLayers.filter(l => l.id !== layer.id)]);
+        }
+      });
+
       referenceLayers.resource.forEach(layer => {
-        if (!activeReferenceLayers.includes(layer.id) && showReferenceLayers.has(layer.id)) {
+        if (
+          !activeReferenceLayers.some(l => l.id === layer.id) &&
+          showReferenceLayers.has(layer.id)
+        ) {
           // If the layer isn't already visible, add it
           map.addSource(getSourceId(layer.id), {
             type: "geojson",
@@ -669,15 +687,7 @@ const DistrictsMap = ({
           } else {
             assertNever(layer.layer_type);
           }
-          setActiveReferenceLayers([...activeReferenceLayers, layer.id]);
-        } else if (activeReferenceLayers.includes(layer.id) && !showReferenceLayers.has(layer.id)) {
-          // If the layer was visible before, remove it
-          map.removeLayer(getLayerId(layer.id));
-          if (layer.layer_type === ReferenceLayerTypes.Polygon) {
-            map.removeLayer(getLineLabelsLayerId(layer.id));
-          }
-          map.removeSource(getSourceId(layer.id));
-          setActiveReferenceLayers([...activeReferenceLayers.filter(id => id !== layer.id)]);
+          setActiveReferenceLayers([...activeReferenceLayers, layer]);
         }
       });
     }

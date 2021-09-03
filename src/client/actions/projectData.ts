@@ -5,7 +5,8 @@ import {
   IProject,
   IReferenceLayer,
   LockedDistricts,
-  ProjectId
+  ProjectId,
+  ReferenceLayerId
 } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { ResourceFailure } from "../resource";
@@ -36,6 +37,18 @@ export const projectReferenceLayersFetchSuccess = createAction(
 export const projectReferenceLayersFetchFailure = createAction(
   "Project reference layers fetch failure"
 )<ResourceFailure>();
+
+export const referenceLayerDelete = createAction("Reference layer delete")<ReferenceLayerId>();
+export const referenceLayerDeleteSuccess = createAction("Reference layer delete success")<
+  ReferenceLayerId
+>();
+export const referenceLayerDeleteFailure = createAction("Reference layer delete failure")<
+  ResourceFailure
+>();
+
+export const setDeleteReferenceLayer = createAction(
+  "Set the id for the delete reference layer modal"
+)<IReferenceLayer | undefined>();
 
 export const staticDataFetchSuccess = createAction("Static data fetch success")<
   StaticProjectData

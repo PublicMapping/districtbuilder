@@ -59,7 +59,7 @@ import { ProjectVisibility } from "../../../../shared/constants";
     }
   },
   routes: {
-    only: ["createOneBase", "getOneBase"]
+    only: ["createOneBase", "deleteOneBase", "getOneBase"]
   }
 })
 @CrudAuth({
@@ -155,6 +155,23 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
       throw new NotFoundException(`Layer ${id} not found`);
     }
     return referenceLayer;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @Override()
+  @UseGuards(OptionalJwtAuthGuard)
+  async deleteOne(
+    @Param("id") id: ReferenceLayerId,
+    @ParsedRequest() req: CrudRequest
+  ): Promise<void | ReferenceLayer> {
+    if (!this.base.deleteOneBase) {
+      this.logger.error("Routes misconfigured. Missing `deleteOneBase` route");
+      throw new InternalServerErrorException();
+    }
+    if (!isUUID(id)) {
+      throw new NotFoundException(`Layer ID ${id} is not a valid UUID`);
+    }
+    return await this.base.deleteOneBase(req);
   }
 
   @UseInterceptors(CrudRequestInterceptor)

@@ -9,6 +9,7 @@ import store from "../store";
 import { ReferenceLayerTypes } from "../../shared/constants";
 import { toggleReferenceLayer } from "../actions/districtDrawing";
 import { toggleReferenceLayersModal } from "../actions/projectData";
+import ReferenceLayerFlyout from "./ReferenceLayerFlyout";
 
 const style: ThemeUIStyleObject = {
   referenceHeader: {
@@ -47,13 +48,15 @@ const style: ThemeUIStyleObject = {
 };
 
 const ReferenceLayer = ({
+  isReadOnly,
   layer,
   checked
 }: {
+  readonly isReadOnly: boolean;
   readonly layer: IReferenceLayer;
   readonly checked: boolean;
 }) => (
-  <Flex sx={{ alignItems: "center", pb: 1 }}>
+  <Flex sx={{ alignItems: "center", pb: 1, width: "100%" }}>
     <Box sx={{ display: "inline" }}>
       <Label sx={{ m: "auto" }}>
         <Checkbox
@@ -70,13 +73,20 @@ const ReferenceLayer = ({
       color={layer.layer_type === ReferenceLayerTypes.Point ? "green" : "blue.4"}
     ></Icon>
     <span sx={{ pl: 1 }}>{layer.name}</span>
+    {!isReadOnly && (
+      <Box sx={{ ml: "auto" }}>
+        <ReferenceLayerFlyout layer={layer} />
+      </Box>
+    )}
   </Flex>
 );
 
 const ProjectReferenceLayers = ({
+  isReadOnly,
   referenceLayers,
   showReferenceLayers
 }: {
+  readonly isReadOnly: boolean;
   readonly referenceLayers?: readonly IReferenceLayer[];
   readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
 }) => {
@@ -105,6 +115,7 @@ const ProjectReferenceLayers = ({
                 key={layer.id}
                 layer={layer}
                 checked={showReferenceLayers.has(layer.id)}
+                isReadOnly={isReadOnly}
               />
             ))
           ) : referenceLayers !== undefined ? (

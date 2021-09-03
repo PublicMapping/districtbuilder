@@ -425,6 +425,7 @@ const ProjectSidebar = ({
       </Box>
       {!expandedProjectMetrics && (
         <ProjectReferenceLayers
+          isReadOnly={isReadOnly}
           referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
           showReferenceLayers={showReferenceLayers}
         />
