@@ -90,7 +90,7 @@ const ProjectReferenceLayers = ({
   readonly referenceLayers?: readonly IReferenceLayer[];
   readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
 }) => {
-  const [isExpanded, setExpanded] = useState(false);
+  const [isExpanded, setExpanded] = useState(referenceLayers?.length !== 0);
 
   return (
     <Flex sx={style.referenceLayers}>
