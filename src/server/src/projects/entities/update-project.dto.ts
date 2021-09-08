@@ -11,7 +11,7 @@ import {
 } from "class-validator";
 
 import { ProjectVisibility } from "../../../../shared/constants";
-import { DistrictsDefinition, UpdateProjectData, MetricField } from "../../../../shared/entities";
+import { DistrictsDefinition, UpdateProjectData } from "../../../../shared/entities";
 
 export class UpdateProjectDto implements UpdateProjectData {
   @IsNotEmpty({ message: "Please enter a name for your project" })
@@ -39,7 +39,7 @@ export class UpdateProjectDto implements UpdateProjectData {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  readonly pinnedMetricFields: MetricField[];
+  readonly pinnedMetricFields: string[];
   @IsBoolean()
   @IsOptional()
   readonly archived: boolean;

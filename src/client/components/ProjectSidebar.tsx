@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import React, { Fragment, memo, useEffect, useState } from "react";
 import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { pickBy, sum } from "lodash";
 
 import {
   DemographicCounts,
@@ -9,9 +10,10 @@ import {
   GeoUnits,
   IProject,
   IStaticMetadata,
-  LockedDistricts,
   IReferenceLayer,
-  MetricField
+  LockedDistricts,
+  MetricsList,
+  VotingMetricsList
 } from "../../shared/entities";
 
 import {
@@ -36,9 +38,9 @@ import {
   computeDemographicSplit,
   has16Election,
   has20Election,
-  demographicsHasOther,
   isMajorityMinority,
-  getMajorityRaceDisplay
+  getMajorityRaceDisplay,
+  capitalizeFirstLetter
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -56,13 +58,15 @@ import Tooltip from "./Tooltip";
 import PVIDisplay from "./PVIDisplay";
 import ProjectReferenceLayers from "./ProjectReferenceLayers";
 import { Resource } from "../resource";
+import { getVotingMetricFields, getDemographicsMetricFields } from "../../shared/functions";
+import { CORE_METRIC_FIELDS } from "../../shared/constants";
 
 interface LoadingProps {
   readonly isLoading: boolean;
 }
 
 interface MetricHeader {
-  readonly metric: MetricField;
+  readonly metric: string;
   readonly text: string;
   readonly tooltip: string;
 }
@@ -170,8 +174,8 @@ const MetricPinButton = ({
   pinnedMetrics,
   isReadOnly
 }: {
-  readonly metric: MetricField;
-  readonly pinnedMetrics: readonly MetricField[];
+  readonly metric: string;
+  readonly pinnedMetrics: readonly string[];
   readonly isReadOnly: boolean;
 }) => {
   const metricIsPinned = pinnedMetrics.includes(metric);
@@ -213,8 +217,8 @@ const PinnableMetricHeader = ({
   expandedProjectMetrics,
   isReadOnly
 }: {
-  readonly metric: MetricField;
-  readonly pinnedMetrics: readonly MetricField[];
+  readonly metric: string;
+  readonly pinnedMetrics: readonly string[];
   readonly text: string;
   readonly tooltip: string;
   readonly expandedProjectMetrics: boolean;
@@ -262,7 +266,7 @@ const ProjectSidebar = ({
   readonly hoveredDistrictId: number | null;
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
-  readonly pinnedMetrics?: readonly MetricField[];
+  readonly pinnedMetrics?: readonly string[];
 } & LoadingProps) => {
   const multElections = hasMultipleElections(staticMetadata);
   const has2016Election = has16Election(staticMetadata);
@@ -270,8 +274,8 @@ const ProjectSidebar = ({
   const polLabel = multElections
     ? "Cook Partisan Voting Index (2016 / 2020)"
     : "Political Lean (2016)";
-  const otherDemographics = demographicsHasOther(staticMetadata);
-  const hasElectionData = has2016Election || has2020Election || false;
+  const hasElectionData = has2016Election || has2020Election;
+
   const coreMetricHeaders: readonly MetricHeader[] = [
     {
       metric: "population",
@@ -287,130 +291,76 @@ const ProjectSidebar = ({
       metric: "raceChart",
       text: "Race",
       tooltip: "Demographics by race"
-    },
-    {
-      metric: "whitePopulation",
-      text: "White",
-      tooltip: "Number of people in this district"
-    },
-    {
-      metric: "blackPopulation",
-      text: "Black",
-      tooltip: "Number of people in this district"
-    },
-    {
-      metric: "asianPopulation",
-      text: "Asian",
-      tooltip: "Number of people in this district"
-    },
-    {
-      metric: "hispanicPopulation",
-      text: "Hispanic",
-      tooltip: "Number of people in this district"
     }
   ];
 
-  const allDemographicHeaders: readonly MetricHeader[] = otherDemographics
-    ? [
-        ...coreMetricHeaders,
-        {
-          metric: "otherPopulation",
-          text: "Other",
-          tooltip: "Number of people in this district"
-        }
-      ]
-    : [
-        ...coreMetricHeaders,
-        {
-          metric: "nativePopulation",
-          text: "Native",
-          tooltip: "Number of people in this district"
-        },
-        {
-          metric: "pacificPopulation",
-          text: "Pacific",
-          tooltip: "Number of people in this district"
-        }
-      ];
+  const demographicHeaders: readonly MetricHeader[] =
+    (staticMetadata &&
+      getDemographicsMetricFields(staticMetadata).flatMap(([id, metric]) =>
+        id in CORE_METRIC_FIELDS
+          ? []
+          : [
+              {
+                text: capitalizeFirstLetter(id),
+                metric: metric,
+                tooltip: "Number of people in this district"
+              }
+            ]
+      )) ||
+    [];
+
+  const electionText = {
+    dem16: "Dem. '16",
+    rep16: "Rep. '16",
+    other16: "Other '16",
+    dem20: "Dem. '20",
+    rep20: "Rep. '20",
+    other20: "Other '20"
+  };
+
+  const electionTooltip = {
+    dem16: "Democratic vote share 2016",
+    rep16: "Republican vote share 2016",
+    other16: "Other vote share 2016",
+    dem20: "Democratic vote share 2020",
+    rep20: "Republican vote share 2020",
+    other20: "Other vote share 2020"
+  };
 
   const electionMetricHeaders: readonly MetricHeader[] =
-    has2020Election && has2016Election
+    (staticMetadata &&
+      getVotingMetricFields(staticMetadata)?.map(([, metric]) => ({
+        text: electionText[metric],
+        tooltip: electionTooltip[metric],
+        metric
+      }))) ||
+    [];
+
+  const metricHeaders: readonly MetricHeader[] = [
+    ...coreMetricHeaders,
+    ...demographicHeaders,
+    {
+      metric: "majorityRace",
+      text: "Majority race",
+      tooltip: "Majority race"
+    },
+    ...(hasElectionData
       ? [
           {
             metric: "pvi",
             text: "PVI",
             tooltip: polLabel
           },
-          {
-            metric: "dem16",
-            text: "Dem. '16",
-            tooltip: "Democratic vote share 2016"
-          },
-          {
-            metric: "rep16",
-            text: "Rep. '16",
-            tooltip: "Republican vote share 2016"
-          },
-          {
-            metric: "other16",
-            text: "Other '16",
-            tooltip: "Other vote share 2016"
-          },
-          {
-            metric: "dem20",
-            text: "Dem. '20",
-            tooltip: "Democratic vote share 2020"
-          },
-          {
-            metric: "rep20",
-            text: "Rep. '20",
-            tooltip: "Republican vote share 2020"
-          },
-          {
-            metric: "other20",
-            text: "Other '20",
-            tooltip: "Other vote share 2020"
-          }
+          ...electionMetricHeaders
         ]
-      : has2016Election
-      ? [
-          {
-            metric: "pvi",
-            text: "Pol.",
-            tooltip: polLabel
-          },
-          {
-            metric: "dem16",
-            text: "Dem. '16",
-            tooltip: "Democratic vote share 2016"
-          },
-          {
-            metric: "rep16",
-            text: "Rep. '16",
-            tooltip: "Republican vote share 2016"
-          },
-          {
-            metric: "other16",
-            text: "Other '16",
-            tooltip: "Other vote share 2016"
-          }
-        ]
-      : [];
-  /// This is a little wonky to preserve the column ordering where PVI is displayed before compactness
-  const metricHeaders: readonly MetricHeader[] = [
-    ...allDemographicHeaders,
-    {
-      metric: "majorityRace",
-      text: "Majority race",
-      tooltip: "Majority race"
-    },
-    ...electionMetricHeaders,
+      : []),
     {
       metric: "compactness",
       text: "Comp.",
       tooltip: "Compactness score (Polsby-Popper)"
     }
   ];
+
   return (
     <Flex
       sx={expandedProjectMetrics ? style.sidebarExpanded : style.sidebar}
@@ -527,6 +477,8 @@ const SidebarRow = memo(
   ({
     district,
     pinnedMetricFields,
+    demographicsMetricFields,
+    electionsMetricFields,
     selected,
     selectedPopulationDifference,
     expandedProjectMetrics,
@@ -541,7 +493,9 @@ const SidebarRow = memo(
     popDeviationThreshold
   }: {
     readonly district: DistrictGeoJSON;
-    readonly pinnedMetricFields: readonly MetricField[];
+    readonly pinnedMetricFields: readonly string[];
+    readonly demographicsMetricFields: MetricsList;
+    readonly electionsMetricFields: VotingMetricsList;
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
     readonly expandedProjectMetrics: boolean;
@@ -571,13 +525,6 @@ const SidebarRow = memo(
         ? "0"
         : `${intermediateDeviation > 0 ? "+" : ""}${intermediateDeviation.toLocaleString()}`;
 
-    const otherDemographics = "other" in demographics;
-
-    function getPartyVoteShareDisplay(party1: number, party2: number, party3: number): string {
-      const percent = calculatePartyVoteShare(party1, party2 + party3);
-      return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
-    }
-
     const compactnessDisplay =
       districtId === 0 ? (
         <span sx={style.blankValue}>{BLANK_VALUE}</span>
@@ -594,6 +541,28 @@ const SidebarRow = memo(
       Object.keys(district.properties.voting || {}).length > 0
         ? district.properties.voting
         : undefined;
+
+    function getPartyVoteShareDisplay(partyAndElection: string): string {
+      const year = partyAndElection.endsWith("16")
+        ? "16"
+        : partyAndElection.endsWith("20")
+        ? "20"
+        : undefined;
+      const votesForYear =
+        year && voting ? pickBy(voting, (val, key) => key.endsWith(year)) : voting;
+      const votesForParty = (votesForYear && votesForYear[partyAndElection]) || 0;
+      const otherVotes =
+        (votesForYear &&
+          sum(
+            Object.entries(votesForYear).map(([id, votes]) => (id !== partyAndElection ? votes : 0))
+          )) ||
+        0;
+      const percent = calculatePartyVoteShare(votesForParty, otherVotes);
+      return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
+    }
+
+    const isVisible = (field: string) =>
+      pinnedMetricFields.includes(field) || expandedProjectMetrics;
 
     return (
       <Styled.tr
@@ -626,12 +595,12 @@ const SidebarRow = memo(
             )}
           </Flex>
         </Styled.td>
-        {(pinnedMetricFields.includes("population") || expandedProjectMetrics) && (
+        {isVisible("population") && (
           <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             {populationDisplay}
           </Styled.td>
         )}
-        {(pinnedMetricFields.includes("populationDeviation") || expandedProjectMetrics) && (
+        {isVisible("populationDeviation") && (
           <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <Tooltip
               placement="top-start"
@@ -684,7 +653,7 @@ const SidebarRow = memo(
             </Tooltip>
           </Styled.td>
         )}
-        {(pinnedMetricFields.includes("raceChart") || expandedProjectMetrics) && (
+        {isVisible("raceChart") && (
           <Styled.td sx={style.td}>
             <Tooltip
               placement="top-start"
@@ -718,243 +687,52 @@ const SidebarRow = memo(
             </Tooltip>
           </Styled.td>
         )}
-        {(pinnedMetricFields.includes("whitePopulation") || expandedProjectMetrics) && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-            <span>{computeDemographicSplit(demographics.white, intermediatePopulation)}%</span>
-          </Styled.td>
+        {demographicsMetricFields.map(
+          ([id, metric]) =>
+            isVisible(metric) && (
+              <Styled.td
+                key={metric}
+                sx={{ ...style.td, ...style.number, ...{ color: textColor } }}
+              >
+                <span>{computeDemographicSplit(demographics[id], intermediatePopulation)}%</span>
+              </Styled.td>
+            )
         )}
-        {(pinnedMetricFields.includes("blackPopulation") || expandedProjectMetrics) && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-            <span>{computeDemographicSplit(demographics.black, intermediatePopulation)}%</span>
-          </Styled.td>
-        )}
-        {(pinnedMetricFields.includes("asianPopulation") || expandedProjectMetrics) && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-            <span>{computeDemographicSplit(demographics.asian, intermediatePopulation)}%</span>
-          </Styled.td>
-        )}
-        {(pinnedMetricFields.includes("hispanicPopulation") || expandedProjectMetrics) && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-            <span>{computeDemographicSplit(demographics.hispanic, intermediatePopulation)}%</span>
-          </Styled.td>
-        )}
-        {!otherDemographics &&
-          (pinnedMetricFields.includes("nativePopulation") || expandedProjectMetrics) && (
-            <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-              <span>{computeDemographicSplit(demographics.native, intermediatePopulation)}%</span>
-            </Styled.td>
-          )}
-        {!otherDemographics &&
-          (pinnedMetricFields.includes("pacificPopulation") || expandedProjectMetrics) && (
-            <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-              <span>{computeDemographicSplit(demographics.pacific, intermediatePopulation)}%</span>
-            </Styled.td>
-          )}
-        {otherDemographics &&
-          (pinnedMetricFields.includes("otherPopulation") || expandedProjectMetrics) && (
-            <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
-              <span>{computeDemographicSplit(demographics.other, intermediatePopulation)}%</span>
-            </Styled.td>
-          )}
-        {(pinnedMetricFields.includes("majorityRace") || expandedProjectMetrics) && (
+        {isVisible("majorityRace") && (
           <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <span>{getMajorityRaceDisplay(district)}</span>
           </Styled.td>
         )}
-        {hasElectionData
-          ? (pinnedMetricFields.includes("pvi") || expandedProjectMetrics) && (
-              <Styled.td sx={{ ...style.td, ...style.number }}>
-                <PVIDisplay properties={district.properties} />
-              </Styled.td>
-            )
-          : null}
-        {voting && ("democrat16" in voting || "democrat" in voting)
-          ? (pinnedMetricFields.includes("dem16") || expandedProjectMetrics) && (
-              <Styled.td sx={{ ...style.td, ...style.number }}>
-                <Tooltip
-                  placement="top-start"
-                  content={
-                    demographics.population > 0 ? (
-                      <VotingSidebarTooltip voting={voting} />
-                    ) : (
-                      <em>
-                        <strong>Empty district.</strong> Add people to this district to view the
-                        vote totals
-                      </em>
-                    )
-                  }
-                >
-                  <span>
-                    {"democrat16" in voting
-                      ? getPartyVoteShareDisplay(
-                          voting.democrat16,
-                          voting.republican16,
-                          voting["other party16"]
-                        )
-                      : getPartyVoteShareDisplay(
-                          voting.democrat,
-                          voting.republican,
-                          voting["other party"]
-                        )}
-                    %
-                  </span>
-                </Tooltip>
-              </Styled.td>
-            )
-          : null}
-        {voting && ("republican16" in voting || "republican" in voting)
-          ? (pinnedMetricFields.includes("rep16") || expandedProjectMetrics) && (
-              <Styled.td sx={{ ...style.td, ...style.number }}>
-                <Tooltip
-                  placement="top-start"
-                  content={
-                    demographics.population > 0 ? (
-                      <VotingSidebarTooltip voting={voting} />
-                    ) : (
-                      <em>
-                        <strong>Empty district.</strong> Add people to this district to view the
-                        vote totals
-                      </em>
-                    )
-                  }
-                >
-                  <span>
-                    {"republican16" in voting
-                      ? getPartyVoteShareDisplay(
-                          voting.republican16,
-                          voting.democrat16,
-                          voting["other party16"]
-                        )
-                      : getPartyVoteShareDisplay(
-                          voting.republican,
-                          voting.democrat,
-                          voting["other party"]
-                        )}
-                    %
-                  </span>
-                </Tooltip>
-              </Styled.td>
-            )
-          : null}
-        {voting && ("other party16" in voting || "other party" in voting)
-          ? (pinnedMetricFields.includes("other16") || expandedProjectMetrics) && (
-              <Styled.td sx={{ ...style.td, ...style.number }}>
-                <Tooltip
-                  placement="top-start"
-                  content={
-                    demographics.population > 0 ? (
-                      <VotingSidebarTooltip voting={voting} />
-                    ) : (
-                      <em>
-                        <strong>Empty district.</strong> Add people to this district to view the
-                        vote totals
-                      </em>
-                    )
-                  }
-                >
-                  <span>
-                    {"other party16" in voting
-                      ? getPartyVoteShareDisplay(
-                          voting["other party16"],
-                          voting.republican16,
-                          voting.democrat16
-                        )
-                      : getPartyVoteShareDisplay(
-                          voting["other party"],
-                          voting.republican,
-                          voting.democrat
-                        )}
-                    %
-                  </span>
-                </Tooltip>
-              </Styled.td>
-            )
-          : null}
-        {voting && "democrat20" in voting
-          ? (pinnedMetricFields.includes("dem20") || expandedProjectMetrics) && (
-              <Styled.td sx={{ ...style.td, ...style.number }}>
-                <Tooltip
-                  placement="top-start"
-                  content={
-                    demographics.population > 0 ? (
-                      <VotingSidebarTooltip voting={voting} />
-                    ) : (
-                      <em>
-                        <strong>Empty district.</strong> Add people to this district to view the
-                        vote totals
-                      </em>
-                    )
-                  }
-                >
-                  <span>
-                    {getPartyVoteShareDisplay(
-                      voting.democrat20,
-                      voting.republican20,
-                      voting["other party20"]
-                    )}
-                    %
-                  </span>
-                </Tooltip>
-              </Styled.td>
-            )
-          : null}
-        {voting && "republican20" in voting
-          ? (pinnedMetricFields.includes("rep20") || expandedProjectMetrics) && (
-              <Styled.td sx={{ ...style.td, ...style.number }}>
-                <Tooltip
-                  placement="top-start"
-                  content={
-                    demographics.population > 0 ? (
-                      <VotingSidebarTooltip voting={voting} />
-                    ) : (
-                      <em>
-                        <strong>Empty district.</strong> Add people to this district to view the
-                        vote totals
-                      </em>
-                    )
-                  }
-                >
-                  <span>
-                    {getPartyVoteShareDisplay(
-                      voting.republican20,
-                      voting.democrat20,
-                      voting["other party20"]
-                    )}
-                    %
-                  </span>
-                </Tooltip>
-              </Styled.td>
-            )
-          : null}
-        {voting && "other party20" in voting
-          ? (pinnedMetricFields.includes("other20") || expandedProjectMetrics) && (
-              <Styled.td sx={{ ...style.td, ...style.number }}>
-                <Tooltip
-                  placement="top-start"
-                  content={
-                    demographics.population > 0 ? (
-                      <VotingSidebarTooltip voting={voting} />
-                    ) : (
-                      <em>
-                        <strong>Empty district.</strong> Add people to this district to view the
-                        vote totals
-                      </em>
-                    )
-                  }
-                >
-                  <span>
-                    {getPartyVoteShareDisplay(
-                      voting["other party20"],
-                      voting.republican20,
-                      voting.democrat20
-                    )}
-                    %
-                  </span>
-                </Tooltip>
-              </Styled.td>
-            )
-          : null}
-        {(pinnedMetricFields.includes("compactness") || expandedProjectMetrics) && (
+        {hasElectionData && isVisible("pvi") && (
+          <Styled.td sx={{ ...style.td, ...style.number }}>
+            <PVIDisplay properties={district.properties} />
+          </Styled.td>
+        )}
+        {voting &&
+          electionsMetricFields.map(
+            ([id, metric]) =>
+              isVisible(metric) &&
+              id in voting && (
+                <Styled.td key={metric} sx={{ ...style.td, ...style.number }}>
+                  <Tooltip
+                    placement="top-start"
+                    content={
+                      demographics.population > 0 ? (
+                        <VotingSidebarTooltip voting={voting} />
+                      ) : (
+                        <em>
+                          <strong>Empty district.</strong> Add people to this district to view the
+                          vote totals
+                        </em>
+                      )
+                    }
+                  >
+                    <span>{getPartyVoteShareDisplay(id)}%</span>
+                  </Tooltip>
+                </Styled.td>
+              )
+          )}
+        {isVisible("compactness") && (
           <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
         )}
         {!expandedProjectMetrics && (
@@ -1003,7 +781,7 @@ interface SidebarRowsProps {
   readonly hoveredDistrictId: number | null;
   readonly selectedGeounits: GeoUnits;
   readonly expandedProjectMetrics: boolean;
-  readonly pinnedMetrics: readonly MetricField[];
+  readonly pinnedMetrics: readonly string[];
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
   readonly hasElectionData: boolean;
@@ -1076,6 +854,8 @@ const SidebarRows = ({
   }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
   const averagePopulation = getTargetPopulation(geojson);
+  const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
+  const electionsMetricFields = getVotingMetricFields(staticMetadata);
 
   return (
     <React.Fragment>
@@ -1096,6 +876,8 @@ const SidebarRows = ({
             district={feature}
             selected={selected}
             pinnedMetricFields={pinnedMetrics}
+            demographicsMetricFields={demographicsMetricFields}
+            electionsMetricFields={electionsMetricFields}
             selectedPopulationDifference={selectedPopulationDifference || 0}
             expandedProjectMetrics={expandedProjectMetrics}
             demographics={feature.properties.demographics}

@@ -2,12 +2,7 @@ import { FeatureCollection, MultiPolygon } from "geojson";
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { ProjectVisibility } from "../../../../shared/constants";
-import {
-  DistrictProperties,
-  DistrictsDefinition,
-  IProject,
-  MetricField
-} from "../../../../shared/entities";
+import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
@@ -111,7 +106,7 @@ export class Project implements IProject {
     name: "pinned_metric_fields",
     default: () => `ARRAY[${DEFAULT_PINNED_METRIC_FIELDS.map(c => `'${c}'`).join(",")}]`
   })
-  pinnedMetricFields: MetricField[];
+  pinnedMetricFields: string[];
 
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {

@@ -13,28 +13,6 @@ export type PaginationMetadata = {
 
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
 
-export type MetricField =
-  | "population"
-  | "populationDeviation"
-  | "raceChart"
-  | "whitePopulation"
-  | "blackPopulation"
-  | "asianPopulation"
-  | "hispanicPopulation"
-  | "otherPopulation"
-  | "nativePopulation"
-  | "pacificPopulation"
-  | "majorityRace"
-  | "dem16"
-  | "rep16"
-  | "other16"
-  | "dem20"
-  | "rep20"
-  | "other20"
-  | "pvi"
-  | "compactness"
-  | "contiguity";
-
 export interface IUser {
   readonly id: UserId;
   readonly email: string;
@@ -191,13 +169,18 @@ export interface ReferenceLayerProperties {
   readonly [id: string]: number | string;
 }
 
+export type VotingMetricField = "dem16" | "rep16" | "other16" | "dem20" | "rep20" | "other20";
+
+export type MetricsList = readonly (readonly [string, string])[];
+export type VotingMetricsList = readonly (readonly [string, VotingMetricField])[];
+
 interface ProjectTemplateFields {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly chamber?: IChamber;
   readonly populationDeviation: number;
-  readonly pinnedMetricFields: readonly MetricField[];
+  readonly pinnedMetricFields: readonly string[];
   readonly districtsDefinition: DistrictsDefinition;
 }
 

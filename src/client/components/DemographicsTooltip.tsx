@@ -4,6 +4,7 @@ import { Box, jsx, Styled, ThemeUIStyleObject, Divider } from "theme-ui";
 
 import { demographicsColors } from "../constants/colors";
 import { getDemographicLabel } from "../../shared/functions";
+import { DEMOGRAPHIC_FIELDS_ORDER } from "../../shared/constants";
 
 const style: ThemeUIStyleObject = {
   label: {
@@ -74,18 +75,17 @@ const DemographicsTooltip = ({
     (population: number) =>
       (demographics.population ? population / demographics.population : 0) * 100
   );
-  const races = ["white", "black", "asian", "hispanic", "native", "pacific", "other"] as const;
-  const rows = races
-    .filter(race => percentages[race] !== undefined)
-    .map((id: typeof races[number]) => (
-      <Row
-        key={id}
-        id={id}
-        percent={percentages[id]}
-        color={demographicsColors[id]}
-        abbreviate={abbreviate}
-      />
-    ));
+  const rows = DEMOGRAPHIC_FIELDS_ORDER.filter(
+    race => percentages[race] !== undefined
+  ).map((id: typeof DEMOGRAPHIC_FIELDS_ORDER[number]) => (
+    <Row
+      key={id}
+      id={id}
+      percent={percentages[id]}
+      color={demographicsColors[id]}
+      abbreviate={abbreviate}
+    />
+  ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
       <Styled.table sx={{ margin: "0", width: "100%" }}>

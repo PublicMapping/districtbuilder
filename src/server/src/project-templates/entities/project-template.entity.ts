@@ -1,10 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-import {
-  DistrictsDefinition,
-  IProjectTemplateWithProjects,
-  MetricField
-} from "../../../../shared/entities";
+import { DistrictsDefinition, IProjectTemplateWithProjects } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
@@ -73,7 +69,7 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
     name: "pinned_metric_fields",
     default: () => `ARRAY[${DEFAULT_PINNED_METRIC_FIELDS.map(c => `'${c}'`).join(",")}]`
   })
-  pinnedMetricFields: MetricField[];
+  pinnedMetricFields: string[];
 
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive: boolean;

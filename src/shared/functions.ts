@@ -1,4 +1,13 @@
-import { UintArray, DemographicCounts, IStaticMetadata, IStaticFile } from "../shared/entities";
+import {
+  UintArray,
+  DemographicCounts,
+  IStaticMetadata,
+  IStaticFile,
+  MetricsList,
+  VotingMetricsList,
+  VotingMetricField
+} from "../shared/entities";
+import { CORE_METRIC_FIELDS, DEMOGRAPHIC_FIELDS_ORDER } from "./constants";
 
 // Helper for finding all indices in an array buffer matching a value.
 // Note: mutation is used, because the union type of array buffers proved
@@ -80,4 +89,47 @@ export function getDemographicLabel(id: string) {
     : id === "pacific"
     ? "Pacific Islander"
     : id.split(/(?=[A-Z])/).join(" ");
+}
+
+export const getMetricFieldForDemographicsId = (id: string) =>
+  id === "population" ? id : `${id}Population`;
+
+export function getDemographicsMetricFields(staticMetadata: IStaticMetadata): MetricsList {
+  // eslint-disable-next-line functional/prefer-readonly-type
+  const data: (readonly [string, string])[] = staticMetadata.demographics.flatMap(file =>
+    CORE_METRIC_FIELDS.includes(file.id)
+      ? []
+      : [[file.id, getMetricFieldForDemographicsId(file.id)]]
+  );
+  // Need to loosen up the types here
+  const order: readonly string[] = DEMOGRAPHIC_FIELDS_ORDER;
+  // eslint-disable-next-line functional/immutable-data
+  data.sort(([a,], [b,]) => order.indexOf(a) - order.indexOf(b));
+  return data;
+}
+
+export function getVotingMetricFields(staticMetadata: IStaticMetadata): VotingMetricsList {
+  // eslint-disable-next-line functional/prefer-readonly-type
+  const data: (readonly [string, VotingMetricField])[] =
+    staticMetadata.voting?.flatMap(file => {
+      const field =
+        file.id === "democrat" || file.id === "democrat16"
+          ? "dem16"
+          : file.id === "republican" || file.id === "republican16"
+          ? "rep16"
+          : file.id === "other party" || file.id === "other party16"
+          ? "other16"
+          : file.id === "democrat20"
+          ? "dem20"
+          : file.id === "republican20"
+          ? "rep20"
+          : file.id === "other party20"
+          ? "other20"
+          : undefined;
+      return field !== undefined ? [[file.id, field]] : [];
+    }) || [];
+  const order = ["dem16", "rep16", "other16", "dem20", "rep20", "other20"];
+  // eslint-disable-next-line functional/immutable-data
+  data.sort(([, a], [, b]) => order.indexOf(a) - order.indexOf(b));
+  return data;
 }
