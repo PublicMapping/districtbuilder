@@ -38,7 +38,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 'Dane County',
                 'US',
                 'WI',
-                's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-08-25T19:15:41.712Z/',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-09-02T18:57:17.123Z/',
                 DEFAULT,
                 TRUE,
                 DEFAULT
