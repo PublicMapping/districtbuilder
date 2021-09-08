@@ -86,6 +86,7 @@ export const DEMOGRAPHIC_FIELDS_ORDER = [
   "hispanic",
   "native",
   "pacific",
+  "multiracial",
   "other"
 ] as const;
 
