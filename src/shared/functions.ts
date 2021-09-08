@@ -104,7 +104,7 @@ export function getDemographicsMetricFields(staticMetadata: IStaticMetadata): Me
   // Need to loosen up the types here
   const order: readonly string[] = DEMOGRAPHIC_FIELDS_ORDER;
   // eslint-disable-next-line functional/immutable-data
-  data.sort(([, a], [, b]) => order.indexOf(a) - order.indexOf(b));
+  data.sort(([a,], [b,]) => order.indexOf(a) - order.indexOf(b));
   return data;
 }
 
