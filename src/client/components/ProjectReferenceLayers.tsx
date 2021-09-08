@@ -123,14 +123,16 @@ const ProjectReferenceLayers = ({
               Add a polygon, line, or point layer as a reference layer for your map.
             </Box>
           ) : null}
-          <Button
-            sx={{ variant: "buttons.outlined" }}
-            onClick={() => {
-              store.dispatch(toggleReferenceLayersModal());
-            }}
-          >
-            <Icon name="upload" /> Upload layer
-          </Button>
+          {!isReadOnly && (
+            <Button
+              sx={{ variant: "buttons.outlined" }}
+              onClick={() => {
+                store.dispatch(toggleReferenceLayersModal());
+              }}
+            >
+              <Icon name="upload" /> Upload layer
+            </Button>
+          )}
         </Flex>
       )}
     </Flex>
