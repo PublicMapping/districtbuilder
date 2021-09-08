@@ -620,65 +620,61 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
                     ))}
                   </Card>
                 )}
-                {"resource" in organization ? (
+                {organizationSlug && "resource" in organization ? (
                   "resource" in user && (
-                    <Box sx={style.orgTemplates}>
-                      <Card sx={{ variant: "card.flat" }}>
-                        <legend
-                          sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
-                        >
-                          Template
-                        </legend>
-                        <Box sx={style.cardHint}>
-                          Which of {organization.resource.name}&apos;s templates would you like to
-                          use?
-                        </Box>
-                        <div
+                    <Card sx={{ variant: "card.flat" }}>
+                      <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
+                        Template
+                      </legend>
+                      <Box sx={style.cardHint}>
+                        Which of {organization.resource.name}&apos;s templates would you like to
+                        use?
+                      </Box>
+                      <div
+                        sx={{
+                          flex: "0 0 50%",
+                          "@media screen and (max-width: 770px)": {
+                            flex: "0 0 100%"
+                          }
+                        }}
+                        key="custom"
+                      >
+                        <Label>
+                          <Radio
+                            name="projectTemplate"
+                            value=""
+                            onChange={onTemplateChanged}
+                            checked={organizationSlug === undefined}
+                          />
+                        </Label>
+                      </div>
+                      {organization.resource.projectTemplates.map(template => (
+                        <Label
+                          key={template.id}
                           sx={{
-                            flex: "0 0 50%",
-                            "@media screen and (max-width: 770px)": {
-                              flex: "0 0 100%"
+                            display: "inline-flex",
+                            "@media screen and (min-width: 750px)": {
+                              flex: "0 0 48%",
+                              "&:nth-of-type(even)": {
+                                mr: "2%"
+                              }
                             }
                           }}
-                          key="custom"
                         >
-                          <Label>
-                            <Radio
-                              name="projectTemplate"
-                              value=""
-                              onChange={onTemplateChanged}
-                              checked={organizationSlug === undefined}
-                            />
-                          </Label>
-                        </div>
-                        {organization.resource.projectTemplates.map(template => (
-                          <Label
-                            key={template.id}
-                            sx={{
-                              display: "inline-flex",
-                              "@media screen and (min-width: 750px)": {
-                                flex: "0 0 48%",
-                                "&:nth-of-type(even)": {
-                                  mr: "2%"
-                                }
-                              }
-                            }}
+                          <Radio
+                            name="projectTemplate"
+                            value={template.id}
+                            onChange={onTemplateChanged}
+                          />
+                          <Flex
+                            as="span"
+                            sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
                           >
-                            <Radio
-                              name="projectTemplate"
-                              value={template.id}
-                              onChange={onTemplateChanged}
-                            />
-                            <Flex
-                              as="span"
-                              sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                            >
-                              <div sx={style.radioHeading}>{template.name}</div>
-                            </Flex>
-                          </Label>
-                        ))}
-                      </Card>
-                    </Box>
+                            <div sx={style.radioHeading}>{template.name}</div>
+                          </Flex>
+                        </Label>
+                      ))}
+                    </Card>
                   )
                 ) : (
                   <React.Fragment>
