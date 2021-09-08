@@ -128,7 +128,7 @@ It will take some time (approx. 20-25 mins) for the new tasks to finish loading 
 ### Stopping old tasks
 
 Once all the new tasks are healthy, you will need to stop the old tasks.
-Go to the task list for [staging](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsStagingCluster/tasks) / [production](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsProductionCluster/tasks) and stop any tasks whose "Started At" date is from before increasing the auto scaling group / number of desired tasks (this should be half of the tasks shown).
+Go to the task list for [staging](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsStagingCluster/tasks) / [production](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsProductionCluster/tasks) and stop any tasks whose "Started At" date is from before increasing the auto scaling group / number of desired tasks (this should be as many tasks as there were before you increased the total).
 
 Next, revert your changes to the [Staging](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsStagingCluster/services/StagingApp_EC2LaunchType/details) or [Production](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsProductionCluster/services/ProductionApp_EC2LaunchType/details) "EC2LaunchType" service to bring the desired number of tasks back down to the previous amount.
 
