@@ -320,6 +320,30 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
     e.currentTarget.value === "" && setOrganizationSlug(undefined);
   };
 
+  const onTemplateChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const template =
+      "resource" in organization
+        ? organization.resource.projectTemplates.find(
+            template => template.id === e.currentTarget.value
+          )
+        : null;
+    // eslint-disable-next-line
+    console.log(template);
+    setCreateProjectResource({
+      data: {
+        ...formData,
+        ...(template
+          ? {
+              projectTemplate: template,
+              numberOfDistricts: template.numberOfDistricts || null,
+              chamber: template.chamber || null,
+              isCustom: false
+            }
+          : { numberOfDistricts: null, isCustom: true, chamber: null })
+      }
+    });
+  };
+
   const setFile = useCallback(
     (file: File) => {
       async function setConfigFromFile() {
@@ -416,15 +440,6 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
     setFileError(undefined);
     setCreateProjectResource({ data: blankForm });
   }
-
-  // function setTemplate(template: CreateProjectData) {
-  //   setCreateProjectResource({
-  //     data: {
-  //       ...formData,
-  //       projectTemplate: template.projectTemplate || undefined
-  //     }
-  //   });
-  // }
 
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
@@ -613,11 +628,61 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
                 {"resource" in organization ? (
                   "resource" in user && (
                     <Box sx={style.orgTemplates}>
-                      <OrganizationTemplates
-                        user={user.resource}
-                        organization={organization.resource}
-                        // setTemplate={setTemplate}
-                      />
+                      <Card sx={{ variant: "card.flat" }}>
+                        <legend
+                          sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
+                        >
+                          Template
+                        </legend>
+                        <Box sx={style.cardHint}>
+                          Which of {organization.resource.name}&apos;s templates would you like to
+                          use?
+                        </Box>
+                        <div
+                          sx={{
+                            flex: "0 0 50%",
+                            "@media screen and (max-width: 770px)": {
+                              flex: "0 0 100%"
+                            }
+                          }}
+                          key="custom"
+                        >
+                          <Label>
+                            <Radio
+                              name="projectTemplate"
+                              value=""
+                              onChange={onTemplateChanged}
+                              checked={organizationSlug === undefined}
+                            />
+                          </Label>
+                        </div>
+                        {organization.resource.projectTemplates.map(template => (
+                          <Label
+                            key={template.id}
+                            sx={{
+                              display: "inline-flex",
+                              "@media screen and (min-width: 750px)": {
+                                flex: "0 0 48%",
+                                "&:nth-of-type(even)": {
+                                  mr: "2%"
+                                }
+                              }
+                            }}
+                          >
+                            <Radio
+                              name="projectTemplate"
+                              value={template.id}
+                              onChange={onTemplateChanged}
+                            />
+                            <Flex
+                              as="span"
+                              sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                            >
+                              <div sx={style.radioHeading}>{template.name}</div>
+                            </Flex>
+                          </Label>
+                        ))}
+                      </Card>
                     </Box>
                   )
                 ) : (
