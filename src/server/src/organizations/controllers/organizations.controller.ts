@@ -21,6 +21,7 @@ import { Organization } from "../entities/organization.entity";
 import { OrganizationUserDto } from "../entities/organizationUser.dto";
 import { OrganizationsService } from "../services/organizations.service";
 import stringify = require("csv-stringify/lib/sync");
+import { String } from "aws-sdk/clients/acm";
 
 @Controller("api/organization")
 export class OrganizationsController {
@@ -32,6 +33,14 @@ export class OrganizationsController {
       throw new NotFoundException(`Organization ${organizationSlug} not found`);
     }
     return org;
+  }
+
+  async getUserOrgsForRegion(regionCode: string, userId: string): Promise<Organization[]> {
+    const orgs = await this.service.getUserOrgsForRegion(regionCode, userId);
+    if (!orgs) {
+      return [];
+    }
+    return orgs;
   }
 
   async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
@@ -60,6 +69,12 @@ export class OrganizationsController {
   @Get(":slug/")
   async getOne(@Param("slug") slug: OrganizationSlug): Promise<Organization> {
     return this.getOrgAndTemplates(slug);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("by_region/:regionCode")
+  async getOrganizationsForRegion(@Param("regionCode") regionCode: string, @Request() req: any): Promise<Organization[]> {
+    return this.getUserOrgsForRegion(regionCode, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)

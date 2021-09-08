@@ -137,6 +137,7 @@ export async function createProject({
   numberOfDistricts,
   chamber,
   regionConfig,
+  organization,
   districtsDefinition,
   projectTemplate,
   populationDeviation
@@ -147,6 +148,7 @@ export async function createProject({
         name,
         numberOfDistricts,
         regionConfig,
+        organization,
         districtsDefinition,
         chamber,
         populationDeviation,
@@ -402,6 +404,15 @@ export async function fetchOrganizationFeaturedProjects(
       .catch(error => {
         reject(error.response.data);
       });
+  });
+}
+
+export async function fetchOrganizationsForRegion(regionCode: string): Promise<readonly IOrganization[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/organization/by_region/${regionCode}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
   });
 }
 

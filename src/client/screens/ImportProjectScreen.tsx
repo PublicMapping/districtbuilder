@@ -23,23 +23,33 @@ import {
   IProject,
   IRegionConfig,
   IChamber,
-  DistrictsImportApiSuccess
+  OrganizationSlug,
+  DistrictsImportApiSuccess,
+  IOrganization,
+  IProjectTemplate,
+  CreateProjectData
 } from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { setImportFlagsModal } from "../actions/districtDrawing";
 
-import { createProject, importCsv } from "../api";
+import { createProject, importCsv, fetchOrganizationsForRegion } from "../api";
 import { InputField } from "../components/Field";
 import Icon from "../components/Icon";
 import ImportFlagsModal from "../components/ImportFlagsModal";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 import { State } from "../reducers";
+import { UserState } from "../reducers/user";
 import { WriteResource, Resource } from "../resource";
+import { OrganizationState } from "../reducers/organization";
 import store from "../store";
+import { organizationFetch } from "../actions/organization";
+import OrganizationTemplates from "../components/OrganizationTemplates";
 
 interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
+  readonly organization: OrganizationState;
+  readonly user: UserState;
 }
 
 const validate = (form: ConfigurableForm, importResource: ImportResource): ProjectForm => {
@@ -49,6 +59,7 @@ const validate = (form: ConfigurableForm, importResource: ImportResource): Proje
   const maxDistrictId = "resource" in importResource ? importResource.resource.maxDistrictId : null;
   const numberOfDistricts = form.numberOfDistricts;
   const populationDeviation = form.populationDeviation;
+  const projectTemplate = form.projectTemplate;
   const chamber = form.chamber;
   const isCustom = form.isCustom;
   return numberOfDistricts &&
@@ -62,6 +73,7 @@ const validate = (form: ConfigurableForm, importResource: ImportResource): Proje
         regionConfig,
         districtsDefinition,
         chamber,
+        projectTemplate,
         isCustom,
         populationDeviation,
         valid: true
@@ -71,6 +83,7 @@ const validate = (form: ConfigurableForm, importResource: ImportResource): Proje
         regionConfig,
         districtsDefinition,
         chamber,
+        projectTemplate,
         isCustom,
         populationDeviation,
         valid: false
@@ -83,6 +96,7 @@ interface ConfigurableForm {
   readonly numberOfDistricts: number | null;
   readonly isCustom: boolean;
   readonly chamber: IChamber | null;
+  readonly projectTemplate: IProjectTemplate | undefined;
   readonly populationDeviation: number;
 }
 
@@ -94,6 +108,7 @@ interface ValidForm {
   readonly districtsDefinition: DistrictsDefinition;
   readonly numberOfDistricts: number;
   readonly isCustom: boolean;
+  readonly projectTemplate: Pick<IProjectTemplate, "id"> | undefined;
   readonly populationDeviation: number;
   readonly valid: true;
 }
@@ -104,6 +119,7 @@ interface InvalidForm {
   readonly districtsDefinition: DistrictsDefinition | null;
   readonly numberOfDistricts: number | null;
   readonly isCustom: boolean;
+  readonly projectTemplate: Pick<IProjectTemplate, "id"> | undefined;
   readonly populationDeviation: number | null;
   readonly valid: false;
 }
@@ -111,6 +127,7 @@ interface InvalidForm {
 const blankForm: ConfigurableForm = {
   numberOfDistricts: null,
   isCustom: true,
+  projectTemplate: undefined,
   chamber: null,
   populationDeviation: DEFAULT_POPULATION_DEVIATION
 };
@@ -215,6 +232,19 @@ const style: ThemeUIStyleObject = {
   rowFlagsLink: {
     textDecoration: "underline",
     cursor: "pointer"
+  },
+  orgTemplates: {
+    display: "block",
+    minHeight: "100px",
+    pl: "5px",
+    "> *": {
+      mx: 5
+    },
+    mx: "auto",
+    width: "100%",
+    maxWidth: "large",
+    borderTop: "1px solid lightgray",
+    my: 8
   }
 };
 
@@ -226,7 +256,7 @@ async function getStateFromCsv(file: Blob): Promise<string | undefined> {
   return stateAbbrev;
 }
 
-const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
+const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) => {
   useEffect(() => {
     store.dispatch(regionConfigsFetch());
   }, []);
@@ -245,9 +275,26 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
   >({
     data: blankForm
   });
+
   const [fileError, setFileError] = useState<string | undefined>();
   const regionConfig = importResource.data;
   const formData = createProjectResource.data;
+  const [organizationSlug, setOrganizationSlug] = useState<string | undefined>(undefined);
+  const [organizationsInRegion, setOrganizationsInRegion] = useState<
+    readonly IOrganization[] | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (!organizationsInRegion && regionConfig) {
+      fetchOrganizationsForRegion(regionConfig.regionCode).then(organizations => {
+        setOrganizationsInRegion(organizations);
+      });
+    }
+  }, [regionConfig]);
+
+  useEffect(() => {
+    organizationSlug && store.dispatch(organizationFetch(organizationSlug));
+  }, [organizationSlug]);
 
   const onDistrictChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chamber =
@@ -266,6 +313,11 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
           : { numberOfDistricts: null, isCustom: true, chamber: null })
       }
     });
+  };
+
+  const onOrgChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.currentTarget.value !== "" && setOrganizationSlug(e.currentTarget.value);
+    e.currentTarget.value === "" && setOrganizationSlug(undefined);
   };
 
   const setFile = useCallback(
@@ -364,6 +416,15 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
     setFileError(undefined);
     setCreateProjectResource({ data: blankForm });
   }
+
+  // function setTemplate(template: CreateProjectData) {
+  //   setCreateProjectResource({
+  //     data: {
+  //       ...formData,
+  //       projectTemplate: template.projectTemplate || undefined
+  //     }
+  //   });
+  // }
 
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
@@ -495,139 +556,211 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                   We detected block data for <b>{regionConfig.name}</b>. To pick a different state,
                   upload a new file.
                 </Card>
-                <Card sx={{ variant: "card.flat" }}>
-                  <fieldset sx={style.fieldset}>
-                    <Flex sx={{ flexWrap: "wrap" }}>
-                      <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                        Districts
-                      </legend>
-                      <Box
-                        id="description-districts"
-                        as="span"
-                        sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                {organizationsInRegion && organizationsInRegion.length > 0 && (
+                  <Card sx={{ variant: "card.flat" }}>
+                    <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
+                      Organization
+                    </legend>
+                    <Box sx={style.cardHint}>
+                      Are you making a new map with an organization you&apos;ve joined?
+                    </Box>
+                    <div
+                      sx={{
+                        flex: "0 0 50%",
+                        "@media screen and (max-width: 770px)": {
+                          flex: "0 0 100%"
+                        }
+                      }}
+                      key="custom"
+                    >
+                      <Label>
+                        <Radio
+                          name="organization"
+                          value=""
+                          onChange={onOrgChanged}
+                          checked={organizationSlug === undefined}
+                        />
+                        <Flex as="span" sx={{ flexDirection: "column" }}>
+                          <div sx={style.radioHeading}>No organization</div>
+                          <div sx={style.radioSubHeading}>Continue without an organization</div>
+                        </Flex>
+                      </Label>
+                    </div>
+                    {organizationsInRegion.map(org => (
+                      <Label
+                        key={org.slug}
+                        sx={{
+                          display: "inline-flex",
+                          "@media screen and (min-width: 750px)": {
+                            flex: "0 0 48%",
+                            "&:nth-of-type(even)": {
+                              mr: "2%"
+                            }
+                          }
+                        }}
                       >
-                        How many districts do you want to map? Choose a federal or state legislative
-                        chamber or define your own.
-                      </Box>
-                      {regionConfig &&
-                        [...regionConfig.chambers]
-                          .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
-                          .map(chamber => (
-                            <Label
-                              key={chamber.id}
-                              sx={{
-                                display: "inline-flex",
-                                "@media screen and (min-width: 750px)": {
-                                  flex: "0 0 48%",
-                                  "&:nth-of-type(even)": {
-                                    mr: "2%"
-                                  }
-                                }
-                              }}
-                            >
-                              <Radio
-                                name="project-district"
-                                value={chamber.id}
-                                onChange={onDistrictChanged}
-                                aria-describedby="description-districts"
-                              />
-                              <Flex
-                                as="span"
-                                sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                              >
-                                <div sx={style.radioHeading}>{chamber.name}</div>
-                                <div sx={style.radioSubHeading}>
-                                  {chamber.numberOfDistricts} districts
+                        <Radio name="organization" value={org.slug} onChange={onOrgChanged} />
+                        <Flex
+                          as="span"
+                          sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                        >
+                          <div sx={style.radioHeading}>{org.name}</div>
+                        </Flex>
+                      </Label>
+                    ))}
+                  </Card>
+                )}
+                {"resource" in organization ? (
+                  "resource" in user && (
+                    <Box sx={style.orgTemplates}>
+                      <OrganizationTemplates
+                        user={user.resource}
+                        organization={organization.resource}
+                        // setTemplate={setTemplate}
+                      />
+                    </Box>
+                  )
+                ) : (
+                  <React.Fragment>
+                    <Card sx={{ variant: "card.flat" }}>
+                      <fieldset sx={style.fieldset}>
+                        <Flex sx={{ flexWrap: "wrap" }}>
+                          <legend
+                            sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
+                          >
+                            Districts
+                          </legend>
+                          <Box
+                            id="description-districts"
+                            as="span"
+                            sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                          >
+                            How many districts do you want to map? Choose a federal or state
+                            legislative chamber or define your own.
+                          </Box>
+                          {regionConfig &&
+                            [...regionConfig.chambers]
+                              .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
+                              .map(chamber => (
+                                <Label
+                                  key={chamber.id}
+                                  sx={{
+                                    display: "inline-flex",
+                                    "@media screen and (min-width: 750px)": {
+                                      flex: "0 0 48%",
+                                      "&:nth-of-type(even)": {
+                                        mr: "2%"
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <Radio
+                                    name="project-district"
+                                    value={chamber.id}
+                                    onChange={onDistrictChanged}
+                                    aria-describedby="description-districts"
+                                  />
+                                  <Flex
+                                    as="span"
+                                    sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                                  >
+                                    <div sx={style.radioHeading}>{chamber.name}</div>
+                                    <div sx={style.radioSubHeading}>
+                                      {chamber.numberOfDistricts} districts
+                                    </div>
+                                  </Flex>
+                                </Label>
+                              ))
+                              .concat(
+                                <div
+                                  sx={{
+                                    flex: "0 0 50%",
+                                    "@media screen and (max-width: 770px)": {
+                                      flex: "0 0 100%"
+                                    }
+                                  }}
+                                  key="custom"
+                                >
+                                  <Label>
+                                    <Radio
+                                      name="project-district"
+                                      value=""
+                                      onChange={onDistrictChanged}
+                                    />
+                                    <Flex as="span" sx={{ flexDirection: "column" }}>
+                                      <div sx={style.radioHeading}>Custom</div>
+                                      <div sx={style.radioSubHeading}>
+                                        Define a custom number of districts
+                                      </div>
+                                    </Flex>
+                                  </Label>
                                 </div>
-                              </Flex>
-                            </Label>
-                          ))
-                          .concat(
-                            <div
-                              sx={{
-                                flex: "0 0 50%",
-                                "@media screen and (max-width: 770px)": {
-                                  flex: "0 0 100%"
-                                }
-                              }}
-                              key="custom"
-                            >
-                              <Label>
-                                <Radio
-                                  name="project-district"
-                                  value=""
-                                  onChange={onDistrictChanged}
-                                />
-                                <Flex as="span" sx={{ flexDirection: "column" }}>
-                                  <div sx={style.radioHeading}>Custom</div>
-                                  <div sx={style.radioSubHeading}>
-                                    Define a custom number of districts
-                                  </div>
-                                </Flex>
-                              </Label>
-                            </div>
-                          )}
-                      {formData.isCustom ? (
+                              )}
+                          {formData.isCustom ? (
+                            <Box sx={style.customInputContainer}>
+                              <InputField
+                                field="numberOfDistricts"
+                                label="Number of districts"
+                                resource={createProjectResource}
+                                inputProps={{
+                                  onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                                    const value = parseInt(e.currentTarget.value, 10);
+                                    const numberOfDistricts = isNaN(value) ? null : value;
+                                    setCreateProjectResource({
+                                      data: {
+                                        ...formData,
+                                        numberOfDistricts
+                                      }
+                                    });
+                                  }
+                                }}
+                              />
+                            </Box>
+                          ) : null}
+                        </Flex>
+                      </fieldset>
+                    </Card>
+                    <Card sx={{ variant: "card.flat" }}>
+                      <Flex sx={{ flexWrap: "wrap" }}>
+                        <legend
+                          sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
+                        >
+                          Population deviation tolerance
+                        </legend>
+                        <Box
+                          id="description-districts"
+                          as="span"
+                          sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                        >
+                          How detailed of a map do you want to draw? Setting a lower tolerance means
+                          the population of your districts will need to be more exact. If you
+                          aren&apos;t sure, we think 5% is a good starting point.
+                        </Box>
                         <Box sx={style.customInputContainer}>
                           <InputField
-                            field="numberOfDistricts"
-                            label="Number of districts"
+                            field="populationDeviation"
+                            label="Population deviation tolerance (%)"
+                            defaultValue={DEFAULT_POPULATION_DEVIATION}
                             resource={createProjectResource}
                             inputProps={{
                               onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                const value = parseInt(e.currentTarget.value, 10);
-                                const numberOfDistricts = isNaN(value) ? null : value;
-                                setCreateProjectResource({
-                                  data: {
-                                    ...formData,
-                                    numberOfDistricts
-                                  }
-                                });
+                                const value = parseFloat(e.currentTarget.value);
+                                const populationDeviation = isNaN(value) ? null : value;
+                                populationDeviation !== null &&
+                                  setCreateProjectResource({
+                                    data: {
+                                      ...formData,
+                                      populationDeviation
+                                    }
+                                  });
                               }
                             }}
                           />
                         </Box>
-                      ) : null}
-                    </Flex>
-                  </fieldset>
-                </Card>
-                <Card sx={{ variant: "card.flat" }}>
-                  <Flex sx={{ flexWrap: "wrap" }}>
-                    <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                      Population deviation tolerance
-                    </legend>
-                    <Box
-                      id="description-districts"
-                      as="span"
-                      sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
-                    >
-                      How detailed of a map do you want to draw? Setting a lower tolerance means the
-                      population of your districts will need to be more exact. If you aren&apos;t
-                      sure, we think 5% is a good starting point.
-                    </Box>
-                    <Box sx={style.customInputContainer}>
-                      <InputField
-                        field="populationDeviation"
-                        label="Population deviation tolerance (%)"
-                        defaultValue={DEFAULT_POPULATION_DEVIATION}
-                        resource={createProjectResource}
-                        inputProps={{
-                          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                            const value = parseFloat(e.currentTarget.value);
-                            const populationDeviation = isNaN(value) ? null : value;
-                            populationDeviation !== null &&
-                              setCreateProjectResource({
-                                data: {
-                                  ...formData,
-                                  populationDeviation
-                                }
-                              });
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Flex>
-                </Card>
+                      </Flex>
+                    </Card>
+                  </React.Fragment>
+                )}
                 <Box sx={{ mt: 3, textAlign: "left" }}>
                   <Button
                     type="submit"
@@ -660,7 +793,9 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    regionConfigs: state.regionConfig.regionConfigs
+    regionConfigs: state.regionConfig.regionConfigs,
+    organization: state.organization,
+    user: state.user
   };
 }
 
