@@ -23,11 +23,9 @@ import {
   IProject,
   IRegionConfig,
   IChamber,
-  OrganizationSlug,
   DistrictsImportApiSuccess,
   IOrganization,
-  IProjectTemplate,
-  CreateProjectData
+  IProjectTemplate
 } from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -44,7 +42,6 @@ import { WriteResource, Resource } from "../resource";
 import { OrganizationState } from "../reducers/organization";
 import store from "../store";
 import { organizationFetch } from "../actions/organization";
-import OrganizationTemplates from "../components/OrganizationTemplates";
 
 interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
@@ -327,8 +324,6 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
             template => template.id === e.currentTarget.value
           )
         : null;
-    // eslint-disable-next-line
-    console.log(template);
     setCreateProjectResource({
       data: {
         ...formData,

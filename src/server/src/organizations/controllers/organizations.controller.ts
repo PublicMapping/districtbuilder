@@ -21,7 +21,6 @@ import { Organization } from "../entities/organization.entity";
 import { OrganizationUserDto } from "../entities/organizationUser.dto";
 import { OrganizationsService } from "../services/organizations.service";
 import stringify = require("csv-stringify/lib/sync");
-import { String } from "aws-sdk/clients/acm";
 
 @Controller("api/organization")
 export class OrganizationsController {
@@ -73,7 +72,10 @@ export class OrganizationsController {
 
   @UseGuards(JwtAuthGuard)
   @Get("by_region/:regionCode")
-  async getOrganizationsForRegion(@Param("regionCode") regionCode: string, @Request() req: any): Promise<Organization[]> {
+  async getOrganizationsForRegion(
+    @Param("regionCode") regionCode: string,
+    @Request() req: any
+  ): Promise<Organization[]> {
     return this.getUserOrgsForRegion(regionCode, req.user.id);
   }
 

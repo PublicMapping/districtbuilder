@@ -407,7 +407,9 @@ export async function fetchOrganizationFeaturedProjects(
   });
 }
 
-export async function fetchOrganizationsForRegion(regionCode: string): Promise<readonly IOrganization[]> {
+export async function fetchOrganizationsForRegion(
+  regionCode: string
+): Promise<readonly IOrganization[]> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/organization/by_region/${regionCode}`)
