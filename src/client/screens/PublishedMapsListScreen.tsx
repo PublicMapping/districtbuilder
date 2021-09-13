@@ -84,11 +84,13 @@ const PublishedMapsListScreen = ({
   }, [regionConfigs]);
 
   const regionConfigOptions = regionConfigs
-    ? regionConfigs.map(rc => (
-        <option key={rc.regionCode} value={rc.regionCode}>
-          {capitalizeFirstLetter(rc.regionCode)}
-        </option>
-      ))
+    ? [...regionConfigs]
+        .sort((a, b) => a.regionCode.localeCompare(b.regionCode))
+        .map(rc => (
+          <option key={rc.regionCode} value={rc.regionCode}>
+            {capitalizeFirstLetter(rc.regionCode)}
+          </option>
+        ))
     : [];
   return (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
