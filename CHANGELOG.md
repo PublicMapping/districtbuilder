@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Support extra demographic fields on metrics viewer [#984](https://github.com/PublicMapping/districtbuilder/pull/984)
+- Sort region configs by region code [#1004](https://github.com/PublicMapping/districtbuilder/pull/1004)
+
 ### Fixed
 
 ## [1.9.0] - 2021-08-30
