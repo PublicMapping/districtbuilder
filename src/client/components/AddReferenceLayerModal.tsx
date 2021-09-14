@@ -87,15 +87,15 @@ const validate = (form: ConfigurableForm): ReferenceLayerForm => {
   const fields = form.fields;
   const numberOfFeatures = layer && layer.features ? layer.features.length : 0;
 
-  return numberOfFeatures > 0 && layer && name && label_field && layer_type && fields
+  return numberOfFeatures > 0 && layer && name && layer_type && fields
     ? {
         numberOfFeatures,
         name,
         project,
-        label_field,
         layer_type,
         layer,
         fields,
+        label_field: label_field || undefined,
         valid: true
       }
     : {
@@ -117,7 +117,7 @@ interface ValidForm {
   readonly project: ProjectId;
   readonly layer: ReferenceLayerGeojson;
   readonly numberOfFeatures: number;
-  readonly label_field: string;
+  readonly label_field?: string;
   readonly fields: readonly string[];
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly valid: true;
@@ -310,7 +310,7 @@ const AddReferenceLayerModal = ({
               e.preventDefault();
               const validatedForm = validate(formData);
               if (validatedForm.valid === true) {
-                setCreateLayerResource({ data: validatedForm, isPending: true });
+                setCreateLayerResource({ data: formData, isPending: true });
                 const referenceLayer = {
                   name: validatedForm.name,
                   label_field: validatedForm.label_field,
@@ -321,7 +321,7 @@ const AddReferenceLayerModal = ({
 
                 createReferenceLayer(referenceLayer)
                   .then((refLayer: ReferenceLayerWithGeojson) => {
-                    setCreateLayerResource({ resource: refLayer, data: validatedForm });
+                    setCreateLayerResource({ resource: refLayer, data: formData });
                     store.dispatch(projectReferenceLayersFetch(project.id));
                   })
                   .catch(showActionFailedToast);

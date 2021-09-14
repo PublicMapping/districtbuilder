@@ -6,8 +6,7 @@ import { ReferenceLayerTypes } from "../../../../shared/constants";
 
 export type ReferenceLayerGeojson =
   | FeatureCollection<Point, ReferenceLayerProperties>
-  | FeatureCollection<MultiPolygon, ReferenceLayerProperties>
-  | null;
+  | FeatureCollection<MultiPolygon, ReferenceLayerProperties>;
 
 @Entity()
 export class ReferenceLayer implements IReferenceLayer {
@@ -24,13 +23,12 @@ export class ReferenceLayer implements IReferenceLayer {
   @Column({ type: "enum", enum: ReferenceLayerTypes, default: ReferenceLayerTypes.Point })
   layer_type: ReferenceLayerTypes;
 
-  @Column({ type: "character varying" })
+  @Column({ type: "character varying", default: "" })
   label_field: string;
 
   @Column({
     type: "jsonb",
-    name: "layer",
-    nullable: true
+    name: "layer"
   })
   layer: ReferenceLayerGeojson;
 }

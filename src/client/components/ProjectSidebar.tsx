@@ -13,7 +13,8 @@ import {
   IReferenceLayer,
   LockedDistricts,
   MetricsList,
-  VotingMetricsList
+  VotingMetricsList,
+  ReferenceLayerId
 } from "../../shared/entities";
 
 import {
@@ -248,6 +249,7 @@ const ProjectSidebar = ({
   geoUnitHierarchy,
   lockedDistricts,
   referenceLayers,
+  showReferenceLayers,
   hoveredDistrictId,
   saving,
   isReadOnly,
@@ -261,6 +263,7 @@ const ProjectSidebar = ({
   readonly highlightedGeounits: GeoUnits;
   readonly expandedProjectMetrics: boolean;
   readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
+  readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
   readonly geoUnitHierarchy?: GeoUnitHierarchy;
   readonly lockedDistricts: LockedDistricts;
   readonly hoveredDistrictId: number | null;
@@ -420,9 +423,13 @@ const ProjectSidebar = ({
           </tbody>
         </Styled.table>
       </Box>
-      <ProjectReferenceLayers
-        referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
-      />
+      {!expandedProjectMetrics && (
+        <ProjectReferenceLayers
+          isReadOnly={isReadOnly}
+          referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
+          showReferenceLayers={showReferenceLayers}
+        />
+      )}
     </Flex>
   );
 };

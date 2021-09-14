@@ -1,13 +1,15 @@
 /** @jsx jsx */
 import { useState } from "react";
-import { Button, Flex, Box, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Button, Flex, Box, Heading, jsx, ThemeUIStyleObject, Checkbox, Label } from "theme-ui";
 
-import { IReferenceLayer } from "../../shared/entities";
+import { IReferenceLayer, ReferenceLayerId } from "../../shared/entities";
 import Icon from "./Icon";
-import { toggleReferenceLayersModal } from "../actions/projectData";
 
 import store from "../store";
 import { ReferenceLayerTypes } from "../../shared/constants";
+import { toggleReferenceLayer } from "../actions/districtDrawing";
+import { toggleReferenceLayersModal } from "../actions/projectData";
+import ReferenceLayerFlyout from "./ReferenceLayerFlyout";
 
 const style: ThemeUIStyleObject = {
   referenceHeader: {
@@ -45,22 +47,50 @@ const style: ThemeUIStyleObject = {
   }
 };
 
-const ReferenceLayer = ({ layer }: { readonly layer: IReferenceLayer }) => (
-  <Flex sx={{ alignItems: "center", pb: 1 }}>
+const ReferenceLayer = ({
+  isReadOnly,
+  layer,
+  checked
+}: {
+  readonly isReadOnly: boolean;
+  readonly layer: IReferenceLayer;
+  readonly checked: boolean;
+}) => (
+  <Flex sx={{ alignItems: "center", pb: 1, width: "100%" }}>
+    <Box sx={{ display: "inline" }}>
+      <Label sx={{ m: "auto" }}>
+        <Checkbox
+          sx={{ height: "20px" }}
+          checked={checked}
+          onChange={() => {
+            store.dispatch(toggleReferenceLayer({ id: layer.id, show: !checked }));
+          }}
+        />
+      </Label>
+    </Box>
     <Icon
       name={layer.layer_type === ReferenceLayerTypes.Point ? "mapPin" : "roundedSquare"}
       color={layer.layer_type === ReferenceLayerTypes.Point ? "green" : "blue.4"}
     ></Icon>
     <span sx={{ pl: 1 }}>{layer.name}</span>
+    {!isReadOnly && (
+      <Box sx={{ ml: "auto" }}>
+        <ReferenceLayerFlyout layer={layer} />
+      </Box>
+    )}
   </Flex>
 );
 
 const ProjectReferenceLayers = ({
-  referenceLayers
+  isReadOnly,
+  referenceLayers,
+  showReferenceLayers
 }: {
+  readonly isReadOnly: boolean;
   readonly referenceLayers?: readonly IReferenceLayer[];
+  readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
 }) => {
-  const [isExpanded, setExpanded] = useState(false);
+  const [isExpanded, setExpanded] = useState(referenceLayers?.length !== 0);
 
   return (
     <Flex sx={style.referenceLayers}>
@@ -80,20 +110,29 @@ const ProjectReferenceLayers = ({
       {isExpanded && (
         <Flex sx={style.referenceLayerList}>
           {referenceLayers && referenceLayers.length !== 0 ? (
-            referenceLayers.map(layer => <ReferenceLayer key={layer.id} layer={layer} />)
+            referenceLayers.map(layer => (
+              <ReferenceLayer
+                key={layer.id}
+                layer={layer}
+                checked={showReferenceLayers.has(layer.id)}
+                isReadOnly={isReadOnly}
+              />
+            ))
           ) : referenceLayers !== undefined ? (
             <Box sx={{ pb: 1, maxWidth: "fit-content" }}>
               Add a polygon, line, or point layer as a reference layer for your map.
             </Box>
           ) : null}
-          <Button
-            sx={{ variant: "buttons.outlined" }}
-            onClick={() => {
-              store.dispatch(toggleReferenceLayersModal());
-            }}
-          >
-            <Icon name="upload" /> Upload layer
-          </Button>
+          {!isReadOnly && (
+            <Button
+              sx={{ variant: "buttons.outlined" }}
+              onClick={() => {
+                store.dispatch(toggleReferenceLayersModal());
+              }}
+            >
+              <Icon name="upload" /> Upload layer
+            </Button>
+          )}
         </Flex>
       )}
     </Flex>

@@ -1,5 +1,5 @@
 import { createAction } from "typesafe-actions";
-import { DistrictId, GeoUnits } from "../../shared/entities";
+import { DistrictId, GeoUnits, ReferenceLayerId } from "../../shared/entities";
 import { SavingState, ElectionYear, EvaluateMetricWithValue } from "../types";
 
 export enum SelectionTool {
@@ -78,6 +78,11 @@ export const toggleExpandedMetrics = createAction("Toggle expanded metrics")<boo
 export const selectEvaluationMetric = createAction("Select evaluation metric")<
   EvaluateMetricWithValue | undefined
 >();
+
+export const toggleReferenceLayer = createAction("Show or hide reference layer on map")<{
+  readonly id: ReferenceLayerId;
+  readonly show: boolean;
+}>();
 
 export const saveDistrictsDefinition = createAction("Save districts definition")();
 

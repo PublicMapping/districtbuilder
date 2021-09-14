@@ -18,7 +18,8 @@ import {
   ProjectNest,
   DistrictsImportApiResponse,
   PlanScoreAPIResponse,
-  IReferenceLayer
+  IReferenceLayer,
+  ReferenceLayerId
 } from "../shared/entities";
 import {
   DistrictsGeoJSON,
@@ -348,6 +349,17 @@ export async function createReferenceLayer(
       .then(response => {
         return resolve(response.data);
       })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function deleteReferenceLayer(
+  referenceLayerId: ReferenceLayerId
+): Promise<ReferenceLayerId> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .delete(`/api/reference-layer/${referenceLayerId}`)
+      .then(() => resolve(referenceLayerId))
       .catch(error => reject(error.message));
   });
 }

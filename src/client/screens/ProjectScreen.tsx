@@ -46,6 +46,7 @@ import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
 import ConvertMapModal from "../components/ConvertMapModal";
 import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
+import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
 
 interface StateProps {
   readonly project?: IProject;
@@ -171,6 +172,7 @@ const ProjectScreen = ({
             expandedProjectMetrics={districtDrawing.expandedProjectMetrics}
             geoUnitHierarchy={geoUnitHierarchy}
             referenceLayers={referenceLayers}
+            showReferenceLayers={districtDrawing.showReferenceLayers}
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
@@ -260,6 +262,7 @@ const ProjectScreen = ({
                   staticMetadata={staticMetadata}
                 />
                 <AddReferenceLayerModal project={project} />
+                <DeleteReferenceLayerModal />
                 <Flex id="tour-start" sx={style.tourStart}></Flex>
               </React.Fragment>
             ) : null}

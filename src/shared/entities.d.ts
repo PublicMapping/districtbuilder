@@ -229,7 +229,7 @@ export interface CreateReferenceLayerData {
   readonly name: string;
   readonly project: Pick<IProject, "id">;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
-  readonly label_field: string;
+  readonly label_field?: string;
 }
 
 export type UpdateProjectData = Pick<

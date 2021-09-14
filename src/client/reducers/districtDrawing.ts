@@ -39,12 +39,19 @@ import {
   setElectionYear,
   PaintBrushSize,
   setPaintBrushSize,
-  toggleExpandedMetrics
+  toggleExpandedMetrics,
+  toggleReferenceLayer
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
-import { DistrictId, GeoUnits, GeoUnitsForLevel, LockedDistricts } from "../../shared/entities";
+import {
+  DistrictId,
+  GeoUnits,
+  GeoUnitsForLevel,
+  LockedDistricts,
+  ReferenceLayerId
+} from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import {
   pushEffect,
@@ -128,6 +135,7 @@ export interface DistrictDrawingState {
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
   readonly mapLabel: string | undefined;
+  readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
 }
 
 export const initialDistrictDrawingState: DistrictDrawingState = {
@@ -151,6 +159,7 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   electionYear: "16",
   saving: "unsaved",
   mapLabel: "undefined",
+  showReferenceLayers: new Set(),
   undoHistory: {
     past: [],
     present: {
@@ -377,6 +386,17 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         findTool: action.payload
       };
+    case getType(toggleReferenceLayer): {
+      const { id, show } = action.payload;
+      const layers = [...state.showReferenceLayers];
+      const showReferenceLayers = new Set(
+        show ? [...layers, id] : layers.filter(layerId => layerId !== id)
+      );
+      return {
+        ...state,
+        showReferenceLayers
+      };
+    }
     case getType(undo): {
       const lastPastState = state.undoHistory.past[state.undoHistory.past.length - 1];
       return state.undoHistory.past.length === 0
