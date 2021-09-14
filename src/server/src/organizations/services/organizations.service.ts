@@ -40,7 +40,7 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
     regionCode: string,
     userId: string
   ): Promise<Organization[] | undefined> {
-    // Returns public data for organization screen
+    // Returns public data for organization section of import screen
     const builder = this.repo.createQueryBuilder("organization");
     const data = await builder
       .select()
@@ -49,7 +49,8 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
         "projectTemplates",
         "projectTemplates.isActive = TRUE"
       )
-      .leftJoinAndSelect("organization.users", "users", "users.id = :userId", { userId: userId })
+      .leftJoin("organization.users", "users", "users.id = :userId", { userId: userId })
+      .addSelect(["users.id", "users.name"])
       .leftJoinAndSelect("projectTemplates.regionConfig", "regionConfig")
       .where("regionConfig.regionCode = :regionCode", { regionCode: regionCode })
       .getMany();
