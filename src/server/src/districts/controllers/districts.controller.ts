@@ -64,7 +64,7 @@ export class DistrictsController {
     }
 
     const regionCode = FIPS[stateFips];
-    const regionConfig = regionConfigId
+    const regionConfig = regionCode
       ? await this.regionConfigService.findOne({
           regionCode,
           hidden: false,
