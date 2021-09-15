@@ -41,12 +41,10 @@ import { UserState } from "../reducers/user";
 import { WriteResource, Resource } from "../resource";
 import { OrganizationState } from "../reducers/organization";
 import store from "../store";
-import { organizationFetch } from "../actions/organization";
+import OrganizationWithTemplates from "../components/OrganizationWithTemplates";
 
 interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
-  readonly organization: OrganizationState;
-  readonly user: UserState;
 }
 
 const validate = (form: ConfigurableForm, importResource: ImportResource): ProjectForm => {
@@ -253,7 +251,7 @@ async function getStateFromCsv(file: Blob): Promise<string | undefined> {
   return stateAbbrev;
 }
 
-const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) => {
+const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
   useEffect(() => {
     store.dispatch(regionConfigsFetch());
   }, []);
@@ -564,114 +562,15 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
                   We detected block data for <b>{regionConfig.name}</b>. To pick a different state,
                   upload a new file.
                 </Card>
-                {organizationsInRegion && organizationsInRegion.length > 0 && (
-                  <Card sx={{ variant: "card.flat" }}>
-                    <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                      Organization
-                    </legend>
-                    <Box sx={style.cardHint}>
-                      Are you making a new map with an organization you&apos;ve joined?
-                    </Box>
-                    <div
-                      sx={{
-                        flex: "0 0 50%",
-                        "@media screen and (max-width: 770px)": {
-                          flex: "0 0 100%"
-                        }
-                      }}
-                      key="custom"
-                    >
-                      <Label>
-                        <Radio
-                          name="organization"
-                          value=""
-                          onChange={onOrgChanged}
-                          checked={currentOrganization === undefined}
-                        />
-                        <Flex as="span" sx={{ flexDirection: "column" }}>
-                          <div sx={style.radioHeading}>No organization</div>
-                          <div sx={style.radioSubHeading}>Continue without an organization</div>
-                        </Flex>
-                      </Label>
-                    </div>
-                    {organizationsInRegion.map(org => (
-                      <Label
-                        key={org.slug}
-                        sx={{
-                          display: "inline-flex",
-                          "@media screen and (min-width: 750px)": {
-                            flex: "0 0 48%",
-                            "&:nth-of-type(even)": {
-                              mr: "2%"
-                            }
-                          }
-                        }}
-                      >
-                        <Radio name="organization" value={org.slug} onChange={onOrgChanged} />
-                        <Flex
-                          as="span"
-                          sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                        >
-                          <div sx={style.radioHeading}>{org.name}</div>
-                        </Flex>
-                      </Label>
-                    ))}
-                  </Card>
+
+                {organizationsInRegion && (
+                  <OrganizationWithTemplates
+                    organizations={organizationsInRegion}
+                    onTemplateChanged={onTemplateChanged}
+                    orgChanged={onOrgChanged}
+                  />
                 )}
-                {currentOrganization ? (
-                  <Card sx={{ variant: "card.flat" }}>
-                    <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                      Template
-                    </legend>
-                    <Box sx={style.cardHint}>
-                      Which of {currentOrganization.name}&apos;s templates would you like to use?
-                    </Box>
-                    <div
-                      sx={{
-                        flex: "0 0 50%",
-                        "@media screen and (max-width: 770px)": {
-                          flex: "0 0 100%"
-                        }
-                      }}
-                      key="custom"
-                    >
-                      <Label>
-                        <Radio
-                          name="projectTemplate"
-                          value=""
-                          onChange={onTemplateChanged}
-                          checked={currentOrganization === undefined}
-                        />
-                      </Label>
-                    </div>
-                    {currentOrganization.projectTemplates.map(template => (
-                      <Label
-                        key={template.id}
-                        sx={{
-                          display: "inline-flex",
-                          "@media screen and (min-width: 750px)": {
-                            flex: "0 0 48%",
-                            "&:nth-of-type(even)": {
-                              mr: "2%"
-                            }
-                          }
-                        }}
-                      >
-                        <Radio
-                          name="projectTemplate"
-                          value={template.id}
-                          onChange={onTemplateChanged}
-                        />
-                        <Flex
-                          as="span"
-                          sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                        >
-                          <div sx={style.radioHeading}>{template.name}</div>
-                        </Flex>
-                      </Label>
-                    ))}
-                  </Card>
-                ) : (
+                {!currentOrganization && (
                   <React.Fragment>
                     <Card sx={{ variant: "card.flat" }}>
                       <fieldset sx={style.fieldset}>
@@ -713,7 +612,10 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
                                   />
                                   <Flex
                                     as="span"
-                                    sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                                    sx={{
+                                      flexDirection: "column",
+                                      flex: "0 1 calc(100% - 2rem)"
+                                    }}
                                   >
                                     <div sx={style.radioHeading}>{chamber.name}</div>
                                     <div sx={style.radioSubHeading}>
@@ -844,9 +746,7 @@ const ImportProjectScreen = ({ regionConfigs, organization, user }: StateProps) 
 
 function mapStateToProps(state: State): StateProps {
   return {
-    regionConfigs: state.regionConfig.regionConfigs,
-    organization: state.organization,
-    user: state.user
+    regionConfigs: state.regionConfig.regionConfigs
   };
 }
 
