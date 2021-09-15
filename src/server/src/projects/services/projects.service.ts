@@ -2,6 +2,8 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
 import simplify from "@turf/simplify";
+import bbox from "@turf/bbox";
+import { BBox } from "@turf/helpers";
 import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
 import _ from "lodash";
 
@@ -49,11 +51,17 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       .orderBy("project.updatedDt", "DESC");
   }
 
+  computeBBoxArea(project: Project): number {
+    const box: BBox = bbox(project.districts);
+    return (box[2] - box[0]) * (box[3] - box[1]);
+  }
+
   // We only use the districts column for displaying a mini-map outside of the main Project Screen
   // so we can simplify the geometries to save on size and improve performance
   async simplifyDistricts(page: Promise<Pagination<Project>>): Promise<Pagination<Project>> {
     const projects = await page;
     projects.items.forEach(project => {
+      const boxArea = this.computeBBoxArea(project);
       project.districts &&
         project.districts.features.forEach(districtFeature => {
           // Some very small holes may collapse to a single point during the merge operation,
@@ -70,7 +78,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
             )
             .filter(polygonCoords => polygonCoords.length > 0);
           try {
-            simplify(districtFeature, { mutate: true, tolerance: 0.005 });
+            simplify(districtFeature, { mutate: true, tolerance: boxArea > 1 ? 0.005 : 0.001 });
           } catch (e) {
             this.logger.debug(
               `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
