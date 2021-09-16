@@ -16,7 +16,7 @@ interface IProps {
 const style: ThemeUIStyleObject = {
   container: {
     flexDirection: "row",
-    width: "large",
+    width: "100%",
     mx: "auto",
     "> *": {
       mx: 5
