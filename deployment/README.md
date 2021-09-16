@@ -113,12 +113,27 @@ This will attempt to apply the plan assembled in the previous step using Amazon'
 
 ## Restart services
 
-After updating TopoJSON assets using the `update-region` command, you will need to restart the ECS services to refresh the cached TopoJSON assets.
+### Starting new tasks
 
-To do so, go to the [ECS task definition](https://console.aws.amazon.com/ecs/home?region=us-east-1#/taskDefinitions) and force a new deployment for the environment (select either `StagingApp_EC2LaunchType` or `ProductionApp_EC2LaunchType` as appropriate).
+After updating TopoJSON assets using the `update-region` command, updating data in S3 directly, or updating the `region_config` table in the staging / production database, you will need to restart the ECS services to refresh the cached TopoJSON assets.
 
-On the next screen, ensure "Force new deployment" is checked and that the selected cluster matches the selected task definition:
-![image](https://user-images.githubusercontent.com/4432106/120369867-e4fabd80-c2e1-11eb-9679-c0a7fa76868d.png)
+Go to the [auto scaling group](https://console.aws.amazon.com/ec2autoscaling/home?region=us-east-1#/details) for the environment you are interested in. Click the Edit button for "Group Details" and set the desired group capacity to be equal to the maximum capacity.
 
-For the next two screens ("Configure network" and "Set Auto Scaling") use the defaults.
+Next, go to the [Staging](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsStagingCluster/services/StagingApp_EC2LaunchType/details) or [Production](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsProductionCluster/services/ProductionApp_EC2LaunchType/details) "EC2LaunchType" service and click "Update".
 
+On the next screen, increase the "Number of tasks" to match the amount you set for the auto-scaling group, and leave everything else as-is.
+
+It will take some time (approx. 20-25 mins) for the new tasks to finish loading all TopoJSON data. You can monitor the progress by looking for `HealthCheckService` logs in the [`logStagingApp` / `logProductionApp` Cloudwatch logs](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups) or by looking at the number of healthy hosts in the [appropriate target group](https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#TargetGroups:).
+
+### Stopping old tasks
+
+Once all the new tasks are healthy, you will need to stop the old tasks.
+Go to the task list for [staging](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsStagingCluster/tasks) / [production](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsProductionCluster/tasks) and stop any tasks whose "Started At" date is from before increasing the auto scaling group / number of desired tasks (this should be as many tasks as there were before you increased the total).
+
+Next, revert your changes to the [Staging](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsStagingCluster/services/StagingApp_EC2LaunchType/details) or [Production](https://console.aws.amazon.com/ecs/home?region=us-east-1#/clusters/ecsProductionCluster/services/ProductionApp_EC2LaunchType/details) "EC2LaunchType" service to bring the desired number of tasks back down to the previous amount.
+
+The auto-scaling group will automatically reduce in size over time until it is back at the minimum amount again - there is no need to revert the changes to it.
+
+### Updating cache keys
+
+After all of the old tasks have been stopped, you need to update the `region_config.version` column in the database for every region that was updated, in order to trigger updates to cached data for maps in those regions. If you didn't update any existing regions, only added new ones, you can skip this step.
