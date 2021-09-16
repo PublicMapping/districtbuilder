@@ -136,24 +136,6 @@ const OrganizationWithTemplates = ({
           <Box sx={style.cardHint}>
             Which of {currentOrganization.name}&apos;s templates would you like to use?
           </Box>
-          <div
-            sx={{
-              flex: "0 0 50%",
-              "@media screen and (max-width: 770px)": {
-                flex: "0 0 100%"
-              }
-            }}
-            key="custom"
-          >
-            <Label>
-              <Radio
-                name="projectTemplate"
-                value=""
-                onChange={onTemplateChanged}
-                checked={currentOrganization === undefined}
-              />
-            </Label>
-          </div>
           {currentOrganization.projectTemplates.map(template => (
             <Label
               key={template.id}
