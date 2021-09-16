@@ -37,11 +37,9 @@ import Icon from "../components/Icon";
 import ImportFlagsModal from "../components/ImportFlagsModal";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 import { State } from "../reducers";
-import { UserState } from "../reducers/user";
 import { WriteResource, Resource } from "../resource";
-import { OrganizationState } from "../reducers/organization";
 import store from "../store";
-import OrganizationWithTemplates from "../components/OrganizationWithTemplates";
+import ImportOrganizationTemplates from "../components/ImportOrganizationTemplates";
 
 interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
@@ -564,7 +562,8 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                 </Card>
 
                 {organizationsInRegion && (
-                  <OrganizationWithTemplates
+                  <ImportOrganizationTemplates
+                    currentOrganization={currentOrganization}
                     organizations={organizationsInRegion}
                     onTemplateChanged={onTemplateChanged}
                     orgChanged={onOrgChanged}
