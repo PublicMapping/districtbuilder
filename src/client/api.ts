@@ -137,7 +137,6 @@ export async function createProject({
   numberOfDistricts,
   chamber,
   regionConfig,
-  organization,
   districtsDefinition,
   projectTemplate,
   populationDeviation
@@ -148,7 +147,6 @@ export async function createProject({
         name,
         numberOfDistricts,
         regionConfig,
-        organization,
         districtsDefinition,
         chamber,
         populationDeviation,

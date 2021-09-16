@@ -220,7 +220,6 @@ export interface CreateProjectData {
   readonly numberOfDistricts: number;
   readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id"> | null;
-  readonly organization?: OrganizationSlug | null;
   readonly districtsDefinition?: DistrictsDefinition;
   readonly populationDeviation?: number;
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
