@@ -39,6 +39,7 @@
     "@nestjsx/crud": "4.6.0",
     "@nestjsx/crud-typeorm": "4.6.0",
     "@turf/area": "6.0.1",
+    "@turf/bbox": "^6.5.0",
     "@turf/length": "6.0.2",
     "@turf/polygon-to-line": "6.0.3",
     "@turf/simplify": "^6.5.0",

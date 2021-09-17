@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Support extra demographic fields on metrics viewer [#984](https://github.com/PublicMapping/districtbuilder/pull/984)
 - Sort region configs by region code [#1004](https://github.com/PublicMapping/districtbuilder/pull/1004)
+- Fix mini-maps for DC and other small regions [#1009](https://github.com/PublicMapping/districtbuilder/pull/1009)
 
 ### Fixed
 
