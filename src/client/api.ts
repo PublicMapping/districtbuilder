@@ -405,6 +405,17 @@ export async function fetchOrganizationFeaturedProjects(
   });
 }
 
+export async function fetchOrganizationsForRegion(
+  regionCode: string
+): Promise<readonly IOrganization[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/organization/by_region/${regionCode}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
 export async function exportOrganizationProjectsCsv(slug: OrganizationSlug): Promise<void> {
   return new Promise((resolve, reject) => {
     apiAxios

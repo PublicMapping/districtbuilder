@@ -34,6 +34,14 @@ export class OrganizationsController {
     return org;
   }
 
+  async getUserOrgsForRegion(regionCode: string, userId: string): Promise<Organization[]> {
+    const orgs = await this.service.getUserOrgsForRegion(regionCode, userId);
+    if (!orgs) {
+      return [];
+    }
+    return orgs;
+  }
+
   async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {
     const org = await this.service.findOne(
       { slug: organizationSlug },
@@ -60,6 +68,15 @@ export class OrganizationsController {
   @Get(":slug/")
   async getOne(@Param("slug") slug: OrganizationSlug): Promise<Organization> {
     return this.getOrgAndTemplates(slug);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("by_region/:regionCode")
+  async getOrganizationsForRegion(
+    @Param("regionCode") regionCode: string,
+    @Request() req: any
+  ): Promise<Organization[]> {
+    return this.getUserOrgsForRegion(regionCode, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
