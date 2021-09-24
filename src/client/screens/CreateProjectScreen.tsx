@@ -24,7 +24,7 @@ import {
   IRegionConfig,
   IChamber,
   OrganizationSlug,
-  IProjectTemplate
+  CreateProjectData
 } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { organizationFetch } from "../actions/organization";
@@ -200,17 +200,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     });
   };
 
-  function setupProjectFromTemplate(template: IProjectTemplate) {
-    const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
-    const data = {
-      name,
-      regionConfig,
-      numberOfDistricts,
-      districtsDefinition,
-      chamber,
-      projectTemplate: { id }
-    };
-
+  function setupProjectFromTemplate(data: CreateProjectData) {
     void createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
   }
 
@@ -316,7 +306,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
             <OrganizationTemplates
               user={user.resource}
               organization={organization.resource}
-              setTemplate={setupProjectFromTemplate}
+              templateSelected={setupProjectFromTemplate}
             />
           </Box>
         )}

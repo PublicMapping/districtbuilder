@@ -22,7 +22,6 @@ import {
   IOrganization,
   IUser,
   ProjectNest,
-  IProjectTemplate,
   IProject
 } from "../../shared/entities";
 
@@ -157,16 +156,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
     void createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
   }
 
-  function setupProjectFromTemplate(template: IProjectTemplate) {
-    const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
-    const data: CreateProjectData = {
-      name,
-      regionConfig,
-      numberOfDistricts,
-      districtsDefinition,
-      chamber,
-      projectTemplate: { id }
-    };
+  function setupProjectFromTemplate(data: CreateProjectData) {
     if (userInOrg) {
       createProjectFromTemplate(data);
     } else {
@@ -340,7 +330,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                 <OrganizationTemplates
                   user={"resource" in user ? user.resource : undefined}
                   organization={organization.resource}
-                  setTemplate={setupProjectFromTemplate}
+                  templateSelected={setupProjectFromTemplate}
                 />
               )}
             </Box>

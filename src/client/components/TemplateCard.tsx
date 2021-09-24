@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { IOrganization, IProjectTemplate, IUser } from "../../shared/entities";
+import { IOrganization, IProjectTemplate, IUser, CreateProjectData } from "../../shared/entities";
 import { Box, Button, Flex, Heading, jsx, Text } from "theme-ui";
 import { isUserLoggedIn } from "../jwt";
 import Tooltip from "./Tooltip";
@@ -30,12 +30,12 @@ const TemplateCard = ({
   template,
   user,
   organization,
-  setTemplate
+  templateSelected
 }: {
   readonly template: IProjectTemplate;
   readonly organization: IOrganization;
   readonly user?: IUser;
-  readonly setTemplate?: (template: IProjectTemplate) => void;
+  readonly templateSelected?: (templateData: CreateProjectData) => void;
 }) => {
   const userIsVerified = user?.isEmailVerified;
   const isLoggedIn = isUserLoggedIn();
@@ -44,7 +44,13 @@ const TemplateCard = ({
   const useButton = (
     <Button
       disabled={isLoggedIn && !userIsVerified}
-      onClick={() => setTemplate && setTemplate(template)}
+      onClick={() => {
+        if (templateSelected) {
+          const { id } = template;
+          const data: CreateProjectData = { projectTemplate: { id } };
+          templateSelected(data);
+        }
+      }}
       sx={style.useTemplateBtn}
     >
       Use this template
