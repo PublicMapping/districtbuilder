@@ -138,7 +138,9 @@ const style = {
 
 const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
   const { organizationSlug } = useParams();
-  const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
+  const [projectTemplateData, setProjectTemplateData] = useState<CreateProjectData | undefined>(
+    undefined
+  );
   const isLoggedIn = isUserLoggedIn();
   const userInOrg =
     "resource" in user &&
@@ -168,7 +170,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
     if (userInOrg) {
       createProjectFromTemplate(data);
     } else {
-      setProjectTemplate(data);
+      setProjectTemplateData(data);
       store.dispatch(showCopyMapModal(true));
     }
   }
@@ -225,7 +227,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
   }
 
   function handleCancelModal() {
-    setProjectTemplate(undefined);
+    setProjectTemplateData(undefined);
   }
 
   const joinButton = (
@@ -393,7 +395,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
       {"resource" in organization && organization.resource && (
         <JoinOrganizationModal
           organization={organization.resource}
-          projectTemplate={projectTemplate}
+          projectTemplateData={projectTemplateData}
           onCancel={handleCancelModal}
         />
       )}
