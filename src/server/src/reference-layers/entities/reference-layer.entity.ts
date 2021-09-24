@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Check } from "typeorm";
 import { FeatureCollection, MultiPolygon, Point } from "geojson";
 import { IReferenceLayer, ReferenceLayerProperties } from "../../../../shared/entities";
 import { Project } from "../../projects/entities/project.entity";
@@ -10,6 +10,7 @@ export type ReferenceLayerGeojson =
   | FeatureCollection<MultiPolygon, ReferenceLayerProperties>;
 
 @Entity()
+@Check(`"project_id" IS NOT NULL OR "project_template_id" IS NOT NULL`)
 export class ReferenceLayer implements IReferenceLayer {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -17,7 +18,7 @@ export class ReferenceLayer implements IReferenceLayer {
   @Column({ type: "character varying" })
   name: string;
 
-  @ManyToOne(() => Project, { nullable: false, eager: true })
+  @ManyToOne(() => Project, { nullable: true, eager: true })
   @JoinColumn({ name: "project_id" })
   project: Project;
 
