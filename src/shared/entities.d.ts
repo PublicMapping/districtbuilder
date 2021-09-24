@@ -174,7 +174,7 @@ export type VotingMetricField = "dem16" | "rep16" | "other16" | "dem20" | "rep20
 export type MetricsList = readonly (readonly [string, string])[];
 export type VotingMetricsList = readonly (readonly [string, VotingMetricField])[];
 
-interface ProjectTemplateFields {
+export interface ProjectTemplateFields {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
@@ -216,9 +216,9 @@ export type ProjectNest = Pick<
 };
 
 export interface CreateProjectData {
-  readonly name: string;
-  readonly numberOfDistricts: number;
-  readonly regionConfig: Pick<IRegionConfig, "id">;
+  readonly name?: string;
+  readonly numberOfDistricts?: number;
+  readonly regionConfig?: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;
   readonly populationDeviation?: number;

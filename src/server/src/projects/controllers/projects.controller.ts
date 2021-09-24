@@ -46,7 +46,10 @@ import {
   ProjectId,
   PublicUserProperties,
   GeoUnitHierarchy,
-  UserId
+  UserId,
+  ProjectTemplateId,
+  ProjectTemplateFields,
+  IProjectTemplate
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
@@ -69,6 +72,7 @@ import { CrosswalkService } from "../services/crosswalk.service";
 import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 import { Brackets } from "typeorm";
 import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
+import { ProjectTemplatesService } from "../../project-templates/services/project-templates.service";
 
 @Crud({
   model: {
@@ -173,6 +177,7 @@ export class ProjectsController implements CrudController<Project> {
   private readonly logger = new Logger(ProjectsController.name);
   constructor(
     public service: ProjectsService,
+    public templateService: ProjectTemplatesService,
     public topologyService: TopologyService,
     private readonly usersService: UsersService,
     private readonly organizationService: OrganizationsService,
@@ -279,9 +284,24 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateProjectDto
   ): Promise<Project> {
-    const regionConfig = await this.regionConfigService.findOne({ id: dto.regionConfig.id });
+    // This is in a lambda bc prettier kept moving my @ts-ignore
+    const findTemplate = (id: ProjectTemplateId) =>
+      // @ts-ignore
+      this.templateService.findOne({ id }, { relations: ["regionConfig"] });
+    const projectTemplate = dto.projectTemplate
+      ? await findTemplate(dto.projectTemplate.id)
+      : undefined;
+    if (dto.projectTemplate && !projectTemplate) {
+      throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
+    }
+
+    const regionConfig = dto.regionConfig
+      ? await this.regionConfigService.findOne({ id: dto.regionConfig.id })
+      : projectTemplate
+      ? projectTemplate.regionConfig
+      : undefined;
     if (!regionConfig) {
-      throw new NotFoundException(`Unable to find region config: ${dto.regionConfig.id}`);
+      throw new NotFoundException(`Unable to find region config: ${dto.regionConfig?.id}`);
     }
 
     const geoCollection = await this.topologyService.get(regionConfig.s3URI);
@@ -292,14 +312,27 @@ export class ProjectsController implements CrudController<Project> {
       );
     }
 
-    try {
-      const data = this.formatCreateProjectDto(dto, geoCollection, regionConfig, req);
-      const districts = await this.getGeojson({
-        numberOfDistricts: data.numberOfDistricts,
-        districtsDefinition: data.districtsDefinition,
-        regionConfig
-      });
+    // Pulls out the fields on ProjectTemplate common to it & Project
+    const templateFields = ({
+      id,
+      organization,
+      details,
+      description,
+      ...templateFields
+    }: IProjectTemplate): ProjectTemplateFields => templateFields;
+    const formdata = projectTemplate ? { ...dto, ...templateFields(projectTemplate) } : dto;
+    if (!formdata.numberOfDistricts) {
+      throw new InternalServerErrorException();
+    }
 
+    const data = this.formatCreateProjectDto(formdata, geoCollection, regionConfig, req);
+    const districts = await this.getGeojson({
+      numberOfDistricts: formdata.numberOfDistricts,
+      districtsDefinition: data.districtsDefinition,
+      regionConfig
+    });
+
+    try {
       return await this.service.createOne(req, { ...data, districts });
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);

@@ -12,6 +12,7 @@ import { ProjectsController } from "./controllers/projects.controller";
 import { Project } from "./entities/project.entity";
 import { ProjectsService } from "./services/projects.service";
 import { CrosswalkService } from "./services/crosswalk.service";
+import { ProjectTemplatesModule } from "../project-templates/project-templates.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CrosswalkService } from "./services/crosswalk.service";
     RegionConfigsModule,
     ChambersModule,
     OrganizationsModule,
+    ProjectTemplatesModule,
     UsersModule
   ],
   controllers: [ProjectsController, GlobalProjectsController],
