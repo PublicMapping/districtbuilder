@@ -3,6 +3,7 @@ import { FeatureCollection, MultiPolygon, Point } from "geojson";
 import { IReferenceLayer, ReferenceLayerProperties } from "../../../../shared/entities";
 import { Project } from "../../projects/entities/project.entity";
 import { ReferenceLayerTypes } from "../../../../shared/constants";
+import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 export type ReferenceLayerGeojson =
   | FeatureCollection<Point, ReferenceLayerProperties>
@@ -19,6 +20,10 @@ export class ReferenceLayer implements IReferenceLayer {
   @ManyToOne(() => Project, { nullable: false, eager: true })
   @JoinColumn({ name: "project_id" })
   project: Project;
+
+  @ManyToOne(() => ProjectTemplate, { nullable: true })
+  @JoinColumn({ name: "project_template_id" })
+  projectTemplate: ProjectTemplate;
 
   @Column({ type: "enum", enum: ReferenceLayerTypes, default: ReferenceLayerTypes.Point })
   layer_type: ReferenceLayerTypes;

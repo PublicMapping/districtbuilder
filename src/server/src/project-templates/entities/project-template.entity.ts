@@ -9,6 +9,7 @@ import {
   DEFAULT_POPULATION_DEVIATION,
   DEFAULT_PINNED_METRIC_FIELDS
 } from "../../../../shared/constants";
+import { ReferenceLayer } from "../../reference-layers/entities/reference-layer.entity";
 
 @Entity()
 export class ProjectTemplate implements IProjectTemplateWithProjects {
@@ -39,6 +40,12 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
     project => project.projectTemplate
   )
   projects: Project[];
+
+  @OneToMany(
+    () => ReferenceLayer,
+    layer => layer.projectTemplate
+  )
+  referenceLayers: ReferenceLayer[];
 
   @Column({ name: "number_of_districts", type: "integer" })
   numberOfDistricts: number;

@@ -225,6 +225,10 @@ export interface CreateProjectData {
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
 }
 
+export interface UpdateReferenceLayerData {
+  readonly projects: ReadonlyArray<Pick<IProject, "id">>;
+}
+
 export interface CreateReferenceLayerData {
   readonly name: string;
   readonly project: Pick<IProject, "id">;
@@ -250,6 +254,7 @@ export type IProjectTemplate = ProjectTemplateFields & {
   readonly organization: IOrganization;
   readonly description: string;
   readonly details: string;
+  readonly referenceLayers?: readonly IReferenceLayer[];
 };
 
 export type IProjectTemplateWithProjects = IProjectTemplate & {

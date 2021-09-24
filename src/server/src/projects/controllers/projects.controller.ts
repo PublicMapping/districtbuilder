@@ -73,6 +73,7 @@ import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.
 import { Brackets } from "typeorm";
 import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
 import { ProjectTemplatesService } from "../../project-templates/services/project-templates.service";
+import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 @Crud({
   model: {
@@ -287,7 +288,7 @@ export class ProjectsController implements CrudController<Project> {
     // This is in a lambda bc prettier kept moving my @ts-ignore
     const findTemplate = (id: ProjectTemplateId) =>
       // @ts-ignore
-      this.templateService.findOne({ id }, { relations: ["regionConfig"] });
+      this.templateService.findOne({ id }, { relations: ["regionConfig", "referenceLayers"] });
     const projectTemplate = dto.projectTemplate
       ? await findTemplate(dto.projectTemplate.id)
       : undefined;
@@ -314,12 +315,24 @@ export class ProjectsController implements CrudController<Project> {
 
     // Pulls out the fields on ProjectTemplate common to it & Project
     const templateFields = ({
-      id,
-      organization,
-      details,
-      description,
-      ...templateFields
-    }: IProjectTemplate): ProjectTemplateFields => templateFields;
+      name,
+      regionConfig,
+      chamber,
+      numberOfDistricts,
+      populationDeviation,
+      pinnedMetricFields,
+      districtsDefinition,
+      referenceLayers
+    }: ProjectTemplate) => ({
+      name,
+      regionConfig,
+      chamber,
+      numberOfDistricts,
+      populationDeviation,
+      pinnedMetricFields,
+      districtsDefinition,
+      referenceLayers
+    });
     const formdata = projectTemplate ? { ...dto, ...templateFields(projectTemplate) } : dto;
     if (!formdata.numberOfDistricts) {
       throw new InternalServerErrorException();
