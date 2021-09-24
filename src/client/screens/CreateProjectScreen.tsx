@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Redirect } from "react-router-dom";
+import { Redirect, useHistory } from "react-router-dom";
 import { userFetch } from "../actions/user";
 import { DEFAULT_POPULATION_DEVIATION } from "../../shared/constants";
 import {
@@ -165,6 +165,7 @@ const style: ThemeUIStyleObject = {
 };
 
 const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) => {
+  const history = useHistory();
   const [createProjectResource, setCreateProjectResource] = useState<
     WriteResource<ProjectForm, IProject>
   >({
@@ -199,6 +200,19 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     });
   };
 
+  function setupProjectFromTemplate(template: IProjectTemplate) {
+    const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
+    const data = {
+      name,
+      regionConfig,
+      numberOfDistricts,
+      districtsDefinition,
+      chamber,
+      projectTemplate: { id }
+    };
+
+    void createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
+  }
 
   const onOrgChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.currentTarget.value !== "" && setOrganizationSlug(e.currentTarget.value);
@@ -299,7 +313,11 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
         </Flex>
         {"resource" in organization && "resource" in user && organizationSlug && (
           <Box sx={style.orgTemplates}>
-            <OrganizationTemplates user={user.resource} organization={organization.resource} />
+            <OrganizationTemplates
+              user={user.resource}
+              organization={organization.resource}
+              setTemplate={setupProjectFromTemplate}
+            />
           </Box>
         )}
         {!organizationSlug && (

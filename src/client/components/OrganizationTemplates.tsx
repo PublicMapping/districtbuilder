@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { IOrganization, IUser, CreateProjectData } from "../../shared/entities";
+import { IOrganization, IUser, IProjectTemplate } from "../../shared/entities";
 import { Box, Heading, jsx } from "theme-ui";
 import TemplateCard from "./TemplateCard";
 
@@ -9,7 +9,7 @@ interface Props {
 }
 
 interface IProps {
-  readonly setTemplate?: (template: CreateProjectData) => void;
+  readonly setTemplate?: (template: IProjectTemplate) => void;
 }
 
 const style = {
