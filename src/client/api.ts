@@ -132,26 +132,10 @@ export async function resetPassword(token: string, password: string): Promise<vo
   });
 }
 
-export async function createProject({
-  name,
-  numberOfDistricts,
-  chamber,
-  regionConfig,
-  districtsDefinition,
-  projectTemplate,
-  populationDeviation
-}: CreateProjectData): Promise<IProject> {
+export async function createProject(data: CreateProjectData): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .post("/api/projects", {
-        name,
-        numberOfDistricts,
-        regionConfig,
-        districtsDefinition,
-        chamber,
-        populationDeviation,
-        projectTemplate
-      })
+      .post("/api/projects", data)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));
   });
