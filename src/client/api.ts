@@ -19,13 +19,13 @@ import {
   DistrictsImportApiResponse,
   PlanScoreAPIResponse,
   IReferenceLayer,
-  ReferenceLayerId
+  ReferenceLayerId,
+  CreateReferenceLayerData
 } from "../shared/entities";
 import {
   DistrictsGeoJSON,
   DynamicProjectData,
   PaginatedResponse,
-  CreateReferenceLayerData,
   ReferenceLayerWithGeojson
 } from "./types";
 import { getJWT, setJWT } from "./jwt";

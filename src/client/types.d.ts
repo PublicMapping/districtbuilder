@@ -109,13 +109,6 @@ export interface ReferenceLayerImportResponse {
   readonly fields?: readonly string[];
 }
 
-export interface CreateReferenceLayerData {
-  readonly layer: ReferenceLayerGeojson;
-  readonly name: string;
-  readonly label_field?: string;
-  readonly project: ProjectId;
-}
-
 export interface ReferenceLayerWithGeojson extends IReferenceLayer {
   readonly layer: ReferenceLayerGeojson;
 }

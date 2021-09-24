@@ -323,8 +323,10 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                 // eslint-disable-next-line
                 if (validatedForm.valid === true) {
                   setCreateProjectResource({ data, isPending: true });
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const { isCustom, valid, ...validatedData } = validatedForm;
                   createProject({
-                    ...validatedForm,
+                    ...validatedData,
                     chamber: validatedForm.chamber || undefined,
                     populationDeviation: validatedForm.populationDeviation,
                     numberOfDistricts: validatedForm.numberOfDistricts
