@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { ChambersModule } from "../chambers/chambers.module";
@@ -13,6 +13,7 @@ import { Project } from "./entities/project.entity";
 import { ProjectsService } from "./services/projects.service";
 import { CrosswalkService } from "./services/crosswalk.service";
 import { ProjectTemplatesModule } from "../project-templates/project-templates.module";
+import { ReferenceLayersModule } from "../reference-layers/reference-layers.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ProjectTemplatesModule } from "../project-templates/project-templates.m
     ChambersModule,
     OrganizationsModule,
     ProjectTemplatesModule,
+    forwardRef(() => ReferenceLayersModule),
     UsersModule
   ],
   controllers: [ProjectsController, GlobalProjectsController],

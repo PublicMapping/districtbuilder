@@ -74,6 +74,7 @@ import { Brackets } from "typeorm";
 import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
 import { ProjectTemplatesService } from "../../project-templates/services/project-templates.service";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
+import { ReferenceLayersService } from "../../reference-layers/services/reference-layers.service";
 
 @Crud({
   model: {
@@ -183,6 +184,7 @@ export class ProjectsController implements CrudController<Project> {
     private readonly usersService: UsersService,
     private readonly organizationService: OrganizationsService,
     private readonly regionConfigService: RegionConfigsService,
+    private readonly referenceLayerService: ReferenceLayersService,
     private readonly crosswalkService: CrosswalkService
   ) {}
 
@@ -289,17 +291,15 @@ export class ProjectsController implements CrudController<Project> {
     const findTemplate = (id: ProjectTemplateId) =>
       // @ts-ignore
       this.templateService.findOne({ id }, { relations: ["regionConfig", "referenceLayers"] });
-    const projectTemplate = dto.projectTemplate
-      ? await findTemplate(dto.projectTemplate.id)
-      : undefined;
-    if (dto.projectTemplate && !projectTemplate) {
+    const template = dto.projectTemplate ? await findTemplate(dto.projectTemplate.id) : undefined;
+    if (dto.projectTemplate && !template) {
       throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
     }
 
     const regionConfig = dto.regionConfig
       ? await this.regionConfigService.findOne({ id: dto.regionConfig.id })
-      : projectTemplate
-      ? projectTemplate.regionConfig
+      : template
+      ? template.regionConfig
       : undefined;
     if (!regionConfig) {
       throw new NotFoundException(`Unable to find region config: ${dto.regionConfig?.id}`);
@@ -321,8 +321,7 @@ export class ProjectsController implements CrudController<Project> {
       numberOfDistricts,
       populationDeviation,
       pinnedMetricFields,
-      districtsDefinition,
-      referenceLayers
+      districtsDefinition
     }: ProjectTemplate) => ({
       name,
       regionConfig,
@@ -330,10 +329,9 @@ export class ProjectsController implements CrudController<Project> {
       numberOfDistricts,
       populationDeviation,
       pinnedMetricFields,
-      districtsDefinition,
-      referenceLayers
+      districtsDefinition
     });
-    const formdata = projectTemplate ? { ...dto, ...templateFields(projectTemplate) } : dto;
+    const formdata = template ? { ...dto, ...templateFields(template) } : dto;
     if (!formdata.numberOfDistricts) {
       throw new InternalServerErrorException();
     }
@@ -346,7 +344,22 @@ export class ProjectsController implements CrudController<Project> {
     });
 
     try {
-      return await this.service.createOne(req, { ...data, districts });
+      const project = await this.service.createOne(req, { ...data, districts });
+      // Copy any reference layers associated with the template to the project
+      if (template) {
+        for (const refLayer of template.referenceLayers) {
+          // We need to wait for reference layers to be copied, but then we don't
+          // actually need to do anything with the result
+          void (await this.referenceLayerService.create({
+            name: refLayer.name,
+            label_field: refLayer.label_field,
+            layer: refLayer.layer,
+            layer_type: refLayer.layer_type,
+            project
+          }));
+        }
+      }
+      return project;
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);
       throw new InternalServerErrorException();
