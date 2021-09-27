@@ -38,12 +38,12 @@ const style: ThemeUIStyleObject = {
 const ConfirmJoinOrganization = ({
   organization,
   user,
-  projectTemplate,
+  projectTemplateData,
   onCancel
 }: {
   readonly organization: IOrganization;
   readonly user: Resource<IUser>;
-  readonly projectTemplate?: CreateProjectData;
+  readonly projectTemplateData?: CreateProjectData;
   readonly onCancel: () => void;
 }) => {
   const history = useHistory();
@@ -56,7 +56,7 @@ const ConfirmJoinOrganization = ({
       ) &&
       store.dispatch(showCopyMapModal(false));
 
-    projectTemplate && createProjectFromTemplate();
+    projectTemplateData && createProjectFromTemplate();
   }
 
   function closeModal() {
@@ -65,8 +65,8 @@ const ConfirmJoinOrganization = ({
   }
 
   function createProjectFromTemplate() {
-    projectTemplate &&
-      void createProject(projectTemplate).then((project: IProject) =>
+    projectTemplateData &&
+      void createProject(projectTemplateData).then((project: IProject) =>
         history.push(`/projects/${project.id}`)
       );
   }

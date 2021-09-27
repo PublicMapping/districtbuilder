@@ -1,18 +1,8 @@
 /** @jsx jsx */
-import {
-  IOrganization,
-  IProjectTemplate,
-  IUser,
-  CreateProjectData,
-  IProject
-} from "../../shared/entities";
+import { IOrganization, IProjectTemplate, IUser, CreateProjectData } from "../../shared/entities";
 import { Box, Button, Flex, Heading, jsx, Text } from "theme-ui";
-import { useHistory } from "react-router-dom";
-import { createProject } from "../api";
 import { isUserLoggedIn } from "../jwt";
 import Tooltip from "./Tooltip";
-import store from "../store";
-import { showCopyMapModal } from "../actions/districtDrawing";
 
 const style = {
   template: {
@@ -40,42 +30,27 @@ const TemplateCard = ({
   template,
   user,
   organization,
-  setTemplate
+  templateSelected
 }: {
   readonly template: IProjectTemplate;
   readonly organization: IOrganization;
-  readonly user: IUser | undefined;
-  readonly setTemplate: ((template: CreateProjectData) => void) | undefined;
+  readonly user?: IUser;
+  readonly templateSelected?: (templateData: CreateProjectData) => void;
 }) => {
   const userIsVerified = user?.isEmailVerified;
   const isLoggedIn = isUserLoggedIn();
   const userInOrg = user && checkIfUserInOrg(organization, user);
-  const history = useHistory();
-
-  function createProjectFromTemplate(template: CreateProjectData) {
-    void createProject(template).then((project: IProject) =>
-      history.push(`/projects/${project.id}`)
-    );
-  }
-
-  function setupProjectFromTemplate(template: IProjectTemplate) {
-    const { id, name, regionConfig, numberOfDistricts, districtsDefinition, chamber } = template;
-    const currentTemplate: CreateProjectData = {
-      name,
-      regionConfig,
-      numberOfDistricts,
-      districtsDefinition,
-      chamber,
-      projectTemplate: { id }
-    };
-    setTemplate && setTemplate(currentTemplate);
-    userInOrg ? createProjectFromTemplate(currentTemplate) : store.dispatch(showCopyMapModal(true));
-  }
 
   const useButton = (
     <Button
       disabled={isLoggedIn && !userIsVerified}
-      onClick={() => setupProjectFromTemplate(template)}
+      onClick={() => {
+        if (templateSelected) {
+          const { id } = template;
+          const data: CreateProjectData = { projectTemplate: { id } };
+          templateSelected(data);
+        }
+      }}
       sx={style.useTemplateBtn}
     >
       Use this template

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Redirect } from "react-router-dom";
+import { Redirect, useHistory } from "react-router-dom";
 import { userFetch } from "../actions/user";
 import { DEFAULT_POPULATION_DEVIATION } from "../../shared/constants";
 import {
@@ -19,7 +19,13 @@ import {
 import { Link } from "react-router-dom";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
-import { IProject, IRegionConfig, IChamber, OrganizationSlug } from "../../shared/entities";
+import {
+  IProject,
+  IRegionConfig,
+  IChamber,
+  OrganizationSlug,
+  CreateProjectData
+} from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { organizationFetch } from "../actions/organization";
 import { createProject } from "../api";
@@ -66,11 +72,100 @@ interface InvalidForm extends ProjectForm {
   readonly valid: false;
 }
 
+const style: ThemeUIStyleObject = {
+  header: {
+    py: 3,
+    px: 5,
+    alignItems: "center",
+    bg: "blue.8",
+    borderBottom: "1px solid",
+    borderColor: "blue.7",
+    boxShadow: "bright"
+  },
+  formContainer: {
+    width: "100%",
+    maxWidth: "640px",
+    my: 7,
+    mx: "auto",
+    display: "block",
+    flexDirection: "column",
+    "@media screen and (max-width: 770px)": {
+      width: "95%",
+      my: 2
+    }
+  },
+  cardLabel: {
+    textTransform: "none",
+    variant: "text.h5",
+    display: "block",
+    mb: 1
+  },
+  cardHint: {
+    display: "block",
+    textTransform: "none",
+    fontWeight: "500",
+    fontSize: 1,
+    mt: 2,
+    mb: 3
+  },
+  radioHeading: {
+    textTransform: "none",
+    variant: "text.body",
+    fontSize: 2,
+    lineHeight: "heading",
+    letterSpacing: "0",
+    mb: "0",
+    color: "heading",
+    fontWeight: "body"
+  },
+  radioSubHeading: {
+    fontSize: 1,
+    letterSpacing: "0",
+    textTransform: "none",
+    fontWeight: "500"
+  },
+  customInputContainer: {
+    mt: 2,
+    width: "100%",
+    pt: 4,
+    borderTop: "1px solid",
+    borderColor: "gray.2"
+  },
+  legend: {
+    paddingInlineStart: "0",
+    paddingInlineEnd: "0"
+  },
+  fieldset: {
+    border: "none",
+    marginInlineStart: "0",
+    marginInlineEnd: "0",
+    paddingInlineStart: "0",
+    paddingInlineEnd: "0",
+    paddingBlockEnd: "0"
+  },
+  orgCardLabel: {
+    mt: "5px"
+  },
+  orgCardSubtitle: {
+    mb: "10px"
+  },
+  orgTemplates: {
+    display: "block",
+    minHeight: "100px",
+    pl: "5px",
+    "> *": {
+      mx: 5
+    },
+    mx: "auto",
+    width: "100%",
+    maxWidth: "large",
+    borderTop: "1px solid lightgray",
+    my: 8
+  }
+};
+
 const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) => {
-  useEffect(() => {
-    store.dispatch(regionConfigsFetch());
-    store.dispatch(userFetch());
-  }, []);
+  const history = useHistory();
   const [createProjectResource, setCreateProjectResource] = useState<
     WriteResource<ProjectForm, IProject>
   >({
@@ -85,9 +180,6 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
   });
   const { data } = createProjectResource;
   const [organizationSlug, setOrganizationSlug] = useState<OrganizationSlug | undefined>(undefined);
-  useEffect(() => {
-    organizationSlug && store.dispatch(organizationFetch(organizationSlug));
-  }, [organizationSlug]);
 
   const onDistrictChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chamber =
@@ -108,102 +200,23 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     });
   };
 
-  const style: ThemeUIStyleObject = {
-    header: {
-      py: 3,
-      px: 5,
-      alignItems: "center",
-      bg: "blue.8",
-      borderBottom: "1px solid",
-      borderColor: "blue.7",
-      boxShadow: "bright"
-    },
-    formContainer: {
-      width: "100%",
-      maxWidth: "640px",
-      my: 7,
-      mx: "auto",
-      display: "block",
-      flexDirection: "column",
-      "@media screen and (max-width: 770px)": {
-        width: "95%",
-        my: 2
-      }
-    },
-    cardLabel: {
-      textTransform: "none",
-      variant: "text.h5",
-      display: "block",
-      mb: 1
-    },
-    cardHint: {
-      display: "block",
-      textTransform: "none",
-      fontWeight: "500",
-      fontSize: 1,
-      mt: 2,
-      mb: 3
-    },
-    radioHeading: {
-      textTransform: "none",
-      variant: "text.body",
-      fontSize: 2,
-      lineHeight: "heading",
-      letterSpacing: "0",
-      mb: "0",
-      color: "heading",
-      fontWeight: "body"
-    },
-    radioSubHeading: {
-      fontSize: 1,
-      letterSpacing: "0",
-      textTransform: "none",
-      fontWeight: "500"
-    },
-    customInputContainer: {
-      mt: 2,
-      width: "100%",
-      pt: 4,
-      borderTop: "1px solid",
-      borderColor: "gray.2"
-    },
-    legend: {
-      paddingInlineStart: "0",
-      paddingInlineEnd: "0"
-    },
-    fieldset: {
-      border: "none",
-      marginInlineStart: "0",
-      marginInlineEnd: "0",
-      paddingInlineStart: "0",
-      paddingInlineEnd: "0",
-      paddingBlockEnd: "0"
-    },
-    orgCardLabel: {
-      mt: "5px"
-    },
-    orgCardSubtitle: {
-      mb: "10px"
-    },
-    orgTemplates: {
-      display: "block",
-      minHeight: "100px",
-      pl: "5px",
-      "> *": {
-        mx: 5
-      },
-      mx: "auto",
-      width: "100%",
-      maxWidth: "large",
-      borderTop: "1px solid lightgray",
-      my: 8
-    }
-  };
+  function setupProjectFromTemplate(data: CreateProjectData) {
+    void createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
+  }
 
   const onOrgChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.currentTarget.value !== "" && setOrganizationSlug(e.currentTarget.value);
     e.currentTarget.value === "" && setOrganizationSlug(undefined);
   };
+
+  useEffect(() => {
+    store.dispatch(regionConfigsFetch());
+    store.dispatch(userFetch());
+  }, []);
+
+  useEffect(() => {
+    organizationSlug && store.dispatch(organizationFetch(organizationSlug));
+  }, [organizationSlug]);
 
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
@@ -290,7 +303,11 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
         </Flex>
         {"resource" in organization && "resource" in user && organizationSlug && (
           <Box sx={style.orgTemplates}>
-            <OrganizationTemplates user={user.resource} organization={organization.resource} />
+            <OrganizationTemplates
+              user={user.resource}
+              organization={organization.resource}
+              templateSelected={setupProjectFromTemplate}
+            />
           </Box>
         )}
         {!organizationSlug && (
@@ -306,8 +323,10 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                 // eslint-disable-next-line
                 if (validatedForm.valid === true) {
                   setCreateProjectResource({ data, isPending: true });
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const { isCustom, valid, ...validatedData } = validatedForm;
                   createProject({
-                    ...validatedForm,
+                    ...validatedData,
                     chamber: validatedForm.chamber || undefined,
                     populationDeviation: validatedForm.populationDeviation,
                     numberOfDistricts: validatedForm.numberOfDistricts

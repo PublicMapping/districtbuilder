@@ -314,7 +314,7 @@ const AddReferenceLayerModal = ({
                 const referenceLayer = {
                   name: validatedForm.name,
                   label_field: validatedForm.label_field,
-                  project: validatedForm.project,
+                  project: { id: validatedForm.project },
                   layer: validatedForm.layer,
                   layer_type: validatedForm.layer_type
                 };
