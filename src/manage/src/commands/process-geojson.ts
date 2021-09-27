@@ -383,14 +383,15 @@ it when necessary (file sizes ~1GB+).
         geometries: Object.values(mergedGeoms)
       };
     }
-    // Add an 'id' to each feature. This is implicit now but will
-    // become necessary to index static data array buffers once the features
-    // are converted into vector tiles.
-    // We are using the id here, rather than a property, because an id is needed
-    // in order to use the `setFeatureState` capability on the front-end.
+    // Add properties that should be available on every geometry
     for (const geoLevel of geoLevelIds) {
       const geomCollection = topo.objects[geoLevel] as GeometryCollection;
       geomCollection.geometries.forEach((geometry: GeometryObject, index) => {
+        // Add an 'id' to each feature. This is implicit now but will
+        // become necessary to index static data array buffers once the features
+        // are converted into vector tiles.
+        // We are using the id here, rather than a property, because an id is needed
+        // in order to use the `setFeatureState` capability on the front-end.
         // tslint:disable-next-line:no-object-mutation
         geometry.id = index;
 
@@ -400,6 +401,36 @@ it when necessary (file sizes ~1GB+).
             // @ts-ignore
             geometry.properties[`${id}-abbrev`] = abbreviateNumber(geometry.properties[id]);
           }
+        }
+
+        // Add name if it is not already defined
+        // Blocks and block groups have their FIPS code available at geometry.proprties.block[group]
+        // so we can use that for the name so that the label is something useful.
+        if (geometry.properties && !("name" in geometry.properties)) {
+          // @ts-ignore
+          const levelFips = geometry.properties[geoLevel];
+          // FIPS Code format is:
+          // AABBBCCCCCCDEEE
+          // A = State code
+          // B = County code
+          // C = Tract code
+          // D = Blockgroup code
+          // E = Block code
+          // We display blocks and blockgroups but not tracts, so we're using the following subsets
+          // of the full FIPS code for each level:
+          // Blockgroup: Tract code and blockgroup code (CCCCCCD)
+          // Block: Blockgroup code and block code (DEEE)
+          // Counties are displayed with their name.
+          const localFips =
+            geoLevel === "blockgroup"
+              ? levelFips.substring(5)
+              : geoLevel === "block"
+              ? levelFips.substring(11)
+              : levelFips;
+          // And then we want the tooltip to display something like "Blockgroup #CCCCCCD"
+          // @ts-ignore
+          geometry.properties.name = `${geoLevel[0].toUpperCase() +
+            geoLevel.substring(1)} #${localFips}`;
         }
       });
     }
