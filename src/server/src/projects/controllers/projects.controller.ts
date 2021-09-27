@@ -47,9 +47,7 @@ import {
   PublicUserProperties,
   GeoUnitHierarchy,
   UserId,
-  ProjectTemplateId,
-  ProjectTemplateFields,
-  IProjectTemplate
+  ProjectTemplateId
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
@@ -347,6 +345,7 @@ export class ProjectsController implements CrudController<Project> {
       const project = await this.service.createOne(req, { ...data, districts });
       // Copy any reference layers associated with the template to the project
       if (template) {
+        // eslint-disable-next-line functional/no-loop-statement
         for (const refLayer of template.referenceLayers) {
           // We need to wait for reference layers to be copied, but then we don't
           // actually need to do anything with the result
