@@ -331,6 +331,7 @@ export class ProjectsController implements CrudController<Project> {
     });
     const formdata = template ? { ...dto, ...templateFields(template) } : dto;
     if (!formdata.numberOfDistricts) {
+      // The validation in the DTO should prevent this
       throw new InternalServerErrorException();
     }
 
