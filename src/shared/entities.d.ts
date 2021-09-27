@@ -225,10 +225,6 @@ export interface CreateProjectData {
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
 }
 
-export interface UpdateReferenceLayerData {
-  readonly projects: ReadonlyArray<Pick<IProject, "id">>;
-}
-
 export interface CreateReferenceLayerData {
   readonly name: string;
   readonly project: Pick<IProject, "id">;
