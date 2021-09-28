@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+### Changed
+### Fixed
+
+## [1.10.0] - 2021-09-28
+### Added
 - Add support for uploading reference layers to a project [#902](https://github.com/PublicMapping/districtbuilder/pull/902)
 - Show / delete reference layers for a project [#999](https://github.com/PublicMapping/districtbuilder/pull/999)
 - Copy project template reference layers to project [#1018](https://github.com/PublicMapping/districtbuilder/pull/1018)
@@ -15,8 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support extra demographic fields on metrics viewer [#984](https://github.com/PublicMapping/districtbuilder/pull/984)
 - Sort region configs by region code [#1004](https://github.com/PublicMapping/districtbuilder/pull/1004)
 - Fix mini-maps for DC and other small regions [#1009](https://github.com/PublicMapping/districtbuilder/pull/1009)
-
-### Fixed
 
 ## [1.9.0] - 2021-08-30
 
@@ -331,7 +334,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.9.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.10.0...HEAD
+[1.10.0]: https://github.com/publicmapping/districtbuilder/compare/1.9.0...1.10.0
 [1.9.0]: https://github.com/publicmapping/districtbuilder/compare/1.8.0...1.9.0
 [1.8.0]: https://github.com/publicmapping/districtbuilder/compare/1.7.2...1.8.0
 [1.7.2]: https://github.com/publicmapping/districtbuilder/compare/1.7.1...1.7.2
