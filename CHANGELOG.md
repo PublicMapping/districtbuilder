@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Add support for demographic groups, to support VAP / CVAP fields [#1034](https://github.com/PublicMapping/districtbuilder/pull/1034)
+- Added bulk-reprocess-regions command [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
 
 ### Changed
 - Don't require AWS credentials to load public S3 assets [#1036](https://github.com/PublicMapping/districtbuilder/pull/1036)
+- Blocks and blockgroups are now populated with FIPS code in name field [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
+- The process-geojson command now returns non-zero exit codes on error [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
+- The process-geojson, publish-region, and update-region commands now include the input file in the output [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
 
 ### Fixed
 - Fixed project import [#1029](https://github.com/PublicMapping/districtbuilder/pull/1029)
