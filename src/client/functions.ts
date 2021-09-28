@@ -10,13 +10,21 @@ import {
   GeoUnitIndices,
   GeoUnitHierarchy,
   NestedArray,
-  IStaticMetadata
+  IStaticMetadata,
+  ReferenceLayerProperties
 } from "../shared/entities";
-import { ChoroplethSteps, DistrictGeoJSON, ElectionYear, Party } from "./types";
+import {
+  ChoroplethSteps,
+  DistrictGeoJSON,
+  ElectionYear,
+  Party,
+  DistrictsGeoJSON,
+  ReferenceLayerGeojson
+} from "./types";
 
 import { Resource } from "./resource";
-import { DistrictsGeoJSON } from "./types";
 import { isThisYear, isToday } from "date-fns";
+import { FeatureCollection, Feature, Point } from "geojson";
 import format from "date-fns/format";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
@@ -200,15 +208,13 @@ export const has16Election = (staticMetadata?: IStaticMetadata) => {
     staticMetadata?.voting?.some(file => file.id.endsWith("16")) ||
     (staticMetadata?.voting &&
       Object.keys(staticMetadata?.voting || {}).length > 0 &&
-      !has20Election(staticMetadata))
+      !has20Election(staticMetadata)) ||
+    false
   );
 };
 
-export const demographicsHasOther = (staticMetadata?: IStaticMetadata) =>
-  staticMetadata?.demographics?.some(file => file.id === "other");
-
 export const has20Election = (staticMetadata?: IStaticMetadata) =>
-  staticMetadata?.voting?.some(file => file.id.endsWith("20"));
+  staticMetadata?.voting?.some(file => file.id.endsWith("20")) || false;
 
 export function extractYear(voting: DemographicCounts, year?: ElectionYear): DemographicCounts {
   return year
@@ -367,4 +373,41 @@ export const formatDate = (date: Date): string => {
       ? format(d, "MMM d")
       : format(d, "MMM d yyyy")
     : "—";
+};
+
+type ParseResults = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly data: readonly any[];
+  readonly errors: readonly unknown[];
+};
+
+export const convertCsvToGeojson = (csv: ParseResults): ReferenceLayerGeojson => {
+  const geojson: FeatureCollection<Point, ReferenceLayerProperties> = {
+    type: "FeatureCollection",
+    features: []
+  };
+  // eslint-disable-next-line functional/no-loop-statement
+  for (const record of csv.data) {
+    const recTransformed: Feature<Point, ReferenceLayerProperties> = {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "Point",
+        coordinates: []
+      }
+    };
+    /* eslint-disable functional/immutable-data */
+    recTransformed.properties = record;
+    if ("lat" in record && "lon" in record) {
+      recTransformed.geometry.coordinates = [Number(record.lon), Number(record.lat)];
+    } else if ("latitude" in record && "longitude" in record) {
+      recTransformed.geometry.coordinates = [Number(record.longitude), Number(record.latitude)];
+    } else if ("x" in record && "y" in record) {
+      recTransformed.geometry.coordinates = [Number(record.x), Number(record.y)];
+    }
+
+    geojson.features.push(recTransformed);
+    /* eslint-enable functional/immutable-data */
+  }
+  return geojson;
 };

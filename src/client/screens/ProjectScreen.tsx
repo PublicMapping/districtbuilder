@@ -13,11 +13,16 @@ import {
   IStaticMetadata,
   RegionLookupProperties,
   IUser,
-  UintArrays
+  UintArrays,
+  IReferenceLayer
 } from "../../shared/entities";
 import { ElectionYear, EvaluateMetricWithValue } from "../types";
 
-import { projectDataFetch, clearDuplicationState } from "../actions/projectData";
+import {
+  projectDataFetch,
+  clearDuplicationState,
+  projectReferenceLayersFetch
+} from "../actions/projectData";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
@@ -40,6 +45,8 @@ import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
 import ConvertMapModal from "../components/ConvertMapModal";
+import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
+import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
 
 interface StateProps {
   readonly project?: IProject;
@@ -57,6 +64,7 @@ interface StateProps {
   readonly isLoading: boolean;
   readonly isReadOnly: boolean;
   readonly isArchived: boolean;
+  readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
   readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
   readonly electionYear: ElectionYear;
@@ -88,6 +96,7 @@ const ProjectScreen = ({
   districtDrawing,
   mapLabel,
   isLoading,
+  referenceLayers,
   isReadOnly,
   isArchived,
   user,
@@ -130,6 +139,7 @@ const ProjectScreen = ({
 
   useEffect(() => {
     isLoggedIn && store.dispatch(userFetch());
+    projectId && store.dispatch(projectReferenceLayersFetch(projectId));
     projectId && store.dispatch(projectDataFetch(projectId));
   }, [projectId, isLoggedIn]);
 
@@ -161,6 +171,8 @@ const ProjectScreen = ({
             highlightedGeounits={districtDrawing.highlightedGeounits}
             expandedProjectMetrics={districtDrawing.expandedProjectMetrics}
             geoUnitHierarchy={geoUnitHierarchy}
+            referenceLayers={referenceLayers}
+            showReferenceLayers={districtDrawing.showReferenceLayers}
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
@@ -249,6 +261,8 @@ const ProjectScreen = ({
                   evaluateMode={evaluateMode}
                   staticMetadata={staticMetadata}
                 />
+                <AddReferenceLayerModal project={project} />
+                <DeleteReferenceLayerModal />
                 <Flex id="tour-start" sx={style.tourStart}></Flex>
               </React.Fragment>
             ) : null}
@@ -273,6 +287,7 @@ function mapStateToProps(state: State): StateProps {
     mapLabel: state.project.mapLabel,
     electionYear: state.project.electionYear,
     districtDrawing: state.project,
+    referenceLayers: state.project.referenceLayers,
     regionProperties: state.regionConfig.regionProperties,
     isLoading:
       ("isPending" in state.project.projectData && state.project.projectData.isPending) ||

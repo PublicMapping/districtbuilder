@@ -1,4 +1,4 @@
-import { ProjectVisibility, REGION_LABELS } from "./constants";
+import { ProjectVisibility, ReferenceLayerTypes, REGION_LABELS } from "./constants";
 
 export type UserId = string;
 
@@ -12,28 +12,6 @@ export type PaginationMetadata = {
 };
 
 export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
-
-export type MetricField =
-  | "population"
-  | "populationDeviation"
-  | "raceChart"
-  | "whitePopulation"
-  | "blackPopulation"
-  | "asianPopulation"
-  | "hispanicPopulation"
-  | "otherPopulation"
-  | "nativePopulation"
-  | "pacificPopulation"
-  | "majorityRace"
-  | "dem16"
-  | "rep16"
-  | "other16"
-  | "dem20"
-  | "rep20"
-  | "other20"
-  | "pvi"
-  | "compactness"
-  | "contiguity";
 
 export interface IUser {
   readonly id: UserId;
@@ -178,17 +156,37 @@ export interface IRegionConfig {
   readonly archived: boolean;
 }
 
-interface ProjectTemplateFields {
+export interface IReferenceLayer {
+  readonly id: ReferenceLayerId;
+  readonly name: string;
+  readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
+  readonly label_field: string;
+}
+
+export interface ReferenceLayerProperties {
+  // key is a property name on the geojson
+  // value is the value for that property
+  readonly [id: string]: number | string;
+}
+
+export type VotingMetricField = "dem16" | "rep16" | "other16" | "dem20" | "rep20" | "other20";
+
+export type MetricsList = readonly (readonly [string, string])[];
+export type VotingMetricsList = readonly (readonly [string, VotingMetricField])[];
+
+export interface ProjectTemplateFields {
   readonly name: string;
   readonly regionConfig: IRegionConfig;
   readonly numberOfDistricts: number;
   readonly chamber?: IChamber;
   readonly populationDeviation: number;
-  readonly pinnedMetricFields: readonly MetricField[];
+  readonly pinnedMetricFields: readonly string[];
   readonly districtsDefinition: DistrictsDefinition;
 }
 
 export type ProjectId = string;
+
+export type ReferenceLayerId = string;
 
 export type IProject = ProjectTemplateFields & {
   readonly id: ProjectId;
@@ -218,13 +216,20 @@ export type ProjectNest = Pick<
 };
 
 export interface CreateProjectData {
-  readonly name: string;
-  readonly numberOfDistricts: number;
-  readonly regionConfig: Pick<IRegionConfig, "id">;
+  readonly name?: string;
+  readonly numberOfDistricts?: number;
+  readonly regionConfig?: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;
   readonly populationDeviation?: number;
   readonly projectTemplate?: Pick<IProjectTemplate, "id">;
+}
+
+export interface CreateReferenceLayerData {
+  readonly name: string;
+  readonly project: Pick<IProject, "id">;
+  readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
+  readonly label_field?: string;
 }
 
 export type UpdateProjectData = Pick<
@@ -245,6 +250,7 @@ export type IProjectTemplate = ProjectTemplateFields & {
   readonly organization: IOrganization;
   readonly description: string;
   readonly details: string;
+  readonly referenceLayers?: readonly IReferenceLayer[];
 };
 
 export type IProjectTemplateWithProjects = IProjectTemplate & {

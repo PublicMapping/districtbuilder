@@ -9,7 +9,7 @@ interface Props {
 }
 
 interface IProps {
-  readonly setTemplate?: (template: CreateProjectData) => void;
+  readonly templateSelected?: (templateData: CreateProjectData) => void;
 }
 
 const style = {
@@ -39,7 +39,7 @@ const style = {
   }
 } as const;
 
-const OrganizationTemplates = ({ organization, user, setTemplate }: Props & IProps) => {
+const OrganizationTemplates = ({ organization, user, templateSelected }: Props & IProps) => {
   return (
     <Box sx={style.container}>
       {organization.projectTemplates.length > 0 && (
@@ -53,7 +53,7 @@ const OrganizationTemplates = ({ organization, user, setTemplate }: Props & IPro
               <TemplateCard
                 template={template}
                 key={template.id}
-                setTemplate={setTemplate}
+                templateSelected={templateSelected}
                 organization={organization}
                 user={user}
               />

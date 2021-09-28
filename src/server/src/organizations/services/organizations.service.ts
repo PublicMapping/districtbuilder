@@ -25,11 +25,18 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
       .addSelect(["users.id", "users.name"])
       .leftJoin("organization.admin", "admin")
       .addSelect(["admin.id", "admin.name"])
-      .leftJoinAndSelect(
+      .leftJoin(
         "organization.projectTemplates",
         "projectTemplates",
         "projectTemplates.isActive = TRUE"
       )
+      .addSelect([
+        "projectTemplates.id",
+        "projectTemplates.name",
+        "projectTemplates.numberOfDistricts",
+        "projectTemplates.description",
+        "projectTemplates.details"
+      ])
       .leftJoinAndSelect("projectTemplates.regionConfig", "regionConfig")
       .where("organization.slug = :slug", { slug: slug })
       .getOne();

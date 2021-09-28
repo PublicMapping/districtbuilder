@@ -17,9 +17,17 @@ import {
   RegionConfigId,
   ProjectNest,
   DistrictsImportApiResponse,
-  PlanScoreAPIResponse
+  PlanScoreAPIResponse,
+  IReferenceLayer,
+  ReferenceLayerId,
+  CreateReferenceLayerData
 } from "../shared/entities";
-import { DistrictsGeoJSON, DynamicProjectData, PaginatedResponse } from "./types";
+import {
+  DistrictsGeoJSON,
+  DynamicProjectData,
+  PaginatedResponse,
+  ReferenceLayerWithGeojson
+} from "./types";
 import { getJWT, setJWT } from "./jwt";
 
 const apiAxios = axios.create();
@@ -124,26 +132,10 @@ export async function resetPassword(token: string, password: string): Promise<vo
   });
 }
 
-export async function createProject({
-  name,
-  numberOfDistricts,
-  chamber,
-  regionConfig,
-  districtsDefinition,
-  projectTemplate,
-  populationDeviation
-}: CreateProjectData): Promise<IProject> {
+export async function createProject(data: CreateProjectData): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .post("/api/projects", {
-        name,
-        numberOfDistricts,
-        regionConfig,
-        districtsDefinition,
-        chamber,
-        populationDeviation,
-        projectTemplate
-      })
+      .post("/api/projects", data)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));
   });
@@ -182,6 +174,17 @@ export async function fetchProjectGeoJson(id: ProjectId): Promise<DistrictsGeoJS
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}/export/geojson`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.response.data));
+  });
+}
+
+export async function fetchProjectReferenceLayers(
+  id: ProjectId
+): Promise<readonly IReferenceLayer[]> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/reference-layer/project/${id}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response.data));
   });
@@ -228,7 +231,9 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get("/api/region-configs?sort=name,ASC")
-      .then(response => resolve(response.data))
+      .then(response => {
+        resolve(response.data);
+      })
       .catch(error => reject(error.message));
   });
 }
@@ -315,6 +320,30 @@ export async function importCsv(file: Blob): Promise<DistrictsImportApiResponse>
       .then(response => {
         return resolve(response.data);
       })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function createReferenceLayer(
+  referenceLayer: CreateReferenceLayerData
+): Promise<ReferenceLayerWithGeojson> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/reference-layer/`, referenceLayer)
+      .then(response => {
+        return resolve(response.data);
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function deleteReferenceLayer(
+  referenceLayerId: ReferenceLayerId
+): Promise<ReferenceLayerId> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .delete(`/api/reference-layer/${referenceLayerId}`)
+      .then(() => resolve(referenceLayerId))
       .catch(error => reject(error.message));
   });
 }

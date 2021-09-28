@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { useParams, Link as RouterLink } from "react-router-dom";
+import { useParams, Link as RouterLink, useHistory } from "react-router-dom";
 import { Box, Button, Flex, Heading, Image, jsx, Spinner, Text, Link } from "theme-ui";
 import { formatDate } from "../functions";
 
@@ -17,7 +17,13 @@ import { UserState } from "../reducers/user";
 import { OrganizationProjectsState } from "../reducers/organizationProjects";
 import store from "../store";
 
-import { CreateProjectData, IOrganization, IUser, ProjectNest } from "../../shared/entities";
+import {
+  CreateProjectData,
+  IOrganization,
+  IUser,
+  ProjectNest,
+  IProject
+} from "../../shared/entities";
 
 import Icon from "../components/Icon";
 import JoinOrganizationModal from "../components/JoinOrganizationModal";
@@ -27,6 +33,7 @@ import FeaturedProjectCard from "../components/FeaturedProjectCard";
 import OrganizationTemplates from "../components/OrganizationTemplates";
 
 import PageNotFoundScreen from "./PageNotFoundScreen";
+import { createProject } from "../api";
 
 interface StateProps {
   readonly organization: OrganizationState;
@@ -130,7 +137,9 @@ const style = {
 
 const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
   const { organizationSlug } = useParams();
-  const [projectTemplate, setProjectTemplate] = useState<CreateProjectData | undefined>(undefined);
+  const [projectTemplateData, setProjectTemplateData] = useState<CreateProjectData | undefined>(
+    undefined
+  );
   const isLoggedIn = isUserLoggedIn();
   const userInOrg =
     "resource" in user &&
@@ -141,6 +150,20 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
 
   const userIsVerified = "resource" in user && user.resource && user.resource.isEmailVerified;
   const orgAdminUrl = `/o/${organizationSlug}/admin`;
+  const history = useHistory();
+
+  function createProjectFromTemplate(data: CreateProjectData) {
+    void createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
+  }
+
+  function setupProjectFromTemplate(data: CreateProjectData) {
+    if (userInOrg) {
+      createProjectFromTemplate(data);
+    } else {
+      setProjectTemplateData(data);
+      store.dispatch(showCopyMapModal(true));
+    }
+  }
 
   const featuredProjects =
     "resource" in organizationProjects.featuredProjects
@@ -194,7 +217,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
   }
 
   function handleCancelModal() {
-    setProjectTemplate(undefined);
+    setProjectTemplateData(undefined);
   }
 
   const joinButton = (
@@ -307,7 +330,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                 <OrganizationTemplates
                   user={"resource" in user ? user.resource : undefined}
                   organization={organization.resource}
-                  setTemplate={setProjectTemplate}
+                  templateSelected={setupProjectFromTemplate}
                 />
               )}
             </Box>
@@ -362,7 +385,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
       {"resource" in organization && organization.resource && (
         <JoinOrganizationModal
           organization={organization.resource}
-          projectTemplate={projectTemplate}
+          projectTemplateData={projectTemplateData}
           onCancel={handleCancelModal}
         />
       )}

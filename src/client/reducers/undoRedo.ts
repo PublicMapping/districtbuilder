@@ -1,7 +1,7 @@
 import { CmdType } from "redux-loop";
 
 import { Action } from "../actions";
-import { DistrictsDefinition, GeoUnits, LockedDistricts, MetricField } from "../../shared/entities";
+import { DistrictsDefinition, GeoUnits, LockedDistricts } from "../../shared/entities";
 import { ProjectState } from "./project";
 
 const UNDO_HISTORY_MAX_LENGTH = 100;
@@ -12,7 +12,7 @@ export interface UndoableState {
   readonly geoLevelVisibility: ReadonlyArray<boolean>; // Visibility values at indices corresponding to `geoLevelIndex`
   readonly lockedDistricts: LockedDistricts;
   readonly districtsDefinition: DistrictsDefinition;
-  readonly pinnedMetricFields?: readonly MetricField[];
+  readonly pinnedMetricFields?: readonly string[];
 }
 
 // Accompanying effect builder for state update when undone/redone (eg. saving districts definition)

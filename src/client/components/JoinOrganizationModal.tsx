@@ -40,13 +40,13 @@ const JoinOrganizationModal = ({
   organization,
   user,
   showModal,
-  projectTemplate,
+  projectTemplateData,
   onCancel
 }: {
   readonly organization: IOrganization;
   readonly showModal: boolean;
   readonly user: Resource<IUser>;
-  readonly projectTemplate?: CreateProjectData;
+  readonly projectTemplateData?: CreateProjectData;
   readonly onCancel: () => void;
 }) => {
   const hideModal = () => {
@@ -66,7 +66,7 @@ const JoinOrganizationModal = ({
         {"resource" in user ? (
           <ConfirmJoinOrganization
             organization={organization}
-            projectTemplate={projectTemplate}
+            projectTemplateData={projectTemplateData}
             onCancel={onCancel}
           />
         ) : (

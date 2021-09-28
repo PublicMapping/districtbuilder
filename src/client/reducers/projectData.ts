@@ -35,11 +35,19 @@ import {
   updatePinnedMetrics,
   updatePinnedMetricsSuccess,
   updatedPinnedMetricsFailure,
-  clearDuplicationState
+  clearDuplicationState,
+  toggleReferenceLayersModal,
+  projectReferenceLayersFetch,
+  projectReferenceLayersFetchSuccess,
+  projectReferenceLayersFetchFailure,
+  referenceLayerDelete,
+  referenceLayerDeleteSuccess,
+  referenceLayerDeleteFailure,
+  setDeleteReferenceLayer
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
-import { IProject } from "../../shared/entities";
+import { IProject, IReferenceLayer } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
 import { resetProjectState } from "../actions/root";
 import { DistrictsGeoJSON, DynamicProjectData, SavingState, StaticProjectData } from "../types";
@@ -56,9 +64,11 @@ import {
   exportProjectGeoJson,
   exportProjectShp,
   fetchProjectData,
+  fetchProjectReferenceLayers,
   fetchProjectGeoJson,
   patchProject,
-  copyProject
+  copyProject,
+  deleteReferenceLayer
 } from "../api";
 import { fetchAllStaticData } from "../s3";
 import { toast } from "react-toastify";
@@ -92,7 +102,10 @@ export type ProjectDataState = {
   readonly staticData: Resource<StaticProjectData>;
   readonly projectNameSaving: SavingState;
   readonly saving: SavingState;
+  readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
+  readonly showReferenceLayersModal: boolean;
   readonly duplicatedProject: IProject | null;
+  readonly deleteReferenceLayer?: IReferenceLayer;
 };
 
 export const initialProjectDataState = {
@@ -102,8 +115,10 @@ export const initialProjectDataState = {
   staticData: {
     isPending: false
   },
+  referenceLayers: { isPending: false },
   projectNameSaving: "saved",
   saving: "unsaved",
+  showReferenceLayersModal: false,
   duplicatedProject: null
 } as const;
 
@@ -201,12 +216,87 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           ? Cmd.run(showResourceFailedToast)
           : Cmd.none
       );
+    case getType(projectReferenceLayersFetch):
+      return loop(
+        {
+          ...state,
+          referenceLayers: { isPending: true }
+        },
+        Cmd.run(fetchProjectReferenceLayers, {
+          successActionCreator: projectReferenceLayersFetchSuccess,
+          failActionCreator: projectReferenceLayersFetchFailure,
+          args: [action.payload] as Parameters<typeof fetchProjectReferenceLayers>
+        })
+      );
+    case getType(projectReferenceLayersFetchSuccess):
+      return {
+        ...state,
+        referenceLayers: {
+          resource: action.payload
+        }
+      };
+    case getType(projectReferenceLayersFetchFailure):
+      return loop(
+        {
+          ...state,
+          referenceLayers: action.payload
+        },
+        Cmd.run(showActionFailedToast)
+      );
+    case getType(referenceLayerDelete):
+      return loop(
+        {
+          ...state,
+          referenceLayers: {
+            resource:
+              "resource" in state.referenceLayers ? state.referenceLayers.resource : undefined,
+            isPending: true
+          }
+        },
+        Cmd.run(deleteReferenceLayer, {
+          successActionCreator: referenceLayerDeleteSuccess,
+          failActionCreator: referenceLayerDeleteFailure,
+          args: [action.payload] as Parameters<typeof deleteReferenceLayer>
+        })
+      );
+    case getType(referenceLayerDeleteSuccess):
+      return {
+        ...state,
+        deleteReferenceLayer: undefined,
+        showReferenceLayers: new Set(
+          [...state.showReferenceLayers].filter(id => id !== action.payload)
+        ),
+        referenceLayers: {
+          resource:
+            "resource" in state.referenceLayers
+              ? state.referenceLayers.resource.filter(layer => layer.id !== action.payload)
+              : []
+        }
+      };
+    case getType(referenceLayerDeleteFailure):
+      return loop(
+        {
+          ...state,
+          referenceLayers: action.payload
+        },
+        Cmd.run(showActionFailedToast)
+      );
+    case getType(setDeleteReferenceLayer):
+      return {
+        ...state,
+        deleteReferenceLayer: action.payload
+      };
     case getType(staticDataFetchSuccess):
       return {
         ...state,
         staticData: {
           resource: action.payload
         }
+      };
+    case getType(toggleReferenceLayersModal):
+      return {
+        ...state,
+        showReferenceLayersModal: !state.showReferenceLayersModal
       };
     case getType(staticDataFetchFailure):
       return loop(

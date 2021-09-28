@@ -36,13 +36,18 @@ import * as _ from "lodash";
 import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
-import { MakeDistrictsErrors, ConvertProjectErrors } from "../../../../shared/constants";
+import {
+  MakeDistrictsErrors,
+  ConvertProjectErrors,
+  CORE_METRIC_FIELDS
+} from "../../../../shared/constants";
 import {
   DistrictsDefinition,
   ProjectId,
   PublicUserProperties,
   GeoUnitHierarchy,
-  UserId
+  UserId,
+  ProjectTemplateId
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
@@ -64,6 +69,10 @@ import axios from "axios";
 import { CrosswalkService } from "../services/crosswalk.service";
 import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 import { Brackets } from "typeorm";
+import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
+import { ProjectTemplatesService } from "../../project-templates/services/project-templates.service";
+import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
+import { ReferenceLayersService } from "../../reference-layers/services/reference-layers.service";
 
 @Crud({
   model: {
@@ -168,10 +177,12 @@ export class ProjectsController implements CrudController<Project> {
   private readonly logger = new Logger(ProjectsController.name);
   constructor(
     public service: ProjectsService,
+    public templateService: ProjectTemplatesService,
     public topologyService: TopologyService,
     private readonly usersService: UsersService,
     private readonly organizationService: OrganizationsService,
     private readonly regionConfigService: RegionConfigsService,
+    private readonly referenceLayerService: ReferenceLayersService,
     private readonly crosswalkService: CrosswalkService
   ) {}
 
@@ -201,11 +212,36 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: UpdateProjectDto
   ) {
+    // Start off with some validations that can't be handled easily at the DTO layer
     const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
     if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
-        message: { lockedDistricts: [`Length of array does not match "number_of_districts"`] }
+        message: { lockedDistricts: [`Length of array does not match "numberOfDistricts"`] }
+      } as Errors<UpdateProjectDto>);
+    }
+
+    const staticMetadata = (await this.getGeoUnitProperties(existingProject.regionConfig.s3URI))
+      .staticMetadata;
+    const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
+      ([, field]) => field
+    );
+    const allowedVotingFields: readonly string[] =
+      getVotingMetricFields(staticMetadata).map(([, field]) => field) || [];
+    if (
+      dto.pinnedMetricFields &&
+      dto.pinnedMetricFields.some(
+        field =>
+          !(
+            CORE_METRIC_FIELDS.includes(field) ||
+            allowedDemographicFields.includes(field) ||
+            allowedVotingFields.includes(field)
+          )
+      )
+    ) {
+      throw new BadRequestException({
+        error: "Bad Request",
+        message: { pinnedMetricFields: [`Field not allowed in "pinnedMetricFields"`] }
       } as Errors<UpdateProjectDto>);
     }
 
@@ -249,9 +285,22 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateProjectDto
   ): Promise<Project> {
-    const regionConfig = await this.regionConfigService.findOne({ id: dto.regionConfig.id });
+    // This is in a lambda bc prettier kept moving my @ts-ignore
+    const findTemplate = (id: ProjectTemplateId) =>
+      // @ts-ignore
+      this.templateService.findOne({ id }, { relations: ["regionConfig", "referenceLayers"] });
+    const template = dto.projectTemplate ? await findTemplate(dto.projectTemplate.id) : undefined;
+    if (dto.projectTemplate && !template) {
+      throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
+    }
+
+    const regionConfig = dto.regionConfig
+      ? await this.regionConfigService.findOne({ id: dto.regionConfig.id })
+      : template
+      ? template.regionConfig
+      : undefined;
     if (!regionConfig) {
-      throw new NotFoundException(`Unable to find region config: ${dto.regionConfig.id}`);
+      throw new NotFoundException(`Unable to find region config: ${dto.regionConfig?.id}`);
     }
 
     const geoCollection = await this.topologyService.get(regionConfig.s3URI);
@@ -262,15 +311,55 @@ export class ProjectsController implements CrudController<Project> {
       );
     }
 
-    try {
-      const data = this.formatCreateProjectDto(dto, geoCollection, regionConfig, req);
-      const districts = await this.getGeojson({
-        numberOfDistricts: data.numberOfDistricts,
-        districtsDefinition: data.districtsDefinition,
-        regionConfig
-      });
+    // Pulls out the fields on ProjectTemplate common to it & Project
+    const templateFields = ({
+      name,
+      regionConfig,
+      chamber,
+      numberOfDistricts,
+      populationDeviation,
+      pinnedMetricFields,
+      districtsDefinition
+    }: ProjectTemplate) => ({
+      name,
+      regionConfig,
+      chamber,
+      numberOfDistricts,
+      populationDeviation,
+      pinnedMetricFields,
+      districtsDefinition
+    });
+    const formdata = template ? { ...dto, ...templateFields(template) } : dto;
+    if (!formdata.numberOfDistricts) {
+      // The validation in the DTO should prevent this
+      throw new InternalServerErrorException();
+    }
 
-      return await this.service.createOne(req, { ...data, districts });
+    const data = this.formatCreateProjectDto(formdata, geoCollection, regionConfig, req);
+    const districts = await this.getGeojson({
+      numberOfDistricts: formdata.numberOfDistricts,
+      districtsDefinition: data.districtsDefinition,
+      regionConfig
+    });
+
+    try {
+      const project = await this.service.createOne(req, { ...data, districts });
+      // Copy any reference layers associated with the template to the project
+      if (template) {
+        // eslint-disable-next-line functional/no-loop-statement
+        for (const refLayer of template.referenceLayers) {
+          // We need to wait for reference layers to be copied, but then we don't
+          // actually need to do anything with the result
+          void (await this.referenceLayerService.create({
+            name: refLayer.name,
+            label_field: refLayer.label_field,
+            layer: refLayer.layer,
+            layer_type: refLayer.layer_type,
+            project
+          }));
+        }
+      }
+      return project;
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);
       throw new InternalServerErrorException();

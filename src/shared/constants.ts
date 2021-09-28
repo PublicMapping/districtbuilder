@@ -1,5 +1,3 @@
-import { MetricField } from "./entities";
-
 export enum ForgotPasswordResponse {
   SUCCESS = "SUCCESS",
   NOT_FOUND = "NOT_FOUND"
@@ -56,15 +54,41 @@ export enum CensusDate {
   Census2020 = "2020"
 }
 
+export enum ReferenceLayerTypes {
+  Polygon = "POLYGON",
+  Point = "POINT"
+}
+
 export const DEFAULT_POPULATION_DEVIATION = 5;
 
-export const DEFAULT_PINNED_METRIC_FIELDS: readonly MetricField[] = [
+export const DEFAULT_PINNED_METRIC_FIELDS = [
   "population",
   "populationDeviation",
   "raceChart",
   "pvi",
   "compactness"
 ];
+
+export const CORE_METRIC_FIELDS = [
+  "population",
+  "populationDeviation",
+  "raceChart",
+  "majorityRace",
+  "pvi",
+  "compactness",
+  "contiguity"
+];
+
+export const DEMOGRAPHIC_FIELDS_ORDER = [
+  "white",
+  "black",
+  "asian",
+  "hispanic",
+  "native",
+  "pacific",
+  "multiracial",
+  "other"
+] as const;
 
 export const FIPS: { readonly [fips: string]: string } = {
   "10": "DE",

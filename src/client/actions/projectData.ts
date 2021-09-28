@@ -3,15 +3,16 @@ import { ProjectVisibility } from "../../shared/constants";
 import {
   DistrictsDefinition,
   IProject,
+  IReferenceLayer,
   LockedDistricts,
-  MetricField,
-  ProjectId
+  ProjectId,
+  ReferenceLayerId
 } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { ResourceFailure } from "../resource";
 
 interface PinnedMetrics {
-  readonly pinnedMetricFields: readonly MetricField[];
+  readonly pinnedMetricFields: readonly string[];
   readonly isReadOnly: boolean;
 }
 
@@ -26,6 +27,28 @@ export const projectDataFetchSuccess = createAction("Project data fetch success"
 export const projectDataFetchFailure = createAction("Project data fetch failure")<
   ResourceFailure
 >();
+
+export const projectReferenceLayersFetch = createAction("Project reference layers fetch")<
+  ProjectId
+>();
+export const projectReferenceLayersFetchSuccess = createAction(
+  "Project reference layers fetch success"
+)<readonly IReferenceLayer[]>();
+export const projectReferenceLayersFetchFailure = createAction(
+  "Project reference layers fetch failure"
+)<ResourceFailure>();
+
+export const referenceLayerDelete = createAction("Reference layer delete")<ReferenceLayerId>();
+export const referenceLayerDeleteSuccess = createAction("Reference layer delete success")<
+  ReferenceLayerId
+>();
+export const referenceLayerDeleteFailure = createAction("Reference layer delete failure")<
+  ResourceFailure
+>();
+
+export const setDeleteReferenceLayer = createAction(
+  "Set the id for the delete reference layer modal"
+)<IReferenceLayer | undefined>();
 
 export const staticDataFetchSuccess = createAction("Static data fetch success")<
   StaticProjectData
@@ -73,6 +96,8 @@ export const updateProjectFailed = createAction("Update project failure")();
 export const duplicateProject = createAction("Duplicate project")<IProject>();
 export const duplicateProjectSuccess = createAction("Duplicate project success")<IProject>();
 export const duplicateProjectFailure = createAction("Duplicate project failure")<string>();
+
+export const toggleReferenceLayersModal = createAction("Toggle reference layers modal")();
 
 export const clearDuplicationState = createAction("Clear duplication state")();
 
