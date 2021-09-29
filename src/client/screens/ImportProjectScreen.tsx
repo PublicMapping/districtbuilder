@@ -404,8 +404,10 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
               const validatedForm = validate(formData, importResource);
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data: formData, isPending: true });
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { isCustom, valid, ...validatedData } = validatedForm;
                 createProject({
-                  ...validatedForm,
+                  ...validatedData,
                   name: validatedForm.regionConfig.name
                 })
                   .then((project: IProject) =>

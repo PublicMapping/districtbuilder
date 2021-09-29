@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+
 ### Changed
+
 ### Fixed
+- Fixed project import [#1029](https://github.com/PublicMapping/districtbuilder/pull/1029)
 
 ## [1.10.0] - 2021-09-28
 ### Added
