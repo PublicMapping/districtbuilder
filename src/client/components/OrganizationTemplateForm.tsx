@@ -12,7 +12,6 @@ import { useState, useEffect } from "react";
 import { organizationFetch, organizationReset } from "../actions/organization";
 import store from "../store";
 import React from "react";
-import { Resource } from "../resource";
 
 const style = {
   formContainer: {

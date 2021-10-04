@@ -309,14 +309,21 @@ export async function exportProjectShp(project: IProject): Promise<void> {
   });
 }
 
-export async function importCsv(file: Blob): Promise<DistrictsImportApiResponse> {
+export async function importCsv(
+  file: Blob,
+  regionConfigId?: RegionConfigId
+): Promise<DistrictsImportApiResponse> {
   const formData = new FormData();
   formData.append("file", file);
   return new Promise((resolve, reject) => {
     apiAxios
-      .post(`/api/districts/import/csv`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      })
+      .post(
+        `/api/districts/import/csv${regionConfigId ? `?regionConfigId=${regionConfigId}` : ""}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" }
+        }
+      )
       .then(response => {
         return resolve(response.data);
       })

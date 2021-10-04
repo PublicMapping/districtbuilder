@@ -46,8 +46,10 @@ const TemplateCard = ({
       disabled={isLoggedIn && !userIsVerified}
       onClick={() => {
         if (templateSelected) {
-          const { id } = template;
-          const data: CreateProjectData = { projectTemplate: { id } };
+          const data: CreateProjectData = {
+            projectTemplate: { id: template.id },
+            regionConfig: { id: template.regionConfig.id }
+          };
           templateSelected(data);
         }
       }}

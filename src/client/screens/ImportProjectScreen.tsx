@@ -300,7 +300,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
       if (!file) {
         return;
       }
-      const importResponse = await importCsv(file);
+      const importResponse = await importCsv(file, data.regionConfig.id);
       if ("error" in importResponse) {
         setImportResource({ data: null });
         setFileError(importResponse.error);
