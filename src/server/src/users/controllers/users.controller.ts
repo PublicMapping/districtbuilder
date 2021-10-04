@@ -16,6 +16,15 @@ import { UsersService } from "../services/users.service";
       organizations: {
         allow: ["slug", "name", "logoUrl"],
         eager: true
+      },
+      "organizations.projectTemplates": {
+        alias: "org_templates",
+        exclude: ["districtsDefinition"],
+        eager: true
+      },
+      "organizations.projectTemplates.regionConfig": {
+        alias: "template_region_config",
+        eager: true
       }
     }
   },

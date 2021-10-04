@@ -11,7 +11,10 @@ export type PaginationMetadata = {
   readonly totalPages?: number;
 };
 
-export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
+export type OrganizationNest = Pick<
+  IOrganization,
+  "slug" | "id" | "name" | "logoUrl" | "projectTemplates"
+>;
 
 export interface IUser {
   readonly id: UserId;
