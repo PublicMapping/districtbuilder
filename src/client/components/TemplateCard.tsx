@@ -46,6 +46,7 @@ const TemplateCard = ({
 
   const useButton = (
     <Button
+      type="button"
       disabled={inProgress || (isLoggedIn && !userIsVerified)}
       onClick={() => {
         if (!inProgress && templateSelected) {

@@ -51,7 +51,11 @@ interface StateProps {
   readonly user: Resource<IUser>;
 }
 
-const validate = (form: ConfigurableForm, importResource: ImportResource): ProjectForm => {
+const validate = (
+  form: ConfigurableForm,
+  importResource: ImportResource,
+  templateData: CreateProjectData | null
+): ProjectForm => {
   const regionConfig = importResource.data;
   const districtsDefinition =
     "resource" in importResource ? importResource.resource.districtsDefinition : null;
@@ -60,12 +64,20 @@ const validate = (form: ConfigurableForm, importResource: ImportResource): Proje
   const populationDeviation = form.populationDeviation;
   const chamber = form.chamber;
   const isCustom = form.isCustom;
-  return numberOfDistricts &&
-    maxDistrictId &&
-    regionConfig &&
-    populationDeviation !== null &&
-    districtsDefinition &&
-    numberOfDistricts >= maxDistrictId
+  return templateData?.projectTemplate && districtsDefinition
+    ? {
+        projectTemplate: templateData.projectTemplate,
+        regionConfig: templateData.regionConfig,
+        districtsDefinition,
+        isCustom,
+        valid: true
+      }
+    : numberOfDistricts &&
+      maxDistrictId &&
+      regionConfig &&
+      populationDeviation !== null &&
+      districtsDefinition &&
+      numberOfDistricts >= maxDistrictId
     ? {
         numberOfDistricts,
         regionConfig,
@@ -97,7 +109,7 @@ interface ConfigurableForm {
 
 type ProjectForm = ValidForm | InvalidForm;
 
-interface ValidForm {
+interface ValidCustomForm {
   readonly regionConfig: IRegionConfig;
   readonly chamber: Pick<IChamber, "id"> | null;
   readonly districtsDefinition: DistrictsDefinition;
@@ -106,6 +118,16 @@ interface ValidForm {
   readonly populationDeviation: number;
   readonly valid: true;
 }
+
+interface ValidTemplateForm {
+  readonly districtsDefinition: DistrictsDefinition;
+  readonly regionConfig: Pick<IRegionConfig, "id">;
+  readonly projectTemplate: Pick<IRegionConfig, "id">;
+  readonly isCustom: boolean;
+  readonly valid: true;
+}
+
+type ValidForm = ValidCustomForm | ValidTemplateForm;
 
 interface InvalidForm {
   readonly regionConfig: IRegionConfig | null;
@@ -251,7 +273,6 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
     store.dispatch(userFetch());
   }, []);
 
-  const history = useHistory();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importNumberRef = useRef(0);
   const [file, setFile] = useState<File | null>(null);
@@ -259,6 +280,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
   const [importResource, setImportResource] = useState<ImportResource>({
     data: null
   });
+  const [templateData, setTemplateData] = useState<CreateProjectData | null>(null);
   const rowFlags = "resource" in importResource && importResource.resource.rowFlags;
   const maxDistrictId = "resource" in importResource && importResource.resource.maxDistrictId;
   const numFlags = "resource" in importResource && importResource.resource.numFlags;
@@ -295,96 +317,92 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
     });
   };
 
-  const onTemplateSelected = async (data: CreateProjectData): Promise<void> => {
-    if (!file) {
-      return;
-    }
-    const importResponse = await importCsv(file, data.regionConfig.id);
-    if ("error" in importResponse) {
-      setImportResource({ data: null });
-      setFileError(importResponse.error);
-    } else {
-      return createProject({
-        ...data,
-        districtsDefinition: importResponse.districtsDefinition,
-        numberOfDistricts: Math.max(importResponse.maxDistrictId, formData.numberOfDistricts || 0)
-      }).then((project: IProject) => history.push(`/projects/${project.id}`));
-    }
+  const onTemplateSelected = (data: CreateProjectData): Promise<void> => {
+    setTemplateData(data);
+    return Promise.resolve(void 0);
   };
 
-  const handleFileUpload = useCallback(
-    (file: File) => {
-      async function setConfigFromFile() {
-        if (file && "resource" in regionConfigs) {
-          // Check file size (must be less than MAX_UPLOAD_FILE_SIZE)
-          if (file.size > MAX_UPLOAD_FILE_SIZE) {
-            setFileError("File must be less than 25mb");
-            return;
-          }
+  const handleFileUpload = useCallback(() => {
+    async function setConfigFromFile() {
+      if (file && "resource" in regionConfigs) {
+        // Check file size (must be less than MAX_UPLOAD_FILE_SIZE)
+        if (file.size > MAX_UPLOAD_FILE_SIZE) {
+          setFileError("File must be less than 25mb");
+          return;
+        }
 
-          const extension = file.name.split(".")[1];
+        const extension = file.name.split(".")[1];
 
-          if (extension !== "csv") {
-            setFileError("File must be a .csv");
-            return;
-          }
+        if (extension !== "csv") {
+          setFileError("File must be a .csv");
+          return;
+        }
 
-          // Check file is not empty
-          const stateAbbrev = await getStateFromCsv(file);
-          if (!stateAbbrev) {
-            setFileError("File must have at least one record");
-          }
+        // Check file is not empty
+        const stateAbbrev = await getStateFromCsv(file);
+        if (!stateAbbrev) {
+          setFileError("File must have at least one record");
+        }
 
-          setFile(file);
-          setStateAbbrev(stateAbbrev || null);
+        setStateAbbrev(stateAbbrev || null);
 
-          // Filter to organizations and templates that match the state FIPS code
-          const organizations = destructureResource(user, "organizations") || [];
-          stateAbbrev &&
-            setOrganizationsForImport(
-              organizations
-                .map((o: IOrganization) => filterProjectTemplates(o, stateAbbrev))
-                .filter((org: IOrganization | undefined) => org !== undefined)
-            );
+        // Filter to organizations and templates that match the state FIPS code
+        const organizations = destructureResource(user, "organizations") || [];
+        stateAbbrev &&
+          setOrganizationsForImport(
+            organizations
+              .map((o: IOrganization) => filterProjectTemplates(o, stateAbbrev))
+              .filter((org: IOrganization | undefined) => org !== undefined)
+          );
 
-          // eslint-disable-next-line
-          importNumberRef.current = importNumberRef.current + 1;
-          const importNumber = importNumberRef.current;
-          const regionConfig =
-            regionConfigs.resource.find(
-              config =>
-                !config.hidden &&
-                !config.archived &&
-                config.regionCode === stateAbbrev &&
-                config.countryCode === "US"
-            ) || null;
+        const regionConfig =
+          regionConfigs.resource.find(
+            config =>
+              !config.hidden &&
+              !config.archived &&
+              config.regionCode === stateAbbrev &&
+              config.countryCode === "US"
+          ) || null;
 
-          if (!regionConfig) {
+        if (!regionConfig) {
+          setImportResource({ data: null });
+          setFileError(`State ${stateAbbrev} not currently supported`);
+        }
+
+        // eslint-disable-next-line
+        importNumberRef.current = importNumberRef.current + 1;
+        const importNumber = importNumberRef.current;
+        setImportResource({ data: regionConfig, isPending: true });
+        const regionConfigId = templateData?.regionConfig.id || regionConfig?.id;
+        const importResponse = await importCsv(file, regionConfigId);
+
+        // Don't set the districtsDefinition if upload was cancelled while we were fetching it
+        if (importNumberRef.current === importNumber) {
+          if ("error" in importResponse) {
             setImportResource({ data: null });
-            setFileError(`State ${stateAbbrev} not currently supported`);
-          }
-
-          setImportResource({ data: regionConfig, isPending: true });
-          const importResponse = await importCsv(file);
-
-          // Don't set the districtsDefinition if upload was cancelled while we were fetching it
-          if (importNumberRef.current === importNumber) {
-            if ("error" in importResponse) {
-              setImportResource({ data: null });
-              setFileError(importResponse.error);
-            } else {
-              setImportResource({
-                data: regionConfig,
-                resource: importResponse
-              });
-            }
+            setFileError(importResponse.error);
+          } else {
+            setImportResource({
+              data: regionConfig,
+              resource: importResponse
+            });
           }
         }
       }
-      void setConfigFromFile();
-    },
-    [regionConfigs, importNumberRef, user]
-  );
+    }
+    void setConfigFromFile();
+  }, [regionConfigs, importNumberRef, user, file, templateData]);
+
+  useEffect(() => {
+    // If thre is no organization, clear template data
+    if (!("resource" in organization) && "isPending" in organization && !organization.isPending) {
+      setTemplateData(null);
+    }
+  }, [organization]);
+
+  useEffect(() => {
+    handleFileUpload();
+  }, [file, templateData]);
 
   useEffect(() => {
     // Set error if number of districts less than max district ID
@@ -458,15 +476,19 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
             sx={{ flexDirection: "column" }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              const validatedForm = validate(formData, importResource);
+              const validatedForm = validate(formData, importResource, templateData);
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data: formData, isPending: true });
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { isCustom, valid, ...validatedData } = validatedForm;
-                createProject({
-                  ...validatedData,
-                  name: validatedForm.regionConfig.name
-                })
+                createProject(
+                  "name" in validatedForm.regionConfig
+                    ? {
+                        ...validatedData,
+                        name: validatedForm.regionConfig.name
+                      }
+                    : validatedData
+                )
                   .then((project: IProject) =>
                     setCreateProjectResource({ data: formData, resource: project })
                   )
@@ -487,7 +509,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                 redistricting source.
               </Box>
               <input
-                onChange={event => event.target.files && handleFileUpload(event.target.files[0])}
+                onChange={event => event.target.files && setFile(event.target.files[0])}
                 ref={fileInputRef}
                 type="file"
                 accept=".csv"
@@ -530,7 +552,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
               ) : (
                 <FileDrop
                   dropEffect="copy"
-                  onDrop={files => files && handleFileUpload(files[0])}
+                  onDrop={files => files && setFile(files[0])}
                   onTargetClick={() => {
                     fileInputRef.current && fileInputRef.current.click();
                   }}
@@ -708,19 +730,19 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                         </Box>
                       </Flex>
                     </Card>
-                    <Box sx={{ mt: 3, textAlign: "left" }}>
-                      <Button
-                        type="submit"
-                        disabled={
-                          !validate(formData, importResource).valid &&
-                          !("errorMessage" in createProjectResource)
-                        }
-                      >
-                        Create map
-                      </Button>
-                    </Box>
                   </React.Fragment>
                 )}
+                <Box sx={{ mt: 3, textAlign: "left" }}>
+                  <Button
+                    type="submit"
+                    disabled={
+                      !validate(formData, importResource, templateData).valid &&
+                      !("errorMessage" in createProjectResource)
+                    }
+                  >
+                    Create map
+                  </Button>
+                </Box>
               </React.Fragment>
             )}
           </Flex>
