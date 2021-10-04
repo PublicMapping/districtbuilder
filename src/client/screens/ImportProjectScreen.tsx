@@ -295,24 +295,21 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
     });
   };
 
-  const onTemplateSelected = (data: CreateProjectData) => {
-    const loadProjectWithTemplate = async () => {
-      if (!file) {
-        return;
-      }
-      const importResponse = await importCsv(file, data.regionConfig.id);
-      if ("error" in importResponse) {
-        setImportResource({ data: null });
-        setFileError(importResponse.error);
-      } else {
-        createProject({
-          ...data,
-          districtsDefinition: importResponse.districtsDefinition,
-          numberOfDistricts: Math.max(importResponse.maxDistrictId, formData.numberOfDistricts || 0)
-        }).then((project: IProject) => history.push(`/projects/${project.id}`));
-      }
-    };
-    loadProjectWithTemplate();
+  const onTemplateSelected = async (data: CreateProjectData): Promise<void> => {
+    if (!file) {
+      return;
+    }
+    const importResponse = await importCsv(file, data.regionConfig.id);
+    if ("error" in importResponse) {
+      setImportResource({ data: null });
+      setFileError(importResponse.error);
+    } else {
+      return createProject({
+        ...data,
+        districtsDefinition: importResponse.districtsDefinition,
+        numberOfDistricts: Math.max(importResponse.maxDistrictId, formData.numberOfDistricts || 0)
+      }).then((project: IProject) => history.push(`/projects/${project.id}`));
+    }
   };
 
   const handleFileUpload = useCallback(

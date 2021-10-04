@@ -1,6 +1,8 @@
 /** @jsx jsx */
+import { useState } from "react";
+import { Box, Button, Flex, Heading, jsx, Text, Spinner } from "theme-ui";
+
 import { IOrganization, IProjectTemplate, IUser, CreateProjectData } from "../../shared/entities";
-import { Box, Button, Flex, Heading, jsx, Text } from "theme-ui";
 import { isUserLoggedIn } from "../jwt";
 import Tooltip from "./Tooltip";
 
@@ -34,27 +36,30 @@ const TemplateCard = ({
 }: {
   readonly template: IProjectTemplate;
   readonly organization: IOrganization;
+  readonly templateSelected: (templateData: CreateProjectData) => Promise<void>;
   readonly user?: IUser;
-  readonly templateSelected?: (templateData: CreateProjectData) => void;
 }) => {
+  const [inProgress, setInProgress] = useState(false);
   const userIsVerified = user?.isEmailVerified;
   const isLoggedIn = isUserLoggedIn();
   const userInOrg = user && checkIfUserInOrg(organization, user);
 
   const useButton = (
     <Button
-      disabled={isLoggedIn && !userIsVerified}
+      disabled={inProgress || (isLoggedIn && !userIsVerified)}
       onClick={() => {
-        if (templateSelected) {
+        if (!inProgress && templateSelected) {
           const data: CreateProjectData = {
             projectTemplate: { id: template.id },
             regionConfig: { id: template.regionConfig.id }
           };
-          templateSelected(data);
+          setInProgress(true);
+          templateSelected(data).then(() => setInProgress(false));
         }
       }}
       sx={style.useTemplateBtn}
     >
+      {inProgress && <Spinner variant="spinner.small" />}
       Use this template
     </Button>
   );

@@ -181,7 +181,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
   };
 
   function setupProjectFromTemplate(data: CreateProjectData) {
-    void createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
+    return createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
   }
 
   useEffect(() => {

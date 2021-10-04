@@ -9,7 +9,7 @@ interface Props {
 }
 
 interface IProps {
-  readonly templateSelected?: (templateData: CreateProjectData) => void;
+  readonly templateSelected: (templateData: CreateProjectData) => Promise<void>;
 }
 
 const style = {
