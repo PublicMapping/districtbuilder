@@ -46,8 +46,7 @@ const ProjectListFlyout = (props: FlyoutProps) => {
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light", "& > svg": { m: "0 !important" } },
           ...style.menuButton,
-          ...invertStyles(props),
-          ...props
+          ...invertStyles(props)
         }}
         className="project-list-flyout-menu"
       >
