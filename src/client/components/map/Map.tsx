@@ -93,7 +93,7 @@ import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
 import Icon from "../Icon";
-import { ReferenceLayerTypes } from "../../../shared/constants";
+import { ReferenceLayerTypes, DEMOGRAPHIC_FIELDS_ORDER } from "../../../shared/constants";
 import { Resource } from "../../resource";
 import { getColor } from "@theme-ui/color";
 import theme from "../../theme";
@@ -570,18 +570,24 @@ const DistrictsMap = ({
         feature.properties.demographics.population &&
         feature.properties.demographics.population > 0
       ) {
-        const demographics = Object.keys(feature.properties.demographics);
+        // If specified, use first demographic group to determine which fields are "race" fields
+        // If not specified, use set of fields allowed in tooltip / chart
+        const coreGroup =
+          staticMetadata &&
+          staticMetadata.demographicsGroups &&
+          staticMetadata.demographicsGroups[0];
+        const demographics =
+          coreGroup?.subgroups ||
+          DEMOGRAPHIC_FIELDS_ORDER.filter(id => id in feature.properties.demographics);
         demographics.forEach(demographicKey => {
-          if (demographicKey !== "population") {
-            const popSplit =
-              feature.properties.demographics[demographicKey] /
-              feature.properties.demographics.population;
-            if (popSplit > 0.5) {
-              // eslint-disable-next-line
-              feature.properties.majorityRace = demographicKey;
-              // eslint-disable-next-line
-              feature.properties.majorityRaceSplit = popSplit;
-            }
+          const popSplit =
+            feature.properties.demographics[demographicKey] /
+            feature.properties.demographics.population;
+          if (popSplit > 0.5) {
+            // eslint-disable-next-line
+            feature.properties.majorityRace = demographicKey;
+            // eslint-disable-next-line
+            feature.properties.majorityRaceSplit = popSplit;
           }
         });
         if (!feature.properties.majorityRace) {
@@ -608,7 +614,7 @@ const DistrictsMap = ({
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool, avgPopulation, evaluateMetric]);
+  }, [map, geojson, findMenuOpen, findTool, avgPopulation, evaluateMetric, staticMetadata]);
 
   // Update layer styles when district is selected
   useEffect(() => {
