@@ -303,9 +303,15 @@ const ProjectSidebar = ({
     }
   ];
 
+  const demographicsMetricFields = staticMetadata && getDemographicsMetricFields(staticMetadata);
+
+  const demographicsGroups: readonly DemographicsGroup[] = staticMetadata?.demographicsGroups || [
+    { total: "population", subgroups: demographicsMetricFields?.map(([id]) => id) || [] }
+  ];
+
   const demographicHeaders: readonly MetricHeader[] =
-    (staticMetadata &&
-      getDemographicsMetricFields(staticMetadata).flatMap(([id, metric]) =>
+    (demographicsMetricFields &&
+      demographicsMetricFields.flatMap(([id, metric]) =>
         id in CORE_METRIC_FIELDS
           ? []
           : [
@@ -317,6 +323,10 @@ const ProjectSidebar = ({
             ]
       )) ||
     [];
+
+  const coreLength = demographicsGroups[0]?.subgroups?.length || 0;
+  const coreDemographicHeaders = demographicHeaders.slice(0, coreLength);
+  const extraDemographicHeaders = demographicHeaders.slice(coreLength).flat();
 
   const electionText = {
     dem16: "Dem. '16",
@@ -347,12 +357,13 @@ const ProjectSidebar = ({
 
   const metricHeaders: readonly MetricHeader[] = [
     ...coreMetricHeaders,
-    ...demographicHeaders,
+    ...coreDemographicHeaders,
     {
       metric: "majorityRace",
       text: "Majority race",
       tooltip: "Majority race"
     },
+    ...extraDemographicHeaders,
     ...(hasElectionData
       ? [
           {
@@ -414,6 +425,7 @@ const ProjectSidebar = ({
                 project={project}
                 geojson={geojson}
                 staticMetadata={staticMetadata}
+                demographicsGroups={demographicsGroups}
                 selectedDistrictId={selectedDistrictId}
                 hoveredDistrictId={hoveredDistrictId}
                 selectedGeounits={selectedGeounits}
@@ -585,6 +597,25 @@ const SidebarRow = memo(
       /* eslint-disable @typescript-eslint/no-unsafe-return */
       intermediatePopulations[demographicsGroups.findIndex(g => g.subgroups.includes(id)) || 0];
 
+    const coreDemographicMetricFields = demographicsMetricFields.slice(
+      0,
+      demographicsGroups[0].subgroups.length
+    );
+    const extraDemographicMetricFields = demographicsMetricFields.slice(
+      demographicsGroups[0].subgroups.length
+    );
+
+    const demographicsDisplay = ([id, metric]: readonly string[]) =>
+      isVisible(metric) && (
+        <Styled.td key={metric} sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <span>
+            {getTotal(id) !== undefined
+              ? `${computeDemographicSplit(demographics[id], getTotal(id) || 0)}%`
+              : demographics[id].toLocaleString()}
+          </span>
+        </Styled.td>
+      );
+
     return (
       <Styled.tr
         sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
@@ -708,26 +739,13 @@ const SidebarRow = memo(
             </Tooltip>
           </Styled.td>
         )}
-        {demographicsMetricFields.map(
-          ([id, metric]) =>
-            isVisible(metric) && (
-              <Styled.td
-                key={metric}
-                sx={{ ...style.td, ...style.number, ...{ color: textColor } }}
-              >
-                <span>
-                  {getTotal(id)
-                    ? `${computeDemographicSplit(demographics[id], getTotal(id) || 0)}%`
-                    : demographics[id]}
-                </span>
-              </Styled.td>
-            )
-        )}
+        {coreDemographicMetricFields.map(demographicsDisplay)}
         {isVisible("majorityRace") && (
           <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <span>{getMajorityRaceDisplay(district)}</span>
           </Styled.td>
         )}
+        {extraDemographicMetricFields.map(demographicsDisplay)}
         {hasElectionData && isVisible("pvi") && (
           <Styled.td sx={{ ...style.td, ...style.number }}>
             <PVIDisplay properties={district.properties} />
@@ -802,6 +820,7 @@ interface SidebarRowsProps {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
+  readonly demographicsGroups: readonly DemographicsGroup[];
   readonly selectedDistrictId: number;
   readonly hoveredDistrictId: number | null;
   readonly selectedGeounits: GeoUnits;
@@ -818,6 +837,7 @@ const SidebarRows = ({
   project,
   geojson,
   staticMetadata,
+  demographicsGroups,
   selectedDistrictId,
   hoveredDistrictId,
   selectedGeounits,
@@ -881,10 +901,6 @@ const SidebarRows = ({
   const averagePopulation = getTargetPopulation(geojson);
   const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
   const electionsMetricFields = getVotingMetricFields(staticMetadata);
-
-  const demographicsGroups = staticMetadata.demographicsGroups || [
-    { total: "population", subgroups: demographicsMetricFields.map(([id]) => id) }
-  ];
 
   return (
     <React.Fragment>
