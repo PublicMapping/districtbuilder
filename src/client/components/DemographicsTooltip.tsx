@@ -70,6 +70,7 @@ const DemographicsTooltip = ({
   readonly isMajorityMinority?: boolean;
   readonly abbreviate?: boolean;
 }) => {
+  // Only showing hard-coded core metrics here for space reasons, so we can hard-code population as well
   const percentages = mapValues(
     demographics,
     (population: number) =>

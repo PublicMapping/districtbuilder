@@ -14,7 +14,8 @@ import {
   LockedDistricts,
   MetricsList,
   VotingMetricsList,
-  ReferenceLayerId
+  ReferenceLayerId,
+  DemographicsGroup
 } from "../../shared/entities";
 
 import {
@@ -279,6 +280,11 @@ const ProjectSidebar = ({
     : "Political Lean (2016)";
   const hasElectionData = has2016Election || has2020Election;
 
+  const getTooltip = (id: string): string =>
+    staticMetadata?.demographicsGroups?.find(
+      group => group.total === id || group.subgroups.includes(id)
+    )?.tooltip || "Number of people in this district";
+
   const coreMetricHeaders: readonly MetricHeader[] = [
     {
       metric: "population",
@@ -306,7 +312,7 @@ const ProjectSidebar = ({
               {
                 text: capitalizeFirstLetter(id),
                 metric: metric,
-                tooltip: "Number of people in this district"
+                tooltip: getTooltip(id)
               }
             ]
       )) ||
@@ -486,6 +492,7 @@ const SidebarRow = memo(
     pinnedMetricFields,
     demographicsMetricFields,
     electionsMetricFields,
+    demographicsGroups,
     selected,
     selectedPopulationDifference,
     expandedProjectMetrics,
@@ -503,6 +510,7 @@ const SidebarRow = memo(
     readonly pinnedMetricFields: readonly string[];
     readonly demographicsMetricFields: MetricsList;
     readonly electionsMetricFields: VotingMetricsList;
+    readonly demographicsGroups: readonly DemographicsGroup[];
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
     readonly expandedProjectMetrics: boolean;
@@ -523,10 +531,12 @@ const SidebarRow = memo(
         ? positiveChangeColor
         : negativeChangeColor
       : "inherit";
-    const intermediatePopulation = demographics.population + selectedDifference;
+    const intermediatePopulations = demographicsGroups.map(g =>
+      g.total ? demographics[g.total] + selectedDifference : undefined
+    );
     const intermediateDeviation = Math.ceil(deviation + selectedDifference);
     const absoluteDeviation = Math.floor(Math.abs(deviation + selectedDifference));
-    const populationDisplay = intermediatePopulation.toLocaleString();
+    const populationDisplay = intermediatePopulations[0]?.toLocaleString() || "";
     const deviationDisplay =
       intermediateDeviation === 0
         ? "0"
@@ -570,6 +580,10 @@ const SidebarRow = memo(
 
     const isVisible = (field: string) =>
       pinnedMetricFields.includes(field) || expandedProjectMetrics;
+
+    const getTotal = (id: string): number | undefined =>
+      /* eslint-disable @typescript-eslint/no-unsafe-return */
+      intermediatePopulations[demographicsGroups.findIndex(g => g.subgroups.includes(id)) || 0];
 
     return (
       <Styled.tr
@@ -701,7 +715,11 @@ const SidebarRow = memo(
                 key={metric}
                 sx={{ ...style.td, ...style.number, ...{ color: textColor } }}
               >
-                <span>{computeDemographicSplit(demographics[id], intermediatePopulation)}%</span>
+                <span>
+                  {getTotal(id)
+                    ? `${computeDemographicSplit(demographics[id], getTotal(id) || 0)}%`
+                    : demographics[id]}
+                </span>
               </Styled.td>
             )
         )}
@@ -864,6 +882,10 @@ const SidebarRows = ({
   const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
   const electionsMetricFields = getVotingMetricFields(staticMetadata);
 
+  const demographicsGroups = staticMetadata.demographicsGroups || [
+    { total: "population", subgroups: demographicsMetricFields.map(([id]) => id) }
+  ];
+
   return (
     <React.Fragment>
       {geojson.features.map(feature => {
@@ -888,6 +910,7 @@ const SidebarRows = ({
             selectedPopulationDifference={selectedPopulationDifference || 0}
             expandedProjectMetrics={expandedProjectMetrics}
             demographics={feature.properties.demographics}
+            demographicsGroups={demographicsGroups}
             deviation={feature.properties.populationDeviation}
             key={districtId}
             isDistrictLocked={lockedDistricts[districtId - 1]}

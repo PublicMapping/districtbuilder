@@ -105,11 +105,17 @@ export interface GeoLevelInfo {
 }
 
 export type GeoLevelHierarchy = readonly GeoLevelInfo[];
+export interface DemographicsGroup {
+  readonly subgroups: readonly string[];
+  readonly total?: string;
+  readonly tooltip?: string;
+}
 
 export interface IStaticMetadata {
   readonly demographics: readonly IStaticFile[];
   readonly geoLevels: readonly IStaticFile[];
   readonly voting?: readonly IStaticFile[];
+  readonly demographicsGroups?: readonly DemographicsGroup[];
   readonly bbox: readonly [number, number, number, number];
   readonly geoLevelHierarchy: GeoLevelHierarchy;
 }
