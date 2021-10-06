@@ -2,8 +2,6 @@
 
 This project is a continuation of the original version of DistrictBuilder, now called [DistrictBuilder Classic](https://github.com/PublicMapping/districtbuilder-classic), which is no longer being maintained. This repository is where active development of DistrictBuilder will continue to occur.
 
-**_Note:_ This repository is in the early stages, and is not yet ready for public use. Please don't attempt to set it up yet, since there are several things that need to be ironed out before it can be used by a wider audience. Please contact districtbuilder@azavea.com to sign up for early access and to learn more.**
-
 ## Overview
 
 DistrictBuilder is web-based, open source software for collaborative redistricting.
@@ -28,8 +26,9 @@ DistrictBuilder is web-based, open source software for collaborative redistricti
 
 ## Development
 
+_Optional:_
 Ensure that you have an AWS credential profile for `district-builder` configured on your host system.
-The server backend will need this in order to access S3 assets.
+The server backend will use this in order to access S3 assets if present, and any `manage` commands that use S3 assets will **require** it.
 
 ### Host Environments
 
