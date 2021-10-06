@@ -73,6 +73,12 @@ For brevity, this document will use Linux examples throughout. You should run th
 
 _Note:_ It is recommended to configure your editor to auto-format your code via Prettier on save.
 
+#### Windows
+
+For Windows, please install [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install) and [Docker Desktop](https://hub.docker.com/editions/community/docker-ce-desktop-windows), and enable the [WSL2-based docker backend](https://docs.docker.com/desktop/windows/wsl/).
+
+Once you've setup WSL and Docker, you can clone and setup this project from within your WSL2 environment following the Linux installation instructions above.
+
 ### Hot Reloading 🔥
 
 Next, run `scripts/server` to start the application:
@@ -169,14 +175,14 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 ### Ports
 
 | Port                          | Service          |
-| ----------------------------- | ---------------- |
+|-------------------------------|------------------|
 | [3003](http://localhost:3003) | Create React App |
 | [3005](http://localhost:3005) | NestJS           |
 
 ## Scripts
 
 | Name            | Description                                                               |
-| --------------- | ------------------------------------------------------------------------- |
+|-----------------|---------------------------------------------------------------------------|
 | `cibuild`       | Build application for staging or a release.                               |
 | `cipublish`     | Publish container images to Elastic Container Registry.                   |
 | `dbshell`       | Enter a database shell.                                                   |
