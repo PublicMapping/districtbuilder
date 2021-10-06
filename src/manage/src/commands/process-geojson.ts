@@ -135,13 +135,11 @@ it when necessary (file sizes ~1GB+).
     const { args, flags } = this.parse(ProcessGeojson);
 
     if (!existsSync(args.file)) {
-      this.log(`file ${args.file} does not exist, exiting`);
-      return;
+      this.error(`file ${args.file} does not exist, exiting`);
     }
 
     if (!existsSync(flags.outputDir)) {
-      this.log(`output directory ${flags.outputDir} does not exist, exiting`);
-      return;
+      this.error(`output directory ${flags.outputDir} does not exist, exiting`);
     }
 
     const geoLevels = splitPairs(flags.levels);
@@ -156,8 +154,9 @@ it when necessary (file sizes ~1GB+).
     const quantization = parseFloat(flags.quantization);
 
     if (geoLevels.length !== minZooms.length || geoLevels.length !== maxZooms.length) {
-      this.log("'levels' 'levelMinZoom' and 'levelMaxZoom' must all have the same length, exiting");
-      return;
+      this.error(
+        "'levels' 'levelMinZoom' and 'levelMaxZoom' must all have the same length, exiting"
+      );
     }
 
     cli.action.start(`Reading base GeoJSON: ${args.file}`);
@@ -169,27 +168,23 @@ it when necessary (file sizes ~1GB+).
     const numFeatures = baseGeoJson.features.length;
     this.log(`GeoJSON contains ${numFeatures.toString()} features`);
     if (numFeatures <= 0) {
-      this.log(`GeoJSON must have features, exiting`);
-      return;
+      this.error(`GeoJSON must have features, exiting`);
     }
 
     const firstFeature = baseGeoJson.features[0];
     for (const [demo, _id] of demographics) {
       if (!(demo in firstFeature.properties)) {
-        this.log(`Demographic: "${demo}" not present in features, exiting`);
-        return;
+        this.error(`Demographic: "${demo}" not present in features, exiting`);
       }
     }
     for (const [prop, _id] of geoLevels) {
       if (!(prop in firstFeature.properties)) {
-        this.log(`Geolevel: "${prop}" not present in features, exiting`);
-        return;
+        this.error(`Geolevel: "${prop}" not present in features, exiting`);
       }
     }
     for (const [prop, _id] of voting) {
       if (!(prop in firstFeature.properties)) {
-        this.log(`Voting data: "${prop}" not present in features, exiting`);
-        return;
+        this.error(`Voting data: "${prop}" not present in features, exiting`);
       }
     }
 
@@ -214,8 +209,7 @@ it when necessary (file sizes ~1GB+).
 
     const bbox = topoJsonHierarchy.bbox;
     if (bbox === undefined || bbox.length !== 4) {
-      this.log(`Invalid bbox: "${bbox}"`);
-      return;
+      this.error(`Invalid bbox: "${bbox}"`);
     }
 
     if (!flags.inputS3Dir) {
@@ -228,8 +222,7 @@ it when necessary (file sizes ~1GB+).
       this.log("Sorting TopoJSON based on previous version");
       const errorMessage = this.sortTopoJsonByPrev(topoJsonHierarchy, prevTopoJson, geoLevelIds);
       if (errorMessage !== null) {
-        this.log(`Error encountered while sorting TopoJSON: "${errorMessage}"`);
-        return;
+        this.error(`Error encountered while sorting TopoJSON: "${errorMessage}"`);
       }
     }
 
