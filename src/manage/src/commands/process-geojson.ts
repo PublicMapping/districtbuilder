@@ -3,14 +3,21 @@ import { IArg } from "@oclif/parser/lib/args";
 import S3 from "aws-sdk/clients/s3";
 import cli from "cli-ux";
 import { mapSync } from "event-stream";
-import { createReadStream, createWriteStream, existsSync, readFileSync, writeFileSync } from "fs";
+import {
+  createReadStream,
+  createWriteStream,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  copyFileSync
+} from "fs";
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import JsonStreamStringify from "json-stream-stringify";
 import groupBy from "lodash/groupBy";
 import isEqual from "lodash/isEqual";
 import mapValues from "lodash/mapValues";
-import { join } from "path";
+import { join, basename } from "path";
 import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
@@ -229,6 +236,10 @@ it when necessary (file sizes ~1GB+).
     await this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
+
+    // Include source geojson in output to make reprocessing easier
+    this.log("Copying source file to output");
+    copyFileSync(args.file, join(flags.outputDir, "input.geojson"));
 
     await this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevelIds);
 

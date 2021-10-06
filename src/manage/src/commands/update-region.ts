@@ -3,8 +3,9 @@ import { IArg } from "@oclif/parser/lib/args";
 import S3 from "aws-sdk/clients/s3";
 import cli from "cli-ux";
 import { createReadStream } from "fs";
-import { join } from "path";
+import { join, basename } from "path";
 import readDir from "recursive-readdir";
+import { shouldPublishFile } from "../lib/fileUtils";
 
 export default class UpdateRegion extends Command {
   static description = "update processed region files in-place on S3";
@@ -26,9 +27,7 @@ export default class UpdateRegion extends Command {
     const { args } = this.parse(UpdateRegion);
 
     // Filter out intermediate data files that are no longer needed
-    const filePaths = (await readDir(args.staticDataDir)).filter(fileName => {
-      return [".geojson", ".mbtiles"].every(ext => !fileName.endsWith(ext));
-    });
+    const filePaths = (await readDir(args.staticDataDir)).filter(shouldPublishFile);
 
     if (filePaths.length === 0) {
       this.log("no files found for updating, exiting");

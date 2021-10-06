@@ -8,6 +8,7 @@ import readDir from "recursive-readdir";
 import { createConnection } from "typeorm";
 import { RegionConfig } from "../../../server/src/region-configs/entities/region-config.entity";
 import { connectionOptions } from "../lib/dbUtils";
+import { shouldPublishFile } from "../lib/fileUtils";
 
 export default class PublishRegion extends Command {
   static description = "upload processed region files to S3";
@@ -49,9 +50,7 @@ export default class PublishRegion extends Command {
     const keyPrefix = `regions/${args.countryCode}/${args.regionCode}/${versionDt.toISOString()}`;
 
     // Filter out intermediate data files that are no longer needed
-    const filePaths = (await readDir(args.staticDataDir)).filter(fileName => {
-      return [".geojson", ".mbtiles"].every(ext => !fileName.endsWith(ext));
-    });
+    const filePaths = (await readDir(args.staticDataDir)).filter(shouldPublishFile);
 
     if (filePaths.length === 0) {
       this.log("no files found for publishing, exiting");
