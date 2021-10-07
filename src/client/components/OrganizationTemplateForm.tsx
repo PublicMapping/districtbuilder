@@ -87,8 +87,7 @@ const OrganizationTemplateForm = ({
   const [organizationSlug, setOrganizationSlug] = useState<OrganizationSlug | undefined>(undefined);
 
   const onOrgChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.currentTarget.value !== "" && setOrganizationSlug(e.currentTarget.value);
-    e.currentTarget.value === "" && setOrganizationSlug(undefined);
+    setOrganizationSlug(e.currentTarget.value !== "" ? e.currentTarget.value : undefined);
   };
 
   useEffect(() => {
