@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Add support for demographic groups, to support VAP / CVAP fields [#1034](https://github.com/PublicMapping/districtbuilder/pull/1034)
 
 ### Changed
 
