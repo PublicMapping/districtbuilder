@@ -54,7 +54,8 @@ interface StateProps {
 const validate = (
   form: ConfigurableForm,
   importResource: ImportResource,
-  templateData: CreateProjectData | null
+  templateData: CreateProjectData | null,
+  organization: Resource<IOrganization>
 ): ProjectForm => {
   const regionConfig = importResource.data;
   const districtsDefinition =
@@ -64,21 +65,26 @@ const validate = (
   const populationDeviation = form.populationDeviation;
   const chamber = form.chamber;
   const isCustom = form.isCustom;
-  return templateData?.projectTemplate && districtsDefinition
-    ? {
+  const organizationSelected = "resource" in organization;
+
+  return organizationSelected && templateData?.projectTemplate && districtsDefinition
+    ? // Valid for the selected template
+      {
         projectTemplate: templateData.projectTemplate,
         regionConfig: templateData.regionConfig,
         districtsDefinition,
         isCustom,
         valid: true
       }
-    : numberOfDistricts &&
+    : !organizationSelected &&
+      numberOfDistricts &&
       maxDistrictId &&
       regionConfig &&
       populationDeviation !== null &&
       districtsDefinition &&
       numberOfDistricts >= maxDistrictId
-    ? {
+    ? // Valid for the standard RegionConfig for this CSV
+      {
         numberOfDistricts,
         regionConfig,
         districtsDefinition,
@@ -87,7 +93,8 @@ const validate = (
         populationDeviation,
         valid: true
       }
-    : {
+    : // Invalid
+      {
         numberOfDistricts,
         regionConfig,
         districtsDefinition,
@@ -476,7 +483,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
             sx={{ flexDirection: "column" }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              const validatedForm = validate(formData, importResource, templateData);
+              const validatedForm = validate(formData, importResource, templateData, organization);
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data: formData, isPending: true });
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -737,7 +744,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                     type="submit"
                     disabled={
                       ("isPending" in createProjectResource && createProjectResource.isPending) ||
-                      (!validate(formData, importResource, templateData).valid &&
+                      (!validate(formData, importResource, templateData, organization).valid &&
                         !("errorMessage" in createProjectResource))
                     }
                   >
