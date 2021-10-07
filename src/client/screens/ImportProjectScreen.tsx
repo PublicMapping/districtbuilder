@@ -3,7 +3,7 @@ import { darken } from "@theme-ui/color";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FileDrop } from "react-file-drop";
 import { connect } from "react-redux";
-import { Link, Redirect, useHistory } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import {
   Box,
   Button,
