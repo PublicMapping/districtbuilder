@@ -15,15 +15,13 @@ import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
-import { REGION_LABELS } from "../../../shared/constants";
 import {
   UintArray,
   GeoLevelInfo,
   GeoUnitDefinition,
   HierarchyDefinition,
   IStaticFile,
-  IStaticMetadata,
-  RegionLabels
+  IStaticMetadata
 } from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 
@@ -100,12 +98,6 @@ it when necessary (file sizes ~1GB+).
       default: ""
     }),
 
-    labels: flags.string({
-      char: "v",
-      description: `Comma-separated list of label key-value pairs, separated by ':'`,
-      default: "election:presidential 2016"
-    }),
-
     simplification: flags.string({
       char: "s",
       description: "Topojson simplification amount (minWeight)",
@@ -155,7 +147,6 @@ it when necessary (file sizes ~1GB+).
     const geoLevels = splitPairs(flags.levels);
     const geoLevelIds = geoLevels.map(([, id]) => id);
     const voting = splitPairs(flags.voting);
-    const labelsOpts = Object.fromEntries(splitPairs(flags.labels));
     const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
@@ -168,13 +159,6 @@ it when necessary (file sizes ~1GB+).
       this.log("'levels' 'levelMinZoom' and 'levelMaxZoom' must all have the same length, exiting");
       return;
     }
-
-    if (!isEqual(new Set(Object.keys(labelsOpts)), new Set(REGION_LABELS))) {
-      this.log(`Error: 'labels' keys must match '${REGION_LABELS.join(",")}'`);
-      this.log(`Error: 'labels' provided was '${JSON.stringify(labelsOpts)}`);
-      return;
-    }
-    const labels = labelsOpts as RegionLabels;
 
     cli.action.start(`Reading base GeoJSON: ${args.file}`);
     const baseGeoJson = await (flags.big
@@ -292,8 +276,7 @@ it when necessary (file sizes ~1GB+).
       geoLevelMetaData,
       votingMetaData,
       bbox,
-      geoLevelHierarchyInfo,
-      labels
+      geoLevelHierarchyInfo
     );
   }
 
@@ -554,8 +537,7 @@ it when necessary (file sizes ~1GB+).
     geoLevelMetadata: IStaticFile[],
     votingMetadata: IStaticFile[],
     bbox: [number, number, number, number],
-    geoLevelHierarchy: GeoLevelInfo[],
-    labels: RegionLabels
+    geoLevelHierarchy: GeoLevelInfo[]
   ): void {
     this.log("Writing static metadata file");
     const staticMetadata: IStaticMetadata = {
@@ -563,8 +545,7 @@ it when necessary (file sizes ~1GB+).
       geoLevels: geoLevelMetadata,
       voting: votingMetadata,
       bbox,
-      geoLevelHierarchy,
-      labels
+      geoLevelHierarchy
     };
 
     writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));

@@ -14,7 +14,8 @@ import {
   LockedDistricts,
   MetricsList,
   VotingMetricsList,
-  ReferenceLayerId
+  ReferenceLayerId,
+  DemographicsGroup
 } from "../../shared/entities";
 
 import {
@@ -279,6 +280,11 @@ const ProjectSidebar = ({
     : "Political Lean (2016)";
   const hasElectionData = has2016Election || has2020Election;
 
+  const getTooltip = (id: string): string =>
+    staticMetadata?.demographicsGroups?.find(
+      group => group.total === id || group.subgroups.includes(id)
+    )?.tooltip || "Number of people in this district";
+
   const coreMetricHeaders: readonly MetricHeader[] = [
     {
       metric: "population",
@@ -297,20 +303,30 @@ const ProjectSidebar = ({
     }
   ];
 
+  const demographicsMetricFields = staticMetadata && getDemographicsMetricFields(staticMetadata);
+
+  const demographicsGroups: readonly DemographicsGroup[] = staticMetadata?.demographicsGroups || [
+    { total: "population", subgroups: demographicsMetricFields?.map(([id]) => id) || [] }
+  ];
+
   const demographicHeaders: readonly MetricHeader[] =
-    (staticMetadata &&
-      getDemographicsMetricFields(staticMetadata).flatMap(([id, metric]) =>
+    (demographicsMetricFields &&
+      demographicsMetricFields.flatMap(([id, metric]) =>
         id in CORE_METRIC_FIELDS
           ? []
           : [
               {
                 text: capitalizeFirstLetter(id),
                 metric: metric,
-                tooltip: "Number of people in this district"
+                tooltip: getTooltip(id)
               }
             ]
       )) ||
     [];
+
+  const coreLength = demographicsGroups[0]?.subgroups?.length || 0;
+  const coreDemographicHeaders = demographicHeaders.slice(0, coreLength);
+  const extraDemographicHeaders = demographicHeaders.slice(coreLength).flat();
 
   const electionText = {
     dem16: "Dem. '16",
@@ -341,12 +357,13 @@ const ProjectSidebar = ({
 
   const metricHeaders: readonly MetricHeader[] = [
     ...coreMetricHeaders,
-    ...demographicHeaders,
+    ...coreDemographicHeaders,
     {
       metric: "majorityRace",
       text: "Majority race",
       tooltip: "Majority race"
     },
+    ...extraDemographicHeaders,
     ...(hasElectionData
       ? [
           {
@@ -408,6 +425,7 @@ const ProjectSidebar = ({
                 project={project}
                 geojson={geojson}
                 staticMetadata={staticMetadata}
+                demographicsGroups={demographicsGroups}
                 selectedDistrictId={selectedDistrictId}
                 hoveredDistrictId={hoveredDistrictId}
                 selectedGeounits={selectedGeounits}
@@ -486,6 +504,7 @@ const SidebarRow = memo(
     pinnedMetricFields,
     demographicsMetricFields,
     electionsMetricFields,
+    demographicsGroups,
     selected,
     selectedPopulationDifference,
     expandedProjectMetrics,
@@ -503,6 +522,7 @@ const SidebarRow = memo(
     readonly pinnedMetricFields: readonly string[];
     readonly demographicsMetricFields: MetricsList;
     readonly electionsMetricFields: VotingMetricsList;
+    readonly demographicsGroups: readonly DemographicsGroup[];
     readonly selected: boolean;
     readonly selectedPopulationDifference?: number;
     readonly expandedProjectMetrics: boolean;
@@ -523,10 +543,12 @@ const SidebarRow = memo(
         ? positiveChangeColor
         : negativeChangeColor
       : "inherit";
-    const intermediatePopulation = demographics.population + selectedDifference;
+    const intermediatePopulations = demographicsGroups.map(g =>
+      g.total ? demographics[g.total] + selectedDifference : undefined
+    );
     const intermediateDeviation = Math.ceil(deviation + selectedDifference);
     const absoluteDeviation = Math.floor(Math.abs(deviation + selectedDifference));
-    const populationDisplay = intermediatePopulation.toLocaleString();
+    const populationDisplay = intermediatePopulations[0]?.toLocaleString() || "";
     const deviationDisplay =
       intermediateDeviation === 0
         ? "0"
@@ -570,6 +592,29 @@ const SidebarRow = memo(
 
     const isVisible = (field: string) =>
       pinnedMetricFields.includes(field) || expandedProjectMetrics;
+
+    const getTotal = (id: string): number | undefined =>
+      /* eslint-disable @typescript-eslint/no-unsafe-return */
+      intermediatePopulations[demographicsGroups.findIndex(g => g.subgroups.includes(id)) || 0];
+
+    const coreDemographicMetricFields = demographicsMetricFields.slice(
+      0,
+      demographicsGroups[0].subgroups.length
+    );
+    const extraDemographicMetricFields = demographicsMetricFields.slice(
+      demographicsGroups[0].subgroups.length
+    );
+
+    const demographicsDisplay = ([id, metric]: readonly string[]) =>
+      isVisible(metric) && (
+        <Styled.td key={metric} sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <span>
+            {getTotal(id) !== undefined
+              ? `${computeDemographicSplit(demographics[id], getTotal(id) || 0)}%`
+              : demographics[id].toLocaleString()}
+          </span>
+        </Styled.td>
+      );
 
     return (
       <Styled.tr
@@ -694,22 +739,13 @@ const SidebarRow = memo(
             </Tooltip>
           </Styled.td>
         )}
-        {demographicsMetricFields.map(
-          ([id, metric]) =>
-            isVisible(metric) && (
-              <Styled.td
-                key={metric}
-                sx={{ ...style.td, ...style.number, ...{ color: textColor } }}
-              >
-                <span>{computeDemographicSplit(demographics[id], intermediatePopulation)}%</span>
-              </Styled.td>
-            )
-        )}
+        {coreDemographicMetricFields.map(demographicsDisplay)}
         {isVisible("majorityRace") && (
           <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <span>{getMajorityRaceDisplay(district)}</span>
           </Styled.td>
         )}
+        {extraDemographicMetricFields.map(demographicsDisplay)}
         {hasElectionData && isVisible("pvi") && (
           <Styled.td sx={{ ...style.td, ...style.number }}>
             <PVIDisplay properties={district.properties} />
@@ -784,6 +820,7 @@ interface SidebarRowsProps {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
+  readonly demographicsGroups: readonly DemographicsGroup[];
   readonly selectedDistrictId: number;
   readonly hoveredDistrictId: number | null;
   readonly selectedGeounits: GeoUnits;
@@ -800,6 +837,7 @@ const SidebarRows = ({
   project,
   geojson,
   staticMetadata,
+  demographicsGroups,
   selectedDistrictId,
   hoveredDistrictId,
   selectedGeounits,
@@ -888,6 +926,7 @@ const SidebarRows = ({
             selectedPopulationDifference={selectedPopulationDifference || 0}
             expandedProjectMetrics={expandedProjectMetrics}
             demographics={feature.properties.demographics}
+            demographicsGroups={demographicsGroups}
             deviation={feature.properties.populationDeviation}
             key={districtId}
             isDistrictLocked={lockedDistricts[districtId - 1]}
