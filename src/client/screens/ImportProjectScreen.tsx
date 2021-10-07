@@ -736,8 +736,9 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                   <Button
                     type="submit"
                     disabled={
-                      !validate(formData, importResource, templateData).valid &&
-                      !("errorMessage" in createProjectResource)
+                      ("isPending" in createProjectResource && createProjectResource.isPending) ||
+                      (!validate(formData, importResource, templateData).valid &&
+                        !("errorMessage" in createProjectResource))
                     }
                   >
                     Create map
