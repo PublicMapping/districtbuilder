@@ -3,14 +3,21 @@ import { IArg } from "@oclif/parser/lib/args";
 import S3 from "aws-sdk/clients/s3";
 import cli from "cli-ux";
 import { mapSync } from "event-stream";
-import { createReadStream, createWriteStream, existsSync, readFileSync, writeFileSync } from "fs";
+import {
+  createReadStream,
+  createWriteStream,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  copyFileSync
+} from "fs";
 import { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import JsonStreamStringify from "json-stream-stringify";
 import groupBy from "lodash/groupBy";
 import isEqual from "lodash/isEqual";
 import mapValues from "lodash/mapValues";
-import { join } from "path";
+import { join, basename } from "path";
 import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
@@ -135,13 +142,11 @@ it when necessary (file sizes ~1GB+).
     const { args, flags } = this.parse(ProcessGeojson);
 
     if (!existsSync(args.file)) {
-      this.log(`file ${args.file} does not exist, exiting`);
-      return;
+      this.error(`file ${args.file} does not exist, exiting`);
     }
 
     if (!existsSync(flags.outputDir)) {
-      this.log(`output directory ${flags.outputDir} does not exist, exiting`);
-      return;
+      this.error(`output directory ${flags.outputDir} does not exist, exiting`);
     }
 
     const geoLevels = splitPairs(flags.levels);
@@ -156,8 +161,9 @@ it when necessary (file sizes ~1GB+).
     const quantization = parseFloat(flags.quantization);
 
     if (geoLevels.length !== minZooms.length || geoLevels.length !== maxZooms.length) {
-      this.log("'levels' 'levelMinZoom' and 'levelMaxZoom' must all have the same length, exiting");
-      return;
+      this.error(
+        "'levels' 'levelMinZoom' and 'levelMaxZoom' must all have the same length, exiting"
+      );
     }
 
     cli.action.start(`Reading base GeoJSON: ${args.file}`);
@@ -169,27 +175,23 @@ it when necessary (file sizes ~1GB+).
     const numFeatures = baseGeoJson.features.length;
     this.log(`GeoJSON contains ${numFeatures.toString()} features`);
     if (numFeatures <= 0) {
-      this.log(`GeoJSON must have features, exiting`);
-      return;
+      this.error(`GeoJSON must have features, exiting`);
     }
 
     const firstFeature = baseGeoJson.features[0];
     for (const [demo, _id] of demographics) {
       if (!(demo in firstFeature.properties)) {
-        this.log(`Demographic: "${demo}" not present in features, exiting`);
-        return;
+        this.error(`Demographic: "${demo}" not present in features, exiting`);
       }
     }
     for (const [prop, _id] of geoLevels) {
       if (!(prop in firstFeature.properties)) {
-        this.log(`Geolevel: "${prop}" not present in features, exiting`);
-        return;
+        this.error(`Geolevel: "${prop}" not present in features, exiting`);
       }
     }
     for (const [prop, _id] of voting) {
       if (!(prop in firstFeature.properties)) {
-        this.log(`Voting data: "${prop}" not present in features, exiting`);
-        return;
+        this.error(`Voting data: "${prop}" not present in features, exiting`);
       }
     }
 
@@ -214,8 +216,7 @@ it when necessary (file sizes ~1GB+).
 
     const bbox = topoJsonHierarchy.bbox;
     if (bbox === undefined || bbox.length !== 4) {
-      this.log(`Invalid bbox: "${bbox}"`);
-      return;
+      this.error(`Invalid bbox: "${bbox}"`);
     }
 
     if (!flags.inputS3Dir) {
@@ -228,14 +229,17 @@ it when necessary (file sizes ~1GB+).
       this.log("Sorting TopoJSON based on previous version");
       const errorMessage = this.sortTopoJsonByPrev(topoJsonHierarchy, prevTopoJson, geoLevelIds);
       if (errorMessage !== null) {
-        this.log(`Error encountered while sorting TopoJSON: "${errorMessage}"`);
-        return;
+        this.error(`Error encountered while sorting TopoJSON: "${errorMessage}"`);
       }
     }
 
     await this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
+
+    // Include source geojson in output to make reprocessing easier
+    this.log("Copying source file to output");
+    copyFileSync(args.file, join(flags.outputDir, "input.geojson"));
 
     await this.writeIntermediaryGeoJson(flags.outputDir, topoJsonHierarchy, geoLevelIds);
 
@@ -383,14 +387,15 @@ it when necessary (file sizes ~1GB+).
         geometries: Object.values(mergedGeoms)
       };
     }
-    // Add an 'id' to each feature. This is implicit now but will
-    // become necessary to index static data array buffers once the features
-    // are converted into vector tiles.
-    // We are using the id here, rather than a property, because an id is needed
-    // in order to use the `setFeatureState` capability on the front-end.
+    // Add properties that should be available on every geometry
     for (const geoLevel of geoLevelIds) {
       const geomCollection = topo.objects[geoLevel] as GeometryCollection;
       geomCollection.geometries.forEach((geometry: GeometryObject, index) => {
+        // Add an 'id' to each feature. This is implicit now but will
+        // become necessary to index static data array buffers once the features
+        // are converted into vector tiles.
+        // We are using the id here, rather than a property, because an id is needed
+        // in order to use the `setFeatureState` capability on the front-end.
         // tslint:disable-next-line:no-object-mutation
         geometry.id = index;
 
@@ -400,6 +405,36 @@ it when necessary (file sizes ~1GB+).
             // @ts-ignore
             geometry.properties[`${id}-abbrev`] = abbreviateNumber(geometry.properties[id]);
           }
+        }
+
+        // Add name if it is not already defined
+        // Blocks and block groups have their FIPS code available at geometry.proprties.block[group]
+        // so we can use that for the name so that the label is something useful.
+        if (geometry.properties && !("name" in geometry.properties)) {
+          // @ts-ignore
+          const levelFips = geometry.properties[geoLevel];
+          // FIPS Code format is:
+          // AABBBCCCCCCDEEE
+          // A = State code
+          // B = County code
+          // C = Tract code
+          // D = Blockgroup code
+          // E = Block code
+          // We display blocks and blockgroups but not tracts, so we're using the following subsets
+          // of the full FIPS code for each level:
+          // Blockgroup: Tract code and blockgroup code (CCCCCCD)
+          // Block: Blockgroup code and block code (DEEE)
+          // Counties are displayed with their name.
+          const localFips =
+            geoLevel === "blockgroup"
+              ? levelFips.substring(5)
+              : geoLevel === "block"
+              ? levelFips.substring(11)
+              : levelFips;
+          // And then we want the tooltip to display something like "Blockgroup #CCCCCCD"
+          // @ts-ignore
+          geometry.properties.name = `${geoLevel[0].toUpperCase() +
+            geoLevel.substring(1)} #${localFips}`;
         }
       });
     }
