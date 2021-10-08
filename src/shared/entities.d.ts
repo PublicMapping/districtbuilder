@@ -11,7 +11,10 @@ export type PaginationMetadata = {
   readonly totalPages?: number;
 };
 
-export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
+export type OrganizationNest = Pick<
+  IOrganization,
+  "slug" | "id" | "name" | "logoUrl" | "projectTemplates"
+>;
 
 export interface IUser {
   readonly id: UserId;
@@ -222,7 +225,7 @@ export type ProjectNest = Pick<
 export interface CreateProjectData {
   readonly name?: string;
   readonly numberOfDistricts?: number;
-  readonly regionConfig?: Pick<IRegionConfig, "id">;
+  readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;
   readonly populationDeviation?: number;

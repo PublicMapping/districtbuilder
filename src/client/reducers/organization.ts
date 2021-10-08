@@ -9,7 +9,8 @@ import {
   exportOrgUsers,
   exportOrgUsersFailure,
   exportProjects,
-  exportProjectsFailure
+  exportProjectsFailure,
+  organizationReset
 } from "../actions/organization";
 
 import { IOrganization } from "../../shared/entities";
@@ -34,9 +35,11 @@ const organizationReducer: LoopReducer<OrganizationState, Action> = (
   switch (action.type) {
     case getType(organizationFetch):
       return loop(
-        {
-          isPending: true
-        },
+        "resource" in state
+          ? { resource: state.resource, isPending: true }
+          : {
+              isPending: true
+            },
         Cmd.run(fetchOrganization, {
           successActionCreator: organizationFetchSuccess,
           failActionCreator: organizationFetchFailure,
@@ -56,6 +59,10 @@ const organizationReducer: LoopReducer<OrganizationState, Action> = (
           ? Cmd.run(showResourceFailedToast)
           : Cmd.none
       );
+    case getType(organizationReset):
+      return {
+        isPending: false
+      };
     case getType(exportProjects):
       return loop(
         state,

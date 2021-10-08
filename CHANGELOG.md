@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add support for demographic groups, to support VAP / CVAP fields [#1034](https://github.com/PublicMapping/districtbuilder/pull/1034)
 - Added bulk-reprocess-regions command [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
+- Import using a project template [#1033](https://github.com/PublicMapping/districtbuilder/pull/1033)
 
 ### Changed
 - Don't require AWS credentials to load public S3 assets [#1036](https://github.com/PublicMapping/districtbuilder/pull/1036)

@@ -329,7 +329,15 @@ export class ProjectsController implements CrudController<Project> {
       pinnedMetricFields,
       districtsDefinition
     });
-    const formdata = template ? { ...dto, ...templateFields(template) } : dto;
+    // most template fields take precedence, but districtsDefinition should preferentially use the
+    // DTO data, to support imports w/ templates
+    const formdata = template
+      ? {
+          ...dto,
+          ...templateFields(template),
+          districtsDefinition: dto.districtsDefinition || template.districtsDefinition
+        }
+      : dto;
     if (!formdata.numberOfDistricts) {
       // The validation in the DTO should prevent this
       throw new InternalServerErrorException();

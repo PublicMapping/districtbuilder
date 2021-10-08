@@ -23,7 +23,11 @@ import {
   IProject,
   IRegionConfig,
   IChamber,
-  DistrictsImportApiSuccess
+  DistrictsImportApiSuccess,
+  IOrganization,
+  IUser,
+  CreateProjectData,
+  OrganizationNest
 } from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -37,12 +41,22 @@ import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 import { State } from "../reducers";
 import { WriteResource, Resource } from "../resource";
 import store from "../store";
+import OrganizationTemplateForm from "../components/OrganizationTemplateForm";
+import { userFetch } from "../actions/user";
+import { destructureResource } from "../functions";
 
 interface StateProps {
+  readonly organization: Resource<IOrganization>;
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
+  readonly user: Resource<IUser>;
 }
 
-const validate = (form: ConfigurableForm, importResource: ImportResource): ProjectForm => {
+const validate = (
+  form: ConfigurableForm,
+  importResource: ImportResource,
+  templateData: CreateProjectData | null,
+  organization: Resource<IOrganization>
+): ProjectForm => {
   const regionConfig = importResource.data;
   const districtsDefinition =
     "resource" in importResource ? importResource.resource.districtsDefinition : null;
@@ -51,13 +65,26 @@ const validate = (form: ConfigurableForm, importResource: ImportResource): Proje
   const populationDeviation = form.populationDeviation;
   const chamber = form.chamber;
   const isCustom = form.isCustom;
-  return numberOfDistricts &&
-    maxDistrictId &&
-    regionConfig &&
-    populationDeviation !== null &&
-    districtsDefinition &&
-    numberOfDistricts >= maxDistrictId
-    ? {
+  const organizationSelected = "resource" in organization;
+
+  return organizationSelected && templateData?.projectTemplate && districtsDefinition
+    ? // Valid for the selected template
+      {
+        projectTemplate: templateData.projectTemplate,
+        regionConfig: templateData.regionConfig,
+        districtsDefinition,
+        isCustom,
+        valid: true
+      }
+    : !organizationSelected &&
+      numberOfDistricts &&
+      maxDistrictId &&
+      regionConfig &&
+      populationDeviation !== null &&
+      districtsDefinition &&
+      numberOfDistricts >= maxDistrictId
+    ? // Valid for the standard RegionConfig for this CSV
+      {
         numberOfDistricts,
         regionConfig,
         districtsDefinition,
@@ -66,7 +93,8 @@ const validate = (form: ConfigurableForm, importResource: ImportResource): Proje
         populationDeviation,
         valid: true
       }
-    : {
+    : // Invalid
+      {
         numberOfDistricts,
         regionConfig,
         districtsDefinition,
@@ -88,7 +116,7 @@ interface ConfigurableForm {
 
 type ProjectForm = ValidForm | InvalidForm;
 
-interface ValidForm {
+interface ValidCustomForm {
   readonly regionConfig: IRegionConfig;
   readonly chamber: Pick<IChamber, "id"> | null;
   readonly districtsDefinition: DistrictsDefinition;
@@ -97,6 +125,16 @@ interface ValidForm {
   readonly populationDeviation: number;
   readonly valid: true;
 }
+
+interface ValidTemplateForm {
+  readonly districtsDefinition: DistrictsDefinition;
+  readonly regionConfig: Pick<IRegionConfig, "id">;
+  readonly projectTemplate: Pick<IRegionConfig, "id">;
+  readonly isCustom: boolean;
+  readonly valid: true;
+}
+
+type ValidForm = ValidCustomForm | ValidTemplateForm;
 
 interface InvalidForm {
   readonly regionConfig: IRegionConfig | null;
@@ -226,16 +264,30 @@ async function getStateFromCsv(file: Blob): Promise<string | undefined> {
   return stateAbbrev;
 }
 
-const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
+function filterProjectTemplates<O extends OrganizationNest | IOrganization>(
+  org: O,
+  stateAbbrev: string
+) {
+  const projectTemplates = org.projectTemplates.filter(
+    template => template.regionConfig.regionCode === stateAbbrev
+  );
+  return projectTemplates.length > 0 ? { ...org, projectTemplates } : undefined;
+}
+
+const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) => {
   useEffect(() => {
     store.dispatch(regionConfigsFetch());
+    store.dispatch(userFetch());
   }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importNumberRef = useRef(0);
+  const [file, setFile] = useState<File | null>(null);
+  const [stateAbbrev, setStateAbbrev] = useState<string | null>(null);
   const [importResource, setImportResource] = useState<ImportResource>({
     data: null
   });
+  const [templateData, setTemplateData] = useState<CreateProjectData | null>(null);
   const rowFlags = "resource" in importResource && importResource.resource.rowFlags;
   const maxDistrictId = "resource" in importResource && importResource.resource.maxDistrictId;
   const numFlags = "resource" in importResource && importResource.resource.numFlags;
@@ -248,6 +300,10 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
   const [fileError, setFileError] = useState<string | undefined>();
   const regionConfig = importResource.data;
   const formData = createProjectResource.data;
+
+  const [organizationsForImport, setOrganizationsForImport] = useState<readonly IOrganization[]>(
+    []
+  );
 
   const onDistrictChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chamber =
@@ -268,66 +324,92 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
     });
   };
 
-  const setFile = useCallback(
-    (file: File) => {
-      async function setConfigFromFile() {
-        if (file && "resource" in regionConfigs) {
-          // Check file size (must be less than MAX_UPLOAD_FILE_SIZE)
-          if (file.size > MAX_UPLOAD_FILE_SIZE) {
-            setFileError("File must be less than 25mb");
-            return;
-          }
+  const onTemplateSelected = (data: CreateProjectData): Promise<void> => {
+    setTemplateData(data);
+    return Promise.resolve(void 0);
+  };
 
-          const extension = file.name.split(".")[1];
+  const handleFileUpload = useCallback(() => {
+    async function setConfigFromFile() {
+      if (file && "resource" in regionConfigs) {
+        // Check file size (must be less than MAX_UPLOAD_FILE_SIZE)
+        if (file.size > MAX_UPLOAD_FILE_SIZE) {
+          setFileError("File must be less than 25mb");
+          return;
+        }
 
-          if (extension !== "csv") {
-            setFileError("File must be a .csv");
-            return;
-          }
+        const extension = file.name.split(".")[1];
 
-          // Check file is not empty
-          const stateAbbrev = await getStateFromCsv(file);
-          if (!stateAbbrev) {
-            setFileError("File must have at least one record");
-          }
-          // eslint-disable-next-line
-          importNumberRef.current = importNumberRef.current + 1;
-          const importNumber = importNumberRef.current;
-          const regionConfig =
-            regionConfigs.resource.find(
-              config =>
-                !config.hidden &&
-                !config.archived &&
-                config.regionCode === stateAbbrev &&
-                config.countryCode === "US"
-            ) || null;
+        if (extension !== "csv") {
+          setFileError("File must be a .csv");
+          return;
+        }
 
-          if (!regionConfig) {
+        // Check file is not empty
+        const stateAbbrev = await getStateFromCsv(file);
+        if (!stateAbbrev) {
+          setFileError("File must have at least one record");
+        }
+
+        setStateAbbrev(stateAbbrev || null);
+
+        // Filter to organizations and templates that match the state FIPS code
+        const organizations = destructureResource(user, "organizations") || [];
+        stateAbbrev &&
+          setOrganizationsForImport(
+            organizations
+              .map((o: IOrganization) => filterProjectTemplates(o, stateAbbrev))
+              .filter((org: IOrganization | undefined) => org !== undefined)
+          );
+
+        const regionConfig =
+          regionConfigs.resource.find(
+            config =>
+              !config.hidden &&
+              !config.archived &&
+              config.regionCode === stateAbbrev &&
+              config.countryCode === "US"
+          ) || null;
+
+        if (!regionConfig) {
+          setImportResource({ data: null });
+          setFileError(`State ${stateAbbrev} not currently supported`);
+        }
+
+        // eslint-disable-next-line
+        importNumberRef.current = importNumberRef.current + 1;
+        const importNumber = importNumberRef.current;
+        setImportResource({ data: regionConfig, isPending: true });
+        const regionConfigId = templateData?.regionConfig.id || regionConfig?.id;
+        const importResponse = await importCsv(file, regionConfigId);
+
+        // Don't set the districtsDefinition if upload was cancelled while we were fetching it
+        if (importNumberRef.current === importNumber) {
+          if ("error" in importResponse) {
             setImportResource({ data: null });
-            setFileError(`State ${stateAbbrev} not currently supported`);
-          }
-
-          setImportResource({ data: regionConfig, isPending: true });
-          const importResponse = await importCsv(file);
-
-          // Don't set the districtsDefinition if upload was cancelled while we were fetching it
-          if (importNumberRef.current === importNumber) {
-            if ("error" in importResponse) {
-              setImportResource({ data: null });
-              setFileError(importResponse.error);
-            } else {
-              setImportResource({
-                data: regionConfig,
-                resource: importResponse
-              });
-            }
+            setFileError(importResponse.error);
+          } else {
+            setImportResource({
+              data: regionConfig,
+              resource: importResponse
+            });
           }
         }
       }
-      void setConfigFromFile();
-    },
-    [regionConfigs, importNumberRef]
-  );
+    }
+    void setConfigFromFile();
+  }, [regionConfigs, importNumberRef, user, file, templateData]);
+
+  useEffect(() => {
+    // If thre is no organization, clear template data
+    if (!("resource" in organization) && "isPending" in organization && !organization.isPending) {
+      setTemplateData(null);
+    }
+  }, [organization]);
+
+  useEffect(() => {
+    handleFileUpload();
+  }, [file, templateData]);
 
   useEffect(() => {
     // Set error if number of districts less than max district ID
@@ -367,7 +449,7 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
 
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
-  ) : "resource" in regionConfigs ? (
+  ) : "resource" in regionConfigs && "resource" in user ? (
     <Flex
       sx={{
         flexDirection: "column",
@@ -401,15 +483,19 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
             sx={{ flexDirection: "column" }}
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              const validatedForm = validate(formData, importResource);
+              const validatedForm = validate(formData, importResource, templateData, organization);
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data: formData, isPending: true });
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { isCustom, valid, ...validatedData } = validatedForm;
-                createProject({
-                  ...validatedData,
-                  name: validatedForm.regionConfig.name
-                })
+                createProject(
+                  "name" in validatedForm.regionConfig
+                    ? {
+                        ...validatedData,
+                        name: validatedForm.regionConfig.name
+                      }
+                    : validatedData
+                )
                   .then((project: IProject) =>
                     setCreateProjectResource({ data: formData, resource: project })
                   )
@@ -497,145 +583,169 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
                   We detected block data for <b>{regionConfig.name}</b>. To pick a different state,
                   upload a new file.
                 </Card>
-                <Card sx={{ variant: "card.flat" }}>
-                  <fieldset sx={style.fieldset}>
-                    <Flex sx={{ flexWrap: "wrap" }}>
-                      <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                        Districts
-                      </legend>
-                      <Box
-                        id="description-districts"
-                        as="span"
-                        sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
-                      >
-                        How many districts do you want to map? Choose a federal or state legislative
-                        chamber or define your own.
-                      </Box>
-                      {regionConfig &&
-                        [...regionConfig.chambers]
-                          .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
-                          .map(chamber => (
-                            <Label
-                              key={chamber.id}
-                              sx={{
-                                display: "inline-flex",
-                                "@media screen and (min-width: 750px)": {
-                                  flex: "0 0 48%",
-                                  "&:nth-of-type(even)": {
-                                    mr: "2%"
-                                  }
-                                }
-                              }}
-                            >
-                              <Radio
-                                name="project-district"
-                                value={chamber.id}
-                                onChange={onDistrictChanged}
-                                aria-describedby="description-districts"
-                              />
-                              <Flex
-                                as="span"
-                                sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
-                              >
-                                <div sx={style.radioHeading}>{chamber.name}</div>
-                                <div sx={style.radioSubHeading}>
-                                  {chamber.numberOfDistricts} districts
+                {organizationsForImport && (
+                  <OrganizationTemplateForm
+                    organization={
+                      "resource" in organization && stateAbbrev
+                        ? filterProjectTemplates(organization.resource, stateAbbrev)
+                        : undefined
+                    }
+                    organizations={organizationsForImport}
+                    user={user.resource}
+                    templateSelected={onTemplateSelected}
+                  />
+                )}
+                {!(
+                  "resource" in organization ||
+                  ("isPending" in organization && organization.isPending)
+                ) && (
+                  <React.Fragment>
+                    <Card sx={{ variant: "card.flat" }}>
+                      <fieldset sx={style.fieldset}>
+                        <Flex sx={{ flexWrap: "wrap" }}>
+                          <legend
+                            sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
+                          >
+                            Districts
+                          </legend>
+                          <Box
+                            id="description-districts"
+                            as="span"
+                            sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                          >
+                            How many districts do you want to map? Choose a federal or state
+                            legislative chamber or define your own.
+                          </Box>
+                          {regionConfig &&
+                            [...regionConfig.chambers]
+                              .sort((a, b) => a.numberOfDistricts - b.numberOfDistricts)
+                              .map(chamber => (
+                                <Label
+                                  key={chamber.id}
+                                  sx={{
+                                    display: "inline-flex",
+                                    "@media screen and (min-width: 750px)": {
+                                      flex: "0 0 48%",
+                                      "&:nth-of-type(even)": {
+                                        mr: "2%"
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <Radio
+                                    name="project-district"
+                                    value={chamber.id}
+                                    onChange={onDistrictChanged}
+                                    aria-describedby="description-districts"
+                                  />
+                                  <Flex
+                                    as="span"
+                                    sx={{ flexDirection: "column", flex: "0 1 calc(100% - 2rem)" }}
+                                  >
+                                    <div sx={style.radioHeading}>{chamber.name}</div>
+                                    <div sx={style.radioSubHeading}>
+                                      {chamber.numberOfDistricts} districts
+                                    </div>
+                                  </Flex>
+                                </Label>
+                              ))
+                              .concat(
+                                <div
+                                  sx={{
+                                    flex: "0 0 50%",
+                                    "@media screen and (max-width: 770px)": {
+                                      flex: "0 0 100%"
+                                    }
+                                  }}
+                                  key="custom"
+                                >
+                                  <Label>
+                                    <Radio
+                                      name="project-district"
+                                      value=""
+                                      onChange={onDistrictChanged}
+                                    />
+                                    <Flex as="span" sx={{ flexDirection: "column" }}>
+                                      <div sx={style.radioHeading}>Custom</div>
+                                      <div sx={style.radioSubHeading}>
+                                        Define a custom number of districts
+                                      </div>
+                                    </Flex>
+                                  </Label>
                                 </div>
-                              </Flex>
-                            </Label>
-                          ))
-                          .concat(
-                            <div
-                              sx={{
-                                flex: "0 0 50%",
-                                "@media screen and (max-width: 770px)": {
-                                  flex: "0 0 100%"
-                                }
-                              }}
-                              key="custom"
-                            >
-                              <Label>
-                                <Radio
-                                  name="project-district"
-                                  value=""
-                                  onChange={onDistrictChanged}
-                                />
-                                <Flex as="span" sx={{ flexDirection: "column" }}>
-                                  <div sx={style.radioHeading}>Custom</div>
-                                  <div sx={style.radioSubHeading}>
-                                    Define a custom number of districts
-                                  </div>
-                                </Flex>
-                              </Label>
-                            </div>
-                          )}
-                      {formData.isCustom ? (
+                              )}
+                          {formData.isCustom ? (
+                            <Box sx={style.customInputContainer}>
+                              <InputField
+                                field="numberOfDistricts"
+                                label="Number of districts"
+                                resource={createProjectResource}
+                                inputProps={{
+                                  onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                                    const value = parseInt(e.currentTarget.value, 10);
+                                    const numberOfDistricts = isNaN(value) ? null : value;
+                                    setCreateProjectResource({
+                                      data: {
+                                        ...formData,
+                                        numberOfDistricts
+                                      }
+                                    });
+                                  }
+                                }}
+                              />
+                            </Box>
+                          ) : null}
+                        </Flex>
+                      </fieldset>
+                    </Card>
+                    <Card sx={{ variant: "card.flat" }}>
+                      <Flex sx={{ flexWrap: "wrap" }}>
+                        <legend
+                          sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
+                        >
+                          Population deviation tolerance
+                        </legend>
+                        <Box
+                          id="description-districts"
+                          as="span"
+                          sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
+                        >
+                          How detailed of a map do you want to draw? Setting a lower tolerance means
+                          the population of your districts will need to be more exact. If you
+                          aren&apos;t sure, we think 5% is a good starting point.
+                        </Box>
                         <Box sx={style.customInputContainer}>
                           <InputField
-                            field="numberOfDistricts"
-                            label="Number of districts"
+                            field="populationDeviation"
+                            label="Population deviation tolerance (%)"
+                            defaultValue={DEFAULT_POPULATION_DEVIATION}
                             resource={createProjectResource}
                             inputProps={{
                               onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                const value = parseInt(e.currentTarget.value, 10);
-                                const numberOfDistricts = isNaN(value) ? null : value;
-                                setCreateProjectResource({
-                                  data: {
-                                    ...formData,
-                                    numberOfDistricts
-                                  }
-                                });
+                                const value = parseFloat(e.currentTarget.value);
+                                const populationDeviation = isNaN(value) ? null : value;
+                                populationDeviation !== null &&
+                                  setCreateProjectResource({
+                                    data: {
+                                      ...formData,
+                                      populationDeviation
+                                    }
+                                  });
                               }
                             }}
                           />
                         </Box>
-                      ) : null}
-                    </Flex>
-                  </fieldset>
-                </Card>
-                <Card sx={{ variant: "card.flat" }}>
-                  <Flex sx={{ flexWrap: "wrap" }}>
-                    <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
-                      Population deviation tolerance
-                    </legend>
-                    <Box
-                      id="description-districts"
-                      as="span"
-                      sx={{ ...style.cardHint, ...{ flex: "0 0 100%" } }}
-                    >
-                      How detailed of a map do you want to draw? Setting a lower tolerance means the
-                      population of your districts will need to be more exact. If you aren&apos;t
-                      sure, we think 5% is a good starting point.
-                    </Box>
-                    <Box sx={style.customInputContainer}>
-                      <InputField
-                        field="populationDeviation"
-                        label="Population deviation tolerance (%)"
-                        defaultValue={DEFAULT_POPULATION_DEVIATION}
-                        resource={createProjectResource}
-                        inputProps={{
-                          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                            const value = parseFloat(e.currentTarget.value);
-                            const populationDeviation = isNaN(value) ? null : value;
-                            populationDeviation !== null &&
-                              setCreateProjectResource({
-                                data: {
-                                  ...formData,
-                                  populationDeviation
-                                }
-                              });
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Flex>
-                </Card>
+                      </Flex>
+                    </Card>
+                  </React.Fragment>
+                )}
                 <Box sx={{ mt: 3, textAlign: "left" }}>
                   <Button
                     type="submit"
                     disabled={
-                      !validate(formData, importResource).valid &&
-                      !("errorMessage" in createProjectResource)
+                      ("isPending" in createProjectResource && createProjectResource.isPending) ||
+                      (!validate(formData, importResource, templateData, organization).valid &&
+                        !("errorMessage" in createProjectResource))
                     }
                   >
                     Create map
@@ -662,7 +772,9 @@ const ImportProjectScreen = ({ regionConfigs }: StateProps) => {
 
 function mapStateToProps(state: State): StateProps {
   return {
-    regionConfigs: state.regionConfig.regionConfigs
+    organization: state.organization,
+    regionConfigs: state.regionConfig.regionConfigs,
+    user: state.user
   };
 }
 

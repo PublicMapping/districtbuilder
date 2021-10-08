@@ -41,8 +41,21 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-09-02T18:57:17.123Z/',
                 DEFAULT,
                 TRUE,
-                DEFAULT
-              ), (
+                DEFAULT,
+                '2020'
+              ),
+              (
+                'e8f66491-4a6d-45a9-b606-7aabdf91fb76',
+                'Wisconsin',
+                'US',
+                'WI',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-08-13T01:25:55.432Z/',
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                '2020'
+              ),
+              (
                 '96bca832-99b3-4c4d-8913-ab4ca82ec442',
                 'Pennsylvania',
                 'US',
@@ -50,7 +63,8 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 's3://global-districtbuilder-dev-us-east-1/regions/US/PA/2020-09-09T19:03:58.174Z/',
                 DEFAULT,
                 DEFAULT,
-                DEFAULT
+                DEFAULT,
+                '2010'
               ), (
                 '6c440b8d-c26e-4bae-850f-dbff37fe0209',
                 'Illinois',
@@ -59,25 +73,28 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 's3://global-districtbuilder-dev-us-east-1/regions/US/IL/2021-06-04T15:05:37.089Z/',
                 DEFAULT,
                 DEFAULT,
-                DEFAULT
+                DEFAULT,
+                '2010'
               ), (
                 '852fa086-de7c-4edd-b666-004b6ff8dc6c',
                 'Delaware',
                 'US',
                 'DE',
                 's3://global-districtbuilder-dev-us-east-1/regions/US/DE/2020-09-09T19:50:10.921Z/',
-                DEFAULT,
-                DEFAULT,
-                TRUE
+                '2020-09-09 19:50:10.921',
+                TRUE,
+                TRUE,
+                '2010'
               ), (
                 '411c5908-2a83-40e9-863b-303931a1c119',
                 'Delaware',
                 'US',
                 'DE',
                 's3://global-districtbuilder-dev-us-east-1/regions/US/DE/2021-06-11T23:03:36.938Z/',
-                DEFAULT,
-                DEFAULT,
-                FALSE
+                '2021-06-11 23:03:36.938',
+                FALSE,
+                FALSE,
+                '2020'
              )
               ON CONFLICT DO NOTHING;
             "

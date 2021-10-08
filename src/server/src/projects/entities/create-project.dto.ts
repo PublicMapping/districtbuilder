@@ -28,7 +28,7 @@ export class CreateProjectDto implements CreateProjectData {
 
   @ValidateIf(o => o.projectTemplate?.id === undefined)
   @IsNotEmpty({ message: "Need to supply a region configuration" })
-  readonly regionConfig?: RegionConfigIdDto;
+  readonly regionConfig: RegionConfigIdDto;
 
   @IsArray()
   @ArrayNotEmpty()
