@@ -1,5 +1,5 @@
 import {
-  UintArray,
+  TypedArray,
   DemographicCounts,
   IStaticMetadata,
   IStaticFile,
@@ -12,7 +12,7 @@ import { CORE_METRIC_FIELDS, DEMOGRAPHIC_FIELDS_ORDER } from "./constants";
 // Helper for finding all indices in an array buffer matching a value.
 // Note: mutation is used, because the union type of array buffers proved
 // too difficult to line up types for reduce or map/filter.
-export function getAllIndices(arrayBuf: UintArray, vals: ReadonlySet<number>): readonly number[] {
+export function getAllIndices(arrayBuf: TypedArray, vals: ReadonlySet<number>): readonly number[] {
   // eslint-disable-next-line
   let indices: number[] = [];
   arrayBuf.forEach((el: number, ind: number) => {
@@ -27,7 +27,7 @@ export function getAllIndices(arrayBuf: UintArray, vals: ReadonlySet<number>): r
 
 // Recursively finds all base indices matching a set of values at a specified level
 export function getAllBaseIndices(
-  descGeoLevels: readonly UintArray[],
+  descGeoLevels: readonly TypedArray[],
   levelIndex: number,
   vals: readonly number[]
 ): readonly number[] {
@@ -45,7 +45,7 @@ export function getAllBaseIndices(
 export function getDemographics(
   baseIndices: readonly number[] | ReadonlySet<number>,
   staticMetadata: IStaticMetadata,
-  staticDemographics: readonly UintArray[]
+  staticDemographics: readonly TypedArray[]
 ): DemographicCounts {
   return getAggregatedCounts(
     baseIndices,
@@ -58,7 +58,7 @@ export function getDemographics(
 export function getVoting(
   baseIndices: readonly number[] | ReadonlySet<number>,
   staticMetadata: IStaticMetadata,
-  staticVoting: readonly UintArray[]
+  staticVoting: readonly TypedArray[]
 ): DemographicCounts {
   return staticMetadata.voting
     ? getAggregatedCounts(baseIndices, staticMetadata, staticVoting, staticMetadata.voting)
@@ -68,7 +68,7 @@ export function getVoting(
 export function getAggregatedCounts(
   baseIndices: readonly number[] | ReadonlySet<number>,
   staticMetadata: IStaticMetadata,
-  staticFiles: readonly UintArray[],
+  staticFiles: readonly TypedArray[],
   fileProperties: readonly IStaticFile[]
 ): DemographicCounts {
   // Aggregate numeric data for the IDs

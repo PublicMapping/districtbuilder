@@ -23,7 +23,7 @@ import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
 import {
-  UintArray,
+  TypedArray,
   GeoLevelInfo,
   GeoUnitDefinition,
   HierarchyDefinition,
@@ -495,15 +495,19 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Makes an appropriately-sized typed array containing the data
-  mkTypedArray(data: readonly number[]): UintArray {
-    // Can't use Math.max here, because it's a recursive function that will
-    // reach a maximum call stack when working with large arrays.
+  mkTypedArray(data: readonly number[], minVal: number): TypedArray {
     const maxVal = data.reduce((max, v) => (max >= v ? max : v), -Infinity);
-    return maxVal <= 255
-      ? new Uint8Array(data)
-      : maxVal <= 65535
-      ? new Uint16Array(data)
-      : new Uint32Array(data);
+    return minVal >= 0
+      ? maxVal <= 255
+        ? new Uint8Array(data)
+        : maxVal <= 65535
+        ? new Uint16Array(data)
+        : new Uint32Array(data)
+      : minVal >= -128 && maxVal < 128
+      ? new Int8Array(data)
+      : minVal >= -32768 && maxVal <= 32768
+      ? new Int16Array(data)
+      : new Int32Array(data);
   }
 
   // Create demographic or voting static data and write to disk
@@ -520,12 +524,15 @@ it when necessary (file sizes ~1GB+).
 
       // For demographic static data, we want an arraybuffer of base geounits where
       // each data element represents the demographic data contained in that geounit.
-      const data = this.mkTypedArray(features.map(f => f?.properties?.[id]));
-      writeFileSync(join(dir, fileName), data);
+      const data = features.map(f => f?.properties?.[id]);
+      const minVal = data.reduce((min, v) => (min <= v ? min : v), Infinity);
+      const typedData = this.mkTypedArray(data, minVal);
+      writeFileSync(join(dir, fileName), typedData);
       return {
         id,
         fileName,
-        bytesPerElement: data.BYTES_PER_ELEMENT
+        bytesPerElement: typedData.BYTES_PER_ELEMENT,
+        unsigned: minVal >= 0
       };
     });
   }
@@ -554,13 +561,15 @@ it when necessary (file sizes ~1GB+).
       const data = this.mkTypedArray(
         childFeatures.map(f => {
           return geoLevelIdToIndex.get(f?.properties?.[geoLevel]) || 0;
-        })
+        }),
+        0
       );
       writeFileSync(join(dir, fileName), data);
       return {
         id: geoLevel,
         fileName,
-        bytesPerElement: data.BYTES_PER_ELEMENT
+        bytesPerElement: data.BYTES_PER_ELEMENT,
+        unsigned: true
       };
     });
   }

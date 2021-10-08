@@ -20,7 +20,7 @@ import {
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
-  UintArrays,
+  TypedArrays,
   GeoUnits,
   IProject,
   IStaticMetadata,
@@ -210,7 +210,7 @@ interface Props {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticGeoLevels: UintArrays;
+  readonly staticGeoLevels: TypedArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
   readonly hoveredDistrictId: number | null;

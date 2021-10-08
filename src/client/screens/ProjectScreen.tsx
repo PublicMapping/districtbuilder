@@ -13,7 +13,7 @@ import {
   IStaticMetadata,
   RegionLookupProperties,
   IUser,
-  UintArrays,
+  TypedArrays,
   IReferenceLayer
 } from "../../shared/entities";
 import { ElectionYear, EvaluateMetricWithValue } from "../types";
@@ -52,7 +52,7 @@ interface StateProps {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
   readonly staticMetadata?: IStaticMetadata;
-  readonly staticGeoLevels: UintArrays;
+  readonly staticGeoLevels: TypedArrays;
   readonly projectNotFound?: boolean;
   readonly findMenuOpen: boolean;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;

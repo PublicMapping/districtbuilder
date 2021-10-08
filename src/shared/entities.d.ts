@@ -99,6 +99,7 @@ export interface IStaticFile {
   readonly id: string;
   readonly fileName: string;
   readonly bytesPerElement: number;
+  readonly unsigned?: boolean;
 }
 
 export interface GeoLevelInfo {
@@ -304,7 +305,9 @@ export type DistrictId = number;
 export type LockedDistricts = readonly boolean[];
 
 export type UintArray = Uint8Array | Uint16Array | Uint32Array;
-export type UintArrays = ReadonlyArray<UintArray>;
+export type IntArray = Int8Array | Int16Array | Int32Array;
+export type TypedArray = UintArray | IntArray;
+export type TypedArrays = ReadonlyArray<TypedArray>;
 export type RegionLookupProperties = Record<string, unknown>;
 
 export type DistrictImportField = "" | "BLOCKID" | "DISTRICT";

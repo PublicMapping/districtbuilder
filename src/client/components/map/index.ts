@@ -13,7 +13,7 @@ import {
   MutableGeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays
+  TypedArrays
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
 import { isBaseGeoLevelAlwaysVisible, getTargetPopulation } from "../../functions";
@@ -713,7 +713,7 @@ export function deselectChildGeounits(
   map: MapboxGL.Map,
   geoUnits: GeoUnits,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: UintArrays
+  staticGeoLevels: TypedArrays
 ) {
   const isBaseLevelAlwaysVisible = isBaseGeoLevelAlwaysVisible(staticMetadata.geoLevelHierarchy);
 
@@ -797,7 +797,7 @@ export function featuresToGeoUnits(
 export function getChildGeoUnits(
   geoUnitIndices: GeoUnitIndices,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: UintArrays
+  staticGeoLevels: TypedArrays
 ) {
   const childGeoLevelIdx = staticMetadata.geoLevelHierarchy.length - geoUnitIndices.length - 1;
   const childGeoLevel = staticMetadata.geoLevelHierarchy[childGeoLevelIdx];
@@ -824,7 +824,7 @@ export function onlyUnlockedGeoUnits(
   lockedDistricts: LockedDistricts,
   geoUnits: GeoUnits,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: UintArrays
+  staticGeoLevels: TypedArrays
 ): GeoUnits {
   const unlockedGeoUnits = cloneDeep(geoUnits) as MutableGeoUnits;
   removeLockedGeoUnits(
@@ -845,7 +845,7 @@ export function removeLockedGeoUnits(
   lockedDistricts: LockedDistricts,
   geoUnits: MutableGeoUnits,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: UintArrays
+  staticGeoLevels: TypedArrays
 ) {
   Object.entries(geoUnits).forEach(([geoLevel, geoUnitsForLevel]) => {
     geoUnitsForLevel.forEach((geoUnitIndices, featureId) => {
@@ -884,7 +884,7 @@ export function featuresToUnlockedGeoUnits(
   staticMetadata: IStaticMetadata,
   districtsDefinition: DistrictsDefinition,
   lockedDistricts: LockedDistricts,
-  staticGeoLevels: UintArrays
+  staticGeoLevels: TypedArrays
 ): GeoUnits {
   return onlyUnlockedGeoUnits(
     districtsDefinition,
