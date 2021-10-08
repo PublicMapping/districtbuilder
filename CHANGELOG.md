@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for demographic groups, to support VAP / CVAP fields [#1034](https://github.com/PublicMapping/districtbuilder/pull/1034)
 
 ### Changed
+- Don't require AWS credentials to load public S3 assets [#1036](https://github.com/PublicMapping/districtbuilder/pull/1036)
 
 ### Fixed
 - Fixed project import [#1029](https://github.com/PublicMapping/districtbuilder/pull/1029)
