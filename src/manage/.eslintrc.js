@@ -42,7 +42,6 @@ module.exports = {
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/restrict-template-expressions": "off",
       "functional/prefer-readonly-type": "off",
-      "functional/no-try-statement": "error",
 
       // TODO: turn these rules back on and fix the errors
       "@typescript-eslint/ban-types": "off",
