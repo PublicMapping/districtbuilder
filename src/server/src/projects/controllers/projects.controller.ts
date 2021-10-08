@@ -460,7 +460,7 @@ export class ProjectsController implements CrudController<Project> {
         )
       ),
       loadEagerRelations: false,
-      relations: ["regionConfig"]
+      relations: ["regionConfig", "projectTemplate"]
     });
     if (!project) {
       throw new NotFoundException(`Project ${id} not found`);
