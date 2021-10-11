@@ -101,8 +101,11 @@ export function getDemographicsMetricFields(staticMetadata: IStaticMetadata): Me
       ? []
       : [[file.id, getMetricFieldForDemographicsId(file.id)]]
   );
-  // Need to loosen up the types here
-  const order: readonly string[] = DEMOGRAPHIC_FIELDS_ORDER;
+  // If the configuration has demographic groups specified use that order, otherwise use the default ordering
+  const order: readonly string[] =
+    staticMetadata.demographicsGroups?.flatMap(g =>
+      g.total ? [g.total, ...g.subgroups] : g.subgroups
+    ) || DEMOGRAPHIC_FIELDS_ORDER;
   // eslint-disable-next-line functional/immutable-data
   data.sort(([a], [b]) => order.indexOf(a) - order.indexOf(b));
   return data;

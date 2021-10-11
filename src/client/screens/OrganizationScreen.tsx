@@ -152,16 +152,15 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
   const orgAdminUrl = `/o/${organizationSlug}/admin`;
   const history = useHistory();
 
-  function createProjectFromTemplate(data: CreateProjectData) {
-    void createProject(data).then((project: IProject) => history.push(`/projects/${project.id}`));
-  }
-
   function setupProjectFromTemplate(data: CreateProjectData) {
     if (userInOrg) {
-      createProjectFromTemplate(data);
+      return createProject(data).then((project: IProject) =>
+        history.push(`/projects/${project.id}`)
+      );
     } else {
       setProjectTemplateData(data);
       store.dispatch(showCopyMapModal(true));
+      return Promise.resolve(void 0);
     }
   }
 

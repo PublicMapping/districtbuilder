@@ -1,4 +1,4 @@
-import { ProjectVisibility, ReferenceLayerTypes, REGION_LABELS } from "./constants";
+import { ProjectVisibility, ReferenceLayerTypes } from "./constants";
 
 export type UserId = string;
 
@@ -11,7 +11,10 @@ export type PaginationMetadata = {
   readonly totalPages?: number;
 };
 
-export type OrganizationNest = Pick<IOrganization, "slug" | "id" | "name" | "logoUrl">;
+export type OrganizationNest = Pick<
+  IOrganization,
+  "slug" | "id" | "name" | "logoUrl" | "projectTemplates"
+>;
 
 export interface IUser {
   readonly id: UserId;
@@ -105,15 +108,19 @@ export interface GeoLevelInfo {
 }
 
 export type GeoLevelHierarchy = readonly GeoLevelInfo[];
-export type RegionLabels = Record<typeof REGION_LABELS[number], string>;
+export interface DemographicsGroup {
+  readonly subgroups: readonly string[];
+  readonly total?: string;
+  readonly tooltip?: string;
+}
 
 export interface IStaticMetadata {
   readonly demographics: readonly IStaticFile[];
   readonly geoLevels: readonly IStaticFile[];
   readonly voting?: readonly IStaticFile[];
+  readonly demographicsGroups?: readonly DemographicsGroup[];
   readonly bbox: readonly [number, number, number, number];
   readonly geoLevelHierarchy: GeoLevelHierarchy;
-  readonly labels?: RegionLabels;
 }
 
 export interface Login {
@@ -218,7 +225,7 @@ export type ProjectNest = Pick<
 export interface CreateProjectData {
   readonly name?: string;
   readonly numberOfDistricts?: number;
-  readonly regionConfig?: Pick<IRegionConfig, "id">;
+  readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;
   readonly populationDeviation?: number;

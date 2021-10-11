@@ -9,8 +9,7 @@ import {
   DemographicCounts,
   PaginationMetadata,
   IProject,
-  IReferenceLayer,
-  ProjectId
+  IReferenceLayer
 } from "../shared/entities";
 
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;

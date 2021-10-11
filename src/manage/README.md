@@ -21,7 +21,7 @@ $ npm install -g manage
 $ manage COMMAND
 running command...
 $ manage (-v|--version|version)
-manage/0.1.0 linux-x64 node-v12.20.1
+manage/0.1.0 linux-x64 node-v12.22.6
 $ manage --help [COMMAND]
 USAGE
   $ manage COMMAND
@@ -30,11 +30,67 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`manage bulk-reprocess-regions CONFIGFILE`](#manage-bulk-reprocess-regions-configfile)
+* [`manage create-random-projects NUMBER [REGION]`](#manage-create-random-projects-number-region)
 * [`manage help [COMMAND]`](#manage-help-command)
 * [`manage process-geojson FILE`](#manage-process-geojson-file)
 * [`manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME`](#manage-publish-region-staticdatadir-countrycode-regioncode-regionname)
 * [`manage update-organization CONFIG`](#manage-update-organization-config)
 * [`manage update-region STATICDATADIR UPDATES3DIR`](#manage-update-region-staticdatadir-updates3dir)
+
+## `manage bulk-reprocess-regions CONFIGFILE`
+
+use a configuration file to process and update many regions
+
+```
+USAGE
+  $ manage bulk-reprocess-regions CONFIGFILE
+
+ARGUMENTS
+  CONFIGFILE
+      Path to a configuration file containing information on how each region should be processed.
+
+      The configuration file should be a JSON file with the following format:
+      {
+         "US": {
+           "DE": {
+             "geojsonFile": "data/input/de.geojson",
+             "updateS3Dir": "s3://path/to/timestamped/data/files/like/US/DE/2021-09-23T18:43:42.300Z/",
+             "processGeojsonFlags": [
+               "-n",
+               "12,4,4",
+               "-x",
+               "12,12,12",
+               "-d",
+               "population,white,black,asian,hispanic,native:nativeAmerican,pacific:pacificIslander"
+             ]
+           }
+         }
+      }
+
+      Within each state, the parameters are as follows:
+      - geojsonFile: Behaves identically to the equivalent parameter to the process-geojson command
+      - updateS3Dir: Behaves identically to the equivalent parameter to the update-region command, and is also used as the 
+      --inputS3Dir to process-geojson.
+      - processGeojsonFlags: All flags that could be passed to the process-geojson command are valid EXCEPT --inputS3Dir; 
+      flags should be entered as an array of strings.
+
+OPTIONS
+  --dryRun  Dry run; only prints actions that would be taken.
+```
+
+## `manage create-random-projects NUMBER [REGION]`
+
+creates randomly generated projects for development testing
+
+```
+USAGE
+  $ manage create-random-projects NUMBER [REGION]
+
+ARGUMENTS
+  NUMBER  Number of projects to create
+  REGION  [default: all] Region code to create projects for, or 'all'. Defaults to 'all'
+```
 
 ## `manage help [COMMAND]`
 
@@ -66,6 +122,9 @@ OPTIONS
 
   -d, --demographics=demographics      [default: population,white,black,asian,hispanic,other] Comma-separated census
                                        demographics to select and aggregate
+                                       To use a different name for the property from the GeoJSON property,
+                                       separate values by ':'
+                                       e.g. -l pop:population,wht:white,blk:black
 
   -f, --filterPrefix=filterPrefix      Filter to only base geounits containing the specified prefix
 
@@ -85,6 +144,14 @@ OPTIONS
   -s, --simplification=simplification  [default: 0.0000000025] Topojson simplification amount (minWeight)
 
   -u, --inputS3Dir=inputS3Dir          S3 directory for the previous run if we will be updating in-place
+
+  -v, --labels=labels                  [default: election:presidential 2016] Comma-separated list of label key-value
+                                       pairs, separated by ':'
+
+  -v, --voting=voting                  Comma-separated election data to select and aggregate
+                                       To use a different name for the layer property from the GeoJSON property,
+                                       separate values by ':'
+                                       e.g. -v voterep:republican,votedem:democrat,voteoth:other
 
   -x, --levelMaxZoom=levelMaxZoom      [default: g,g,g] Comma-separated maximum zoom level per geolevel, must match # of
                                        levels

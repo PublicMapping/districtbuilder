@@ -4,7 +4,8 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
-  HttpCode
+  HttpCode,
+  Query
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import csvParse from "csv-parse";
@@ -13,7 +14,8 @@ import { Express } from "express";
 import {
   ImportRowFlag,
   DistrictsImportApiResponse,
-  DistrictImportField
+  DistrictImportField,
+  RegionConfigId
 } from "../../../../shared/entities";
 import { FIPS, MAX_IMPORT_ERRORS } from "../../../../shared/constants";
 import { TopologyService } from "../services/topology.service";
@@ -30,7 +32,10 @@ export class DistrictsController {
   @UseInterceptors(FileInterceptor("file"))
   @Post("import/csv")
   @HttpCode(200)
-  async importCsv(@UploadedFile() file: Express.Multer.File): Promise<DistrictsImportApiResponse> {
+  async importCsv(
+    @UploadedFile() file: Express.Multer.File,
+    @Query("regionConfigId") regionConfigId?: RegionConfigId
+  ): Promise<DistrictsImportApiResponse> {
     /* eslint-disable */
     const parser = csvParse(file.buffer, { fromLine: 2 });
     let records: [string, string][] = [];
@@ -59,11 +64,15 @@ export class DistrictsController {
     }
 
     const regionCode = FIPS[stateFips];
-    const regionConfig = await this.regionConfigService.findOne({
-      regionCode,
-      hidden: false,
-      archived: false
-    });
+    const regionConfig = await this.regionConfigService.findOne(
+      regionConfigId
+        ? { id: regionConfigId, archived: false }
+        : {
+            regionCode,
+            hidden: false,
+            archived: false
+          }
+    );
     const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
     if (!geoCollection) {
       throw new InternalServerErrorException();

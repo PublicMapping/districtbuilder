@@ -8,6 +8,8 @@ export const organizationFetchFailure = createAction("Organization fetch failure
   ResourceFailure
 >();
 
+export const organizationReset = createAction("Clear organization details")();
+
 export const exportProjects = createAction("Export organization projects CSV")<OrganizationSlug>();
 export const exportProjectsFailure = createAction("Export organization projects CSV failure")<
   string

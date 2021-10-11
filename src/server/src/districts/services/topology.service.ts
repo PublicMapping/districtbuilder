@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import S3, { GetObjectRequest } from "aws-sdk/clients/s3";
+import S3 from "aws-sdk/clients/s3";
 import { Topology } from "topojson-specification";
 import { Repository } from "typeorm";
 
@@ -9,13 +9,7 @@ import { RegionConfig } from "../../region-configs/entities/region-config.entity
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 import _ from "lodash";
-
-function s3Options(path: S3URI, fileName: string): GetObjectRequest {
-  const url = new URL(path);
-  const pathWithoutLeadingSlash = url.pathname.substring(1);
-  const options = { Bucket: url.hostname, Key: `${pathWithoutLeadingSlash}${fileName}` };
-  return options;
-}
+import { getObject, s3Options } from "../../common/s3-wrapper";
 
 interface Layers {
   [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | void>;
@@ -82,8 +76,8 @@ export class TopologyService {
   ): Promise<GeoUnitTopology | GeoUnitProperties | void> {
     try {
       const [topojsonResponse, staticMetadataResponse] = await Promise.all([
-        this.s3.getObject(s3Options(s3URI, "topo.json")).promise(),
-        this.s3.getObject(s3Options(s3URI, "static-metadata.json")).promise()
+        getObject(this.s3, s3Options(s3URI, "topo.json")),
+        getObject(this.s3, s3Options(s3URI, "static-metadata.json"))
       ]);
 
       const staticMetadataBody = staticMetadataResponse.Body?.toString("utf8");
@@ -125,9 +119,7 @@ export class TopologyService {
   }
 
   private async fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<UintArrays> {
-    const requests = files.map(fileMeta =>
-      this.s3.getObject(s3Options(path, fileMeta.fileName)).promise()
-    );
+    const requests = files.map(fileMeta => getObject(this.s3, s3Options(path, fileMeta.fileName)));
 
     return new Promise((resolve, reject) => {
       Promise.all(requests)
