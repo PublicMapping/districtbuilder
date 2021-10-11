@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The process-geojson, publish-region, and update-region commands now include the input file in the output [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
 
 ### Fixed
+
+## [1.10.1] - 2021-09-29
+### Fixed
 - Fixed project import [#1029](https://github.com/PublicMapping/districtbuilder/pull/1029)
 - Copy project template id when duplicating project [#1037](https://github.com/PublicMapping/districtbuilder/pull/1037)
 
@@ -345,7 +348,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.10.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.10.1...HEAD
+[1.10.1]: https://github.com/publicmapping/districtbuilder/compare/1.10.0...1.10.1
 [1.10.0]: https://github.com/publicmapping/districtbuilder/compare/1.9.0...1.10.0
 [1.9.0]: https://github.com/publicmapping/districtbuilder/compare/1.8.0...1.9.0
 [1.8.0]: https://github.com/publicmapping/districtbuilder/compare/1.7.2...1.8.0
