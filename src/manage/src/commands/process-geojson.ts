@@ -886,11 +886,11 @@ export function abbreviateNumber(value: number) {
   let shortValue = value.toPrecision(1);
   let suffixNum = 0;
 
-  if (value >= 10) {
-    suffixNum = Math.floor(Math.log10(value) / 3);
+  if (Math.abs(value) >= 10) {
+    suffixNum = Math.floor(Math.log10(Math.abs(value)) / 3);
     const abbrevNum = value / Math.pow(1000, suffixNum);
 
-    if (Math.log10(abbrevNum) >= 2) {
+    if (Math.log10(Math.abs(abbrevNum)) >= 2) {
       shortValue = abbrevNum.toPrecision(3);
     } else {
       shortValue = abbrevNum.toPrecision(2);
