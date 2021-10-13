@@ -28,7 +28,8 @@ import {
   GeoUnitDefinition,
   HierarchyDefinition,
   IStaticFile,
-  IStaticMetadata
+  IStaticMetadata,
+  DemographicsGroup
 } from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 
@@ -89,12 +90,19 @@ it when necessary (file sizes ~1GB+).
 
     demographics: flags.string({
       char: "d",
-      description: `Comma-separated census demographics to select and aggregate
+      description: `Comma-separated group of census demographics to select and aggregate
       To use a different name for the property from the GeoJSON property, separate values by ':'
-      e.g. -l pop:population,wht:white,blk:black
+      e.g. -d pop:population,wht:white,blk:black
+
+      The first value in the group will be used as population, and the remaining values will be displayed
+      as a percentage of that population.
+
+      To create multiple groups, use the -d option once per group.
+      e.g. -d population,white,black,asian,hispanic,other -d "VAP,VAP White, VAP Black, VAP Asian, VAP Hispanic, VAP Other" 
       `,
-      default: "population,white,black,asian,hispanic,other"
-    }),
+      default: "population,white,black,asian,hispanic,other",
+      multiple: true
+    } as const),
 
     voting: flags.string({
       char: "v",
@@ -155,7 +163,9 @@ it when necessary (file sizes ~1GB+).
     const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
-    const demographics = splitPairs(flags.demographics);
+    // Setting 'multiple: true' makes this return an array, but the inferred type didn't get the message
+    const demographicsFlags = (flags.demographics as unknown) as readonly string[];
+    const demographics = splitPairs(demographicsFlags.join(","));
     const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
     const quantization = parseFloat(flags.quantization);
@@ -280,7 +290,8 @@ it when necessary (file sizes ~1GB+).
       geoLevelMetaData,
       votingMetaData,
       bbox,
-      geoLevelHierarchyInfo
+      geoLevelHierarchyInfo,
+      this.getDemographicsGroups(demographicsFlags)
     );
   }
 
@@ -297,6 +308,15 @@ it when necessary (file sizes ~1GB+).
         }
       }
     }
+  }
+
+  getDemographicsGroups(demographicsFlags: readonly string[]): readonly DemographicsGroup[] {
+    return demographicsFlags.map(flags => {
+      const pairs = splitPairs(flags);
+      const ids = pairs.map(([prop, id]) => id);
+      const [total, ...subgroups] = ids;
+      return { total, subgroups };
+    });
   }
 
   // Generates a TopoJSON topology with aggregated hierarchical data
@@ -581,7 +601,8 @@ it when necessary (file sizes ~1GB+).
     geoLevelMetadata: IStaticFile[],
     votingMetadata: IStaticFile[],
     bbox: [number, number, number, number],
-    geoLevelHierarchy: GeoLevelInfo[]
+    geoLevelHierarchy: GeoLevelInfo[],
+    demographicsGroups: readonly DemographicsGroup[]
   ): void {
     this.log("Writing static metadata file");
     const staticMetadata: IStaticMetadata = {
@@ -589,7 +610,8 @@ it when necessary (file sizes ~1GB+).
       geoLevels: geoLevelMetadata,
       voting: votingMetadata,
       bbox,
-      geoLevelHierarchy
+      geoLevelHierarchy,
+      demographicsGroups
     };
 
     writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));
