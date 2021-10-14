@@ -45,7 +45,7 @@ const Row = ({
     <Styled.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
         style={{
-          width: `${percent}%`
+          width: percent ? `${Math.min(percent, 100)}%` : 0
         }}
         sx={{
           height: "10px",
@@ -71,10 +71,11 @@ const DemographicsTooltip = ({
   readonly abbreviate?: boolean;
 }) => {
   // Only showing hard-coded core metrics here for space reasons, so we can hard-code population as well
+  // To handle cases where adjustments have caused negative pop. use absolute values
   const percentages = mapValues(
     demographics,
     (population: number) =>
-      (demographics.population ? population / demographics.population : 0) * 100
+      (demographics.population ? population / Math.abs(demographics.population) : 0) * 100
   );
   const rows = DEMOGRAPHIC_FIELDS_ORDER.filter(
     race => percentages[race] !== undefined
