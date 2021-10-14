@@ -20,10 +20,10 @@ const DemographicsChart = ({
   readonly demographics: { readonly [id: string]: number };
 }) => {
   // Only showing hard-coded core metrics here for space reasons, so we can hard-code population as well
+  const total = Math.abs(demographics.population);
   const percentages = mapValues(
     demographics,
-    (population: number) =>
-      `${(demographics.population ? population / demographics.population : 0) * 100}%`
+    (population: number) => `${Math.min((total ? population / total : 0) * 100, 100)}%`
   );
   return (
     <Flex sx={{ flexDirection: "column", width: "40px", minHeight: "20px", flexShrink: 0 }}>

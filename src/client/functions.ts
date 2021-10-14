@@ -142,7 +142,7 @@ export function getPartyVoteShareDisplay(percent?: number): string {
 }
 
 export function computeDemographicSplit(demographic: number, total: number): string | undefined {
-  const percent = total > 0 ? (demographic / total) * 100 : undefined;
+  const percent = total !== 0 ? Math.abs(demographic / total) * 100 : undefined;
   return percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0";
 }
 

@@ -710,7 +710,7 @@ const SidebarRow = memo(
             <Tooltip
               placement="top-start"
               content={
-                demographics.population > 0 ? (
+                demographics.population !== 0 ? (
                   <DemographicsTooltip
                     demographics={demographics}
                     isMajorityMinority={isMajorityMinority(district)}
@@ -760,7 +760,7 @@ const SidebarRow = memo(
                   <Tooltip
                     placement="top-start"
                     content={
-                      demographics.population > 0 ? (
+                      demographics.population !== 0 ? (
                         <VotingSidebarTooltip voting={voting} />
                       ) : (
                         <em>
