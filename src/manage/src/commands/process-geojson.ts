@@ -45,6 +45,14 @@ function splitPairs(input: string): readonly [string, string][] {
         );
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays#typed_array_views
+const UINT8_MAX = 255;
+const UINT16_MAX = 65535;
+const INT8_MIN = -128;
+const INT8_MAX = 127;
+const INT16_MIN = -32768;
+const INT16_MAX = 32767;
+
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
 
@@ -518,14 +526,14 @@ it when necessary (file sizes ~1GB+).
   mkTypedArray(data: readonly number[], minVal: number): TypedArray {
     const maxVal = data.reduce((max, v) => (max >= v ? max : v), -Infinity);
     return minVal >= 0
-      ? maxVal <= 255
+      ? maxVal <= UINT8_MAX
         ? new Uint8Array(data)
-        : maxVal <= 65535
+        : maxVal <= UINT16_MAX
         ? new Uint16Array(data)
         : new Uint32Array(data)
-      : minVal >= -128 && maxVal < 128
+      : minVal >= INT8_MIN && maxVal <= INT8_MAX
       ? new Int8Array(data)
-      : minVal >= -32768 && maxVal <= 32768
+      : minVal >= INT16_MIN && maxVal <= INT16_MAX
       ? new Int16Array(data)
       : new Int32Array(data);
   }
