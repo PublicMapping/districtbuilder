@@ -206,6 +206,7 @@ const MapTooltip = ({
         : data.voting && Object.keys(data.voting).length > 0
         ? data.voting
         : undefined;
+    const hasNegativePopulation = data.demographics.population < 0;
 
     return (
       <Box
@@ -239,6 +240,7 @@ const MapTooltip = ({
             }}
           >
             {Number(data.demographics.population).toLocaleString()}
+            {hasNegativePopulation && "*"}
           </Box>
         </Grid>
         <Divider sx={{ my: 1, borderColor: "gray.6" }} />
@@ -248,6 +250,12 @@ const MapTooltip = ({
             <React.Fragment>
               <Divider sx={{ my: 1, borderColor: "gray.6" }} />
               <VotingMapTooltip voting={voting} />
+            </React.Fragment>
+          )}
+          {hasNegativePopulation && (
+            <React.Fragment>
+              <Divider sx={{ my: 1, borderColor: "gray.6" }} />
+              <Box>* population reallocated</Box>
             </React.Fragment>
           )}
         </Box>
