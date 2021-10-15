@@ -110,7 +110,7 @@ const MajorityRaceMetricDetail = ({
                     <Tooltip
                       placement="top-start"
                       content={
-                        feature.properties.demographics.population > 0 ? (
+                        feature.properties.demographics.population !== 0 ? (
                           <DemographicsTooltip
                             demographics={feature.properties.demographics}
                             isMajorityMinority={isMajorityMinority(feature)}

@@ -550,7 +550,7 @@ const DistrictsMap = ({
 
       // eslint-disable-next-line functional/immutable-data
       feature.properties.percentDeviation =
-        feature.properties.demographics.population > 0 && feature.id !== 0
+        feature.properties.demographics.population !== 0 && feature.id !== 0
           ? populationDeviation / avgPopulation
           : undefined;
       const electionYear =
@@ -566,10 +566,7 @@ const DistrictsMap = ({
 
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
-      if (
-        feature.properties.demographics.population &&
-        feature.properties.demographics.population > 0
-      ) {
+      if (feature.properties.demographics.population !== 0) {
         // If specified, use first demographic group to determine which fields are "race" fields
         // If not specified, use set of fields allowed in tooltip / chart
         const coreGroup =
