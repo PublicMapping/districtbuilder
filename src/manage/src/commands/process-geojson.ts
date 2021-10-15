@@ -927,8 +927,8 @@ export function abbreviateNumber(value: number) {
 
     // Account for case where result would be off due to rounding from `toPrecision` (eg. "1000k")
     // by moving up to the next thousands place.
-    if (Number(shortValue) === 1000) {
-      shortValue = "1";
+    if (Math.abs(Number(shortValue)) === 1000) {
+      shortValue = (Number(shortValue) / 1000).toString();
       suffixNum += 1;
     }
   }
