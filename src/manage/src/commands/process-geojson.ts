@@ -524,6 +524,8 @@ it when necessary (file sizes ~1GB+).
 
   // Makes an appropriately-sized typed array containing the data
   mkTypedArray(data: readonly number[], minVal: number): TypedArray {
+    // Can't use Math.max here, because it's a recursive function that will
+    // reach a maximum call stack when working with large arrays.
     const maxVal = data.reduce((max, v) => (max >= v ? max : v), -Infinity);
     return minVal >= 0
       ? maxVal <= UINT8_MAX
@@ -553,6 +555,7 @@ it when necessary (file sizes ~1GB+).
       // For demographic static data, we want an arraybuffer of base geounits where
       // each data element represents the demographic data contained in that geounit.
       const data = features.map(f => f?.properties?.[id]);
+      // Can't use Math.min w/ these large array buffers
       const minVal = data.reduce((min, v) => (min <= v ? min : v), Infinity);
       const typedData = this.mkTypedArray(data, minVal);
       writeFileSync(join(dir, fileName), typedData);
