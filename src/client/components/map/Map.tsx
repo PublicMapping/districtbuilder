@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import { maxBy } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, Flex, Text, jsx, ThemeUIStyleObject, Styled } from "theme-ui";
 import bbox from "@turf/bbox";
@@ -576,24 +577,29 @@ const DistrictsMap = ({
         const demographics =
           coreGroup?.subgroups ||
           DEMOGRAPHIC_FIELDS_ORDER.filter(id => id in feature.properties.demographics);
-        demographics.forEach(demographicKey => {
-          const popSplit =
+        const percents = demographics.map(demographicKey => {
+          const popSplit = Math.abs(
             feature.properties.demographics[demographicKey] /
-            feature.properties.demographics.population;
-          if (popSplit > 0.5) {
-            // eslint-disable-next-line
-            feature.properties.majorityRace = demographicKey;
-            // eslint-disable-next-line
-            feature.properties.majorityRaceSplit = popSplit;
-          }
+              feature.properties.demographics.population
+          );
+          return { demographicKey, popSplit };
         });
-        if (!feature.properties.majorityRace) {
+        const majorityRace = maxBy(
+          percents.filter(({ popSplit }) => popSplit > 0.5),
+          ({ popSplit }) => popSplit
+        );
+        if (!majorityRace) {
           // eslint-disable-next-line
           feature.properties.majorityRace = "minority coalition";
           const whiteSplit =
             feature.properties.demographics.white / feature.properties.demographics.population;
           // eslint-disable-next-line
           feature.properties.majorityRaceSplit = 1 - whiteSplit;
+        } else {
+          // eslint-disable-next-line
+          feature.properties.majorityRace = majorityRace.demographicKey;
+          // eslint-disable-next-line
+          feature.properties.majorityRaceSplit = majorityRace.popSplit;
         }
         // eslint-disable-next-line
         feature.properties.majorityRaceFill =
