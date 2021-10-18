@@ -15,9 +15,8 @@ import { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import JsonStreamStringify from "json-stream-stringify";
 import groupBy from "lodash/groupBy";
-import isEqual from "lodash/isEqual";
 import mapValues from "lodash/mapValues";
-import { join, basename } from "path";
+import { join } from "path";
 import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
@@ -523,10 +522,11 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Makes an appropriately-sized typed array containing the data
-  mkTypedArray(data: readonly number[], minVal: number): TypedArray {
-    // Can't use Math.max here, because it's a recursive function that will
+  mkTypedArray(data: readonly number[]): TypedArray {
+    // Can't use Math.max / Math.min here, because it's a recursive function that will
     // reach a maximum call stack when working with large arrays.
     const maxVal = data.reduce((max, v) => (max >= v ? max : v), -Infinity);
+    const minVal = data.reduce((min, v) => (min <= v ? min : v), Infinity);
     return minVal >= 0
       ? maxVal <= UINT8_MAX
         ? new Uint8Array(data)
@@ -555,15 +555,16 @@ it when necessary (file sizes ~1GB+).
       // For demographic static data, we want an arraybuffer of base geounits where
       // each data element represents the demographic data contained in that geounit.
       const data = features.map(f => f?.properties?.[id]);
-      // Can't use Math.min w/ these large array buffers
-      const minVal = data.reduce((min, v) => (min <= v ? min : v), Infinity);
-      const typedData = this.mkTypedArray(data, minVal);
+      const typedData = this.mkTypedArray(data);
       writeFileSync(join(dir, fileName), typedData);
       return {
         id,
         fileName,
         bytesPerElement: typedData.BYTES_PER_ELEMENT,
-        unsigned: minVal >= 0
+        unsigned:
+          typedData instanceof Uint8Array ||
+          typedData instanceof Uint16Array ||
+          typedData instanceof Uint32Array
       };
     });
   }
@@ -592,8 +593,7 @@ it when necessary (file sizes ~1GB+).
       const data = this.mkTypedArray(
         childFeatures.map(f => {
           return geoLevelIdToIndex.get(f?.properties?.[geoLevel]) || 0;
-        }),
-        0
+        })
       );
       writeFileSync(join(dir, fileName), data);
       return {
