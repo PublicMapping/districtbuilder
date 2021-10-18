@@ -31,7 +31,7 @@ describe("process geojson", () => {
     expect(abbreviateNumber(1000000000000)).toEqual("1t");
   });
 
-  it("should abbreviate negative numbers numbers", () => {
+  it("should abbreviate negative numbers", () => {
     expect(abbreviateNumber(-5)).toEqual("-5");
     expect(abbreviateNumber(-10)).toEqual("-10");
     expect(abbreviateNumber(-99)).toEqual("-99");
