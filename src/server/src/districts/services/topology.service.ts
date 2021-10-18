@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import S3 from "aws-sdk/clients/s3";
+import { spawn } from "child_process";
 import { cpus } from "os";
 import { Topology } from "topojson-specification";
 import { Repository } from "typeorm";
@@ -13,6 +14,7 @@ import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 import _ from "lodash";
 import { getObject, s3Options } from "../../common/s3-wrapper";
 
+const MAX_RETRIES = 5;
 const BATCH_SIZE = cpus().length;
 // 10 largest states by population
 const STATE_ORDER = ["CA", "TX", "FL", "NY", "PA", "IL", "OH", "GA", "NC", "MI"];
@@ -153,7 +155,15 @@ export class TopologyService {
       this.logger.error(
         `Failed to load topology for '${s3URI}' ${numRetries + 1} times, err ${err}`
       );
-      return this.fetchLayer(s3URI, archived, numRetries + 1);
+      if (numRetries < MAX_RETRIES) {
+        return this.fetchLayer(s3URI, archived, numRetries + 1);
+      } else {
+        // Nest spawns multiple processes, so to shutdown the main container process we need to
+        // kill all running node instances
+        spawn("pkill", ["node"]).once("exit", () => {
+          process.exit(1);
+        });
+      }
     }
   }
 
