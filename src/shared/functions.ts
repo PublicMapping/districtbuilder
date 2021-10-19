@@ -5,7 +5,8 @@ import {
   IStaticFile,
   MetricsList,
   VotingMetricsList,
-  VotingMetricField
+  VotingMetricField,
+  DemographicsGroup
 } from "../shared/entities";
 import { CORE_METRIC_FIELDS, DEMOGRAPHIC_FIELDS_ORDER } from "./constants";
 
@@ -135,4 +136,15 @@ export function getVotingMetricFields(staticMetadata: IStaticMetadata): VotingMe
   // eslint-disable-next-line functional/immutable-data
   data.sort(([, a], [, b]) => order.indexOf(a) - order.indexOf(b));
   return data;
+}
+
+export function getDemographicsGroups(
+  staticMetadata: IStaticMetadata
+): readonly DemographicsGroup[] {
+  const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
+  return (
+    staticMetadata.demographicsGroups || [
+      { total: "population", subgroups: demographicsMetricFields?.map(([id]) => id) || [] }
+    ]
+  );
 }

@@ -21,6 +21,7 @@ import DemographicsTooltip from "../DemographicsTooltip";
 import VotingMapTooltip from "../VotingMapTooltip";
 import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 import { getLabel } from "./labels";
+import { getDemographicsGroups } from "../../../shared/functions";
 
 const style: ThemeUIStyleObject = {
   tooltip: {
@@ -206,7 +207,13 @@ const MapTooltip = ({
         : data.voting && Object.keys(data.voting).length > 0
         ? data.voting
         : undefined;
-    const hasNegativePopulation = data.demographics.population < 0;
+    const demographicsGroups = staticMetadata && getDemographicsGroups(staticMetadata);
+    const hasAdjustedPopulation =
+      data.demographics.population < 0 ||
+      (demographicsGroups &&
+        demographicsGroups[0].subgroups.some(
+          id => data.demographics[id] > data.demographics.population
+        ));
 
     return (
       <Box
@@ -240,7 +247,7 @@ const MapTooltip = ({
             }}
           >
             {Number(data.demographics.population).toLocaleString()}
-            {hasNegativePopulation && "*"}
+            {hasAdjustedPopulation && "*"}
           </Box>
         </Grid>
         <Divider sx={{ my: 1, borderColor: "gray.6" }} />
@@ -252,7 +259,7 @@ const MapTooltip = ({
               <VotingMapTooltip voting={voting} />
             </React.Fragment>
           )}
-          {hasNegativePopulation && (
+          {hasAdjustedPopulation && (
             <React.Fragment>
               <Divider sx={{ my: 1, borderColor: "gray.6" }} />
               <Box>* population reallocated</Box>

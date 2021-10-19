@@ -60,7 +60,11 @@ import Tooltip from "./Tooltip";
 import PVIDisplay from "./PVIDisplay";
 import ProjectReferenceLayers from "./ProjectReferenceLayers";
 import { Resource } from "../resource";
-import { getVotingMetricFields, getDemographicsMetricFields } from "../../shared/functions";
+import {
+  getVotingMetricFields,
+  getDemographicsMetricFields,
+  getDemographicsGroups
+} from "../../shared/functions";
 import { CORE_METRIC_FIELDS } from "../../shared/constants";
 
 interface LoadingProps {
@@ -305,9 +309,9 @@ const ProjectSidebar = ({
 
   const demographicsMetricFields = staticMetadata && getDemographicsMetricFields(staticMetadata);
 
-  const demographicsGroups: readonly DemographicsGroup[] = staticMetadata?.demographicsGroups || [
-    { total: "population", subgroups: demographicsMetricFields?.map(([id]) => id) || [] }
-  ];
+  const demographicsGroups: readonly DemographicsGroup[] = staticMetadata
+    ? getDemographicsGroups(staticMetadata)
+    : [];
 
   const demographicHeaders: readonly MetricHeader[] =
     (demographicsMetricFields &&
