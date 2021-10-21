@@ -6,6 +6,7 @@ services:
       - JWT_AUTH_TOKEN
       - HAR_FILE
       - REQ_ORIGIN
+      - PROJECT_UUIDS
     volumes:
       - ./:/scripts
     command: run /scripts/harness.js

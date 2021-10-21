@@ -46,6 +46,46 @@ export function setup() {
       requests[batchTime] = [];
     }
 
+    if (!__ENV.PROJECT_UUIDS) {
+      requests[batchTime].push([
+        entry.request.method,
+        url,
+        entry.request.postData ? entry.request.postData.text : null,
+        {
+          headers: {
+            // Specifically, for POST requests
+            "Content-Type": "application/json",
+            authorization,
+            // Without this referer, CloudFront will throw a 401
+            referer
+          }
+        }
+      ]);
+    } else {
+      __ENV.PROJECT_UUIDS.split(" ").forEach(uuid => {
+        requests[batchTime].push([
+          entry.request.method,
+          url.replace(
+            /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/i,
+            uuid
+          ),
+          entry.request.postData ? entry.request.postData.text : null,
+          {
+            headers: {
+              // Specifically, for POST requests
+              "Content-Type": "application/json",
+              authorization,
+              // Without this referer, CloudFront will throw a 401
+              referer: refer.replace(
+                /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/i,
+                uuid
+              )
+            }
+          }
+        ]);
+      });
+    }
+  });
 
   healthcheckHar?.log.entries.forEach(entry => {
     const startedDateTime = new Date(entry.startedDateTime);
