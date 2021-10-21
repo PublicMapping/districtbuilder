@@ -12,17 +12,11 @@ export const options = {
 };
 
 const har = JSON.parse(open(`./${__ENV.HAR_FILE}`));
-const healthcheckHar = __ENV.HEALTHCHECK_HAR_FILE
-  ? JSON.parse(open(`./${__ENV.HAR_FILE}`))
-  : undefined;
 
 export function setup() {
   const requests = {};
 
   har.log.entries.forEach(entry => {
-    const startedDateTime = new Date(entry.startedDateTime);
-    startedDateTime.setMilliseconds(0);
-
     const url = entry.request.url.replace(
       /(http|https):\/\/([^\/]+)\//,
       __ENV.REQ_ORIGIN ? `${__ENV.REQ_ORIGIN}/` : "$1://$2/"
@@ -35,11 +29,14 @@ export function setup() {
         __ENV.REQ_ORIGIN ? `${__ENV.REQ_ORIGIN}/` : "$1://$2/"
       );
 
-    const authorization = entry.request.headers
-      .find(header => header.name === "Authorization")
-      .value.replace(/^Bearer .*$/, `Bearer ${__ENV.JWT_AUTH_TOKEN}`);
+    const authHeader = entry.request.headers.find(header => header.name === "Authorization");
+    const authorization = authHeader
+      ? authHeader.value.replace(/^Bearer .*$/, `Bearer ${__ENV.JWT_AUTH_TOKEN}`)
+      : undefined;
 
     // We want to batch requests that occured within the same second
+    const startedDateTime = new Date(entry.startedDateTime);
+    startedDateTime.setMilliseconds(0);
     const batchTime = startedDateTime.getTime();
 
     if (!requests.hasOwnProperty(batchTime)) {
@@ -76,7 +73,7 @@ export function setup() {
               "Content-Type": "application/json",
               authorization,
               // Without this referer, CloudFront will throw a 401
-              referer: refer.replace(
+              referer: referer.replace(
                 /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/i,
                 uuid
               )
@@ -85,40 +82,6 @@ export function setup() {
         ]);
       });
     }
-  });
-
-  healthcheckHar?.log.entries.forEach(entry => {
-    const startedDateTime = new Date(entry.startedDateTime);
-
-    const url = entry.request.url.replace(
-      /:\/\/([^\/]+)\//,
-      __ENV.REQ_HOSTNAME ? `://${__ENV.REQ_HOSTNAME}/` : "://$1/"
-    );
-
-    const referer = entry.request.headers
-      .find(header => header.name === "Referer")
-      .value.replace(
-        /:\/\/([^\/]+)\//,
-        __ENV.REQ_HOSTNAME ? `://${__ENV.REQ_HOSTNAME}/` : "://$1/"
-      );
-
-    // We want to batch requests that occured within the same second
-    const batchTime = startedDateTime.getTime();
-
-    if (!requests.hasOwnProperty(batchTime)) {
-      requests[batchTime] = [];
-    }
-
-    requests[batchTime].push([
-      entry.request.method,
-      url,
-      {
-        headers: {
-          // Without this referer, CloudFront will throw a 401
-          referer
-        }
-      }
-    ]);
   });
 
   // Sort requests in ascending order
