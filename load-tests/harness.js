@@ -8,7 +8,10 @@ export const options = {
   vus: 1,
   iterations: 1,
   discardResponseBodies: true,
-  maxRedirects: 0
+  maxRedirects: 0,
+  thresholds: {
+    checks: [{ threshold: "rate==1", abortOnFail: true }]
+  }
 };
 
 const har = JSON.parse(open(`./${__ENV.HAR_FILE}`));
