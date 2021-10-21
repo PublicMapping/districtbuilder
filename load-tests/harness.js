@@ -12,6 +12,9 @@ export const options = {
 };
 
 const har = JSON.parse(open(`./${__ENV.HAR_FILE}`));
+const healthcheckHar = __ENV.HEALTHCHECK_HAR_FILE
+  ? JSON.parse(open(`./${__ENV.HAR_FILE}`))
+  : undefined;
 
 export function setup() {
   const requests = {};
@@ -43,15 +46,34 @@ export function setup() {
       requests[batchTime] = [];
     }
 
+
+  healthcheckHar?.log.entries.forEach(entry => {
+    const startedDateTime = new Date(entry.startedDateTime);
+
+    const url = entry.request.url.replace(
+      /:\/\/([^\/]+)\//,
+      __ENV.REQ_HOSTNAME ? `://${__ENV.REQ_HOSTNAME}/` : "://$1/"
+    );
+
+    const referer = entry.request.headers
+      .find(header => header.name === "Referer")
+      .value.replace(
+        /:\/\/([^\/]+)\//,
+        __ENV.REQ_HOSTNAME ? `://${__ENV.REQ_HOSTNAME}/` : "://$1/"
+      );
+
+    // We want to batch requests that occured within the same second
+    const batchTime = startedDateTime.getTime();
+
+    if (!requests.hasOwnProperty(batchTime)) {
+      requests[batchTime] = [];
+    }
+
     requests[batchTime].push([
       entry.request.method,
       url,
-      entry.request.postData ? entry.request.postData.text : null,
       {
         headers: {
-          // Specifically, for POST requests
-          "Content-Type": "application/json",
-          authorization,
           // Without this referer, CloudFront will throw a 401
           referer
         }
