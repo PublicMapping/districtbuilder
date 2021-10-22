@@ -15,20 +15,20 @@ import { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { parse } from "JSONStream";
 import JsonStreamStringify from "json-stream-stringify";
 import groupBy from "lodash/groupBy";
-import isEqual from "lodash/isEqual";
 import mapValues from "lodash/mapValues";
-import { join, basename } from "path";
+import { join } from "path";
 import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
 import {
-  UintArray,
+  TypedArray,
   GeoLevelInfo,
   GeoUnitDefinition,
   HierarchyDefinition,
   IStaticFile,
-  IStaticMetadata
+  IStaticMetadata,
+  DemographicsGroup
 } from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
 
@@ -43,6 +43,14 @@ function splitPairs(input: string): readonly [string, string][] {
           item.includes(":") ? (item.split(":", 2) as [string, string]) : [item, item]
         );
 }
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays#typed_array_views
+const UINT8_MAX = 255;
+const UINT16_MAX = 65535;
+const INT8_MIN = -128;
+const INT8_MAX = 127;
+const INT16_MIN = -32768;
+const INT16_MAX = 32767;
 
 export default class ProcessGeojson extends Command {
   static description = `process GeoJSON into desired output files
@@ -89,12 +97,19 @@ it when necessary (file sizes ~1GB+).
 
     demographics: flags.string({
       char: "d",
-      description: `Comma-separated census demographics to select and aggregate
+      description: `Comma-separated group of census demographics to select and aggregate
       To use a different name for the property from the GeoJSON property, separate values by ':'
-      e.g. -l pop:population,wht:white,blk:black
+      e.g. -d pop:population,wht:white,blk:black
+
+      The first value in the group will be used as population, and the remaining values will be displayed
+      as a percentage of that population.
+
+      To create multiple groups, use the -d option once per group.
+      e.g. -d population,white,black,asian,hispanic,other -d "VAP,VAP White, VAP Black, VAP Asian, VAP Hispanic, VAP Other" 
       `,
-      default: "population,white,black,asian,hispanic,other"
-    }),
+      default: "population,white,black,asian,hispanic,other",
+      multiple: true
+    } as const),
 
     voting: flags.string({
       char: "v",
@@ -155,7 +170,9 @@ it when necessary (file sizes ~1GB+).
     const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
-    const demographics = splitPairs(flags.demographics);
+    // Setting 'multiple: true' makes this return an array, but the inferred type didn't get the message
+    const demographicsFlags = (flags.demographics as unknown) as readonly string[];
+    const demographics = splitPairs(demographicsFlags.join(","));
     const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
     const quantization = parseFloat(flags.quantization);
@@ -280,7 +297,8 @@ it when necessary (file sizes ~1GB+).
       geoLevelMetaData,
       votingMetaData,
       bbox,
-      geoLevelHierarchyInfo
+      geoLevelHierarchyInfo,
+      this.getDemographicsGroups(demographicsFlags)
     );
   }
 
@@ -297,6 +315,15 @@ it when necessary (file sizes ~1GB+).
         }
       }
     }
+  }
+
+  getDemographicsGroups(demographicsFlags: readonly string[]): readonly DemographicsGroup[] {
+    return demographicsFlags.map(flags => {
+      const pairs = splitPairs(flags);
+      const ids = pairs.map(([prop, id]) => id);
+      const [total, ...subgroups] = ids;
+      return { total, subgroups };
+    });
   }
 
   // Generates a TopoJSON topology with aggregated hierarchical data
@@ -495,15 +522,22 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Makes an appropriately-sized typed array containing the data
-  mkTypedArray(data: readonly number[]): UintArray {
-    // Can't use Math.max here, because it's a recursive function that will
+  mkTypedArray(data: readonly number[]): TypedArray {
+    // Can't use Math.max / Math.min here, because it's a recursive function that will
     // reach a maximum call stack when working with large arrays.
     const maxVal = data.reduce((max, v) => (max >= v ? max : v), -Infinity);
-    return maxVal <= 255
-      ? new Uint8Array(data)
-      : maxVal <= 65535
-      ? new Uint16Array(data)
-      : new Uint32Array(data);
+    const minVal = data.reduce((min, v) => (min <= v ? min : v), Infinity);
+    return minVal >= 0
+      ? maxVal <= UINT8_MAX
+        ? new Uint8Array(data)
+        : maxVal <= UINT16_MAX
+        ? new Uint16Array(data)
+        : new Uint32Array(data)
+      : minVal >= INT8_MIN && maxVal <= INT8_MAX
+      ? new Int8Array(data)
+      : minVal >= INT16_MIN && maxVal <= INT16_MAX
+      ? new Int16Array(data)
+      : new Int32Array(data);
   }
 
   // Create demographic or voting static data and write to disk
@@ -520,12 +554,17 @@ it when necessary (file sizes ~1GB+).
 
       // For demographic static data, we want an arraybuffer of base geounits where
       // each data element represents the demographic data contained in that geounit.
-      const data = this.mkTypedArray(features.map(f => f?.properties?.[id]));
-      writeFileSync(join(dir, fileName), data);
+      const data = features.map(f => f?.properties?.[id]);
+      const typedData = this.mkTypedArray(data);
+      writeFileSync(join(dir, fileName), typedData);
       return {
         id,
         fileName,
-        bytesPerElement: data.BYTES_PER_ELEMENT
+        bytesPerElement: typedData.BYTES_PER_ELEMENT,
+        unsigned:
+          typedData instanceof Uint8Array ||
+          typedData instanceof Uint16Array ||
+          typedData instanceof Uint32Array
       };
     });
   }
@@ -560,7 +599,8 @@ it when necessary (file sizes ~1GB+).
       return {
         id: geoLevel,
         fileName,
-        bytesPerElement: data.BYTES_PER_ELEMENT
+        bytesPerElement: data.BYTES_PER_ELEMENT,
+        unsigned: true
       };
     });
   }
@@ -572,7 +612,8 @@ it when necessary (file sizes ~1GB+).
     geoLevelMetadata: IStaticFile[],
     votingMetadata: IStaticFile[],
     bbox: [number, number, number, number],
-    geoLevelHierarchy: GeoLevelInfo[]
+    geoLevelHierarchy: GeoLevelInfo[],
+    demographicsGroups: readonly DemographicsGroup[]
   ): void {
     this.log("Writing static metadata file");
     const staticMetadata: IStaticMetadata = {
@@ -580,7 +621,8 @@ it when necessary (file sizes ~1GB+).
       geoLevels: geoLevelMetadata,
       voting: votingMetadata,
       bbox,
-      geoLevelHierarchy
+      geoLevelHierarchy,
+      demographicsGroups
     };
 
     writeFileSync(join(dir, "static-metadata.json"), JSON.stringify(staticMetadata));
@@ -877,11 +919,11 @@ export function abbreviateNumber(value: number) {
   let shortValue = value.toPrecision(1);
   let suffixNum = 0;
 
-  if (value >= 10) {
-    suffixNum = Math.floor(Math.log10(value) / 3);
+  if (Math.abs(value) >= 10) {
+    suffixNum = Math.floor(Math.log10(Math.abs(value)) / 3);
     const abbrevNum = value / Math.pow(1000, suffixNum);
 
-    if (Math.log10(abbrevNum) >= 2) {
+    if (Math.log10(Math.abs(abbrevNum)) >= 2) {
       shortValue = abbrevNum.toPrecision(3);
     } else {
       shortValue = abbrevNum.toPrecision(2);
@@ -896,8 +938,8 @@ export function abbreviateNumber(value: number) {
 
     // Account for case where result would be off due to rounding from `toPrecision` (eg. "1000k")
     // by moving up to the next thousands place.
-    if (Number(shortValue) === 1000) {
-      shortValue = "1";
+    if (Math.abs(Number(shortValue)) === 1000) {
+      shortValue = (Number(shortValue) / 1000).toString();
       suffixNum += 1;
     }
   }

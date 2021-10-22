@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import { maxBy } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, Flex, Text, jsx, ThemeUIStyleObject, Styled } from "theme-ui";
 import bbox from "@turf/bbox";
@@ -20,7 +21,7 @@ import {
 } from "../../actions/districtDrawing";
 import { getDistrictColor } from "../../constants/colors";
 import {
-  UintArrays,
+  TypedArrays,
   GeoUnits,
   IProject,
   IStaticMetadata,
@@ -210,7 +211,7 @@ interface Props {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;
   readonly staticMetadata: IStaticMetadata;
-  readonly staticGeoLevels: UintArrays;
+  readonly staticGeoLevels: TypedArrays;
   readonly selectedGeounits: GeoUnits;
   readonly selectedDistrictId: number;
   readonly hoveredDistrictId: number | null;
@@ -550,7 +551,7 @@ const DistrictsMap = ({
 
       // eslint-disable-next-line functional/immutable-data
       feature.properties.percentDeviation =
-        feature.properties.demographics.population > 0 && feature.id !== 0
+        feature.properties.demographics.population !== 0 && feature.id !== 0
           ? populationDeviation / avgPopulation
           : undefined;
       const electionYear =
@@ -566,10 +567,7 @@ const DistrictsMap = ({
 
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
-      if (
-        feature.properties.demographics.population &&
-        feature.properties.demographics.population > 0
-      ) {
+      if (feature.properties.demographics.population !== 0) {
         // If specified, use first demographic group to determine which fields are "race" fields
         // If not specified, use set of fields allowed in tooltip / chart
         const coreGroup =
@@ -579,24 +577,29 @@ const DistrictsMap = ({
         const demographics =
           coreGroup?.subgroups ||
           DEMOGRAPHIC_FIELDS_ORDER.filter(id => id in feature.properties.demographics);
-        demographics.forEach(demographicKey => {
-          const popSplit =
+        const percents = demographics.map(demographicKey => {
+          const popSplit = Math.abs(
             feature.properties.demographics[demographicKey] /
-            feature.properties.demographics.population;
-          if (popSplit > 0.5) {
-            // eslint-disable-next-line
-            feature.properties.majorityRace = demographicKey;
-            // eslint-disable-next-line
-            feature.properties.majorityRaceSplit = popSplit;
-          }
+              feature.properties.demographics.population
+          );
+          return { demographicKey, popSplit };
         });
-        if (!feature.properties.majorityRace) {
+        const majorityRace = maxBy(
+          percents.filter(({ popSplit }) => popSplit > 0.5),
+          ({ popSplit }) => popSplit
+        );
+        if (!majorityRace) {
           // eslint-disable-next-line
           feature.properties.majorityRace = "minority coalition";
           const whiteSplit =
             feature.properties.demographics.white / feature.properties.demographics.population;
           // eslint-disable-next-line
           feature.properties.majorityRaceSplit = 1 - whiteSplit;
+        } else {
+          // eslint-disable-next-line
+          feature.properties.majorityRace = majorityRace.demographicKey;
+          // eslint-disable-next-line
+          feature.properties.majorityRaceSplit = majorityRace.popSplit;
         }
         // eslint-disable-next-line
         feature.properties.majorityRaceFill =

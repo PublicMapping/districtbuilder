@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+
 ### Changed
+- Support negative/adjusted population values [#1043](https://github.com/PublicMapping/districtbuilder/pull/1043)
+
 ### Fixed
 
 ## [1.11.0] - 2021-10-11

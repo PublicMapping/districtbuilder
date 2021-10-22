@@ -19,7 +19,7 @@ import {
   GeoUnitDefinition,
   HierarchyDefinition,
   IStaticMetadata,
-  UintArrays,
+  TypedArrays,
   DistrictsDefinition,
   GeoUnitHierarchy
 } from "../../../../shared/entities";
@@ -187,9 +187,9 @@ export class GeoUnitTopology {
     public readonly topology: Topology,
     public readonly definition: GeoUnitDefinition,
     public readonly staticMetadata: IStaticMetadata,
-    public readonly demographics: UintArrays,
-    public readonly voting: UintArrays,
-    public readonly geoLevels: UintArrays
+    public readonly demographics: TypedArrays,
+    public readonly voting: TypedArrays,
+    public readonly geoLevels: TypedArrays
   ) {
     this.hierarchy = group(topology, definition);
   }

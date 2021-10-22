@@ -6,7 +6,7 @@ import {
   GeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays
+  TypedArrays
 } from "../../../shared/entities";
 import booleanIntersects from "@turf/boolean-intersects";
 import distance from "@turf/distance";
@@ -43,7 +43,7 @@ const PaintBrushSelectionTool: ISelectionTool = {
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
-    staticGeoLevels: UintArrays,
+    staticGeoLevels: TypedArrays,
     paintBrushSize: PaintBrushSize,
     setActive: (isActive: boolean) => void,
     limitSelectionToCounty: boolean,

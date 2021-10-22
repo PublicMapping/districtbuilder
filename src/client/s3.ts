@@ -2,7 +2,7 @@ import axios from "axios";
 import { parse, resolve } from "url";
 
 import {
-  UintArrays,
+  TypedArrays,
   GeoUnitHierarchy,
   HttpsURI,
   IStaticFile,
@@ -40,7 +40,7 @@ async function fetchGeoUnitHierarchy(path: S3URI): Promise<GeoUnitHierarchy> {
   });
 }
 
-async function fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<UintArrays> {
+async function fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<TypedArrays> {
   const requests = files.map(fileMeta =>
     s3Axios.get(staticDataUri(path, fileMeta.fileName), {
       responseType: "arraybuffer"
@@ -54,8 +54,19 @@ async function fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Pro
         resolve(
           response.map((res, ind) => {
             const bpe = files[ind].bytesPerElement;
+            const unsigned = files[ind].unsigned;
             const typedArrayConstructor =
-              bpe === 1 ? Uint8Array : bpe === 2 ? Uint16Array : Uint32Array;
+              unsigned || unsigned === undefined
+                ? bpe === 1
+                  ? Uint8Array
+                  : bpe === 2
+                  ? Uint16Array
+                  : Uint32Array
+                : bpe === 1
+                ? Int8Array
+                : bpe === 2
+                ? Int16Array
+                : Int32Array;
 
             const typedArray = new typedArrayConstructor(res.data);
             return typedArray;
