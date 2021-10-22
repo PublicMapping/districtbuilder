@@ -33,7 +33,10 @@ Below is an example of how to invoke an instance of the load test with Docker
 Compose:
 
 ```shell
-JWT_AUTH_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1YzdjMDFmNS1jNWJmLTQzYjMtODczYi0wM2I3ZTA3Njg0MmEiLCJpZCI6IjVjN2MwMWY1LWM1YmYtNDNiMy04NzNiLTAzYjdlMDc2ODQyYSIsIm5hbWUiOiJNaWtlIiwiZW1haWwiOiJtbWF1cml6aUBhemF2ZWEuY29tIiwiaXNFbWFpbFZlcmlmaWVkIjp0cnVlLCJoYXNTZWVuVG91ciI6dHJ1ZSwiaWF0IjoxNjM0Njc0MDc2LCJleHAiOjE2MzUyNzg4NzZ9.GWvlk8b1tvF7r3Hqc_RAjgvD9hKyDkrdfj_VaajFr7I" HAR_FILE=patch-local-pa-project.har PROJECT_UUIDS="23f9bdca-33ae-4a86-a0b5-684a3f00a6a0 346f84d8-edc0-4fe6-82be-d36b4080f429 02a767f6-9c57-443e-9687-391650452d00 461fd73e-bcc3-4d4d-965e-52c26a603dd7 74ba0c9d-dd80-4880-9c82-e5c533907aa1 374e0d77-da3d-454d-89ee-62b1e18b0fee 8f2efda4-d945-4c64-b73d-814882011d44 fc80fdea-283a-4850-88d4-ee71915cddb2 6cb2ec1e-f382-4fa2-9312-2c617c220b3c fb38356f-dc79-496f-b065-a6030cbdf42f" REQ_ORIGIN="http://host.docker.internal:3003" \
+JWT_AUTH_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1YzdjMDFmNS1jNWJmLTQzYjMtODczYi0wM2I3ZTA3Njg0MmEiLCJpZCI6IjVjN2MwMWY1LWM1YmYtNDNiMy04NzNiLTAzYjdlMDc2ODQyYSIsIm5hbWUiOiJNaWtlIiwiZW1haWwiOiJtbWF1cml6aUBhemF2ZWEuY29tIiwiaXNFbWFpbFZlcmlmaWVkIjp0cnVlLCJoYXNTZWVuVG91ciI6dHJ1ZSwiaWF0IjoxNjM0Njc0MDc2LCJleHAiOjE2MzUyNzg4NzZ9.GWvlk8b1tvF7r3Hqc_RAjgvD9hKyDkrdfj_VaajFr7I" \
+HAR_FILE=patch-local-pa-project.har \
+PROJECT_UUIDS="23f9bdca-33ae-4a86-a0b5-684a3f00a6a0 346f84d8-edc0-4fe6-82be-d36b4080f429" \
+REQ_ORIGIN="http://host.docker.internal:3003" \
 docker-compose run --rm k6
 
           /\      |‾‾| /‾‾/   /‾‾/   
