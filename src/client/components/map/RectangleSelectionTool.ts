@@ -7,7 +7,7 @@ import {
   GeoUnits,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays
+  TypedArrays
 } from "../../../shared/entities";
 
 import {
@@ -49,7 +49,7 @@ const RectangleSelectionTool: ISelectionTool = {
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
-    staticGeoLevels: UintArrays,
+    staticGeoLevels: TypedArrays,
     setActive: (isActive: boolean) => void,
     limitSelectionToCounty: boolean
   ) {

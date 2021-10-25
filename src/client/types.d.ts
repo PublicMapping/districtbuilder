@@ -3,7 +3,7 @@ import * as H from "history";
 import {
   IProject,
   IStaticMetadata,
-  UintArrays,
+  TypedArrays,
   GeoUnitHierarchy,
   DistrictProperties,
   DemographicCounts,
@@ -27,13 +27,13 @@ export interface PaginatedResponse<T> {
 
 export interface StaticProjectData {
   readonly staticMetadata: IStaticMetadata;
-  readonly staticGeoLevels: UintArrays;
+  readonly staticGeoLevels: TypedArrays;
   readonly geoUnitHierarchy: GeoUnitHierarchy;
 }
 
 export interface WorkerProjectData {
-  readonly staticDemographics: UintArrays;
-  readonly staticVotingData?: UintArrays;
+  readonly staticDemographics: TypedArrays;
+  readonly staticVotingData?: TypedArrays;
   readonly geoUnitHierarchy: GeoUnitHierarchy;
 }
 

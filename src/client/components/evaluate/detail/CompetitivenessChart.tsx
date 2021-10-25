@@ -20,7 +20,7 @@ const CompetitivenessChart = ({
   const buckets: readonly (PviBucket | undefined)[] | undefined =
     geojson &&
     geojson?.features
-      .filter(f => f.id !== 0 && f.properties.demographics.population > 0)
+      .filter(f => f.id !== 0 && f.geometry.coordinates.length > 0)
       .map(f => {
         const pvi = f.properties.voting && calculatePVI(f.properties.voting, metric?.electionYear);
         const data: PviBucket | undefined = pvi !== undefined ? computeRowBucket(pvi) : undefined;

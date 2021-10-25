@@ -4,7 +4,7 @@ import S3 from "aws-sdk/clients/s3";
 import { Topology } from "topojson-specification";
 import { Repository } from "typeorm";
 
-import { UintArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
+import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
@@ -118,7 +118,7 @@ export class TopologyService {
     }
   }
 
-  private async fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<UintArrays> {
+  private async fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<TypedArrays> {
     const requests = files.map(fileMeta => getObject(this.s3, s3Options(path, fileMeta.fileName)));
 
     return new Promise((resolve, reject) => {
@@ -127,8 +127,19 @@ export class TopologyService {
           resolve(
             response.map((res, ind) => {
               const bpe = files[ind].bytesPerElement;
+              const unsigned = files[ind].unsigned;
               const typedArrayConstructor =
-                bpe === 1 ? Uint8Array : bpe === 2 ? Uint16Array : Uint32Array;
+                unsigned || unsigned === undefined
+                  ? bpe === 1
+                    ? Uint8Array
+                    : bpe === 2
+                    ? Uint16Array
+                    : Uint32Array
+                  : bpe === 1
+                  ? Int8Array
+                  : bpe === 2
+                  ? Int16Array
+                  : Int32Array;
 
               // Note this is different from how we construct these typed
               // arrays on the client, due to differences in how Buffer works

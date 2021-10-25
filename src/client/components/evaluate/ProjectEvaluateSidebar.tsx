@@ -93,20 +93,20 @@ const ProjectEvaluateSidebar = ({
           Math.abs(f.properties.populationDeviation) < 1)
       );
     }).length;
-  const numDistrictsWithPopulation =
-    geojson && geojson.features.filter(f => f.properties.demographics.population > 0).length;
+  const numDistrictsWithGeometries =
+    geojson && geojson.features.filter(f => f.geometry.coordinates.length > 0).length;
 
   useEffect(() => {
     if (
       (!avgCompetitiveness ||
         (metric && "electionYear" in metric && electionYear !== metric.electionYear)) &&
-      numDistrictsWithPopulation &&
-      numDistrictsWithPopulation > 1
+      numDistrictsWithGeometries &&
+      numDistrictsWithGeometries > 1
     ) {
       const numDistrictsWithPvi =
         geojson &&
         geojson.features
-          .filter(f => f.id !== 0 && f.properties.demographics.population > 0)
+          .filter(f => f.id !== 0 && f.geometry.coordinates.length > 0)
           .filter(f => Object.keys(f.properties.voting || {}).length > 0).length;
 
       const competitiveness =
@@ -143,7 +143,7 @@ const ProjectEvaluateSidebar = ({
           );
       }
     }
-  }, [electionYear, geojson, metric, avgCompetitiveness, numDistrictsWithPopulation]);
+  }, [electionYear, geojson, metric, avgCompetitiveness, numDistrictsWithGeometries]);
 
   const multipleElections = hasMultipleElections(staticMetadata);
 
@@ -153,8 +153,8 @@ const ProjectEvaluateSidebar = ({
       name: "Equal Population",
       status:
         numEqualPopDistricts !== undefined &&
-        numDistrictsWithPopulation !== undefined &&
-        numEqualPopDistricts === numDistrictsWithPopulation,
+        numDistrictsWithGeometries !== undefined &&
+        numEqualPopDistricts === numDistrictsWithGeometries,
       description: "have equal population",
       shortText:
         "The U.S. constitution requires that each district have about the same population for a map to be considered valid.",

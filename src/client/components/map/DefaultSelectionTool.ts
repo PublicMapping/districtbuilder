@@ -20,7 +20,7 @@ import {
   FeatureId,
   IStaticMetadata,
   LockedDistricts,
-  UintArrays
+  TypedArrays
 } from "../../../shared/entities";
 
 function areAllUnlockedChildGeoUnitsSelected(
@@ -28,7 +28,7 @@ function areAllUnlockedChildGeoUnitsSelected(
   unlockedGeoUnits: GeoUnits,
   geoUnitForFeature: GeoUnitIndices | undefined,
   staticMetadata: IStaticMetadata,
-  staticGeoLevels: UintArrays
+  staticGeoLevels: TypedArrays
 ): boolean {
   if (!geoUnitForFeature) {
     return false;
@@ -62,7 +62,7 @@ const DefaultSelectionTool: ISelectionTool = {
     staticMetadata: IStaticMetadata,
     districtsDefinition: DistrictsDefinition,
     lockedDistricts: LockedDistricts,
-    staticGeoLevels: UintArrays
+    staticGeoLevels: TypedArrays
   ) {
     /* eslint-disable */
     this.setCursor = () => (map.getCanvas().style.cursor = "pointer");
