@@ -670,7 +670,7 @@ const SidebarRow = memo(
                     <div>
                       Add{" "}
                       {Math.floor(
-                        Math.abs(intermediateDeviation) + popDeviationThreshold
+                        Math.abs(intermediateDeviation) - popDeviationThreshold
                       ).toLocaleString()}{" "}
                       people to this district to meet the {popDeviation}% population deviation
                       tolerance
