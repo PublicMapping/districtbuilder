@@ -5,7 +5,6 @@ import { simplify } from "simplify-geojson";
 import bbox from "@turf/bbox";
 import { BBox } from "@turf/helpers";
 import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
-import _ from "lodash";
 
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
