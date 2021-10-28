@@ -1,9 +1,6 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
-import { simplify } from "simplify-geojson";
-import bbox from "@turf/bbox";
-import { BBox } from "@turf/helpers";
 import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
 
 import { Project } from "../entities/project.entity";
@@ -18,8 +15,6 @@ type AllProjectsOptions = IPaginationOptions & {
 
 @Injectable()
 export class ProjectsService extends TypeOrmCrudService<Project> {
-  private readonly logger = new Logger(ProjectsService.name);
-
   constructor(@InjectRepository(Project) repo: Repository<Project>) {
     super(repo);
   }
@@ -30,50 +25,47 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   }
 
   getProjectsBase(): SelectQueryBuilder<Project> {
-    return this.repo
-      .createQueryBuilder("project")
-      .innerJoin("project.regionConfig", "regionConfig")
-      .innerJoin("project.user", "user")
-      .leftJoin("project.chamber", "chamber")
-      .select([
-        "project.id",
-        "project.name",
-        "project.numberOfDistricts",
-        "project.updatedDt",
-        "project.createdDt",
-        "project.districts",
-        "regionConfig.name",
-        "regionConfig.id",
-        "user.id",
-        "user.name"
-      ])
-      .orderBy("project.updatedDt", "DESC");
-  }
-
-  computeBBoxArea(project: Project): number {
-    const box: BBox = bbox(project.districts);
-    return (box[2] - box[0]) * (box[3] - box[1]);
-  }
-
-  // We only use the districts column for displaying a mini-map outside of the main Project Screen
-  // so we can simplify the geometries to save on size and improve performance
-  async simplifyDistricts(page: Promise<Pagination<Project>>): Promise<Pagination<Project>> {
-    const projects = await page;
-    projects.items.forEach(project => {
-      const boxArea = this.computeBBoxArea(project);
-      project.districts &&
-        project.districts.features.forEach(districtFeature => {
-          const tolerance = boxArea > 1 ? 0.005 : 0.001;
-          try {
-            simplify(districtFeature, tolerance);
-          } catch (e) {
-            this.logger.debug(
-              `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`
-            );
-          }
-        });
-    });
-    return projects;
+    return (
+      this.repo
+        .createQueryBuilder("project")
+        .innerJoin("project.regionConfig", "regionConfig")
+        .innerJoin("project.user", "user")
+        .leftJoin("project.chamber", "chamber")
+        .select([
+          "project.id",
+          "project.name",
+          "project.numberOfDistricts",
+          "project.updatedDt",
+          "project.createdDt",
+          "project.districts",
+          "regionConfig.name",
+          "regionConfig.id",
+          "user.id",
+          "user.name"
+        ])
+        // Replace the districts column with a simplified one to save on response size
+        //
+        // Note that we're doing a bit of a trick here to replace the contents of the districts column,
+        // we need to select it above, and then give an alias here that will override that selection
+        .addSelect(
+          `CASE
+            WHEN districts IS NULL THEN NULL
+            ELSE JSON_BUILD_OBJECT(
+              'type', 'FeatureCollection',
+              'features', ARRAY(
+                SELECT JSON_BUILD_OBJECT(
+                  'type', 'Feature',
+                  'properties', feature->'properties',
+                  'geometry', ST_AsGeoJSON(ST_Simplify(ST_GeomFromGeoJSON(feature->'geometry'), 0.001))::json
+                )
+                FROM jsonb_array_elements(districts->'features') feature
+              )
+            )
+          END`,
+          "project_districts"
+        )
+        .orderBy("project.updatedDt", "DESC")
+    );
   }
 
   async findAllPublishedProjectsPaginated(
@@ -97,7 +89,7 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       ? builderWithFilter.andWhere("regionConfig.regionCode = :region", { region: options.region })
       : builderWithFilter;
 
-    return this.simplifyDistricts(paginate<Project>(builderWithRegion, options));
+    return paginate<Project>(builderWithRegion, options);
   }
 
   async findAllUserProjectsPaginated(
@@ -109,6 +101,6 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       { userId }
     );
 
-    return this.simplifyDistricts(paginate<Project>(builder, options));
+    return paginate<Project>(builder, options);
   }
 }
