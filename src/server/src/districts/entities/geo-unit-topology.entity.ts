@@ -300,7 +300,9 @@ export class GeoUnitTopology {
           // Keep recursing into the hierarchy until we reach the end
           const results = mapToDefinition(hierarchyNumOrArray);
           // Simplify if possible
-          return results.every(item => item === results[0]) ? results[0] : results;
+          return results.length !== 1 && results.every(item => item === results[0])
+            ? results[0]
+            : results;
         }
       });
 
