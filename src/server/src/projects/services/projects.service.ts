@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
-import simplify from "@turf/simplify";
+import { simplify } from "simplify-geojson";
 import bbox from "@turf/bbox";
 import { BBox } from "@turf/helpers";
 import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
@@ -64,21 +64,9 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
       const boxArea = this.computeBBoxArea(project);
       project.districts &&
         project.districts.features.forEach(districtFeature => {
-          // Some very small holes may collapse to a single point during the merge operation,
-          // and generate invalid polygons that cause simplify to fail
-          //eslint-disable-next-line functional/immutable-data
-          districtFeature.geometry.coordinates = districtFeature.geometry.coordinates
-            .map(polygonCoords =>
-              polygonCoords.flatMap(ringCoords => {
-                if (ringCoords.every(coord => _.isEqual(coord, ringCoords[0]))) {
-                  return [];
-                }
-                return [ringCoords];
-              })
-            )
-            .filter(polygonCoords => polygonCoords.length > 0);
+          const tolerance = boxArea > 1 ? 0.005 : 0.001;
           try {
-            simplify(districtFeature, { mutate: true, tolerance: boxArea > 1 ? 0.005 : 0.001 });
+            simplify(districtFeature, tolerance);
           } catch (e) {
             this.logger.debug(
               `Could not simplify district ${districtFeature.id} for project ${project.id}: ${e}`

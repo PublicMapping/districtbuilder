@@ -14,3 +14,9 @@ declare module "geojson2shp" {
     options?: ConvertOptions
   ): Promise<void>;
 }
+
+declare module "simplify-geojson" {
+  import { GeoJSON } from "geojson";
+
+  export function simplify(feature: GeoJSON, tolerance?: number): void;
+}
