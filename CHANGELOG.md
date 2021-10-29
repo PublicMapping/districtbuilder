@@ -9,8 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 ### Changed
 ### Fixed
-- Fix import for regions that have a geounit 1 identical geometry nested under it [#1053](https://github.com/PublicMapping/districtbuilder/pull/1053)
+
+## [1.12.1] - 2021-10-29
+### Fixed
+- Fix import for regions that have a geounit with 1 identical geometry nested under it [#1053](https://github.com/PublicMapping/districtbuilder/pull/1053)
 - Fix simplification for geojson with invalid geometries [#1054](https://github.com/PublicMapping/districtbuilder/pull/1054)
+- Fix population deviation tooltip [#1055](https://github.com/PublicMapping/districtbuilder/pull/1055)
 
 ## [1.12.0] - 2021-10-25
 ### Changed
@@ -357,7 +361,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.12.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.12.1...HEAD
+[1.12.1]: https://github.com/publicmapping/districtbuilder/compare/1.12.0...1.12.1
 [1.12.0]: https://github.com/publicmapping/districtbuilder/compare/1.11.0...1.12.0
 [1.11.0]: https://github.com/publicmapping/districtbuilder/compare/1.10.1...1.11.0
 [1.10.1]: https://github.com/publicmapping/districtbuilder/compare/1.10.0...1.10.1
