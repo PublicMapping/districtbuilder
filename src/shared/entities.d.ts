@@ -189,6 +189,7 @@ export interface ProjectTemplateFields {
   readonly chamber?: IChamber;
   readonly populationDeviation: number;
   readonly pinnedMetricFields: readonly string[];
+  readonly numberOfMembers: readonly number[];
   readonly districtsDefinition: DistrictsDefinition;
 }
 

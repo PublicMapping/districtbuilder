@@ -220,6 +220,12 @@ export class ProjectsController implements CrudController<Project> {
         message: { lockedDistricts: [`Length of array does not match "numberOfDistricts"`] }
       } as Errors<UpdateProjectDto>);
     }
+    if (dto.numberOfMembers && existingProject?.numberOfDistricts !== dto.numberOfMembers.length) {
+      throw new BadRequestException({
+        error: "Bad Request",
+        message: { numberOfMembers: [`Length of array does not match "numberOfDistricts"`] }
+      } as Errors<UpdateProjectDto>);
+    }
 
     const staticMetadata = (await this.getGeoUnitProperties(existingProject.regionConfig.s3URI))
       .staticMetadata;
@@ -317,6 +323,7 @@ export class ProjectsController implements CrudController<Project> {
       regionConfig,
       chamber,
       numberOfDistricts,
+      numberOfMembers,
       populationDeviation,
       pinnedMetricFields,
       districtsDefinition
@@ -325,6 +332,7 @@ export class ProjectsController implements CrudController<Project> {
       regionConfig,
       chamber,
       numberOfDistricts,
+      numberOfMembers,
       populationDeviation,
       pinnedMetricFields,
       districtsDefinition
@@ -384,10 +392,12 @@ export class ProjectsController implements CrudController<Project> {
     const districtsDefinition =
       dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
     const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
+    const numberOfMembers = dto.numberOfMembers || new Array(dto.numberOfDistricts).fill(1);
     return {
       ...dto,
       districtsDefinition,
       lockedDistricts,
+      numberOfMembers,
       user: req.parsed.authPersist.userId,
       regionConfigVersion: regionConfig.version
     };
