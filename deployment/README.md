@@ -108,7 +108,7 @@ This will attempt to apply the plan assembled in the previous step using Amazon'
 
 | Environment | Cluster                | Cluster VPC             | Security Group         |
 |-------------|------------------------|-------------------------|------------------------|
-| Staging     | `ecsStagingCluster`    | `vpc-04d3fda63dfc36e58` | `sg-00b08b20f31addcc1` |
+| Staging     | `ecsStagingCluster`    | `vpc-04d3fda63dfc36e58` | `sg-0eb1ba122ccc68ca7` |
 | Production  | `ecsProductionCluster` | `vpc-039833dc732e496a1` | `sg-05a0cca2a9f5b57a3` |
 
 ## Restart services
