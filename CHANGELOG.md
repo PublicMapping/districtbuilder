@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 ### Fixed
 - Fix import for regions that have a geounit 1 identical geometry nested under it [#1053](https://github.com/PublicMapping/districtbuilder/pull/1053)
+- Fix simplification for geojson with invalid geometries [#1054](https://github.com/PublicMapping/districtbuilder/pull/1054)
 
 ## [1.12.0] - 2021-10-25
 ### Changed
