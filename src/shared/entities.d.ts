@@ -272,6 +272,7 @@ export interface IChamber {
   readonly id: ChamberId;
   readonly name: string;
   readonly numberOfDistricts: number;
+  readonly numberOfMembers?: readonly number[];
   readonly regionConfig: IRegionConfig;
 }
 

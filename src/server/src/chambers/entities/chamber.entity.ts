@@ -13,6 +13,14 @@ export class Chamber implements IChamber {
   @Column({ type: "integer", name: "number_of_districts" })
   numberOfDistricts: number;
 
+  @Column({
+    type: "integer",
+    name: "number_of_members",
+    array: true,
+    nullable: true
+  })
+  numberOfMembers?: readonly number[];
+
   @ManyToOne(() => RegionConfig, { nullable: false })
   @JoinColumn({ name: "region_config_id" })
   regionConfig: RegionConfig;
