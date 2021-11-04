@@ -1,35 +1,46 @@
 /** @jsx jsx */
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Redirect, useHistory } from "react-router-dom";
-import { userFetch } from "../actions/user";
-import { DEFAULT_POPULATION_DEVIATION } from "../../shared/constants";
+import { Link, Redirect, useHistory } from "react-router-dom";
 import {
   Box,
   Button,
   Card,
+  Checkbox,
+  Divider,
   Flex,
   Heading,
   jsx,
   Label,
   Radio,
-  ThemeUIStyleObject,
-  Styled
+  Styled,
+  ThemeUIStyleObject
 } from "theme-ui";
-import { Link } from "react-router-dom";
-import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
 
-import { IProject, IRegionConfig, IChamber, CreateProjectData } from "../../shared/entities";
+import { DEFAULT_POPULATION_DEVIATION } from "../../shared/constants";
+import { CreateProjectData, IChamber, IProject, IRegionConfig } from "../../shared/entities";
+
 import { regionConfigsFetch } from "../actions/regionConfig";
-import { createProject } from "../api";
+import { userFetch } from "../actions/user";
+import { createProject, fetchRegionProperties } from "../api";
 import { InputField, SelectField } from "../components/Field";
 import FormError from "../components/FormError";
-import { State } from "../reducers";
-import { UserState } from "../reducers/user";
-import { WriteResource, Resource } from "../resource";
-import store from "../store";
-import { OrganizationState } from "../reducers/organization";
+import MultiMemberForm from "../components/MultiMemberForm";
 import OrganizationTemplateForm from "../components/OrganizationTemplateForm";
+import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
+import { State } from "../reducers";
+import { OrganizationState } from "../reducers/organization";
+import { UserState } from "../reducers/user";
+import { Resource, WriteResource } from "../resource";
+import { fetchStaticMetadata } from "../s3";
+import store from "../store";
+
+async function fetchTotalPopulation(region: IRegionConfig) {
+  const staticMetadata = await fetchStaticMetadata(region.s3URI);
+  const topLevel = staticMetadata.geoLevels[staticMetadata.geoLevels.length - 1].id;
+  const records = await fetchRegionProperties(region.id, topLevel, ["population"]);
+  return records.reduce((total, record) => total + Number(record["population"]), 0);
+}
 
 interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
@@ -38,7 +49,10 @@ interface StateProps {
 }
 
 const validate = (form: ProjectForm) =>
-  form.name.trim() !== "" && form.numberOfDistricts !== null && form.regionConfig !== null
+  form.name.trim() !== "" &&
+  form.numberOfDistricts !== null &&
+  form.numberOfMembers !== null &&
+  form.regionConfig !== null
     ? ({ ...form, valid: true } as ValidForm)
     : ({ ...form, valid: false } as InvalidForm);
 
@@ -48,6 +62,8 @@ interface ProjectForm {
   readonly regionConfig: IRegionConfig | null;
   readonly numberOfDistricts: number | null;
   readonly populationDeviation: number | null;
+  readonly numberOfMembers: readonly number[] | null;
+  readonly isMultiMember: boolean;
   readonly isCustom: boolean;
 }
 
@@ -57,6 +73,8 @@ interface ValidForm {
   readonly chamber?: IChamber;
   readonly numberOfDistricts: number;
   readonly populationDeviation: number;
+  readonly numberOfMembers: readonly number[];
+  readonly isMultiMember: boolean;
   readonly isCustom: boolean;
   readonly valid: true;
 }
@@ -156,10 +174,13 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       chamber: null,
       numberOfDistricts: null,
       populationDeviation: DEFAULT_POPULATION_DEVIATION,
+      numberOfMembers: null,
+      isMultiMember: false,
       isCustom: false
     }
   });
   const { data } = createProjectResource;
+  const [totalPopulation, setTotalPopulation] = useState<number | null>(null);
 
   const onDistrictChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chamber =
@@ -172,10 +193,19 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
         ...(chamber
           ? {
               numberOfDistricts: chamber.numberOfDistricts,
+              numberOfMembers:
+                chamber.numberOfMembers || new Array(chamber.numberOfDistricts).fill(1),
+              isMultiMember: chamber.numberOfMembers?.some(num => num > 1) || false,
               chamber: chamber || null,
               isCustom: false
             }
-          : { numberOfDistricts: null, isCustom: true, chamber: null })
+          : {
+              numberOfDistricts: null,
+              numberOfMembers: null,
+              isCustom: true,
+              isMultiMember: false,
+              chamber: null
+            })
       }
     });
   };
@@ -188,6 +218,11 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
     store.dispatch(regionConfigsFetch());
     store.dispatch(userFetch());
   }, []);
+
+  useEffect(() => {
+    data.regionConfig &&
+      fetchTotalPopulation(data.regionConfig).then(population => setTotalPopulation(population));
+  }, [data.regionConfig]);
 
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
@@ -232,7 +267,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data, isPending: true });
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { isCustom, valid, ...validatedData } = validatedForm;
+                const { isCustom, isMultiMember, valid, ...validatedData } = validatedForm;
                 createProject({
                   ...validatedData,
                   chamber: validatedForm.chamber || undefined,
@@ -414,16 +449,57 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                                   onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                                     const value = parseInt(e.currentTarget.value, 10);
                                     const numberOfDistricts = isNaN(value) ? null : value;
+                                    const numberOfMembers =
+                                      numberOfDistricts && data.numberOfMembers
+                                        ? data.numberOfMembers.length > numberOfDistricts
+                                          ? data.numberOfMembers.slice(0, numberOfDistricts)
+                                          : data.numberOfMembers.concat(
+                                              new Array(
+                                                numberOfDistricts - data.numberOfMembers.length
+                                              ).fill(1)
+                                            )
+                                        : (new Array(numberOfDistricts).fill(
+                                            1
+                                          ) as readonly number[]);
                                     setCreateProjectResource({
                                       data: {
                                         ...data,
-                                        numberOfDistricts
+                                        numberOfDistricts,
+                                        numberOfMembers
                                       }
                                     });
                                   }
                                 }}
                               />
                             </Box>
+                          ) : null}
+                          <Divider sx={{ width: "100%" }} />
+                          <Box>
+                            <Label
+                              sx={{
+                                display: "inline-flex"
+                              }}
+                            >
+                              <Checkbox
+                                name="project-is-multi-member"
+                                checked={data.isMultiMember}
+                                onChange={() =>
+                                  setCreateProjectResource({
+                                    data: { ...data, isMultiMember: !data.isMultiMember }
+                                  })
+                                }
+                              />
+                              <Flex as="span">Use multi-member districts</Flex>
+                            </Label>
+                          </Box>
+                          {data.numberOfMembers && data.isMultiMember && totalPopulation ? (
+                            <MultiMemberForm
+                              totalPopulation={totalPopulation}
+                              numberOfMembers={data.numberOfMembers}
+                              onChange={numberOfMembers => {
+                                setCreateProjectResource({ data: { ...data, numberOfMembers } });
+                              }}
+                            />
                           ) : null}
                         </Flex>
                       </fieldset>

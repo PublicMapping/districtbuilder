@@ -38,7 +38,7 @@ export class CreateProjectDto implements CreateProjectData {
   @IsArray()
   @ArrayNotEmpty()
   @IsOptional()
-  readonly numberOfMembers: readonly number[];
+  readonly numberOfMembers?: readonly number[];
 
   @IsOptional()
   @IsNumber()

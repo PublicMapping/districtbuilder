@@ -227,6 +227,7 @@ export type ProjectNest = Pick<
 export interface CreateProjectData {
   readonly name?: string;
   readonly numberOfDistricts?: number;
+  readonly numberOfMembers?: readonly number[];
   readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;

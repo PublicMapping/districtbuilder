@@ -70,7 +70,7 @@ const regionConfigReducer: LoopReducer<RegionConfigState, Action> = (
         Cmd.run(fetchRegionProperties, {
           successActionCreator: regionPropertiesFetchSuccess,
           failActionCreator: regionPropertiesFetchFailure,
-          args: [action.payload.regionConfigId, action.payload.geoLevel] as Parameters<
+          args: [action.payload.regionConfigId, action.payload.geoLevel, ["name"]] as Parameters<
             typeof fetchRegionProperties
           >
         })

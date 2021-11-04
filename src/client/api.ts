@@ -240,11 +240,12 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
 
 export async function fetchRegionProperties(
   region: RegionConfigId,
-  geoLevel: string
+  geoLevel: string,
+  fields: readonly string[]
 ): Promise<readonly Record<string, unknown>[]> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get(`/api/region-configs/${region}/properties/${geoLevel}?fields=name`)
+      .get(`/api/region-configs/${region}/properties/${geoLevel}?fields=${fields.join("&fields=")}`)
       .then(response => {
         resolve(response.data);
       })
