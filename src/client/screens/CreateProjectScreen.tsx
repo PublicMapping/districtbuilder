@@ -22,7 +22,7 @@ import { CreateProjectData, IChamber, IProject, IRegionConfig } from "../../shar
 
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { userFetch } from "../actions/user";
-import { createProject, fetchRegionProperties } from "../api";
+import { createProject, fetchTotalPopulation } from "../api";
 import { InputField, SelectField } from "../components/Field";
 import FormError from "../components/FormError";
 import MultiMemberForm from "../components/MultiMemberForm";
@@ -32,15 +32,8 @@ import { State } from "../reducers";
 import { OrganizationState } from "../reducers/organization";
 import { UserState } from "../reducers/user";
 import { Resource, WriteResource } from "../resource";
-import { fetchStaticMetadata } from "../s3";
 import store from "../store";
-
-async function fetchTotalPopulation(region: IRegionConfig) {
-  const staticMetadata = await fetchStaticMetadata(region.s3URI);
-  const topLevel = staticMetadata.geoLevels[staticMetadata.geoLevels.length - 1].id;
-  const records = await fetchRegionProperties(region.id, topLevel, ["population"]);
-  return records.reduce((total, record) => total + Number(record["population"]), 0);
-}
+import { updateNumberOfMembers } from "../functions";
 
 interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
@@ -449,18 +442,10 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                                   onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                                     const value = parseInt(e.currentTarget.value, 10);
                                     const numberOfDistricts = isNaN(value) ? null : value;
-                                    const numberOfMembers =
-                                      numberOfDistricts && data.numberOfMembers
-                                        ? data.numberOfMembers.length > numberOfDistricts
-                                          ? data.numberOfMembers.slice(0, numberOfDistricts)
-                                          : data.numberOfMembers.concat(
-                                              new Array(
-                                                numberOfDistricts - data.numberOfMembers.length
-                                              ).fill(1)
-                                            )
-                                        : (new Array(numberOfDistricts).fill(
-                                            1
-                                          ) as readonly number[]);
+                                    const numberOfMembers = updateNumberOfMembers(
+                                      numberOfDistricts,
+                                      data.numberOfMembers
+                                    );
                                     setCreateProjectResource({
                                       data: {
                                         ...data,
