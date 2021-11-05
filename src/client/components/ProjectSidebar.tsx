@@ -33,7 +33,6 @@ import {
 import {
   areAnyGeoUnitsSelected,
   assertNever,
-  getTargetPopulation,
   mergeGeoUnits,
   hasMultipleElections,
   calculatePartyVoteShare,
@@ -42,7 +41,8 @@ import {
   has20Election,
   isMajorityMinority,
   getMajorityRaceDisplay,
-  capitalizeFirstLetter
+  capitalizeFirstLetter,
+  getPopulationPerRepresentative
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -906,7 +906,7 @@ const SidebarRows = ({
     };
   }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
-  const averagePopulation = getTargetPopulation(geojson);
+  const popPerRep = getPopulationPerRepresentative(geojson, project.numberOfMembers);
   const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
   const electionsMetricFields = getVotingMetricFields(staticMetadata);
 
@@ -923,6 +923,9 @@ const SidebarRows = ({
             : selectedPopulation !== undefined
             ? -1 * selectedPopulation
             : undefined;
+        const numberOfReps = project.numberOfMembers[districtId - 1] || 0;
+        const popDeviationThreshold =
+          (project.populationDeviation / 100) * popPerRep * numberOfReps;
 
         return feature.properties.populationDeviation !== undefined ? (
           <SidebarRow
@@ -943,7 +946,7 @@ const SidebarRows = ({
             districtId={districtId}
             isReadOnly={isReadOnly}
             popDeviation={project.populationDeviation}
-            popDeviationThreshold={averagePopulation * (project.populationDeviation / 100)}
+            popDeviationThreshold={popDeviationThreshold}
           />
         ) : null;
       })}

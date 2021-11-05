@@ -4,7 +4,11 @@ import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
 import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, Party } from "../../types";
 import store from "../../store";
-import { hasMultipleElections, isMajorityMinority } from "../../functions";
+import {
+  hasMultipleElections,
+  isMajorityMinority,
+  getPopulationPerRepresentative
+} from "../../functions";
 import { regionPropertiesFetch } from "../../actions/regionConfig";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
@@ -12,12 +16,7 @@ import { useState, useEffect } from "react";
 import { Resource } from "../../resource";
 import { selectEvaluationMetric } from "../../actions/districtDrawing";
 
-import {
-  geoLevelLabelSingular,
-  getTargetPopulation,
-  calculatePVI,
-  getPartyColor
-} from "../../functions";
+import { geoLevelLabelSingular, calculatePVI, getPartyColor } from "../../functions";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
@@ -61,8 +60,6 @@ const ProjectEvaluateSidebar = ({
     featuresWithCompactness.length !== 0
       ? totalCompactness / featuresWithCompactness.length
       : undefined;
-
-  const avgPopulation = geojson && getTargetPopulation(geojson);
 
   const geoLevel =
     staticMetadata?.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id;
@@ -139,6 +136,8 @@ const ProjectEvaluateSidebar = ({
     }
   }, [electionYear, geojson, metric, avgCompetitiveness, numDistrictsWithGeometries]);
 
+  const populationPerRepresentative =
+    geojson && project && getPopulationPerRepresentative(geojson, project?.numberOfMembers);
   const multipleElections = hasMultipleElections(staticMetadata);
 
   const requiredMetrics: readonly EvaluateMetricWithValue[] = [
@@ -151,16 +150,17 @@ const ProjectEvaluateSidebar = ({
         numEqualPopDistricts === numDistrictsWithGeometries,
       description: "have equal population",
       shortText:
-        "The U.S. constitution requires that each district have about the same population for a map to be considered valid.",
+        "The U.S. constitution requires that each district have about the same population per representative for a map to be considered valid.",
       longText:
         (popThreshold !== undefined &&
-          `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
+          `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of representatives and the threshold is a set percentage deviation (${Math.floor(
             popThreshold
           )}%) above or below that target.`) ||
         "",
       showInSummary: true,
-      avgPopulation: avgPopulation,
-      popThreshold: popThreshold,
+      popThreshold,
+      populationPerRepresentative,
+      numberOfMembers: project?.numberOfMembers,
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
       value: numEqualPopDistricts || 0

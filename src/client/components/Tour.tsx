@@ -4,7 +4,7 @@ import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
 import { jsx } from "theme-ui";
 import { IProject, IStaticMetadata, IUser } from "../../shared/entities";
 import { patchUser } from "../api";
-import { geoLevelLabel, getTargetPopulation } from "../functions";
+import { geoLevelLabel, getPopulationPerRepresentative } from "../functions";
 import { ReactComponent as SalamanderIllustration } from "../media/tour-salamander-builder.svg";
 import { DistrictsGeoJSON } from "../types";
 import { Styled } from "theme-ui";
@@ -27,7 +27,9 @@ class Tour extends Component<Props, State> {
     super(props);
 
     const numberOfDistricts = props.project.numberOfDistricts;
-    const population = Math.round(getTargetPopulation(props.geojson)).toLocaleString();
+    const population = Math.round(
+      getPopulationPerRepresentative(props.geojson, props.project.numberOfMembers)
+    ).toLocaleString();
     const regionConfig = props.project.regionConfig.name;
     const geoLevelsSingular = props.staticMetadata.geoLevelHierarchy
       .map(geolevel => geolevel.id)
@@ -108,8 +110,8 @@ class Tour extends Component<Props, State> {
             <p>
               Your objective: build <strong>{numberOfDistricts} districts</strong> for{" "}
               <strong>{regionConfig}, </strong>
-              each with a population of <strong>{population}.</strong> Use DistrictBuilder to group{" "}
-              {availableGeolevelsText} into districts.
+              each with a population of <strong>{population}</strong> per representative. Use
+              DistrictBuilder to group {availableGeolevelsText} into districts.
             </p>
           ),
           disableBeacon: true,
