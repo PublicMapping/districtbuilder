@@ -44,34 +44,28 @@ const ProjectEvaluateSidebar = ({
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
 }) => {
-  const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
-  const [avgPopulation, setAvgPopulation] = useState<number | undefined>(undefined);
-  const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
   const [electionYear, setEvaluateElectionYear] = useState<ElectionYear>("combined");
   const [avgCompetitiveness, setAvgCompetitiveness] = useState<number | undefined>(undefined);
   const [party, setParty] = useState<Party | undefined>(undefined);
   const popThreshold = project && project.populationDeviation;
-  useEffect(() => {
-    if (geojson && !avgCompactness) {
-      const features = geojson.features.slice(1).filter(f => f.properties.compactness !== 0);
-      const totalCompactness = features.reduce(function(accumulator, feature) {
-        return accumulator + feature.properties.compactness;
-      }, 0);
-      setAvgCompactness(features.length !== 0 ? totalCompactness / features.length : undefined);
-    }
-  }, [geojson, avgCompactness]);
 
-  useEffect(() => {
-    if (geojson && !avgPopulation) {
-      setAvgPopulation(getTargetPopulation(geojson));
-    }
-  }, [geojson, avgPopulation]);
+  const featuresWithCompactness = geojson?.features
+    .slice(1)
+    .filter(f => f.properties.compactness !== 0);
+  const totalCompactness = featuresWithCompactness?.reduce(function(accumulator, feature) {
+    return accumulator + feature.properties.compactness;
+  }, 0);
+  const avgCompactness =
+    totalCompactness !== undefined &&
+    featuresWithCompactness &&
+    featuresWithCompactness.length !== 0
+      ? totalCompactness / featuresWithCompactness.length
+      : undefined;
 
-  useEffect(() => {
-    if (staticMetadata) {
-      setGeoLevel(staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id);
-    }
-  }, [staticMetadata]);
+  const avgPopulation = geojson && getTargetPopulation(geojson);
+
+  const geoLevel =
+    staticMetadata?.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id;
 
   useEffect(() => {
     if (project && project.regionConfig.regionCode && geoLevel) {
