@@ -78,6 +78,14 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
   })
   pinnedMetricFields: string[];
 
+  @Column({
+    type: "integer",
+    name: "number_of_members",
+    array: true,
+    default: () => "'{}'"
+  })
+  numberOfMembers: readonly number[];
+
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive: boolean;
 }

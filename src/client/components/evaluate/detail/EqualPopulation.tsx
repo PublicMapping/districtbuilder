@@ -67,23 +67,28 @@ const EqualPopulationMetricDetail = ({
 }) => {
   const choroplethStops =
     metric.popThreshold && metric.avgPopulation
-      ? getEqualPopulationStops(metric.popThreshold, metric.avgPopulation)
+      ? getEqualPopulationStops(metric.popThreshold)
       : undefined;
+  const numberOfMembers = metric.numberOfMembers;
 
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-        {metric.value?.toString() || " "} of {metric.total} districts are within{" "}
+        {metric.value?.toString() || " "} of {metric.total} districts within{" "}
         {"popThreshold" in metric &&
           metric.popThreshold !== undefined &&
           ` ${Math.floor(metric.popThreshold)}%`}{" "}
-        of the target ({metric.avgPopulation && Math.floor(metric.avgPopulation).toLocaleString()})
+        of the target (
+        {metric.populationPerRepresentative &&
+          Math.floor(metric.populationPerRepresentative).toLocaleString()}
+        &nbsp;/&nbsp;Rep.)
       </Heading>
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
             <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
             <Styled.th sx={style.th}>Deviation (%)</Styled.th>
+            <Styled.th sx={{ ...style.th, ...style.number }}>Number of reps</Styled.th>
             <Styled.th sx={{ ...style.th, ...style.number, ...style.colLast }}>Deviation</Styled.th>
           </Styled.tr>
         </thead>
@@ -108,13 +113,21 @@ const EqualPopulationMetricDetail = ({
                               choroplethStops &&
                               computeRowFill(
                                 choroplethStops,
-                                feature.properties.populationDeviation,
+                                feature.properties.percentDeviation,
                                 true
                               )
                           }}
                         ></Styled.div>
                         <Box>{Math.floor(feature.properties.percentDeviation * 1000) / 10}%</Box>
                       </Flex>
+                    ) : (
+                      <Box sx={style.blankValue}>-</Box>
+                    )}
+                  </Styled.td>
+
+                  <Styled.td sx={{ ...style.td, ...style.number }}>
+                    {numberOfMembers !== undefined && numberOfMembers[id - 1] ? (
+                      numberOfMembers[id - 1]
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}

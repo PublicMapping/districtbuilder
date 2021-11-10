@@ -1,5 +1,8 @@
-import { toast } from "react-toastify";
+import { isThisYear, isToday } from "date-fns";
+import format from "date-fns/format";
+import { FeatureCollection, Feature, Point } from "geojson";
 import { cloneDeep, mapKeys, pickBy } from "lodash";
+import { toast } from "react-toastify";
 
 import {
   DemographicCounts,
@@ -13,6 +16,8 @@ import {
   IStaticMetadata,
   ReferenceLayerProperties
 } from "../shared/entities";
+
+import { Resource } from "./resource";
 import {
   ChoroplethSteps,
   DistrictGeoJSON,
@@ -21,11 +26,6 @@ import {
   DistrictsGeoJSON,
   ReferenceLayerGeojson
 } from "./types";
-
-import { Resource } from "./resource";
-import { isThisYear, isToday } from "date-fns";
-import { FeatureCollection, Feature, Point } from "geojson";
-import format from "date-fns/format";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
@@ -296,17 +296,16 @@ export function assignGeounitsToDistrict(
   }, districtsDefinitionCopy);
 }
 
-// The target population is based on the average population of all districts,
-// not including the unassigned district, so we use the number of districts,
-// rather than the district feature count (which includes the unassigned district)
-export function getTargetPopulation(geojson: DistrictsGeoJSON) {
-  return (
-    geojson.features.reduce(
-      (population, feature) => population + feature.properties.demographics.population,
-      0
-    ) /
-    (geojson.features.length - 1)
+export function getPopulationPerRepresentative(
+  geojson: DistrictsGeoJSON,
+  numberOfMembers: readonly number[]
+) {
+  const totalPopulation = geojson.features.reduce(
+    (total, feature) => total + feature.properties.demographics.population,
+    0
   );
+  const totalReps = numberOfMembers.reduce((total, numberOfReps) => total + numberOfReps, 0);
+  return totalPopulation / totalReps;
 }
 
 /*
@@ -411,3 +410,17 @@ export const convertCsvToGeojson = (csv: ParseResults): ReferenceLayerGeojson =>
   }
   return geojson;
 };
+
+// Extends/shrinks the number of members array to match the provided number of districts
+export function updateNumberOfMembers(
+  numberOfDistricts: number | null,
+  numberOfMembers: readonly number[] | null
+): readonly number[] | null {
+  return numberOfDistricts === null
+    ? null
+    : numberOfMembers !== null
+    ? numberOfMembers.length > numberOfDistricts
+      ? numberOfMembers.slice(0, numberOfDistricts)
+      : numberOfMembers.concat(new Array(numberOfDistricts - numberOfMembers.length).fill(1))
+    : (new Array(numberOfDistricts).fill(1) as readonly number[]);
+}

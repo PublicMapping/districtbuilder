@@ -29,6 +29,7 @@ import {
   ReferenceLayerWithGeojson
 } from "./types";
 import { getJWT, setJWT } from "./jwt";
+import { fetchStaticMetadata } from "./s3";
 
 const apiAxios = axios.create();
 
@@ -240,11 +241,12 @@ export async function fetchRegionConfigs(): Promise<IRegionConfig> {
 
 export async function fetchRegionProperties(
   region: RegionConfigId,
-  geoLevel: string
+  geoLevel: string,
+  fields: readonly string[]
 ): Promise<readonly Record<string, unknown>[]> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .get(`/api/region-configs/${region}/properties/${geoLevel}?fields=name`)
+      .get(`/api/region-configs/${region}/properties/${geoLevel}?fields=${fields.join("&fields=")}`)
       .then(response => {
         resolve(response.data);
       })
@@ -485,4 +487,12 @@ export async function removeUserFromOrganization(
         reject(error.message);
       });
   });
+}
+
+// Retrieves total population for the region by fetching metadata & querying topojson properties
+export async function fetchTotalPopulation(region: IRegionConfig) {
+  const staticMetadata = await fetchStaticMetadata(region.s3URI);
+  const topLevel = staticMetadata.geoLevels[staticMetadata.geoLevels.length - 1].id;
+  const records = await fetchRegionProperties(region.id, topLevel, ["population"]);
+  return records.reduce((total, record) => total + Number(record["population"]), 0);
 }

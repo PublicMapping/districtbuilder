@@ -108,6 +108,14 @@ export class Project implements IProject {
   })
   pinnedMetricFields: string[];
 
+  @Column({
+    type: "integer",
+    name: "number_of_members",
+    array: true,
+    default: () => "'{}'"
+  })
+  numberOfMembers: readonly number[];
+
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {
     return { ...this, lockedDistricts: new Array(this.numberOfDistricts).fill(false) };

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Add support for creating/importing projects with multi-member districts [#1060](https://github.com/PublicMapping/districtbuilder/pull/1060) 
 ### Changed
 ### Fixed
 

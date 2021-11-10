@@ -16,7 +16,7 @@ import {
   TypedArrays
 } from "../../../shared/entities";
 import { getAllIndices } from "../../../shared/functions";
-import { isBaseGeoLevelAlwaysVisible, getTargetPopulation } from "../../functions";
+import { isBaseGeoLevelAlwaysVisible } from "../../functions";
 import { mapValues } from "lodash";
 import { ChoroplethSteps, PviBucket, DistrictsGeoJSON } from "../../types";
 
@@ -138,20 +138,16 @@ export function getPviBuckets(): readonly PviBucket[] {
   ];
 }
 
-export function getEqualPopulationStops(
-  popThresholdNum: number,
-  avgPopulation: number
-): ChoroplethSteps {
+export function getEqualPopulationStops(popThresholdNum: number): ChoroplethSteps {
   const popThreshold = popThresholdNum / 100;
-  const isAvgFractional = avgPopulation % 1 !== 0;
   return [
-    [-1.0 * avgPopulation, "#c1e5f0"],
-    [-1 * (popThreshold + 0.02) * avgPopulation, "#66a9cf"],
-    [-1 * (popThreshold + 0.01) * avgPopulation, "#2166ac"],
-    [-1 * popThreshold * avgPopulation - (isAvgFractional ? 1 : 0.1), "#01665e"],
-    [popThreshold === 0 ? (isAvgFractional ? 1 : 0.1) : popThreshold * avgPopulation, "#efbe60"],
-    [(popThreshold + 0.01) * avgPopulation, "#f5d092"],
-    [(popThreshold + 0.02) * avgPopulation, "#f7e1c3"]
+    [-1.0, "#c1e5f0"],
+    [-1 * (popThreshold + 0.02), "#66a9cf"],
+    [-1 * (popThreshold + 0.01), "#2166ac"],
+    [popThreshold === 0 ? -1 * Number.MIN_VALUE : -1 * popThreshold, "#01665e"],
+    [popThreshold === 0 ? Number.MIN_VALUE : popThreshold, "#efbe60"],
+    [popThreshold + 0.01, "#f5d092"],
+    [popThreshold + 0.02, "#f7e1c3"]
   ];
 }
 
@@ -321,7 +317,6 @@ export function generateMapLayers(
     DISTRICTS_PLACEHOLDER_LAYER_ID
   );
 
-  const avgPopulation = getTargetPopulation(geojson);
   map.addLayer(
     // @ts-ignore
     {
@@ -332,9 +327,9 @@ export function generateMapLayers(
       filter: ["match", ["get", "color"], ["transparent"], false, true],
       paint: {
         "fill-color": {
-          property: "populationDeviation",
+          property: "percentDeviation",
           type: "interval",
-          stops: getEqualPopulationStops(populationDeviation, avgPopulation)
+          stops: getEqualPopulationStops(populationDeviation)
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9

@@ -89,7 +89,8 @@ export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
   readonly party?: Party;
   readonly hasMultipleElections?: boolean;
   readonly electionYear?: ElectionYear;
-  readonly avgPopulation?: number;
+  readonly populationPerRepresentative?: number;
+  readonly numberOfMembers?: readonly number[];
   readonly popThreshold?: number;
   readonly status?: boolean;
   // eslint-disable-next-line
