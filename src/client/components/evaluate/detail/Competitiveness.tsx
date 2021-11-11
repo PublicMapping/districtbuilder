@@ -1,14 +1,15 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading, Button, Spinner } from "theme-ui";
-import { getPviSteps } from "../../map/index";
 import { useState } from "react";
-import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
-import PVIDisplay from "../../PVIDisplay";
-import { formatPvi, computeRowFill, calculatePVI } from "../../../functions";
-import { checkPlanScoreAPI } from "../../../api";
+import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
+
 import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
-import CompetitivenessChart from "./CompetitivenessChart";
+import { checkPlanScoreAPI } from "../../../api";
+import { calculatePVI, computeRowFill, formatPvi } from "../../../functions";
+import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
+import { getPviSteps } from "../../map/index";
+import PVIDisplay from "../../PVIDisplay";
 import Tooltip from "../../Tooltip";
+import CompetitivenessChart from "./CompetitivenessChart";
 
 const style: ThemeUIStyleObject = {
   table: {
