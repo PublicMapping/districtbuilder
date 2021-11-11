@@ -142,7 +142,8 @@ const CompetitivenessMetricDetail = ({
       <Box
         sx={{
           mb: 2,
-          position: "fixed",
+          position: "absolute",
+          right: "30px",
           bottom: "0"
         }}
       >
