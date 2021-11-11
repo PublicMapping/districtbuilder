@@ -13,7 +13,7 @@ const MultiMemberForm = ({ totalPopulation, numberOfMembers, onChange }: Props) 
   const popPerRep = Math.floor(totalPopulation / totalReps);
   return (
     <Styled.table sx={{ margin: "0", width: "100%" }}>
-      <thead>
+      <thead sx={{ bg: "muted" }}>
         <tr>
           <td>Districts</td>
           <td>Number of reps</td>
@@ -28,6 +28,7 @@ const MultiMemberForm = ({ totalPopulation, numberOfMembers, onChange }: Props) 
               <Input
                 sx={{ maxWidth: "200px" }}
                 value={numberOfReps}
+                pattern="[0-9]+"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const val = Number(e.target.value);
                   onChange([...numberOfMembers.slice(0, i), val, ...numberOfMembers.slice(i + 1)]);

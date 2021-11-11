@@ -43,7 +43,9 @@ import {
   referenceLayerDelete,
   referenceLayerDeleteSuccess,
   referenceLayerDeleteFailure,
-  setDeleteReferenceLayer
+  setDeleteReferenceLayer,
+  toggleProjectDetailsModal,
+  updateProjectDetailsSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
@@ -104,6 +106,7 @@ export type ProjectDataState = {
   readonly saving: SavingState;
   readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
   readonly showReferenceLayersModal: boolean;
+  readonly showProjectDetailsModal: boolean;
   readonly duplicatedProject: IProject | null;
   readonly deleteReferenceLayer?: IReferenceLayer;
 };
@@ -119,6 +122,7 @@ export const initialProjectDataState = {
   projectNameSaving: "saved",
   saving: "unsaved",
   showReferenceLayersModal: false,
+  showProjectDetailsModal: false,
   duplicatedProject: null
 } as const;
 
@@ -298,6 +302,11 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         ...state,
         showReferenceLayersModal: !state.showReferenceLayersModal
       };
+    case getType(toggleProjectDetailsModal):
+      return {
+        ...state,
+        showProjectDetailsModal: !state.showProjectDetailsModal
+      };
     case getType(staticDataFetchFailure):
       return loop(
         {
@@ -373,6 +382,13 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         saving: "saved",
+        projectData: { resource: action.payload }
+      };
+    case getType(updateProjectDetailsSuccess):
+      return {
+        ...state,
+        saving: "saved",
+        showProjectDetailsModal: false,
         projectData: { resource: action.payload }
       };
     case getType(updateDistrictsDefinition):
