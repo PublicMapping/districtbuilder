@@ -1,5 +1,6 @@
 /** @jsx jsx */
 import { useState } from "react";
+import { toast } from "react-toastify";
 import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
@@ -83,10 +84,15 @@ const CompetitivenessMetricDetail = ({
   function sendToPlanScore() {
     setPlanScoreLoaded(false);
     project &&
-      checkPlanScoreAPI(project).then((data: PlanScoreAPIResponse) => {
-        setPlanScoreLoaded(true);
-        setPlanScoreLink(data.plan_url);
-      });
+      checkPlanScoreAPI(project)
+        .then((data: PlanScoreAPIResponse) => {
+          setPlanScoreLoaded(true);
+          setPlanScoreLink(data.plan_url);
+        })
+        .catch(() => {
+          setPlanScoreLoaded(null);
+          toast.error("Error uploading map to PlanScore, please try again later");
+        });
   }
   return (
     <Box>
