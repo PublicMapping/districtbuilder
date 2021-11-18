@@ -22,7 +22,6 @@ import {
   ChoroplethSteps,
   DistrictGeoJSON,
   ElectionYear,
-  Party,
   DistrictsGeoJSON,
   ReferenceLayerGeojson,
   PviBucket
@@ -75,14 +74,6 @@ export const getPartyColor = (party: string) =>
 export const getMajorityRaceDisplay = (feature: DistrictGeoJSON) =>
   feature.properties.majorityRace && capitalizeFirstLetter(feature.properties.majorityRace);
 
-export function formatPvi(party?: Party, value?: number): string {
-  return value !== undefined && party !== undefined
-    ? `${party.label}+${Math.abs(value).toLocaleString(undefined, {
-        maximumFractionDigits: 0
-      })}`
-    : "N/A";
-}
-
 /* Creates array of party-labelled pvi bucket counts as strings */
 export function formatPviByDistrict(
   pviBuckets: readonly (PviBucket | undefined)[] | undefined
@@ -90,12 +81,10 @@ export function formatPviByDistrict(
   const partyLabels = ["R", "E (Even)", "D"];
   // Count by partyLabels
   const bucketCounts = pviBuckets?.reduce(
-    // eslint-disable-next-line
-    (allBuckets: { [key: string]: number } | undefined, bucket: PviBucket | undefined) => {
+    (allBuckets: { readonly [key: string]: number } | undefined, bucket: PviBucket | undefined) => {
       const name =
         bucket &&
         partyLabels.find(label => bucket.name.includes(label) || label.includes(bucket.name));
-      // eslint-disable-next-line
       return name
         ? allBuckets && name in allBuckets
           ? { ...allBuckets, [name]: allBuckets[name] + 1 }
@@ -110,7 +99,7 @@ export function formatPviByDistrict(
     partyLabels
       .map((label: string) => {
         return bucketCounts[label]
-          ? `${Math.abs(bucketCounts[label]).toLocaleString(undefined, {
+          ? `${bucketCounts[label].toLocaleString(undefined, {
               maximumFractionDigits: 0
             })} ${label}`
           : undefined;

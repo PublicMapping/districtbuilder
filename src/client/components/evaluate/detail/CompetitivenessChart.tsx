@@ -7,57 +7,19 @@ import { ParentSize } from "@visx/responsive";
 import { scaleLinear, scaleBand } from "@visx/scale";
 import { Axis } from "@visx/axis";
 import { getPviBuckets } from "../../map";
-//import { calculatePVI } from "../../../functions";
 import { countBy } from "lodash";
 
-//probably no longer even need geojson and metric passed in
 const CompetitivenessChart = ({
-  //geojson,
-  //metric,
   pviBuckets
 }: {
-  //readonly geojson?: DistrictsGeoJSON;
-  //readonly metric?: EvaluateMetricWithValue;
   readonly pviBuckets?: readonly (PviBucket | undefined)[] | undefined;
 }) => {
-  /*const buckets: readonly (PviBucket | undefined)[] | undefined =
-    geojson &&
-    geojson?.features
-      .filter(f => f.id !== 0 && f.geometry.coordinates.length > 0)
-      .map(f => {
-        const pvi = f.properties.voting && calculatePVI(f.properties.voting, metric?.electionYear);
-        const data: PviBucket | undefined = pvi !== undefined ? computeRowBucket(pvi) : undefined;
-        return data;
-      });*/
-
   const bucketCounts = countBy(pviBuckets, "name");
 
   const chartData: readonly PviBucket[] = getPviBuckets().map(bucket => {
     return { ...bucket, count: bucketCounts[bucket.name] || 0 };
   });
-  /*
-    function computeRowBucket(value: number): PviBucket | undefined {
-      const buckets: readonly PviBucket[] = getPviBuckets();
-      const stops = getPviSteps();
-      // eslint-disable-next-line
-      for (let i = 0; i < stops.length; i++) {
-        const r = stops[i];
-        if (value >= r[0]) {
-          if (i < stops.length - 1) {
-            const r1 = stops[i + 1];
-            if (value < r1[0]) {
-              return buckets[i];
-            }
-          } else {
-            return buckets[i];
-          }
-        } else {
-          return buckets[i];
-        }
-      }
-      return undefined;
-    }
-  */
+
   return (
     <Flex
       sx={{

@@ -109,12 +109,11 @@ const CompetitivenessMetricDetail = ({
         {formatPviByDistrict(pviBuckets)?.map(
           (bucket: string, index: number, array: readonly string[]) => {
             const divider = array.length > index + 1 && "/";
-            const bucketColor =
-              (bucket.includes("R")
-                ? getPartyColor("republican")
-                : bucket.includes("D")
-                ? getPartyColor("democrat")
-                : "#141414") || "#000";
+            const bucketColor = bucket.includes("R")
+              ? getPartyColor("republican")
+              : bucket.includes("D")
+              ? getPartyColor("democrat")
+              : "#141414";
             return divider ? (
               <span sx={{ color: "#000", mb: "10px" }} key={index}>
                 <span sx={{ color: bucketColor, ml: "10px", mb: "10px", mr: "10px" }}>
