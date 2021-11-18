@@ -2,7 +2,7 @@
 import { Box, Button, Flex, jsx, ThemeUIStyleObject, Heading, Text, Select } from "theme-ui";
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
 import Icon from "../Icon";
-import { DistrictsGeoJSON, ElectionYear, EvaluateMetricWithValue } from "../../types";
+import { DistrictsGeoJSON, ElectionYear, EvaluateMetricWithValue, PviBucket } from "../../types";
 import store from "../../store";
 import { selectEvaluationMetric } from "../../actions/districtDrawing";
 import ContiguityMetricDetail from "./detail/Contiguity";
@@ -36,6 +36,7 @@ const ProjectEvaluateMetricDetail = ({
   regionProperties,
   geoLevel,
   electionYear,
+  pviBuckets,
   setElectionYear,
   staticMetadata
 }: {
@@ -45,6 +46,7 @@ const ProjectEvaluateMetricDetail = ({
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly geoLevel: string;
   readonly electionYear: ElectionYear | undefined;
+  readonly pviBuckets: readonly (PviBucket | undefined)[] | undefined;
   readonly setElectionYear: (year: ElectionYear) => void;
   readonly staticMetadata?: IStaticMetadata;
 }) => {
@@ -124,7 +126,12 @@ const ProjectEvaluateMetricDetail = ({
         ) : metric && "type" in metric && metric.key === "equalPopulation" ? (
           <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
         ) : metric && "type" in metric && metric.key === "competitiveness" ? (
-          <CompetitivenessMetricDetail metric={metric} geojson={geojson} project={project} />
+          <CompetitivenessMetricDetail
+            metric={metric}
+            geojson={geojson}
+            project={project}
+            pviBuckets={pviBuckets}
+          />
         ) : metric && "type" in metric && metric.key === "majorityMinority" ? (
           <MajorityRaceMetricDetail metric={metric} geojson={geojson} />
         ) : (

@@ -5,8 +5,13 @@ import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } 
 
 import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
 import { checkPlanScoreAPI } from "../../../api";
-import { calculatePVI, computeRowFill, formatPvi } from "../../../functions";
-import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
+import {
+  calculatePVI,
+  computeRowFill,
+  formatPviByDistrict,
+  getPartyColor
+} from "../../../functions";
+import { DistrictsGeoJSON, EvaluateMetricWithValue, PviBucket } from "../../../types";
 import { getPviSteps } from "../../map/index";
 import PVIDisplay from "../../PVIDisplay";
 import Tooltip from "../../Tooltip";
@@ -69,11 +74,13 @@ const style: ThemeUIStyleObject = {
 const CompetitivenessMetricDetail = ({
   metric,
   geojson,
-  project
+  project,
+  pviBuckets
 }: {
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
   readonly project?: IProject;
+  readonly pviBuckets?: readonly (PviBucket | undefined)[] | undefined;
 }) => {
   const [planScoreLoaded, setPlanScoreLoaded] = useState<boolean | null>(null);
   const [planScoreLink, setPlanScoreLink] = useState<string | null>(null);
@@ -94,15 +101,36 @@ const CompetitivenessMetricDetail = ({
           toast.error("Error uploading map to PlanScore, please try again later");
         });
   }
+
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-        Partisan Voting Index (PVI):
-        <span sx={{ color: metric.party?.color || "#000", ml: "10px", mb: "10px" }}>
-          {formatPvi(metric.party, metric.value)}
-        </span>
+        PVI by District:
+        {formatPviByDistrict(pviBuckets)?.map(
+          (bucket: string, index: number, array: readonly string[]) => {
+            const divider = array.length > index + 1 && "/";
+            const bucketColor =
+              (bucket.includes("R")
+                ? getPartyColor("republican")
+                : bucket.includes("D")
+                ? getPartyColor("democrat")
+                : "#141414") || "#000";
+            return divider ? (
+              <span sx={{ color: "#000", mb: "10px" }} key={index}>
+                <span sx={{ color: bucketColor, ml: "10px", mb: "10px", mr: "10px" }}>
+                  {bucket}
+                </span>
+                {divider}
+              </span>
+            ) : (
+              <span sx={{ color: bucketColor, ml: "10px", mb: "10px" }} key={index}>
+                {bucket}
+              </span>
+            );
+          }
+        ) || " N/A"}
       </Heading>
-      <CompetitivenessChart geojson={geojson} metric={metric} />
+      <CompetitivenessChart pviBuckets={pviBuckets} />
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
