@@ -49,7 +49,7 @@
     "@types/topojson": "3.2.2",
     "@typescript-eslint/eslint-plugin": "^3.1.0",
     "@typescript-eslint/parser": "^3.1.0",
-    "aws-sdk": "2.663.0",
+    "aws-sdk": "2.814.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-functional": "^3.0.1",
