@@ -33,7 +33,7 @@ import { OrganizationState } from "../reducers/organization";
 import { UserState } from "../reducers/user";
 import { Resource, WriteResource } from "../resource";
 import store from "../store";
-import { updateNumberOfMembers } from "../functions";
+import { updateNumberOfMembers, extractErrors } from "../functions";
 
 interface StateProps {
   readonly regionConfigs: Resource<readonly IRegionConfig[]>;
@@ -479,6 +479,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                           </Box>
                           {data.numberOfMembers && data.isMultiMember && totalPopulation ? (
                             <MultiMemberForm
+                              errors={extractErrors(createProjectResource, "numberOfMembers")}
                               totalPopulation={totalPopulation}
                               numberOfMembers={data.numberOfMembers}
                               onChange={numberOfMembers => {

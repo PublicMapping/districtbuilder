@@ -24,6 +24,7 @@ import FormError from "./FormError";
 import { DistrictsGeoJSON } from "../types";
 import MultiMemberForm from "./MultiMemberForm";
 import { patchProject } from "../api";
+import { extractErrors } from "../functions";
 
 const style: ThemeUIStyleObject = {
   footer: {
@@ -246,6 +247,7 @@ const ProjectDetailModal = ({
                     <Box sx={style.multiMemberContainer}>
                       <Box>
                         <MultiMemberForm
+                          errors={extractErrors(projectDetailsResource, "numberOfMembers")}
                           totalPopulation={totalPopulation}
                           numberOfMembers={formData.numberOfMembers}
                           onChange={numberOfMembers => {

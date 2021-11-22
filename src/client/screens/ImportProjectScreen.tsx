@@ -45,7 +45,7 @@ import { WriteResource, Resource } from "../resource";
 import store from "../store";
 import OrganizationTemplateForm from "../components/OrganizationTemplateForm";
 import { userFetch } from "../actions/user";
-import { destructureResource, updateNumberOfMembers } from "../functions";
+import { destructureResource, updateNumberOfMembers, extractErrors } from "../functions";
 import MultiMemberForm from "../components/MultiMemberForm";
 
 interface StateProps {
@@ -757,6 +757,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                           </Box>
                           {formData.numberOfMembers && formData.isMultiMember && totalPopulation ? (
                             <MultiMemberForm
+                              errors={extractErrors(createProjectResource, "numberOfMembers")}
                               totalPopulation={totalPopulation}
                               numberOfMembers={formData.numberOfMembers}
                               onChange={numberOfMembers => {
