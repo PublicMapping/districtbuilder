@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Add support for creating/importing projects with multi-member districts [#1060](https://github.com/PublicMapping/districtbuilder/pull/1060) 
+- Add Map Configuration  modal [#1065](https://github.com/PublicMapping/districtbuilder/pull/1065)
 ### Changed
 ### Fixed
 - Improve PlanScore integration and display toast on errors [#1062](https://github.com/PublicMapping/districtbuilder/pull/1062)

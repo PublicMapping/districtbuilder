@@ -17,7 +17,7 @@ import {
   ReferenceLayerProperties
 } from "../shared/entities";
 
-import { Resource } from "./resource";
+import { Resource, WriteResource } from "./resource";
 import {
   ChoroplethSteps,
   DistrictGeoJSON,
@@ -423,4 +423,13 @@ export function updateNumberOfMembers(
       ? numberOfMembers.slice(0, numberOfDistricts)
       : numberOfMembers.concat(new Array(numberOfDistricts - numberOfMembers.length).fill(1))
     : (new Array(numberOfDistricts).fill(1) as readonly number[]);
+}
+
+export function extractErrors<D, T>(
+  resource: WriteResource<D, T>,
+  field: keyof D
+): readonly string[] | undefined {
+  return "errors" in resource && typeof resource.errors.message === "object"
+    ? resource.errors.message[field]
+    : undefined;
 }

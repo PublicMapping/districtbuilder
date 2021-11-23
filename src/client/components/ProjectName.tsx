@@ -6,7 +6,11 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { Box, Button, Flex, Heading, Input, jsx, Styled, Text } from "theme-ui";
 import { IProject, IProjectTemplate } from "../../shared/entities";
-import { setProjectNameEditing, updateProjectName } from "../actions/projectData";
+import {
+  setProjectNameEditing,
+  updateProjectName,
+  toggleProjectDetailsModal
+} from "../actions/projectData";
 import { State } from "../reducers";
 import store from "../store";
 import { SavingState } from "../types";
@@ -39,6 +43,7 @@ const style = {
 
 enum MenuKeys {
   Rename = "Rename",
+  Config = "Config",
   AboutTemplate = "AboutTemplate"
 }
 
@@ -65,7 +70,7 @@ const ProjectName = ({
     projectNameSaving === "unsaved" && inputRef.current && inputRef.current.focus();
   }, [inputRef, projectNameSaving]);
 
-  const EditButton = project.projectTemplate ? (
+  const EditButton = (
     <Wrapper
       sx={{ position: "relative", pr: 1 }}
       closeOnSelection={true}
@@ -74,6 +79,8 @@ const ProjectName = ({
           store.dispatch(setProjectNameEditing(true));
         } else if (menuKey === MenuKeys.AboutTemplate) {
           setModalVisibility(true);
+        } else if (menuKey === MenuKeys.Config) {
+          store.dispatch(toggleProjectDetailsModal());
         }
       }}
     >
@@ -104,20 +111,23 @@ const ProjectName = ({
               <Box sx={menuButtonStyles.menuListItem}>Rename map</Box>
             </MenuItem>
           </li>
-          <li key={MenuKeys.AboutTemplate}>
-            <MenuItem value={MenuKeys.AboutTemplate}>
-              <Box sx={menuButtonStyles.menuListItem}>
-                About “{project.projectTemplate?.name}” template
-              </Box>
+          <li key={MenuKeys.Config}>
+            <MenuItem value={MenuKeys.Config}>
+              <Box sx={menuButtonStyles.menuListItem}>Map configuration</Box>
             </MenuItem>
           </li>
+          {project.projectTemplate && (
+            <li key={MenuKeys.AboutTemplate}>
+              <MenuItem value={MenuKeys.AboutTemplate}>
+                <Box sx={menuButtonStyles.menuListItem}>
+                  About “{project.projectTemplate.name}” template
+                </Box>
+              </MenuItem>
+            </li>
+          )}
         </ul>
       </Menu>
     </Wrapper>
-  ) : (
-    <Button sx={style.button} onClick={() => store.dispatch(setProjectNameEditing(true))}>
-      <Icon name="pencil" />
-    </Button>
   );
 
   const TemplateModal = ({ template }: { readonly template: IProjectTemplate }) => (

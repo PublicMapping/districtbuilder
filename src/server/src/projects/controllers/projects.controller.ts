@@ -74,6 +74,30 @@ import { ProjectTemplatesService } from "../../project-templates/services/projec
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 import { ReferenceLayersService } from "../../reference-layers/services/reference-layers.service";
 
+function validateNumberOfMembers(
+  dto: CreateProjectDto | UpdateProjectDto,
+  numberOfDistricts: number
+): void {
+  if (dto.numberOfMembers && numberOfDistricts !== dto.numberOfMembers.length) {
+    throw new BadRequestException({
+      error: "Bad Request",
+      message: { numberOfMembers: [`Length of array does not match "numberOfDistricts"`] }
+    } as Errors<UpdateProjectDto>);
+  }
+  if (dto.numberOfMembers && dto.numberOfMembers.some(num => num === 0)) {
+    throw new BadRequestException({
+      error: "Bad Request",
+      message: { numberOfMembers: [`Districts cannot have 0 representatives`] }
+    } as Errors<UpdateProjectDto>);
+  }
+  if (dto.numberOfMembers && dto.numberOfMembers.some(num => num === null || Number.isNaN(num))) {
+    throw new BadRequestException({
+      error: "Bad Request",
+      message: { numberOfMembers: [`Number of representatives is required for every district`] }
+    } as Errors<UpdateProjectDto>);
+  }
+}
+
 @Crud({
   model: {
     type: Project
@@ -214,18 +238,13 @@ export class ProjectsController implements CrudController<Project> {
   ) {
     // Start off with some validations that can't be handled easily at the DTO layer
     const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
-    if (dto.lockedDistricts && existingProject?.numberOfDistricts !== dto.lockedDistricts.length) {
+    if (dto.lockedDistricts && existingProject.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
         message: { lockedDistricts: [`Length of array does not match "numberOfDistricts"`] }
       } as Errors<UpdateProjectDto>);
     }
-    if (dto.numberOfMembers && existingProject?.numberOfDistricts !== dto.numberOfMembers.length) {
-      throw new BadRequestException({
-        error: "Bad Request",
-        message: { numberOfMembers: [`Length of array does not match "numberOfDistricts"`] }
-      } as Errors<UpdateProjectDto>);
-    }
+    validateNumberOfMembers(dto, existingProject.numberOfDistricts);
 
     const staticMetadata = (await this.getGeoUnitProperties(existingProject.regionConfig.s3URI))
       .staticMetadata;
@@ -291,6 +310,10 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateProjectDto
   ): Promise<Project> {
+    if (dto.numberOfDistricts) {
+      validateNumberOfMembers(dto, dto.numberOfDistricts);
+    }
+
     // This is in a lambda bc prettier kept moving my @ts-ignore
     const findTemplate = (id: ProjectTemplateId) =>
       // @ts-ignore

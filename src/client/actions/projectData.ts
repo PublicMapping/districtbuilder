@@ -62,6 +62,10 @@ export const updateProjectNameSuccess = createAction("Update project name succes
   DynamicProjectData
 >();
 
+export const updateProjectDetailsSuccess = createAction("Update project details success")<
+  DynamicProjectData
+>();
+
 export const updateProjectVisibility = createAction("Update project visibility")<
   ProjectVisibility
 >();
@@ -98,6 +102,7 @@ export const duplicateProjectSuccess = createAction("Duplicate project success")
 export const duplicateProjectFailure = createAction("Duplicate project failure")<string>();
 
 export const toggleReferenceLayersModal = createAction("Toggle reference layers modal")();
+export const toggleProjectDetailsModal = createAction("Toggle project details modal")();
 
 export const clearDuplicationState = createAction("Clear duplication state")();
 
