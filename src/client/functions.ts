@@ -22,9 +22,9 @@ import {
   ChoroplethSteps,
   DistrictGeoJSON,
   ElectionYear,
-  Party,
   DistrictsGeoJSON,
-  ReferenceLayerGeojson
+  ReferenceLayerGeojson,
+  PviBucket
 } from "./types";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
@@ -74,12 +74,38 @@ export const getPartyColor = (party: string) =>
 export const getMajorityRaceDisplay = (feature: DistrictGeoJSON) =>
   feature.properties.majorityRace && capitalizeFirstLetter(feature.properties.majorityRace);
 
-export function formatPvi(party?: Party, value?: number): string {
-  return value !== undefined && party !== undefined
-    ? `${party.label}+${Math.abs(value).toLocaleString(undefined, {
-        maximumFractionDigits: 0
-      })}`
-    : "N/A";
+/* Creates array of party-labelled pvi bucket counts as strings */
+export function formatPviByDistrict(
+  pviBuckets: readonly (PviBucket | undefined)[] | undefined
+): readonly string[] | undefined {
+  const partyLabels = ["R", "E (Even)", "D"];
+  // Count by partyLabels
+  const bucketCounts = pviBuckets?.reduce(
+    (allBuckets: { readonly [key: string]: number } | undefined, bucket: PviBucket | undefined) => {
+      const name =
+        bucket &&
+        partyLabels.find(label => bucket.name.includes(label) || label.includes(bucket.name));
+      return name
+        ? allBuckets && name in allBuckets
+          ? { ...allBuckets, [name]: allBuckets[name] + 1 }
+          : { ...allBuckets, [name]: 1 }
+        : allBuckets;
+    },
+    {}
+  );
+  // Create string with partyLabels label
+  const bucketCountsStrings =
+    bucketCounts &&
+    partyLabels
+      .map((label: string) => {
+        return bucketCounts[label]
+          ? `${bucketCounts[label].toLocaleString(undefined, {
+              maximumFractionDigits: 0
+            })} ${label}`
+          : undefined;
+      })
+      .filter((bucket: string | undefined): bucket is string => bucket !== undefined);
+  return bucketCountsStrings && bucketCountsStrings.length > 0 ? bucketCountsStrings : undefined;
 }
 
 function computeRowFillInterval(stops: ChoroplethSteps, value?: number) {

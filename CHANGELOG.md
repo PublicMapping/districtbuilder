@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for creating/importing projects with multi-member districts [#1060](https://github.com/PublicMapping/districtbuilder/pull/1060) 
 - Add Map Configuration  modal [#1065](https://github.com/PublicMapping/districtbuilder/pull/1065)
 ### Changed
+- Update Competitiveness metric on Evaluate [#1068](https://github.com/PublicMapping/districtbuilder/pull/1068)
 ### Fixed
 - Improve PlanScore integration and display toast on errors [#1062](https://github.com/PublicMapping/districtbuilder/pull/1062)
 - Fix duplicate regions in Community Maps dropdown [#1070](https://github.com/PublicMapping/districtbuilder/pull/1070)
