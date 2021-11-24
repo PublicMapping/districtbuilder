@@ -37,7 +37,8 @@ import * as _ from "lodash";
       }
     },
     filter: {
-      archived: false
+      archived: false,
+      hidden: false
     }
   },
   routes: {
