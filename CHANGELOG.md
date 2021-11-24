@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 ### Fixed
 - Improve PlanScore integration and display toast on errors [#1062](https://github.com/PublicMapping/districtbuilder/pull/1062)
+- Fix duplicate regions in Community Maps dropdown [#1070](https://github.com/PublicMapping/districtbuilder/pull/1070)
 
 ## [1.12.1] - 2021-10-29
 ### Fixed
