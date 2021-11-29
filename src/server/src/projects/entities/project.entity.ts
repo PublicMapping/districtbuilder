@@ -2,7 +2,12 @@ import { FeatureCollection, MultiPolygon } from "geojson";
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { ProjectVisibility } from "../../../../shared/constants";
-import { DistrictProperties, DistrictsDefinition, IProject } from "../../../../shared/entities";
+import {
+  DistrictProperties,
+  DistrictsDefinition,
+  IProject,
+  ProjectProperties
+} from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { User } from "../../users/entities/user.entity";
@@ -13,7 +18,9 @@ import {
 } from "../../../../shared/constants";
 
 // TODO #179: Move to shared/entities
-export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
+export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties> & {
+  readonly metadata?: ProjectProperties;
+};
 
 @Entity()
 @Index("IDX_PUBLISHED_PROJECTS", { synchronize: false })

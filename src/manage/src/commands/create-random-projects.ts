@@ -79,7 +79,12 @@ export default class CreateRandomProjects extends Command {
       }
       const lockedDistricts = new Array(numberOfDistricts).fill(false);
       const numberOfMembers = new Array(numberOfDistricts).fill(1);
-      const districts = geoCollection.merge({ districts: districtsDefinition }, numberOfDistricts);
+      const districts = geoCollection.merge({
+        districtsDefinition,
+        numberOfDistricts,
+        user,
+        regionConfig: region
+      });
       if (!districts) {
         this.log(`Could not generate geojson`);
         this.exit(1);
