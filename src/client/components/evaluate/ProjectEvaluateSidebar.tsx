@@ -2,9 +2,13 @@
 import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
-import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, Party } from "../../types";
+import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, PviBucket } from "../../types";
 import store from "../../store";
-import { hasMultipleElections, isMajorityMinority } from "../../functions";
+import {
+  hasMultipleElections,
+  isMajorityMinority,
+  getPopulationPerRepresentative
+} from "../../functions";
 import { regionPropertiesFetch } from "../../actions/regionConfig";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
@@ -12,12 +16,8 @@ import { useState, useEffect } from "react";
 import { Resource } from "../../resource";
 import { selectEvaluationMetric } from "../../actions/districtDrawing";
 
-import {
-  geoLevelLabelSingular,
-  getTargetPopulation,
-  calculatePVI,
-  getPartyColor
-} from "../../functions";
+import { geoLevelLabelSingular, calculatePVI } from "../../functions";
+import { getPviBuckets, getPviSteps } from "../map";
 
 const style: ThemeUIStyleObject = {
   sidebar: {
@@ -44,34 +44,24 @@ const ProjectEvaluateSidebar = ({
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
 }) => {
-  const [avgCompactness, setAvgCompactness] = useState<number | undefined>(undefined);
-  const [avgPopulation, setAvgPopulation] = useState<number | undefined>(undefined);
-  const [geoLevel, setGeoLevel] = useState<string | undefined>(undefined);
   const [electionYear, setEvaluateElectionYear] = useState<ElectionYear>("combined");
-  const [avgCompetitiveness, setAvgCompetitiveness] = useState<number | undefined>(undefined);
-  const [party, setParty] = useState<Party | undefined>(undefined);
   const popThreshold = project && project.populationDeviation;
-  useEffect(() => {
-    if (geojson && !avgCompactness) {
-      const features = geojson.features.slice(1).filter(f => f.properties.compactness !== 0);
-      const totalCompactness = features.reduce(function(accumulator, feature) {
-        return accumulator + feature.properties.compactness;
-      }, 0);
-      setAvgCompactness(features.length !== 0 ? totalCompactness / features.length : undefined);
-    }
-  }, [geojson, avgCompactness]);
 
-  useEffect(() => {
-    if (geojson && !avgPopulation) {
-      setAvgPopulation(getTargetPopulation(geojson));
-    }
-  }, [geojson, avgPopulation]);
+  const featuresWithCompactness = geojson?.features
+    .slice(1)
+    .filter(f => f.properties.compactness !== 0);
+  const totalCompactness = featuresWithCompactness?.reduce(function(accumulator, feature) {
+    return accumulator + feature.properties.compactness;
+  }, 0);
+  const avgCompactness =
+    totalCompactness !== undefined &&
+    featuresWithCompactness &&
+    featuresWithCompactness.length !== 0
+      ? totalCompactness / featuresWithCompactness.length
+      : undefined;
 
-  useEffect(() => {
-    if (staticMetadata) {
-      setGeoLevel(staticMetadata.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id);
-    }
-  }, [staticMetadata]);
+  const geoLevel =
+    staticMetadata?.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id;
 
   useEffect(() => {
     if (project && project.regionConfig.regionCode && geoLevel) {
@@ -96,55 +86,60 @@ const ProjectEvaluateSidebar = ({
   const numDistrictsWithGeometries =
     geojson && geojson.features.filter(f => f.geometry.coordinates.length > 0).length;
 
+  const pviBuckets: readonly (PviBucket | undefined)[] | undefined =
+    geojson &&
+    geojson?.features
+      .filter(f => f.id !== 0 && f.geometry.coordinates.length > 0)
+      .map(f => {
+        const pvi = f.properties.voting && calculatePVI(f.properties.voting, metric?.electionYear);
+        const data: PviBucket | undefined = pvi !== undefined ? computeRowBucket(pvi) : undefined;
+        return data;
+      });
+
+  function computeRowBucket(value: number): PviBucket | undefined {
+    const buckets: readonly PviBucket[] = getPviBuckets();
+    const stops = getPviSteps();
+    // eslint-disable-next-line
+    for (let i = 0; i < stops.length; i++) {
+      const r = stops[i];
+      if (value >= r[0]) {
+        if (i < stops.length - 1) {
+          const r1 = stops[i + 1];
+          if (value < r1[0]) {
+            return buckets[i];
+          }
+        } else {
+          return buckets[i];
+        }
+      } else {
+        return buckets[i];
+      }
+    }
+    return undefined;
+  }
+
   useEffect(() => {
     if (
-      (!avgCompetitiveness ||
-        (metric && "electionYear" in metric && electionYear !== metric.electionYear)) &&
+      metric &&
+      "electionYear" in metric &&
+      electionYear !== metric.electionYear &&
       numDistrictsWithGeometries &&
       numDistrictsWithGeometries > 1
     ) {
-      const numDistrictsWithPvi =
-        geojson &&
-        geojson.features
-          .filter(f => f.id !== 0 && f.geometry.coordinates.length > 0)
-          .filter(f => Object.keys(f.properties.voting || {}).length > 0).length;
-
-      const competitiveness =
-        geojson && geojson.features && numDistrictsWithPvi && numDistrictsWithPvi > 0
-          ? geojson.features
-              .filter(f => f.id !== 0)
-              .map(f => {
-                const voting =
-                  Object.keys(f.properties.voting || {}).length > 0
-                    ? f.properties.voting
-                    : undefined;
-                const pvi = voting && calculatePVI(voting, electionYear);
-                return pvi || 0;
-              })
-              .reduce((a, b) => a + b) / numDistrictsWithPvi
-          : undefined;
-
-      setAvgCompetitiveness(competitiveness);
-      const partyLabel = competitiveness && competitiveness > 0 ? "D" : "R";
-      const partyColor = getPartyColor(
-        competitiveness && competitiveness > 0 ? "democrat" : "republican"
-      );
-      const party: Party = { color: partyColor, label: partyLabel };
-      setParty(party);
       if (metric && metric.key === "competitiveness") {
         metric &&
           store.dispatch(
             selectEvaluationMetric({
               ...metric,
-              electionYear: electionYear,
-              party: party,
-              value: competitiveness
+              electionYear: electionYear
             })
           );
       }
     }
-  }, [electionYear, geojson, metric, avgCompetitiveness, numDistrictsWithGeometries]);
+  }, [electionYear, geojson, metric, numDistrictsWithGeometries]);
 
+  const populationPerRepresentative =
+    geojson && project && getPopulationPerRepresentative(geojson, project?.numberOfMembers);
   const multipleElections = hasMultipleElections(staticMetadata);
 
   const requiredMetrics: readonly EvaluateMetricWithValue[] = [
@@ -157,16 +152,17 @@ const ProjectEvaluateSidebar = ({
         numEqualPopDistricts === numDistrictsWithGeometries,
       description: "have equal population",
       shortText:
-        "The U.S. constitution requires that each district have about the same population for a map to be considered valid.",
+        "The U.S. constitution requires that each district have about the same population per representative for a map to be considered valid.",
       longText:
         (popThreshold !== undefined &&
-          `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of districts and the threshold is a set percentage deviation (${Math.floor(
+          `Districts are required to be "Equal Population" for a map to be considered valid. Districts are "Equal Population" when their population falls within the target threshold. The target population is the total population divided by the number of representatives and the threshold is a set percentage deviation (${Math.floor(
             popThreshold
           )}%) above or below that target.`) ||
         "",
       showInSummary: true,
-      avgPopulation: avgPopulation,
-      popThreshold: popThreshold,
+      popThreshold,
+      populationPerRepresentative,
+      numberOfMembers: project?.numberOfMembers,
       type: "fraction",
       total: geojson?.features.filter(f => f.id !== 0).length || 0,
       value: numEqualPopDistricts || 0
@@ -195,14 +191,13 @@ const ProjectEvaluateSidebar = ({
       key: "competitiveness",
       name: "Competitiveness",
       description: "are competitive",
-      type: "pvi",
+      type: "pvibydistrict",
       shortText:
         "A competitiveness metric evaluates the plan based on the average partisan lean of each district.",
       longText:
         "A competitiveness metric evaluates the plan based on the average partisan lean of each district, calculated using the Partisan Voting Index (PVI). A partisan lean of the district plan which deviates from the overall lean of the state can be indicative of gerrymandering.",
       showInSummary: !!(staticMetadata && staticMetadata.voting),
-      party: party,
-      value: avgCompetitiveness,
+      pviByDistrict: pviBuckets,
       hasMultipleElections: multipleElections,
       electionYear: electionYear
     },
@@ -261,6 +256,7 @@ const ProjectEvaluateSidebar = ({
           electionYear={electionYear}
           setElectionYear={setEvaluateElectionYear}
           geoLevel={geoLevel}
+          pviBuckets={pviBuckets}
           regionProperties={regionProperties}
           staticMetadata={staticMetadata}
         />

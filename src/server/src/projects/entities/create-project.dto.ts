@@ -35,6 +35,11 @@ export class CreateProjectDto implements CreateProjectData {
   @IsOptional()
   readonly districtsDefinition?: DistrictsDefinition;
 
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsOptional()
+  readonly numberOfMembers?: readonly number[];
+
   @IsOptional()
   @IsNumber()
   @Max(100, { message: "Population deviation must be between 0% and 100%" })

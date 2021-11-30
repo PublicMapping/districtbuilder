@@ -38,11 +38,11 @@ import {
 import {
   areAnyGeoUnitsSelected,
   getSelectedGeoLevel,
-  getTargetPopulation,
   geoLevelLabelSingular,
   assertNever,
   hasMultipleElections,
-  calculatePVI
+  calculatePVI,
+  getPopulationPerRepresentative
 } from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -354,7 +354,6 @@ const DistrictsMap = ({
 
   const selectedGeolevel = getSelectedGeoLevel(staticMetadata.geoLevelHierarchy, geoLevelIndex);
 
-  const avgPopulation = getTargetPopulation(geojson);
   const multipleElections = hasMultipleElections(staticMetadata);
 
   const minZoom = Math.min(...staticMetadata.geoLevelHierarchy.map(geoLevel => geoLevel.minZoom));
@@ -524,8 +523,10 @@ const DistrictsMap = ({
 
   // Update districts source when geojson is fetched or find type is changed
   useEffect(() => {
-    // Add a color property to the geojson, so it can be used for styling
+    const popPerRep = getPopulationPerRepresentative(geojson, project.numberOfMembers);
+
     geojson.features.forEach((feature, id) => {
+      // Add a color property to the geojson, so it can be used for styling
       const districtColor = getDistrictColor(id);
       // eslint-disable-next-line functional/immutable-data
       feature.properties.id = id;
@@ -544,15 +545,18 @@ const DistrictsMap = ({
 
       // The population goal for the unassigned district is 0,
       // so it's deviation is equal to its population
-      const populationDeviation =
-        id === 0
-          ? feature.properties.demographics.population
-          : feature.properties.demographics.population - avgPopulation;
+      const targetPopulation = feature.id !== 0 ? popPerRep * project.numberOfMembers[id - 1] : 0;
+      const populationDeviation = feature.properties.demographics.population - targetPopulation;
 
       // eslint-disable-next-line functional/immutable-data
       feature.properties.percentDeviation =
         feature.properties.demographics.population !== 0 && feature.id !== 0
-          ? populationDeviation / avgPopulation
+          ? // Special case - for 0% deviation, off-by-one counts as 0 when population is not evenly divisible
+            project.populationDeviation === 0 &&
+            Math.abs(populationDeviation) <= 1 &&
+            targetPopulation % 1 !== 0
+            ? 0
+            : populationDeviation / targetPopulation
           : undefined;
       const electionYear =
         evaluateMetric && "electionYear" in evaluateMetric
@@ -617,7 +621,16 @@ const DistrictsMap = ({
 
     const districtsSource = map && map.getSource(DISTRICTS_SOURCE_ID);
     districtsSource && districtsSource.type === "geojson" && districtsSource.setData(geojson);
-  }, [map, geojson, findMenuOpen, findTool, avgPopulation, evaluateMetric, staticMetadata]);
+  }, [
+    map,
+    geojson,
+    findMenuOpen,
+    findTool,
+    project.numberOfMembers,
+    project.populationDeviation,
+    evaluateMetric,
+    staticMetadata
+  ]);
 
   // Update layer styles when district is selected
   useEffect(() => {
@@ -1211,21 +1224,19 @@ const DistrictsMap = ({
           <Flex sx={{ alignItems: "center" }}>
             <Text sx={style.legendTitle}>Equal Population</Text>
             <Box sx={{ display: "inline-block" }}>
-              {getEqualPopulationStops(project.populationDeviation, avgPopulation).map(
-                (step, i) => (
-                  <Flex sx={style.legendItem} key={i}>
-                    <Box
-                      sx={{
-                        ...style.legendColorSwatch,
-                        backgroundColor: `${step[1]}`
-                      }}
-                    ></Box>
-                    <Text sx={style.legendLabel}>
-                      {project ? getEqualPopulationLabels(project.populationDeviation)[i] : ""}
-                    </Text>
-                  </Flex>
-                )
-              )}
+              {getEqualPopulationStops(project.populationDeviation).map((step, i) => (
+                <Flex sx={style.legendItem} key={i}>
+                  <Box
+                    sx={{
+                      ...style.legendColorSwatch,
+                      backgroundColor: `${step[1]}`
+                    }}
+                  ></Box>
+                  <Text sx={style.legendLabel}>
+                    {project ? getEqualPopulationLabels(project.populationDeviation)[i] : ""}
+                  </Text>
+                </Flex>
+              ))}
             </Box>
           </Flex>
         </Box>

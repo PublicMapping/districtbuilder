@@ -70,11 +70,6 @@ export interface BaseEvaluateMetric {
 
 export type ElectionYear = "16" | "20" | "combined";
 
-export interface Party {
-  readonly color: string;
-  readonly label: "D" | "R";
-}
-
 export interface PviBucket {
   readonly name: string;
   readonly label: string;
@@ -83,14 +78,15 @@ export interface PviBucket {
 }
 
 export interface EvaluateMetricWithValue extends BaseEvaluateMetric {
-  readonly type: "fraction" | "percent" | "count" | "pvi";
+  readonly type: "fraction" | "percent" | "count" | "pvibydistrict";
   readonly value?: number;
   readonly total?: number;
-  readonly party?: Party;
   readonly hasMultipleElections?: boolean;
   readonly electionYear?: ElectionYear;
-  readonly avgPopulation?: number;
+  readonly populationPerRepresentative?: number;
+  readonly numberOfMembers?: readonly number[];
   readonly popThreshold?: number;
+  readonly pviByDistrict?: readonly (PviBucket | undefined)[] | undefined;
   readonly status?: boolean;
   // eslint-disable-next-line
   readonly [key: string]: any;

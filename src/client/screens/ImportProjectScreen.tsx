@@ -14,7 +14,9 @@ import {
   Spinner,
   ThemeUIStyleObject,
   Label,
-  Radio
+  Radio,
+  Divider,
+  Checkbox
 } from "theme-ui";
 
 import { DEFAULT_POPULATION_DEVIATION, FIPS, MAX_UPLOAD_FILE_SIZE } from "../../shared/constants";
@@ -33,7 +35,7 @@ import {
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { setImportFlagsModal } from "../actions/districtDrawing";
 
-import { createProject, importCsv } from "../api";
+import { createProject, importCsv, fetchTotalPopulation } from "../api";
 import { InputField } from "../components/Field";
 import Icon from "../components/Icon";
 import ImportFlagsModal from "../components/ImportFlagsModal";
@@ -43,7 +45,8 @@ import { WriteResource, Resource } from "../resource";
 import store from "../store";
 import OrganizationTemplateForm from "../components/OrganizationTemplateForm";
 import { userFetch } from "../actions/user";
-import { destructureResource } from "../functions";
+import { destructureResource, updateNumberOfMembers, extractErrors } from "../functions";
+import MultiMemberForm from "../components/MultiMemberForm";
 
 interface StateProps {
   readonly organization: Resource<IOrganization>;
@@ -62,9 +65,11 @@ const validate = (
     "resource" in importResource ? importResource.resource.districtsDefinition : null;
   const maxDistrictId = "resource" in importResource ? importResource.resource.maxDistrictId : null;
   const numberOfDistricts = form.numberOfDistricts;
+  const numberOfMembers = form.numberOfMembers;
   const populationDeviation = form.populationDeviation;
   const chamber = form.chamber;
   const isCustom = form.isCustom;
+  const isMultiMember = form.isCustom;
   const organizationSelected = "resource" in organization;
 
   return organizationSelected && templateData?.projectTemplate && districtsDefinition
@@ -74,10 +79,12 @@ const validate = (
         regionConfig: templateData.regionConfig,
         districtsDefinition,
         isCustom,
+        isMultiMember,
         valid: true
       }
     : !organizationSelected &&
       numberOfDistricts &&
+      numberOfMembers &&
       maxDistrictId &&
       regionConfig &&
       populationDeviation !== null &&
@@ -86,20 +93,24 @@ const validate = (
     ? // Valid for the standard RegionConfig for this CSV
       {
         numberOfDistricts,
+        numberOfMembers,
         regionConfig,
         districtsDefinition,
         chamber,
         isCustom,
+        isMultiMember,
         populationDeviation,
         valid: true
       }
     : // Invalid
       {
         numberOfDistricts,
+        numberOfMembers,
         regionConfig,
         districtsDefinition,
         chamber,
         isCustom,
+        isMultiMember,
         populationDeviation,
         valid: false
       };
@@ -109,7 +120,9 @@ type ImportResource = WriteResource<IRegionConfig | null, DistrictsImportApiSucc
 
 interface ConfigurableForm {
   readonly numberOfDistricts: number | null;
+  readonly numberOfMembers: readonly number[] | null;
   readonly isCustom: boolean;
+  readonly isMultiMember: boolean;
   readonly chamber: IChamber | null;
   readonly populationDeviation: number;
 }
@@ -121,7 +134,9 @@ interface ValidCustomForm {
   readonly chamber: Pick<IChamber, "id"> | null;
   readonly districtsDefinition: DistrictsDefinition;
   readonly numberOfDistricts: number;
+  readonly numberOfMembers: readonly number[];
   readonly isCustom: boolean;
+  readonly isMultiMember: boolean;
   readonly populationDeviation: number;
   readonly valid: true;
 }
@@ -131,6 +146,7 @@ interface ValidTemplateForm {
   readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly projectTemplate: Pick<IRegionConfig, "id">;
   readonly isCustom: boolean;
+  readonly isMultiMember: boolean;
   readonly valid: true;
 }
 
@@ -141,14 +157,18 @@ interface InvalidForm {
   readonly chamber: Pick<IChamber, "id"> | null;
   readonly districtsDefinition: DistrictsDefinition | null;
   readonly numberOfDistricts: number | null;
+  readonly numberOfMembers: readonly number[] | null;
   readonly isCustom: boolean;
+  readonly isMultiMember: boolean;
   readonly populationDeviation: number | null;
   readonly valid: false;
 }
 
 const blankForm: ConfigurableForm = {
   numberOfDistricts: null,
-  isCustom: true,
+  numberOfMembers: null,
+  isCustom: false,
+  isMultiMember: false,
   chamber: null,
   populationDeviation: DEFAULT_POPULATION_DEVIATION
 };
@@ -305,6 +325,8 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
     []
   );
 
+  const [totalPopulation, setTotalPopulation] = useState<number | null>(null);
+
   const onDistrictChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chamber =
       regionConfig !== null
@@ -316,10 +338,19 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
         ...(chamber
           ? {
               numberOfDistricts: chamber.numberOfDistricts,
+              numberOfMembers:
+                chamber.numberOfMembers || new Array(chamber.numberOfDistricts).fill(1),
+              isMultiMember: chamber.numberOfMembers?.some(num => num > 1) || false,
               chamber: chamber || null,
               isCustom: false
             }
-          : { numberOfDistricts: null, isCustom: true, chamber: null })
+          : {
+              numberOfDistricts: null,
+              numberOfMembers: null,
+              isCustom: true,
+              isMultiMember: false,
+              chamber: null
+            })
       }
     });
   };
@@ -447,6 +478,11 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
     setCreateProjectResource({ data: blankForm });
   }
 
+  useEffect(() => {
+    regionConfig &&
+      fetchTotalPopulation(regionConfig).then(population => setTotalPopulation(population));
+  }, [regionConfig]);
+
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
   ) : "resource" in regionConfigs && "resource" in user ? (
@@ -487,7 +523,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
               if (validatedForm.valid === true) {
                 setCreateProjectResource({ data: formData, isPending: true });
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { isCustom, valid, ...validatedData } = validatedForm;
+                const { isCustom, isMultiMember, valid, ...validatedData } = validatedForm;
                 createProject(
                   "name" in validatedForm.regionConfig
                     ? {
@@ -684,16 +720,52 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                                   onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                                     const value = parseInt(e.currentTarget.value, 10);
                                     const numberOfDistricts = isNaN(value) ? null : value;
+                                    const numberOfMembers = updateNumberOfMembers(
+                                      numberOfDistricts,
+                                      formData.numberOfMembers
+                                    );
                                     setCreateProjectResource({
                                       data: {
                                         ...formData,
-                                        numberOfDistricts
+                                        numberOfDistricts,
+                                        numberOfMembers
                                       }
                                     });
                                   }
                                 }}
                               />
                             </Box>
+                          ) : null}
+                          <Divider sx={{ width: "100%" }} />
+                          <Box>
+                            <Label
+                              sx={{
+                                display: "inline-flex"
+                              }}
+                            >
+                              <Checkbox
+                                name="project-is-multi-member"
+                                checked={formData.isMultiMember}
+                                onChange={() =>
+                                  setCreateProjectResource({
+                                    data: { ...formData, isMultiMember: !formData.isMultiMember }
+                                  })
+                                }
+                              />
+                              <Flex as="span">Use multi-member districts</Flex>
+                            </Label>
+                          </Box>
+                          {formData.numberOfMembers && formData.isMultiMember && totalPopulation ? (
+                            <MultiMemberForm
+                              errors={extractErrors(createProjectResource, "numberOfMembers")}
+                              totalPopulation={totalPopulation}
+                              numberOfMembers={formData.numberOfMembers}
+                              onChange={numberOfMembers => {
+                                setCreateProjectResource({
+                                  data: { ...formData, numberOfMembers }
+                                });
+                              }}
+                            />
                           ) : null}
                         </Flex>
                       </fieldset>

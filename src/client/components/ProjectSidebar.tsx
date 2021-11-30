@@ -33,7 +33,6 @@ import {
 import {
   areAnyGeoUnitsSelected,
   assertNever,
-  getTargetPopulation,
   mergeGeoUnits,
   hasMultipleElections,
   calculatePartyVoteShare,
@@ -42,7 +41,8 @@ import {
   has20Election,
   isMajorityMinority,
   getMajorityRaceDisplay,
-  capitalizeFirstLetter
+  capitalizeFirstLetter,
+  getPopulationPerRepresentative
 } from "../functions";
 import store from "../store";
 import { DistrictGeoJSON, DistrictsGeoJSON, SavingState } from "../types";
@@ -620,6 +620,11 @@ const SidebarRow = memo(
         </Styled.td>
       );
 
+    const meetsThreshold =
+      districtId !== 0 ? absoluteDeviation <= popDeviationThreshold : absoluteDeviation === 0;
+    const aboveThreshold = intermediateDeviation < 0;
+    const belowThreshold = intermediateDeviation > 0;
+
     return (
       <Styled.tr
         sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
@@ -662,11 +667,11 @@ const SidebarRow = memo(
               placement="top-start"
               content={
                 districtId !== 0 ? (
-                  Math.abs(intermediateDeviation) <= popDeviationThreshold ? (
+                  meetsThreshold ? (
                     <div>
                       This district meets the {popDeviation}% population deviation tolerance
                     </div>
-                  ) : intermediateDeviation < 0 ? (
+                  ) : aboveThreshold ? (
                     <div>
                       Add{" "}
                       {Math.floor(
@@ -683,7 +688,7 @@ const SidebarRow = memo(
                       tolerance
                     </div>
                   )
-                ) : intermediateDeviation > 0 ? (
+                ) : belowThreshold ? (
                   <div>
                     This population is not assigned to any district. Make sure all population is
                     assigned to a district to complete your map.
@@ -696,10 +701,9 @@ const SidebarRow = memo(
               <span>
                 <span>{deviationDisplay}</span>
                 <span sx={style.deviationIcon}>
-                  {(districtId === 0 && absoluteDeviation === 0) ||
-                  (districtId !== 0 && absoluteDeviation <= popDeviationThreshold) ? (
+                  {meetsThreshold ? (
                     <Icon name="circle-check-solid" color="#388a64" />
-                  ) : intermediateDeviation < 0 ? (
+                  ) : aboveThreshold ? (
                     <Icon name="arrow-circle-down-solid" color="gray.4" />
                   ) : (
                     <Icon name="arrow-circle-up-solid" color="#000000" />
@@ -902,7 +906,7 @@ const SidebarRows = ({
     };
   }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
 
-  const averagePopulation = getTargetPopulation(geojson);
+  const popPerRep = getPopulationPerRepresentative(geojson, project.numberOfMembers);
   const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
   const electionsMetricFields = getVotingMetricFields(staticMetadata);
 
@@ -919,6 +923,9 @@ const SidebarRows = ({
             : selectedPopulation !== undefined
             ? -1 * selectedPopulation
             : undefined;
+        const numberOfReps = project.numberOfMembers[districtId - 1] || 0;
+        const popDeviationThreshold =
+          (project.populationDeviation / 100) * popPerRep * numberOfReps;
 
         return feature.properties.populationDeviation !== undefined ? (
           <SidebarRow
@@ -939,7 +946,7 @@ const SidebarRows = ({
             districtId={districtId}
             isReadOnly={isReadOnly}
             popDeviation={project.populationDeviation}
-            popDeviationThreshold={averagePopulation * (project.populationDeviation / 100)}
+            popDeviationThreshold={popDeviationThreshold}
           />
         ) : null;
       })}

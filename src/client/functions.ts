@@ -1,5 +1,8 @@
-import { toast } from "react-toastify";
+import { isThisYear, isToday } from "date-fns";
+import format from "date-fns/format";
+import { FeatureCollection, Feature, Point } from "geojson";
 import { cloneDeep, mapKeys, pickBy } from "lodash";
+import { toast } from "react-toastify";
 
 import {
   DemographicCounts,
@@ -13,19 +16,16 @@ import {
   IStaticMetadata,
   ReferenceLayerProperties
 } from "../shared/entities";
+
+import { Resource, WriteResource } from "./resource";
 import {
   ChoroplethSteps,
   DistrictGeoJSON,
   ElectionYear,
-  Party,
   DistrictsGeoJSON,
-  ReferenceLayerGeojson
+  ReferenceLayerGeojson,
+  PviBucket
 } from "./types";
-
-import { Resource } from "./resource";
-import { isThisYear, isToday } from "date-fns";
-import { FeatureCollection, Feature, Point } from "geojson";
-import format from "date-fns/format";
 
 export function areAnyGeoUnitsSelected(geoUnits: GeoUnits) {
   return Object.values(geoUnits).some(geoUnitsForLevel => geoUnitsForLevel.size);
@@ -74,12 +74,38 @@ export const getPartyColor = (party: string) =>
 export const getMajorityRaceDisplay = (feature: DistrictGeoJSON) =>
   feature.properties.majorityRace && capitalizeFirstLetter(feature.properties.majorityRace);
 
-export function formatPvi(party?: Party, value?: number): string {
-  return value !== undefined && party !== undefined
-    ? `${party.label}+${Math.abs(value).toLocaleString(undefined, {
-        maximumFractionDigits: 0
-      })}`
-    : "N/A";
+/* Creates array of party-labelled pvi bucket counts as strings */
+export function formatPviByDistrict(
+  pviBuckets: readonly (PviBucket | undefined)[] | undefined
+): readonly string[] | undefined {
+  const partyLabels = ["R", "E (Even)", "D"];
+  // Count by partyLabels
+  const bucketCounts = pviBuckets?.reduce(
+    (allBuckets: { readonly [key: string]: number } | undefined, bucket: PviBucket | undefined) => {
+      const name =
+        bucket &&
+        partyLabels.find(label => bucket.name.includes(label) || label.includes(bucket.name));
+      return name
+        ? allBuckets && name in allBuckets
+          ? { ...allBuckets, [name]: allBuckets[name] + 1 }
+          : { ...allBuckets, [name]: 1 }
+        : allBuckets;
+    },
+    {}
+  );
+  // Create string with partyLabels label
+  const bucketCountsStrings =
+    bucketCounts &&
+    partyLabels
+      .map((label: string) => {
+        return bucketCounts[label]
+          ? `${bucketCounts[label].toLocaleString(undefined, {
+              maximumFractionDigits: 0
+            })} ${label}`
+          : undefined;
+      })
+      .filter((bucket: string | undefined): bucket is string => bucket !== undefined);
+  return bucketCountsStrings && bucketCountsStrings.length > 0 ? bucketCountsStrings : undefined;
 }
 
 function computeRowFillInterval(stops: ChoroplethSteps, value?: number) {
@@ -296,17 +322,16 @@ export function assignGeounitsToDistrict(
   }, districtsDefinitionCopy);
 }
 
-// The target population is based on the average population of all districts,
-// not including the unassigned district, so we use the number of districts,
-// rather than the district feature count (which includes the unassigned district)
-export function getTargetPopulation(geojson: DistrictsGeoJSON) {
-  return (
-    geojson.features.reduce(
-      (population, feature) => population + feature.properties.demographics.population,
-      0
-    ) /
-    (geojson.features.length - 1)
+export function getPopulationPerRepresentative(
+  geojson: DistrictsGeoJSON,
+  numberOfMembers: readonly number[]
+) {
+  const totalPopulation = geojson.features.reduce(
+    (total, feature) => total + feature.properties.demographics.population,
+    0
   );
+  const totalReps = numberOfMembers.reduce((total, numberOfReps) => total + numberOfReps, 0);
+  return totalPopulation / totalReps;
 }
 
 /*
@@ -411,3 +436,26 @@ export const convertCsvToGeojson = (csv: ParseResults): ReferenceLayerGeojson =>
   }
   return geojson;
 };
+
+// Extends/shrinks the number of members array to match the provided number of districts
+export function updateNumberOfMembers(
+  numberOfDistricts: number | null,
+  numberOfMembers: readonly number[] | null
+): readonly number[] | null {
+  return numberOfDistricts === null
+    ? null
+    : numberOfMembers !== null
+    ? numberOfMembers.length > numberOfDistricts
+      ? numberOfMembers.slice(0, numberOfDistricts)
+      : numberOfMembers.concat(new Array(numberOfDistricts - numberOfMembers.length).fill(1))
+    : (new Array(numberOfDistricts).fill(1) as readonly number[]);
+}
+
+export function extractErrors<D, T>(
+  resource: WriteResource<D, T>,
+  field: keyof D
+): readonly string[] | undefined {
+  return "errors" in resource && typeof resource.errors.message === "object"
+    ? resource.errors.message[field]
+    : undefined;
+}

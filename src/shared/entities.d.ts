@@ -189,6 +189,7 @@ export interface ProjectTemplateFields {
   readonly chamber?: IChamber;
   readonly populationDeviation: number;
   readonly pinnedMetricFields: readonly string[];
+  readonly numberOfMembers: readonly number[];
   readonly districtsDefinition: DistrictsDefinition;
 }
 
@@ -226,6 +227,7 @@ export type ProjectNest = Pick<
 export interface CreateProjectData {
   readonly name?: string;
   readonly numberOfDistricts?: number;
+  readonly numberOfMembers?: readonly number[];
   readonly regionConfig: Pick<IRegionConfig, "id">;
   readonly chamber?: Pick<IChamber, "id"> | null;
   readonly districtsDefinition?: DistrictsDefinition;
@@ -271,6 +273,7 @@ export interface IChamber {
   readonly id: ChamberId;
   readonly name: string;
   readonly numberOfDistricts: number;
+  readonly numberOfMembers?: readonly number[];
   readonly regionConfig: IRegionConfig;
 }
 

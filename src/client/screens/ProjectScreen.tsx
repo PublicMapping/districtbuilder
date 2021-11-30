@@ -47,6 +47,7 @@ import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSideba
 import ConvertMapModal from "../components/ConvertMapModal";
 import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
 import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
+import ProjectDetailsModal from "../components/ProjectDetailsModal";
 
 interface StateProps {
   readonly project?: IProject;
@@ -262,6 +263,7 @@ const ProjectScreen = ({
                   staticMetadata={staticMetadata}
                 />
                 <AddReferenceLayerModal project={project} />
+                <ProjectDetailsModal project={project} geojson={geojson} />
                 <DeleteReferenceLayerModal />
                 <Flex id="tour-start" sx={style.tourStart}></Flex>
               </React.Fragment>

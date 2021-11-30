@@ -95,6 +95,16 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 FALSE,
                 FALSE,
                 '2020'
+             ), (
+                '893a9538-3f14-4225-9c91-d54ba818ab0d',
+                'New Jersey',
+                'US',
+                'NJ',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/NJ/2021-10-26T01:42:56.227Z/',
+                '2021-10-26 01:42:56.227',
+                DEFAULT,
+                DEFAULT,
+                '2020'
              )
               ON CONFLICT DO NOTHING;
             "
@@ -107,13 +117,22 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 'e7f5999f-88d9-4c58-ab85-f65eae843ea1',
                 'House of Representatives',
                  18,
-                '6c440b8d-c26e-4bae-850f-dbff37fe0209'
+                '6c440b8d-c26e-4bae-850f-dbff37fe0209',
+                NULL
               ),
               (
                 '2202e945-161b-4f84-a282-5d65c7ba16b7',
                 'House of Representatives',
                  18,
-                '96bca832-99b3-4c4d-8913-ab4ca82ec442'
+                '96bca832-99b3-4c4d-8913-ab4ca82ec442',
+                NULL
+              ),
+              (
+                'ac0b99f1-baf9-4ee0-9f19-a6228ca61ab3',
+                'General Assembly',
+                 40,
+                '893a9538-3f14-4225-9c91-d54ba818ab0d',
+                ARRAY[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
               )
               ON CONFLICT DO NOTHING;
             "

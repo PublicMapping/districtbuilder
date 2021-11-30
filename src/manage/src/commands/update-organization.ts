@@ -16,6 +16,7 @@ interface TemplateConfig {
   readonly name: string;
   readonly regionConfig: string;
   readonly numberOfDistricts: string;
+  readonly numberOfMembers: readonly number[];
   readonly description?: string;
   readonly details?: string;
 }
@@ -92,6 +93,7 @@ export default class UpdateOrganization extends Command {
       // @ts-ignore
       template.regionConfig = { id: config.regionConfig };
       template.numberOfDistricts = Number(config.numberOfDistricts);
+      template.numberOfMembers = config.numberOfMembers.map(n => Number(n));
       template.description = config.description || "";
       template.details = config.details || "";
       // @ts-ignore

@@ -92,6 +92,11 @@ variable "rds_storage_type" {
   type    = string
 }
 
+variable "rds_iops" {
+  default = null
+  type    = string
+}
+
 variable "rds_database_identifier" {
   type = string
 }

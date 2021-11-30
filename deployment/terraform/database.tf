@@ -77,6 +77,7 @@ module "database" {
   engine_version             = var.rds_engine_version
   instance_type              = var.rds_instance_type
   storage_type               = var.rds_storage_type
+  iops                       = var.rds_storage_type == "io1" ? var.rds_iops : null
   database_identifier        = var.rds_database_identifier
   database_name              = var.rds_database_name
   database_username          = var.rds_database_username

@@ -22,7 +22,7 @@ function staticDataUri(path: S3URI, fileName: string): HttpsURI {
   return resolve(s3ToHttps(path), fileName);
 }
 
-async function fetchStaticMetadata(path: S3URI): Promise<IStaticMetadata> {
+export async function fetchStaticMetadata(path: S3URI): Promise<IStaticMetadata> {
   return new Promise((resolve, reject) => {
     s3Axios
       .get(staticDataUri(path, "static-metadata.json"))

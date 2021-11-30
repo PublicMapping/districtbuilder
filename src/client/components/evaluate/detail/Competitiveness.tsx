@@ -1,14 +1,21 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading, Button, Spinner } from "theme-ui";
-import { getPviSteps } from "../../map/index";
 import { useState } from "react";
-import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
-import PVIDisplay from "../../PVIDisplay";
-import { formatPvi, computeRowFill, calculatePVI } from "../../../functions";
-import { checkPlanScoreAPI } from "../../../api";
+import { toast } from "react-toastify";
+import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
+
 import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
-import CompetitivenessChart from "./CompetitivenessChart";
+import { checkPlanScoreAPI } from "../../../api";
+import {
+  calculatePVI,
+  computeRowFill,
+  formatPviByDistrict,
+  getPartyColor
+} from "../../../functions";
+import { DistrictsGeoJSON, EvaluateMetricWithValue, PviBucket } from "../../../types";
+import { getPviSteps } from "../../map/index";
+import PVIDisplay from "../../PVIDisplay";
 import Tooltip from "../../Tooltip";
+import CompetitivenessChart from "./CompetitivenessChart";
 
 const style: ThemeUIStyleObject = {
   table: {
@@ -67,33 +74,62 @@ const style: ThemeUIStyleObject = {
 const CompetitivenessMetricDetail = ({
   metric,
   geojson,
-  project
+  project,
+  pviBuckets
 }: {
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
   readonly project?: IProject;
+  readonly pviBuckets?: readonly (PviBucket | undefined)[] | undefined;
 }) => {
   const [planScoreLoaded, setPlanScoreLoaded] = useState<boolean | null>(null);
   const [planScoreLink, setPlanScoreLink] = useState<string | null>(null);
   const choroplethStops = getPviSteps();
-  const projectIsComplete = geojson && geojson.features[0].geometry.coordinates.length === 0;
+  const projectIsNotEmpty =
+    geojson &&
+    geojson.features.slice(1).some(feature => feature.properties.demographics.population !== 0);
   function sendToPlanScore() {
     setPlanScoreLoaded(false);
     project &&
-      checkPlanScoreAPI(project).then((data: PlanScoreAPIResponse) => {
-        setPlanScoreLoaded(true);
-        setPlanScoreLink(data.plan_url);
-      });
+      checkPlanScoreAPI(project)
+        .then((data: PlanScoreAPIResponse) => {
+          setPlanScoreLoaded(true);
+          setPlanScoreLink(data.plan_url);
+        })
+        .catch(() => {
+          setPlanScoreLoaded(null);
+          toast.error("Error uploading map to PlanScore, please try again later");
+        });
   }
+
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-        Partisan Voting Index (PVI):
-        <span sx={{ color: metric.party?.color || "#000", ml: "10px", mb: "10px" }}>
-          {formatPvi(metric.party, metric.value)}
-        </span>
+        PVI by District:
+        {formatPviByDistrict(pviBuckets)?.map(
+          (bucket: string, index: number, array: readonly string[]) => {
+            const divider = array.length > index + 1 && "/";
+            const bucketColor = bucket.includes("R")
+              ? getPartyColor("republican")
+              : bucket.includes("D")
+              ? getPartyColor("democrat")
+              : "#141414";
+            return divider ? (
+              <span sx={{ color: "#000", mb: "10px" }} key={index}>
+                <span sx={{ color: bucketColor, ml: "10px", mb: "10px", mr: "10px" }}>
+                  {bucket}
+                </span>
+                {divider}
+              </span>
+            ) : (
+              <span sx={{ color: bucketColor, ml: "10px", mb: "10px" }} key={index}>
+                {bucket}
+              </span>
+            );
+          }
+        ) || " N/A"}
       </Heading>
-      <CompetitivenessChart geojson={geojson} metric={metric} />
+      <CompetitivenessChart pviBuckets={pviBuckets} />
       <Styled.table sx={style.table}>
         <thead>
           <Styled.tr>
@@ -139,7 +175,8 @@ const CompetitivenessMetricDetail = ({
       <Box
         sx={{
           mb: 2,
-          position: "fixed",
+          position: "absolute",
+          right: "30px",
           bottom: "0"
         }}
       >
@@ -155,11 +192,11 @@ const CompetitivenessMetricDetail = ({
               },
               ...style.menuButton
             }}
-            disabled={planScoreLoaded === false || !projectIsComplete}
+            disabled={planScoreLoaded === false || !projectIsNotEmpty}
             onClick={() => sendToPlanScore()}
           >
             {planScoreLoaded === null ? (
-              projectIsComplete ? (
+              projectIsNotEmpty ? (
                 <span>Send to PlanScore API</span>
               ) : (
                 <Tooltip content={"Complete your project before sending to PlanScore"}>

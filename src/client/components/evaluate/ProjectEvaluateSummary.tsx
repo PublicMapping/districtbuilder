@@ -4,7 +4,7 @@ import { Box, IconButton, Flex, jsx, ThemeUIStyleObject, Heading, Text } from "t
 import Icon from "../Icon";
 import store from "../../store";
 import { EvaluateMetricWithValue } from "../../types";
-import { formatPvi } from "../../functions";
+import { formatPviByDistrict } from "../../functions";
 import { selectEvaluationMetric, toggleEvaluate } from "../../actions/districtDrawing";
 
 const style: ThemeUIStyleObject = {
@@ -64,8 +64,8 @@ const ProjectEvaluateView = ({
     switch (metric.type) {
       case "fraction":
         return `${metric.value} / ${metric.total || 18}`;
-      case "pvi":
-        return formatPvi(metric.party, metric.value);
+      case "pvibydistrict":
+        return formatPviByDistrict(metric.pviByDistrict)?.join(" / ") || "N/A";
       case "percent":
         return metric.value !== undefined ? `${Math.floor(metric.value * 100)}%` : "";
       case "count":
