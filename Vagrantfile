@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
   config.vm.synced_folder "~/.aws", "/home/vagrant/.aws"
 
   config.vm.provider :virtualbox do |vb|
-    vb.memory = 6144
+    vb.memory = 8192
     vb.cpus = 4
   end
 

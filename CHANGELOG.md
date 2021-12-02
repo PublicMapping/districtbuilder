@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update evaluate copy to reflect terminology to match the top level geo of the map [#1077](https://github.com/PublicMapping/districtbuilder/pull/1077)
+- Increase alloted memory for VM in Vagrantfile [#1079](https://github.com/PublicMapping/districtbuilder/pull/1079)
 
 ### Fixed
 
