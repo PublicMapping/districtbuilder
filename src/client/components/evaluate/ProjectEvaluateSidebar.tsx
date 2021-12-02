@@ -231,10 +231,20 @@ const ProjectEvaluateSidebar = ({
       name: `${geoLevel ? geoLevelLabelSingular(geoLevel) : ""} splits`,
       type: "count",
       description: "are split",
-      shortText:
-        "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
-      longText:
-        "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
+      shortText: `${
+        geoLevel ? `${geoLevelLabelSingular(geoLevel)} splits` : "Splits"
+      } occur when a ${
+        geoLevel ? geoLevel : "jurisdiction"
+      } is split between two or more districts. Some states require minimizing ${
+        geoLevel ? geoLevel : ""
+      } splits, to the extent practicable.`,
+      longText: `${
+        geoLevel ? `${geoLevelLabelSingular(geoLevel)} splits` : "Splits"
+      } occur when a ${
+        geoLevel ? geoLevel : "jurisdiction"
+      } is split between two or more districts. Some states require minimizing ${
+        geoLevel ? geoLevel : ""
+      } splits, to the extent practicable.`,
       showInSummary: true,
       value: project?.districtsDefinition.filter(x => Array.isArray(x)).length || 0,
       total: project ? project.districtsDefinition.length : 0,

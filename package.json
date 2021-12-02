@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "npm run clear_cache:eslint && react-scripts start",
+    "start": "CHOKIDAR_USEPOLLING=true npm run clear_cache:eslint && react-scripts start",
     "build": "npm run clear_cache:eslint && react-scripts build",
     "test": "npm run clear_cache:eslint && react-scripts test --testPathPattern=src/client",
     "eject": "react-scripts eject",
