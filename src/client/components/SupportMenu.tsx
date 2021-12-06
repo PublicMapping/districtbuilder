@@ -17,6 +17,8 @@ const guideLink =
 
 const contactLink = "mailto:support@districtbuilder.org";
 
+const blogLink = "https://medium.com/districtbuilder";
+
 const showKeyboardShortcuts = () => store.dispatch(toggleKeyboardShortcutsModal());
 
 interface StateProps {
@@ -48,6 +50,14 @@ const SupportMenu = ({ project, ...props }: SupportProps & StateProps) => {
               <Styled.a href={guideLink} target="_blank" sx={style.menuListItem}>
                 <Icon name="book-spells" sx={style.menuListIcon} />
                 Getting Started Guide
+              </Styled.a>
+            </MenuItem>
+          </li>
+          <li key={UserMenuKeys.Guide}>
+            <MenuItem value={UserMenuKeys.Guide}>
+              <Styled.a href={blogLink} target="_blank" sx={style.menuListItem}>
+                <Icon name="book-spells" sx={style.menuListIcon} />
+                Blog
               </Styled.a>
             </MenuItem>
           </li>
