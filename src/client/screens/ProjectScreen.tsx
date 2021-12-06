@@ -16,7 +16,7 @@ import {
   TypedArrays,
   IReferenceLayer
 } from "../../shared/entities";
-import { ElectionYear, EvaluateMetricWithValue } from "../types";
+import { EvaluateMetricWithValue } from "../types";
 
 import {
   projectDataFetch,
@@ -48,6 +48,7 @@ import ConvertMapModal from "../components/ConvertMapModal";
 import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
 import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
+import { ProjectOptionsState } from "../reducers/projectOptions";
 
 interface StateProps {
   readonly project?: IProject;
@@ -69,7 +70,7 @@ interface StateProps {
   readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
   readonly limitSelectionToCounty: boolean;
-  readonly electionYear: ElectionYear;
+  readonly projectOptions: ProjectOptionsState;
 }
 
 const style: ThemeUIStyleObject = {
@@ -103,7 +104,7 @@ const ProjectScreen = ({
   isArchived,
   user,
   limitSelectionToCounty,
-  electionYear
+  projectOptions
 }: StateProps) => {
   const { projectId } = useParams();
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
@@ -212,7 +213,8 @@ const ProjectScreen = ({
                 limitSelectionToCounty={limitSelectionToCounty}
                 advancedEditingEnabled={project?.advancedEditingEnabled}
                 isReadOnly={isReadOnly}
-                electionYear={electionYear}
+                electionYear={projectOptions.electionYear}
+                populationKey={projectOptions.populationKey}
               />
             ) : (
               <Flex></Flex>
@@ -289,7 +291,7 @@ function mapStateToProps(state: State): StateProps {
     evaluateMetric: state.project.evaluateMetric,
     findMenuOpen: state.project.findMenuOpen,
     mapLabel: state.project.mapLabel,
-    electionYear: state.projectOptions.electionYear,
+    projectOptions: state.projectOptions,
     limitSelectionToCounty: state.projectOptions.limitSelectionToCounty,
     districtDrawing: state.project,
     referenceLayers: state.project.referenceLayers,

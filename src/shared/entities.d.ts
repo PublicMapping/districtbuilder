@@ -109,9 +109,10 @@ export interface GeoLevelInfo {
 }
 
 export type GeoLevelHierarchy = readonly GeoLevelInfo[];
+export type GroupTotal = string;
 export interface DemographicsGroup {
   readonly subgroups: readonly string[];
-  readonly total?: string;
+  readonly total?: GroupTotal;
   readonly tooltip?: string;
 }
 

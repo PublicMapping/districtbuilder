@@ -4,17 +4,24 @@ import { getType } from "typesafe-actions";
 import { Action } from "../actions";
 import { ElectionYear } from "../types";
 
-import { toggleLimitDrawingToWithinCounty, setElectionYear } from "../actions/projectOptions";
+import {
+  toggleLimitDrawingToWithinCounty,
+  setElectionYear,
+  setPopulationKey
+} from "../actions/projectOptions";
 import { resetProjectState } from "../actions/root";
+import { GroupTotal } from "../../shared/entities";
 
 export interface ProjectOptionsState {
   readonly limitSelectionToCounty: boolean;
   readonly electionYear: ElectionYear;
+  readonly populationKey: GroupTotal;
 }
 
 export const initialProjectOptionsState: ProjectOptionsState = {
   limitSelectionToCounty: false,
-  electionYear: "16"
+  electionYear: "16",
+  populationKey: "population"
 };
 
 const projectOptionsReducer: LoopReducer<ProjectOptionsState, Action> = (
@@ -36,6 +43,11 @@ const projectOptionsReducer: LoopReducer<ProjectOptionsState, Action> = (
       return {
         ...state,
         electionYear: action.payload
+      };
+    case getType(setPopulationKey):
+      return {
+        ...state,
+        populationKey: action.payload
       };
     default:
       return state as never;
