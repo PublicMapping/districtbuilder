@@ -47,7 +47,10 @@ import {
   PublicUserProperties,
   GeoUnitHierarchy,
   UserId,
-  ProjectTemplateId
+  ProjectTemplateId,
+  IUser,
+  IChamber,
+  IRegionConfig
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
@@ -73,6 +76,7 @@ import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../
 import { ProjectTemplatesService } from "../../project-templates/services/project-templates.service";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 import { ReferenceLayersService } from "../../reference-layers/services/reference-layers.service";
+import { ChambersService } from "../../chambers/services/chambers";
 
 function validateNumberOfMembers(
   dto: CreateProjectDto | UpdateProjectDto,
@@ -112,6 +116,9 @@ function validateNumberOfMembers(
   query: {
     exclude: ["districts"],
     join: {
+      chamber: {
+        eager: true
+      },
       projectTemplate: {
         exclude: ["districtsDefinition"],
         eager: true
@@ -207,7 +214,8 @@ export class ProjectsController implements CrudController<Project> {
     private readonly organizationService: OrganizationsService,
     private readonly regionConfigService: RegionConfigsService,
     private readonly referenceLayerService: ReferenceLayersService,
-    private readonly crosswalkService: CrosswalkService
+    private readonly crosswalkService: CrosswalkService,
+    private readonly chambersService: ChambersService
   ) {}
 
   // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
@@ -280,8 +288,7 @@ export class ProjectsController implements CrudController<Project> {
         ? {
             ...dto,
             districts: await this.getGeojson({
-              regionConfig: existingProject.regionConfig,
-              numberOfDistricts: existingProject.numberOfDistricts,
+              ...existingProject,
               districtsDefinition: dto.districtsDefinition
             }),
             regionConfigVersion: existingProject.regionConfig.version
@@ -316,12 +323,26 @@ export class ProjectsController implements CrudController<Project> {
 
     // This is in a lambda bc prettier kept moving my @ts-ignore
     const findTemplate = (id: ProjectTemplateId) =>
-      // @ts-ignore
-      this.templateService.findOne({ id }, { relations: ["regionConfig", "referenceLayers"] });
+      this.templateService.findOne(
+        // @ts-ignore
+        { id },
+        { relations: ["regionConfig", "referenceLayers", "chamber"] }
+      );
     const template = dto.projectTemplate ? await findTemplate(dto.projectTemplate.id) : undefined;
     if (dto.projectTemplate && !template) {
       throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
     }
+
+    const user = await this.usersService.findOne(req.parsed.authPersist.userId);
+    if (!user) {
+      throw new InternalServerErrorException(
+        `User not found for authenticated user id ${req.parsed.authPersist.userId}`
+      );
+    }
+
+    const chamber = dto.chamber?.id
+      ? await this.chambersService.findOne(dto.chamber?.id)
+      : undefined;
 
     const regionConfig = dto.regionConfig
       ? await this.regionConfigService.findOne({ id: dto.regionConfig.id })
@@ -378,6 +399,8 @@ export class ProjectsController implements CrudController<Project> {
     const districts = await this.getGeojson({
       numberOfDistricts: formdata.numberOfDistricts,
       districtsDefinition: data.districtsDefinition,
+      user,
+      chamber: template?.chamber || chamber,
       regionConfig
     });
 
@@ -438,15 +461,29 @@ export class ProjectsController implements CrudController<Project> {
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
     }
-    // Set any fields we don't want duplicated to be undefined
+    const user = await this.usersService.findOne(req.parsed.authPersist.userId);
+    if (!user) {
+      throw new InternalServerErrorException(
+        `User not found for authenticated user id ${req.parsed.authPersist.userId}`
+      );
+    }
+
     const dto = {
       ...project,
       name: `Copy of ${project.name}`,
+      // Set any fields we don't want duplicated to be undefined
       id: undefined,
       user: undefined,
       createdDt: undefined,
       updatedDt: undefined,
-      isFeatured: undefined
+      isFeatured: undefined,
+      // Overwrite the creator data from the original creator to match the new owner
+      districts: project.districts?.metadata?.creator
+        ? {
+            ...project.districts,
+            metadata: { ...project.districts.metadata, creator: { id: user.id, name: user.name } }
+          }
+        : project.districts
     };
 
     try {
@@ -501,7 +538,7 @@ export class ProjectsController implements CrudController<Project> {
         )
       ),
       loadEagerRelations: false,
-      relations: ["regionConfig", "projectTemplate"]
+      relations: ["regionConfig", "projectTemplate", "user", "chamber"]
     });
     if (!project) {
       throw new NotFoundException(`Project ${id} not found`);
@@ -536,14 +573,24 @@ export class ProjectsController implements CrudController<Project> {
   async getGeojson({
     districtsDefinition,
     numberOfDistricts,
+    user,
+    chamber,
     regionConfig
   }: {
     readonly districtsDefinition: DistrictsDefinition;
     readonly numberOfDistricts: number;
-    readonly regionConfig: RegionConfig;
+    readonly user: IUser;
+    readonly chamber?: IChamber;
+    readonly regionConfig: IRegionConfig;
   }): Promise<DistrictsGeoJSON> {
     const geoCollection = await this.getGeoUnitTopology(regionConfig.s3URI);
-    const geojson = geoCollection.merge({ districts: districtsDefinition }, numberOfDistricts);
+    const geojson = geoCollection.merge({
+      districtsDefinition,
+      numberOfDistricts,
+      user,
+      chamber,
+      regionConfig
+    });
     if (geojson === null) {
       this.logger.error(`Invalid districts definition for project`);
       throw new BadRequestException(
@@ -574,11 +621,7 @@ export class ProjectsController implements CrudController<Project> {
       !project.districts ||
       project.regionConfigVersion.getTime() !== project.regionConfig.version.getTime()
     ) {
-      const districts = await this.getGeojson({
-        regionConfig: project.regionConfig,
-        numberOfDistricts: project.numberOfDistricts,
-        districtsDefinition: project.districtsDefinition
-      });
+      const districts = await this.getGeojson(project);
 
       // Note we don't wait for save to return, and we throw away it's result
       void this.service.save({
@@ -751,7 +794,9 @@ export class ProjectsController implements CrudController<Project> {
 
     const districts = await this.getGeojson({
       numberOfDistricts: project.numberOfDistricts,
+      user: project.user,
       regionConfig: newRegion,
+      chamber: project.chamber,
       districtsDefinition
     });
 

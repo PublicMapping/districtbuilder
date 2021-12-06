@@ -7,6 +7,7 @@ import {
   Polygon,
   Topology
 } from "topojson-specification";
+import * as _ from "lodash";
 
 import area from "@turf/area";
 import length from "@turf/length";
@@ -21,11 +22,13 @@ import {
   IStaticMetadata,
   TypedArrays,
   DistrictsDefinition,
-  GeoUnitHierarchy
+  GeoUnitHierarchy,
+  IRegionConfig,
+  IUser,
+  IChamber
 } from "../../../../shared/entities";
 import { getAllBaseIndices, getDemographics, getVoting } from "../../../../shared/functions";
 import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
-import { DistrictsDefinitionDto } from "./district-definition.dto";
 import { mapValues } from "lodash";
 
 interface GeoUnitPolygonHierarchy {
@@ -198,7 +201,19 @@ export class GeoUnitTopology {
    * Performs a merger of the specified districts into a GeoJSON collection,
    * or returns null if the district definition is invalid
    */
-  merge(definition: DistrictsDefinitionDto, numberOfDistricts: number): DistrictsGeoJSON | null {
+  merge({
+    districtsDefinition,
+    numberOfDistricts,
+    user,
+    chamber,
+    regionConfig
+  }: {
+    readonly districtsDefinition: DistrictsDefinition;
+    readonly numberOfDistricts: number;
+    readonly user: IUser;
+    readonly chamber?: IChamber;
+    readonly regionConfig: IRegionConfig;
+  }): DistrictsGeoJSON | null {
     // mutableDistrictGeoms contains the individual geometries prior to being merged
     // indexed by district id then by geolevel index
     const mutableDistrictGeoms: Array<Array<Array<MultiPolygon | Polygon>>> = Array.from(
@@ -228,8 +243,8 @@ export class GeoUnitTopology {
     };
 
     const valid =
-      definition.districts.length === this.hierarchy.length &&
-      definition.districts.every((elem, idx) => addToDistrict(elem, this.hierarchy[idx]));
+      districtsDefinition.length === this.hierarchy.length &&
+      districtsDefinition.every((elem, idx) => addToDistrict(elem, this.hierarchy[idx]));
 
     if (!valid) {
       return null;
@@ -264,6 +279,17 @@ export class GeoUnitTopology {
     });
     return {
       ...featureCollection,
+      // FeatureCollection objects cannot have 'properties' (RFC7964 Sec 7),
+      // but they can have other unrecognized fields (Sec 6.1)
+      // so we put all non-district data in this top-level metadata field
+      metadata: {
+        completed:
+          featureCollection.features[0].geometry.type === "MultiPolygon" &&
+          featureCollection.features[0].geometry.coordinates.length === 0,
+        chamber,
+        creator: _.pick(user, ["id", "name"]),
+        regionConfig: _.pick(regionConfig, ["id", "name", "regionCode", "countryCode", "s3URI"])
+      },
       features: featureCollection.features.map(feature => {
         const [compactness, contiguity] = calcPolsbyPopper(feature);
         const geometry = feature.geometry as GeoJSONMultiPolygon;
