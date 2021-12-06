@@ -107,9 +107,44 @@ This will attempt to apply the plan assembled in the previous step using Amazon'
 ### Variables
 
 | Environment | Cluster                | Cluster VPC             | Security Group         |
-|-------------|------------------------|-------------------------|------------------------|
+| ----------- | ---------------------- | ----------------------- | ---------------------- |
 | Staging     | `ecsStagingCluster`    | `vpc-04d3fda63dfc36e58` | `sg-0eb1ba122ccc68ca7` |
 | Production  | `ecsProductionCluster` | `vpc-039833dc732e496a1` | `sg-05a0cca2a9f5b57a3` |
+
+## Release New State Data
+
+To release new data, you will need a database administration desktop application for PostgreSQL like PG Admin. You can find information on configuring PG Admin for DistrictBuilder's databases [here](https://github.com/PublicMapping/districtbuilder/blob/develop/deployment/configure_pgadmin.md).
+
+You will need to update both the staging and production databases, first staging and then production, in order to run quality assurance on the data before posting it to the production site.
+
+### The Data
+
+The list of states with new data can be found [here](https://docs.google.com/spreadsheets/d/1khiNAQp4UnfkgfvRSbfjDU9CU2zJrJ0pMRUeF5a4cuM/edit#gid=645349603) highlighted in yellow. Before applying these changes to the staging database, you will need to make test maps of the affected states. Open [staging](https://app.staging.districtbuilder.org/) and make a new map of each state highlighted in yellow, adding both counties and blockgroups to a few districts.
+
+### The Method
+
+There are two ways to update the data in staging: the best practice way and the fast way. While staging can be done either way depending on the given timeframe, updating the data in production should _always_ happen the best practice way. If you do not follow the best practice way for production data, the site will crash.
+
+**The Best Practice Way**
+
+The best practice way is to overwrite the data on S3 and force reload once all data has been overwritten. To do so, for each state with updated data, do the following:
+
+- Make a backup of the data by running `aws s3 –profile=district-builder cp -r <existing URI> <existing URI>-backup-<yyyy-mm-dd>`
+- Copy the new data over the old with `aws s3 –profile=district-builder cp -r <new URI> <existing URI>`
+
+**The Fast Way**
+
+The faster but less ideal way for use only in staging is to just update the URI in the `s3_uri` column of the database in PG Admin. Then save the database.
+
+Once you have updated the data, follow the instructions in the [Restart Services](https://github.com/PublicMapping/districtbuilder/tree/develop/deployment#restart-services) section below.
+
+### Quality Assurance
+
+Once you have restarted the services for staging, you will need to return to the test maps you made. Open each to check that it loads and then make an edit or two, both at a block group and county level. If nothing breaks, that state's data is good to go up on production.
+
+### Finishing New Data Release
+
+Once you have completed the data update for both staging and production, copy each updated state's URI listed in the production database to the `production s3 url` column in the Google Sheet to mark it as complete.
 
 ## Restart services
 
@@ -124,6 +159,8 @@ Next, go to the [Staging](https://console.aws.amazon.com/ecs/home?region=us-east
 On the next screen, increase the "Number of tasks" to match the amount you set for the auto-scaling group, and leave everything else as-is.
 
 It will take some time (approx. 20-25 mins) for the new tasks to finish loading all TopoJSON data. You can monitor the progress by looking for `HealthCheckService` logs in the [`logStagingApp` / `logProductionApp` Cloudwatch logs](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups) or by looking at the number of healthy hosts in the [appropriate target group](https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#TargetGroups:).
+
+If while monitoring the logs, you see _one_ error about topology failing to load, wait and it will try again (health check failures during this process are normal). If you see _multiple_ errors about topology failing to load, check both that state's URI and the contents of the file. Once a fix is made, you will need to kill the task following instructions from the Stopping Tasks section below and let it restart itself.
 
 ### Stopping old tasks
 
