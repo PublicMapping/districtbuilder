@@ -6,6 +6,7 @@ import * as organizationActions from "./actions/organization";
 import * as organizationJoinActions from "./actions/organizationJoin";
 import * as organizationProjectActions from "./actions/organizationProjects";
 import * as projectDataActions from "./actions/projectData";
+import * as projectOptionsActions from "./actions/projectOptions";
 import * as projectsActions from "./actions/projects";
 import * as regionConfigActions from "./actions/regionConfig";
 import * as rootActions from "./actions/root";
@@ -17,6 +18,7 @@ export type OrganizationAction = ActionType<typeof organizationActions>;
 export type OrganizationJoinAction = ActionType<typeof organizationJoinActions>;
 export type OrganizationProjectsAction = ActionType<typeof organizationProjectActions>;
 export type ProjectDataAction = ActionType<typeof projectDataActions>;
+export type ProjectOptionsAction = ActionType<typeof projectOptionsActions>;
 export type ProjectsAction = ActionType<typeof projectsActions>;
 export type RegionConfigAction = ActionType<typeof regionConfigActions>;
 export type RootAction = ActionType<typeof rootActions>;
@@ -29,6 +31,7 @@ export type Action =
   | OrganizationProjectsAction
   | OrganizationJoinAction
   | ProjectDataAction
+  | ProjectOptionsAction
   | ProjectsAction
   | RegionConfigAction
   | RootAction

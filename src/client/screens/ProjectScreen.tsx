@@ -68,6 +68,7 @@ interface StateProps {
   readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
   readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
+  readonly limitSelectionToCounty: boolean;
   readonly electionYear: ElectionYear;
 }
 
@@ -101,6 +102,7 @@ const ProjectScreen = ({
   isReadOnly,
   isArchived,
   user,
+  limitSelectionToCounty,
   electionYear
 }: StateProps) => {
   const { projectId } = useParams();
@@ -207,7 +209,7 @@ const ProjectScreen = ({
                 paintBrushSize={districtDrawing.paintBrushSize}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
                 selectedGeounits={presentDrawingState.selectedGeounits}
-                limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
+                limitSelectionToCounty={limitSelectionToCounty}
                 advancedEditingEnabled={project?.advancedEditingEnabled}
                 isReadOnly={isReadOnly}
                 electionYear={electionYear}
@@ -244,7 +246,7 @@ const ProjectScreen = ({
                   evaluateMetric={evaluateMetric}
                   isReadOnly={isReadOnly}
                   isArchived={isArchived}
-                  limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
+                  limitSelectionToCounty={limitSelectionToCounty}
                   label={mapLabel}
                   map={map}
                   setMap={setMap}
@@ -287,7 +289,8 @@ function mapStateToProps(state: State): StateProps {
     evaluateMetric: state.project.evaluateMetric,
     findMenuOpen: state.project.findMenuOpen,
     mapLabel: state.project.mapLabel,
-    electionYear: state.project.electionYear,
+    electionYear: state.projectOptions.electionYear,
+    limitSelectionToCounty: state.projectOptions.limitSelectionToCounty,
     districtDrawing: state.project,
     referenceLayers: state.project.referenceLayers,
     regionProperties: state.regionConfig.regionProperties,

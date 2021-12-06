@@ -278,7 +278,7 @@ function mapStateToProps(state: State) {
     highlightedGeounits: state.project.highlightedGeounits,
     project: destructureResource(state.project.projectData, "project"),
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
-    electionYear: state.project.electionYear
+    electionYear: state.projectOptions.electionYear
   };
 }
 

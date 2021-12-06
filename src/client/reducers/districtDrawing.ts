@@ -2,7 +2,7 @@ import { Cmd, Loop, loop, LoopReducer } from "redux-loop";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../actions";
-import { SavingState, EvaluateMetricWithValue, ElectionYear } from "../types";
+import { SavingState, EvaluateMetricWithValue } from "../types";
 
 import {
   addSelectedGeounits,
@@ -31,12 +31,10 @@ import {
   saveDistrictsDefinition,
   setSavingState,
   FindTool,
-  toggleLimitDrawingToWithinCounty,
   selectEvaluationMetric,
   setZoomToDistrictId,
   setMapLabel,
   toggleKeyboardShortcutsModal,
-  setElectionYear,
   PaintBrushSize,
   setPaintBrushSize,
   toggleExpandedMetrics,
@@ -130,8 +128,6 @@ export interface DistrictDrawingState {
   readonly evaluateMetric: EvaluateMetricWithValue | undefined;
   readonly findIndex?: number;
   readonly findTool: FindTool;
-  readonly limitSelectionToCounty: boolean;
-  readonly electionYear: ElectionYear;
   readonly saving: SavingState;
   readonly undoHistory: UndoHistory;
   readonly mapLabel: string | undefined;
@@ -155,8 +151,6 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   evaluateMode: false,
   evaluateMetric: undefined,
   findTool: FindTool.Unassigned,
-  limitSelectionToCounty: false,
-  electionYear: "16",
   saving: "unsaved",
   mapLabel: "undefined",
   showReferenceLayers: new Set(),
@@ -255,16 +249,6 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
       return {
         ...state,
         saving: action.payload
-      };
-    case getType(toggleLimitDrawingToWithinCounty):
-      return {
-        ...state,
-        limitSelectionToCounty: !state.limitSelectionToCounty
-      };
-    case getType(setElectionYear):
-      return {
-        ...state,
-        electionYear: action.payload
       };
     case getType(setHighlightedGeounits):
       return {

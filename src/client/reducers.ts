@@ -26,10 +26,15 @@ import organizationProjectsReducer, {
 } from "./reducers/organizationProjects";
 import userReducer, { initialState as initialUserState, UserState } from "./reducers/user";
 import projectReducer, { ProjectState, initialProjectState } from "./reducers/project";
+import projectOptionsReducer, {
+  ProjectOptionsState,
+  initialProjectOptionsState
+} from "./reducers/projectOptions";
 
 export interface State {
   readonly auth: AuthState;
   readonly project: ProjectState;
+  readonly projectOptions: ProjectOptionsState;
   readonly projects: ProjectsState;
   readonly organization: OrganizationState;
   readonly organizationJoin: OrganizationJoinState;
@@ -44,6 +49,7 @@ export const initialState: State = {
   organizationJoin: initialOrganizationJoinState,
   organizationProjects: intialOrganizationProjectsState,
   project: initialProjectState,
+  projectOptions: initialProjectOptionsState,
   projects: initialProjectsState,
   regionConfig: initialRegionConfigState,
   user: initialUserState
@@ -55,6 +61,7 @@ const allReducers = combineReducers({
   organizationJoin: organizationJoinReducer,
   organizationProjects: organizationProjectsReducer,
   project: projectReducer,
+  projectOptions: projectOptionsReducer,
   projects: projectsReducer,
   regionConfig: regionConfigReducer,
   user: userReducer

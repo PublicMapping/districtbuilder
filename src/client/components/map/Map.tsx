@@ -1342,7 +1342,7 @@ function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
     findTool: state.project.findTool,
-    electionYear: state.project.electionYear,
+    electionYear: state.projectOptions.electionYear,
     showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal,
     referenceLayers: state.project.referenceLayers,
     showReferenceLayers: state.project.showReferenceLayers,
