@@ -17,10 +17,6 @@ import {
   setSelectedDistrictId,
   setHoveredDistrictId,
   setSelectionTool,
-  showAdvancedEditingModal,
-  showCopyMapModal,
-  showConvertMapModal,
-  setImportFlagsModal,
   toggleDistrictLocked,
   undo,
   replaceSelectedGeounits,
@@ -34,13 +30,13 @@ import {
   selectEvaluationMetric,
   setZoomToDistrictId,
   setMapLabel,
-  toggleKeyboardShortcutsModal,
   PaintBrushSize,
   setPaintBrushSize,
   toggleExpandedMetrics,
   toggleReferenceLayer
 } from "../actions/districtDrawing";
 import { updateDistrictsDefinition, updateDistrictLocks } from "../actions/projectData";
+import { showAdvancedEditingModal } from "../actions/projectModals";
 import { SelectionTool } from "../actions/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import {
@@ -117,11 +113,6 @@ export interface DistrictDrawingState {
   readonly highlightedGeounits: GeoUnits;
   readonly selectionTool: SelectionTool;
   readonly paintBrushSize: PaintBrushSize;
-  readonly showAdvancedEditingModal: boolean;
-  readonly showCopyMapModal: boolean;
-  readonly showConvertMapModal: boolean;
-  readonly showKeyboardShortcutsModal: boolean;
-  readonly showImportFlagsModal: boolean;
   readonly findMenuOpen: boolean;
   readonly expandedProjectMetrics: boolean;
   readonly evaluateMode: boolean;
@@ -141,11 +132,6 @@ export const initialDistrictDrawingState: DistrictDrawingState = {
   highlightedGeounits: {},
   selectionTool: SelectionTool.Default,
   paintBrushSize: 1,
-  showAdvancedEditingModal: false,
-  showCopyMapModal: false,
-  showConvertMapModal: false,
-  showImportFlagsModal: false,
-  showKeyboardShortcutsModal: false,
   findMenuOpen: false,
   expandedProjectMetrics: false,
   evaluateMode: false,
@@ -314,31 +300,6 @@ const districtDrawingReducer: LoopReducer<ProjectState, Action> = (
           )
         )
       );
-    case getType(showAdvancedEditingModal):
-      return {
-        ...state,
-        showAdvancedEditingModal: action.payload
-      };
-    case getType(toggleKeyboardShortcutsModal):
-      return {
-        ...state,
-        showKeyboardShortcutsModal: !state.showKeyboardShortcutsModal
-      };
-    case getType(showCopyMapModal):
-      return {
-        ...state,
-        showCopyMapModal: action.payload
-      };
-    case getType(showConvertMapModal):
-      return {
-        ...state,
-        showConvertMapModal: action.payload
-      };
-    case getType(setImportFlagsModal):
-      return {
-        ...state,
-        showImportFlagsModal: action.payload
-      };
     case getType(toggleFind):
       return {
         ...state,

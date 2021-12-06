@@ -6,7 +6,8 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import Icon from "../Icon";
 import { GeoLevelInfo, ProjectId } from "../../../shared/entities";
-import { setGeoLevelIndex, showAdvancedEditingModal } from "../../actions/districtDrawing";
+import { setGeoLevelIndex } from "../../actions/districtDrawing";
+import { showAdvancedEditingModal } from "../../actions/projectModals";
 import { projectFetch } from "../../actions/projectData";
 import { patchProject } from "../../api";
 import { State } from "../../reducers";
@@ -130,7 +131,7 @@ const AdvancedEditingModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showAdvancedEditingModal
+    showModal: state.projectModals.showAdvancedEditingModal
   };
 }
 

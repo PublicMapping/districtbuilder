@@ -12,12 +12,12 @@ import {
   toggleEvaluate,
   undo,
   redo,
-  toggleKeyboardShortcutsModal,
   toggleExpandedMetrics,
   setZoomToDistrictId,
   PaintBrushSize,
   setPaintBrushSize
 } from "../../actions/districtDrawing";
+import { toggleKeyboardShortcutsModal } from "../../actions/projectModals";
 import { toggleLimitDrawingToWithinCounty, setElectionYear } from "../../actions/projectOptions";
 import store from "../../store";
 import { showMapActionToast } from "../../functions";

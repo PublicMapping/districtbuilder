@@ -53,15 +53,6 @@ export const setGeoLevelVisibility = createAction("Set geolevel visibility")<rea
 
 export const toggleDistrictLocked = createAction("Toggle district locked")<DistrictId>();
 
-export const toggleKeyboardShortcutsModal = createAction("Show keyboard shortcuts modal")();
-
-export const showAdvancedEditingModal = createAction("Show advanced editing warning modal")<
-  boolean
->();
-export const showCopyMapModal = createAction("Show copy map modal")<boolean>();
-export const showConvertMapModal = createAction("Show convert map modal")<boolean>();
-export const setImportFlagsModal = createAction("Show import flags modal")<boolean>();
-
 export const undo = createAction("Undo project action")();
 export const redo = createAction("Redo project action")();
 

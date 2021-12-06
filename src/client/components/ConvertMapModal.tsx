@@ -7,7 +7,7 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject, Spinner } from "th
 
 import { isUserLoggedIn } from "../jwt";
 import { IProject, IUser } from "../../shared/entities";
-import { showConvertMapModal } from "../actions/districtDrawing";
+import { showConvertMapModal } from "../actions/projectModals";
 import { resetProjectState } from "../actions/root";
 import { convertAndCopyProject } from "../api";
 import { showActionFailedToast } from "../functions";
@@ -135,7 +135,7 @@ const ConvertMapModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showConvertMapModal,
+    showModal: state.projectModals.showConvertMapModal,
     user: state.user
   };
 }

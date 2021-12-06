@@ -16,9 +16,9 @@ import {
   replaceSelectedGeounits,
   FindTool,
   setZoomToDistrictId,
-  PaintBrushSize,
-  showConvertMapModal
+  PaintBrushSize
 } from "../../actions/districtDrawing";
+import { showConvertMapModal } from "../../actions/projectModals";
 import { getDistrictColor } from "../../constants/colors";
 import {
   TypedArrays,
@@ -1343,7 +1343,7 @@ function mapStateToProps(state: State) {
     findMenuOpen: state.project.findMenuOpen,
     findTool: state.project.findTool,
     electionYear: state.projectOptions.electionYear,
-    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal,
+    showKeyboardShortcutsModal: state.projectModals.showKeyboardShortcutsModal,
     referenceLayers: state.project.referenceLayers,
     showReferenceLayers: state.project.showReferenceLayers,
     isThisUsersMap:

@@ -5,7 +5,7 @@ import { useParams, Link as RouterLink, useHistory } from "react-router-dom";
 import { Box, Button, Flex, Heading, Image, jsx, Spinner, Text, Link } from "theme-ui";
 import { formatDate } from "../functions";
 
-import { showCopyMapModal } from "../actions/districtDrawing";
+import { showCopyMapModal } from "../actions/projectModals";
 import { organizationFetch } from "../actions/organization";
 import { leaveOrganization } from "../actions/organizationJoin";
 import { userFetch } from "../actions/user";
