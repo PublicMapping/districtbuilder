@@ -45,6 +45,17 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 '2020'
               ),
               (
+                '2d0af0fe-e43a-4ac5-a19b-b639734b9221',
+                'San Bernadino',
+                'US',
+                'CA',
+                's3://global-districtbuilder-dev-us-east-1/regions/US/CA/2021-09-30T18:00:31.844Z/',
+                DEFAULT,
+                TRUE,
+                DEFAULT,
+                '2020'
+              ),
+              (
                 'e8f66491-4a6d-45a9-b606-7aabdf91fb76',
                 'Wisconsin',
                 'US',
