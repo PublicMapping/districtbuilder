@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add project-level info to geojson 'metadata' property [#1076](https://github.com/PublicMapping/districtbuilder/pull/1076)
+
 ### Changed
 
 - Update evaluate copy to reflect terminology to match the top level geo of the map [#1077](https://github.com/PublicMapping/districtbuilder/pull/1077)
