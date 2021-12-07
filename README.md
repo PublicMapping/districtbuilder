@@ -114,6 +114,8 @@ You will need a PlanScore API token to test the PlanScore integration in develop
 - Create an organization, accessible at [`http://localhost:3003/o/azavea`](http://localhost:3003/o/azavea)
 - Set the user you just created as the organization administrator
 
+3. In order to use any of the organization templates, you will need to confirm your email. You will see a banner asking you to confirm your email; when you click "Resend Email", an email form will appear in your terminal. Copy and paste the activation link within that form in your browser to activate your account.
+
 #### Processing your own data for custom regions
 
 To have data to work with, you'll need to do a two step process:
@@ -175,14 +177,14 @@ In order to allow for code-sharing across the frontend and backend in conjunctio
 ### Ports
 
 | Port                          | Service          |
-|-------------------------------|------------------|
+| ----------------------------- | ---------------- |
 | [3003](http://localhost:3003) | Create React App |
 | [3005](http://localhost:3005) | NestJS           |
 
 ## Scripts
 
 | Name            | Description                                                               |
-|-----------------|---------------------------------------------------------------------------|
+| --------------- | ------------------------------------------------------------------------- |
 | `cibuild`       | Build application for staging or a release.                               |
 | `cipublish`     | Publish container images to Elastic Container Registry.                   |
 | `dbshell`       | Enter a database shell.                                                   |
