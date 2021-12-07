@@ -120,7 +120,9 @@ const ProjectReferenceLayers = ({
             ))
           ) : referenceLayers !== undefined ? (
             <Box sx={{ pb: 1, maxWidth: "fit-content" }}>
-              Add a polygon or point layer as a reference layer for your map.
+              {isReadOnly
+                ? "This map has no reference layers. Copy the map to your account to add reference layers."
+                : "Add a polygon or point layer as a reference layer for your map."}
             </Box>
           ) : null}
           {!isReadOnly && (
