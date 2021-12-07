@@ -9,6 +9,7 @@ import { toggleKeyboardShortcutsModal } from "../actions/districtDrawing";
 enum UserMenuKeys {
   Contact = "contact",
   Guide = "guide",
+  Blog = "blog",
   KeyboardShortcuts = "keyboardShortcuts"
 }
 
@@ -53,8 +54,8 @@ const SupportMenu = ({ project, ...props }: SupportProps & StateProps) => {
               </Styled.a>
             </MenuItem>
           </li>
-          <li key={UserMenuKeys.Guide}>
-            <MenuItem value={UserMenuKeys.Guide}>
+          <li key={UserMenuKeys.Blog}>
+            <MenuItem value={UserMenuKeys.Blog}>
               <Styled.a href={blogLink} target="_blank" sx={style.menuListItem}>
                 <Icon name="book-spells" sx={style.menuListIcon} />
                 Blog
