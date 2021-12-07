@@ -133,7 +133,7 @@ const ProjectEvaluateMetricDetail = ({
             pviBuckets={pviBuckets}
           />
         ) : metric && "type" in metric && metric.key === "majorityMinority" ? (
-          <MajorityRaceMetricDetail metric={metric} geojson={geojson} />
+          <MajorityRaceMetricDetail metric={metric} geojson={geojson} metadata={staticMetadata} />
         ) : (
           <Box>
             <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>

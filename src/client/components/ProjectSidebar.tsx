@@ -15,7 +15,8 @@ import {
   MetricsList,
   VotingMetricsList,
   ReferenceLayerId,
-  DemographicsGroup
+  DemographicsGroup,
+  GroupTotal
 } from "../../shared/entities";
 
 import {
@@ -258,7 +259,8 @@ const ProjectSidebar = ({
   hoveredDistrictId,
   saving,
   isReadOnly,
-  pinnedMetrics
+  pinnedMetrics,
+  populationKey
 }: {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -275,6 +277,7 @@ const ProjectSidebar = ({
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
   readonly pinnedMetrics?: readonly string[];
+  readonly populationKey: GroupTotal;
 } & LoadingProps) => {
   const multElections = hasMultipleElections(staticMetadata);
   const has2016Election = has16Election(staticMetadata);
@@ -438,8 +441,8 @@ const ProjectSidebar = ({
                 highlightedGeounits={highlightedGeounits}
                 hasElectionData={hasElectionData}
                 lockedDistricts={lockedDistricts}
-                saving={saving}
                 isReadOnly={isReadOnly}
+                populationKey={populationKey}
               />
             )}
           </tbody>
@@ -520,7 +523,8 @@ const SidebarRow = memo(
     hasElectionData,
     isReadOnly,
     popDeviation,
-    popDeviationThreshold
+    popDeviationThreshold,
+    populationKey
   }: {
     readonly district: DistrictGeoJSON;
     readonly pinnedMetricFields: readonly string[];
@@ -539,6 +543,7 @@ const SidebarRow = memo(
     readonly isReadOnly: boolean;
     readonly popDeviation: number;
     readonly popDeviationThreshold: number;
+    readonly populationKey: GroupTotal;
   }) => {
     const selectedDifference = selectedPopulationDifference || 0;
     const showPopulationChange = selectedDifference !== 0;
@@ -722,6 +727,8 @@ const SidebarRow = memo(
                   <DemographicsTooltip
                     demographics={demographics}
                     isMajorityMinority={isMajorityMinority(district)}
+                    demographicsGroups={demographicsGroups}
+                    populationKey={populationKey}
                   />
                 ) : (
                   <em>
@@ -741,7 +748,11 @@ const SidebarRow = memo(
                     left: "-2px"
                   }}
                 >
-                  <DemographicsChart demographics={demographics} />
+                  <DemographicsChart
+                    demographics={demographics}
+                    populationKey={populationKey}
+                    demographicsGroups={demographicsGroups}
+                  />
                 </span>
               </Flex>
             </Tooltip>
@@ -837,7 +848,7 @@ interface SidebarRowsProps {
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
   readonly hasElectionData: boolean;
-  readonly saving: SavingState;
+  readonly populationKey: GroupTotal;
   readonly isReadOnly: boolean;
 }
 
@@ -852,8 +863,9 @@ const SidebarRows = ({
   expandedProjectMetrics,
   pinnedMetrics,
   highlightedGeounits,
-  hasElectionData,
   lockedDistricts,
+  hasElectionData,
+  populationKey,
   isReadOnly
 }: SidebarRowsProps) => {
   // Results of the asynchronous demographics calculation. The two calculations have been
@@ -947,6 +959,7 @@ const SidebarRows = ({
             isReadOnly={isReadOnly}
             popDeviation={project.populationDeviation}
             popDeviationThreshold={popDeviationThreshold}
+            populationKey={populationKey}
           />
         ) : null;
       })}

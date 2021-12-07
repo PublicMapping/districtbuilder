@@ -180,6 +180,7 @@ const ProjectScreen = ({
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
+            populationKey={projectOptions.populationKey}
             isReadOnly={isReadOnly}
             pinnedMetrics={districtDrawing.undoHistory.present.state.pinnedMetricFields}
           />
