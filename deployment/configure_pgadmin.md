@@ -33,12 +33,12 @@ _Tunnel Host_<br>
 Return to the AWS management console &#8594; All Services &#8594; EC2 &#8594; Instances (left sidebar) &#8594; select the Staging Bastion. Copy and paste the bastion's public IPv4 address as your tunnel host. Note: If you don't see environment name in your instance table, click on the gear icon to the right and add "environment" as a tag column.
 
 _Username_<br>
-Username is ec2-user.
+Username is `ec2-user`.
 
 _Authentication_<br>
 Select "Identity File". To find this file, connect to the VPN and navigate to the following location on the fileshare: `fileshare.internal.azavea.com/company/documents_systems_admin/marriagez-rings/DistrictBuilder/AWS`. Note: on MacOS, the documents_systems_admin folder may be hidden. To show hidden files, press and hold Command + shift + dot.
 
-From the fileshare location, save the `districtbuilder-stg.pem` file to somewhere PG Admin can be configured to find it but outside of the project directory, such as the `.ssh` folder in your user folder. Then return to PG Admin and use the file browser popup to find it.
+From the fileshare location, save the `districtbuilder-stg.pem` file to somewhere PG Admin can be configured to find it, such as the `.ssh` folder in your home folder. Then return to PG Admin and use the file browser popup to find it.
 
 ---
 
