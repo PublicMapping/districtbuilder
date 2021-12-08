@@ -9,6 +9,7 @@ import { toggleKeyboardShortcutsModal } from "../actions/districtDrawing";
 enum UserMenuKeys {
   Contact = "contact",
   Guide = "guide",
+  Blog = "blog",
   KeyboardShortcuts = "keyboardShortcuts"
 }
 
@@ -16,6 +17,8 @@ const guideLink =
   "https://github.com/PublicMapping/districtbuilder/wiki/Getting-Started-with-DistrictBuilder";
 
 const contactLink = "mailto:support@districtbuilder.org";
+
+const blogLink = "https://medium.com/districtbuilder";
 
 const showKeyboardShortcuts = () => store.dispatch(toggleKeyboardShortcutsModal());
 
@@ -48,6 +51,14 @@ const SupportMenu = ({ project, ...props }: SupportProps & StateProps) => {
               <Styled.a href={guideLink} target="_blank" sx={style.menuListItem}>
                 <Icon name="book-spells" sx={style.menuListIcon} />
                 Getting Started Guide
+              </Styled.a>
+            </MenuItem>
+          </li>
+          <li key={UserMenuKeys.Blog}>
+            <MenuItem value={UserMenuKeys.Blog}>
+              <Styled.a href={blogLink} target="_blank" sx={style.menuListItem}>
+                <Icon name="book-spells" sx={style.menuListIcon} />
+                Blog
               </Styled.a>
             </MenuItem>
           </li>
