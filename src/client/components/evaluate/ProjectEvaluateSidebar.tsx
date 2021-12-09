@@ -84,7 +84,7 @@ const ProjectEvaluateSidebar = ({
       );
     }).length;
   const numDistrictsWithGeometries =
-    geojson && geojson.features.filter(f => f.geometry.coordinates.length > 0).length;
+    geojson && geojson.features.filter(f => f.id !== 0 && f.geometry.coordinates.length > 0).length;
 
   const pviBuckets: readonly (PviBucket | undefined)[] | undefined =
     geojson &&
