@@ -900,11 +900,16 @@ const SidebarRows = ({
       );
 
       // Don't overwrite current results with outdated ones
-      !outdated &&
+      if (!outdated) {
         setSelectedDemographics({
           total: selectedTotals.demographics,
           savedDistrict: districtTotals
         });
+
+        if (populationKey !== cachedPopulationKey) {
+          setCachedPopulationKey(populationKey);
+        }
+      }
     }
 
     // When there aren't any geounits highlighted or selected, and no change to the key used for demographics data,
@@ -915,10 +920,6 @@ const SidebarRows = ({
     populationKey !== cachedPopulationKey
       ? void getData()
       : setSelectedDemographics(undefined);
-
-    if (populationKey !== cachedPopulationKey) {
-      setCachedPopulationKey(populationKey);
-    }
 
     return () => {
       outdated = true;
