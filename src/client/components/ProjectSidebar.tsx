@@ -875,7 +875,7 @@ const SidebarRows = ({
     | { readonly total: DemographicCounts; readonly savedDistrict: readonly DemographicCounts[] }
     | undefined
   >(undefined);
-  const [initialPopulationKey, setInitialPopulationKey] = useState<string>(populationKey);
+  const [cachedPopulationKey, setCachedPopulationKey] = useState<string>(populationKey);
 
   // Asynchronously recalculate demographics on state changes with web workers
   useEffect(() => {
@@ -907,23 +907,30 @@ const SidebarRows = ({
         });
     }
 
-    // When there aren't any geounits highlighted or selected, there is no need to run the
-    // asynchronous calculation; it can simply be cleared out. This additional logic prevents
-    // the sidebar values from flickering after save.
+    // When there aren't any geounits highlighted or selected, and no change to the key used for demographics data,
+    // there is no need to run the asynchronous calculation; it can simply be cleared out.
+    // This additional logic prevents the sidebar values from flickering after save.
     areAnyGeoUnitsSelected(selectedGeounits) ||
     areAnyGeoUnitsSelected(highlightedGeounits) ||
-    populationKey !== initialPopulationKey
+    populationKey !== cachedPopulationKey
       ? void getData()
       : setSelectedDemographics(undefined);
 
-    if (populationKey !== initialPopulationKey) {
-      setInitialPopulationKey(populationKey);
+    if (populationKey !== cachedPopulationKey) {
+      setCachedPopulationKey(populationKey);
     }
 
     return () => {
       outdated = true;
     };
-  }, [project, staticMetadata, selectedGeounits, highlightedGeounits, populationKey]);
+  }, [
+    project,
+    staticMetadata,
+    selectedGeounits,
+    highlightedGeounits,
+    populationKey,
+    cachedPopulationKey
+  ]);
 
   const popPerRep = getPopulationPerRepresentative(geojson, project.numberOfMembers);
   const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
