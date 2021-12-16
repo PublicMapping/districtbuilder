@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Option to toggle which demographics to use for calculations [#1085](https://github.com/PublicMapping/districtbuilder/pull/1085)
 
 ### Changed
 
