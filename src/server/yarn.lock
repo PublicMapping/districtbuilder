@@ -572,7 +572,7 @@
     "@turf/helpers" "6.x"
     "@turf/meta" "6.x"
 
-"@turf/bbox@^6.5.0":
+"@turf/bbox@6.5.0":
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-6.5.0.tgz#bec30a744019eae420dac9ea46fb75caa44d8dc5"
   integrity sha512-RBbLaao5hXTYyyg577iuMtDB8ehxMlUqHEJiMs8jT1GHkFhr6sYre3lmLsPeYEi/ZKj5TP5tt7fkzNdJ4GIVyw==
@@ -820,7 +820,7 @@
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-1.3.2.tgz#93e25bf9ee75fe0fd80b594bc4feb0e862111b5a"
   integrity sha512-YATxVxgRqNH6nHEIsvg6k2Boc1JHI9ZbH5iWFFv/MTkchz3b1ieGDa5T0a9RznNdI0KhVbdbWSN+KWWrQZRxTw==
 
-"@types/multer@^1.4.5":
+"@types/multer@1.4.5":
   version "1.4.5"
   resolved "https://registry.yarnpkg.com/@types/multer/-/multer-1.4.5.tgz#db0557562307e9adb6661a9500c334cd7ddd0cd9"
   integrity sha512-9b/0a8JyrR0r2nQhL73JR86obWL7cogfX12augvlrvcpciCo/hkvEsgu80Z4S2g2DHGVXHr8pUIi1VhqFJ8Ufw==
@@ -2625,7 +2625,7 @@ cssstyle@^1.0.0:
   dependencies:
     cssom "0.3.x"
 
-csv-parse@^4.15.3:
+csv-parse@4.15.3:
   version "4.15.3"
   resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-4.15.3.tgz#8a62759617a920c328cb31c351b05053b8f92b10"
   integrity sha512-jlTqDvLdHnYMSr08ynNfk4IAUSJgJjTKy2U5CQBSu4cN9vQOJonLVZP4Qo4gKKrIgIQ5dr07UwOJdi+lRqT12w==
@@ -3222,7 +3222,7 @@ eslint-plugin-jsdoc@26.0.0:
     semver "^6.3.0"
     spdx-expression-parse "^3.0.1"
 
-eslint-plugin-local-rules@^1.1.0:
+eslint-plugin-local-rules@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-local-rules/-/eslint-plugin-local-rules-1.1.0.tgz#5f934f685b08c96eed40b92aee7b02f03cf55f7b"
   integrity sha512-FdPyzxakUKgZkeNM3x/vvRcB6nCjTNbui5gWALhvcaH1R6aCiD37fWtdesagcyBpEe9S9XRHAJ8CJ4rUJ3K9tQ==
