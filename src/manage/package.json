@@ -26,14 +26,14 @@
     "json-stream-stringify": "^2.0.2",
     "kebab-case": "1.0.0",
     "lodash": "4.17.21",
-    "pg": "7.17.1",
+    "pg": "8.7.1",
     "recursive-readdir": "2.2.2",
-    "rxjs": "6.5.4",
+    "rxjs": "7.4.0",
     "topojson-client": "3.1.0",
     "topojson-server": "3.0.1",
     "topojson-simplify": "3.0.3",
     "tslib": "1.11.0",
-    "typeorm": "0.2.31"
+    "typeorm": "0.2.41"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",
@@ -44,7 +44,7 @@
     "@types/json-stream-stringify": "^2.0.1",
     "@types/jsonstream": "0.8.30",
     "@types/lodash": "4.14.149",
-    "@types/node": "12.12.6",
+    "@types/node": "16.11.7",
     "@types/recursive-readdir": "2.2.0",
     "@types/topojson": "3.2.2",
     "@typescript-eslint/eslint-plugin": "^3.1.0",
@@ -62,8 +62,8 @@
     "jest": "26.5.3",
     "prettier": "1.19.1",
     "ts-jest": "26.4.1",
-    "ts-node": "8.6.2",
-    "typescript": "3.9.7"
+    "ts-node": "10.4.0",
+    "typescript": "4.3.5"
   },
   "files": [
     "/bin",
