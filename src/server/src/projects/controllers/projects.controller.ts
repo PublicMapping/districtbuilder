@@ -218,216 +218,6 @@ export class ProjectsController implements CrudController<Project> {
     private readonly chambersService: ChambersService
   ) {}
 
-  // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
-  @Override()
-  @UseGuards(OptionalJwtAuthGuard)
-  async getOne(@Param("id") id: ProjectId, @ParsedRequest() req: CrudRequest): Promise<Project> {
-    return this.getProject(req, id);
-  }
-
-  // Overriden to add JwtAuthGuard and support pagination
-  @Override()
-  @UseGuards(JwtAuthGuard)
-  getMany(
-    @ParsedRequest() req: CrudRequest,
-    @Query("page", ParseIntPipe) page = 1,
-    @Query("limit", ParseIntPipe) limit = 10
-  ): Promise<Pagination<Project>> {
-    const user_id = req.parsed.authPersist.userId;
-    return this.service.findAllUserProjectsPaginated(user_id, { page, limit });
-  }
-
-  @Override()
-  @UseGuards(JwtAuthGuard)
-  async updateOne(
-    @Param("id") id: ProjectId,
-    @ParsedRequest() req: CrudRequest,
-    @ParsedBody() dto: UpdateProjectDto
-  ) {
-    // Start off with some validations that can't be handled easily at the DTO layer
-    const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
-    if (dto.lockedDistricts && existingProject.numberOfDistricts !== dto.lockedDistricts.length) {
-      throw new BadRequestException({
-        error: "Bad Request",
-        message: { lockedDistricts: [`Length of array does not match "numberOfDistricts"`] }
-      } as Errors<UpdateProjectDto>);
-    }
-    validateNumberOfMembers(dto, existingProject.numberOfDistricts);
-
-    const staticMetadata = (await this.getGeoUnitProperties(existingProject.regionConfig.s3URI))
-      .staticMetadata;
-    const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
-      ([, field]) => field
-    );
-    const allowedVotingFields: readonly string[] =
-      getVotingMetricFields(staticMetadata).map(([, field]) => field) || [];
-    if (
-      dto.pinnedMetricFields &&
-      dto.pinnedMetricFields.some(
-        field =>
-          !(
-            CORE_METRIC_FIELDS.includes(field) ||
-            allowedDemographicFields.includes(field) ||
-            allowedVotingFields.includes(field)
-          )
-      )
-    ) {
-      throw new BadRequestException({
-        error: "Bad Request",
-        message: { pinnedMetricFields: [`Field not allowed in "pinnedMetricFields"`] }
-      } as Errors<UpdateProjectDto>);
-    }
-
-    // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
-    const dataWithDefinitions =
-      existingProject &&
-      dto.districtsDefinition &&
-      (!existingProject.districts ||
-        existingProject.regionConfigVersion !== existingProject.regionConfig.version ||
-        !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
-        ? {
-            ...dto,
-            districts: await this.getGeojson({
-              ...existingProject,
-              districtsDefinition: dto.districtsDefinition
-            }),
-            regionConfigVersion: existingProject.regionConfig.version
-          }
-        : dto;
-
-    // Only change updatedDt field when whitelisted fields have changed
-    const whitelistedFields: ReadonlyArray<keyof UpdateProjectDto> = [
-      "districtsDefinition",
-      "name"
-    ];
-    const fields = whitelistedFields.filter(field => field in dto);
-    const data = _.isEqual(_.pick(dataWithDefinitions, fields), _.pick(existingProject, fields))
-      ? { ...dataWithDefinitions }
-      : { ...dataWithDefinitions, updatedDt: new Date() };
-
-    return this.service.updateOne(req, {
-      ...data,
-      isFeatured: dto.visibility === ProjectVisibility.Private ? false : existingProject?.isFeatured
-    });
-  }
-
-  @Override()
-  @UseGuards(JwtAuthGuard)
-  async createOne(
-    @ParsedRequest() req: CrudRequest,
-    @ParsedBody() dto: CreateProjectDto
-  ): Promise<Project> {
-    if (dto.numberOfDistricts) {
-      validateNumberOfMembers(dto, dto.numberOfDistricts);
-    }
-
-    // This is in a lambda bc prettier kept moving my @ts-ignore
-    const findTemplate = (id: ProjectTemplateId) =>
-      this.templateService.findOne(
-        // @ts-ignore
-        { id },
-        { relations: ["regionConfig", "referenceLayers", "chamber"] }
-      );
-    const template = dto.projectTemplate ? await findTemplate(dto.projectTemplate.id) : undefined;
-    if (dto.projectTemplate && !template) {
-      throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
-    }
-
-    const user = await this.usersService.findOne(req.parsed.authPersist.userId);
-    if (!user) {
-      throw new InternalServerErrorException(
-        `User not found for authenticated user id ${req.parsed.authPersist.userId}`
-      );
-    }
-
-    const chamber = dto.chamber?.id
-      ? await this.chambersService.findOne(dto.chamber?.id)
-      : undefined;
-
-    const regionConfig = dto.regionConfig
-      ? await this.regionConfigService.findOne({ id: dto.regionConfig.id })
-      : template
-      ? template.regionConfig
-      : undefined;
-    if (!regionConfig) {
-      throw new NotFoundException(`Unable to find region config: ${dto.regionConfig?.id}`);
-    }
-
-    const geoCollection = await this.topologyService.get(regionConfig.s3URI);
-    if (!geoCollection) {
-      throw new NotFoundException(
-        `Topology ${regionConfig.s3URI} not found`,
-        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
-      );
-    }
-
-    // Pulls out the fields on ProjectTemplate common to it & Project
-    const templateFields = ({
-      name,
-      regionConfig,
-      chamber,
-      numberOfDistricts,
-      numberOfMembers,
-      populationDeviation,
-      pinnedMetricFields,
-      districtsDefinition
-    }: ProjectTemplate) => ({
-      name,
-      regionConfig,
-      chamber,
-      numberOfDistricts,
-      numberOfMembers,
-      populationDeviation,
-      pinnedMetricFields,
-      districtsDefinition
-    });
-    // most template fields take precedence, but districtsDefinition should preferentially use the
-    // DTO data, to support imports w/ templates
-    const formdata = template
-      ? {
-          ...dto,
-          ...templateFields(template),
-          districtsDefinition: dto.districtsDefinition || template.districtsDefinition
-        }
-      : dto;
-    if (!formdata.numberOfDistricts) {
-      // The validation in the DTO should prevent this
-      throw new InternalServerErrorException();
-    }
-
-    const data = this.formatCreateProjectDto(formdata, geoCollection, regionConfig, req);
-    const districts = await this.getGeojson({
-      numberOfDistricts: formdata.numberOfDistricts,
-      districtsDefinition: data.districtsDefinition,
-      user,
-      chamber: template?.chamber || chamber,
-      regionConfig
-    });
-
-    try {
-      const project = await this.service.createOne(req, { ...data, districts });
-      // Copy any reference layers associated with the template to the project
-      if (template) {
-        // eslint-disable-next-line functional/no-loop-statement
-        for (const refLayer of template.referenceLayers) {
-          // We need to wait for reference layers to be copied, but then we don't
-          // actually need to do anything with the result
-          void (await this.referenceLayerService.create({
-            name: refLayer.name,
-            label_field: refLayer.label_field,
-            layer: refLayer.layer,
-            layer_type: refLayer.layer_type,
-            project
-          }));
-        }
-      }
-      return project;
-    } catch (error) {
-      this.logger.error(`Error creating project: ${error}`);
-      throw new InternalServerErrorException();
-    }
-  }
-
   private formatCreateProjectDto(
     dto: CreateProjectDto,
     geoCollection: GeoUnitTopology | GeoUnitProperties,
@@ -887,5 +677,215 @@ export class ProjectsController implements CrudController<Project> {
           reject(error.message);
         });
     });
+  }
+
+  // Overriden to add OptionalJwtAuthGuard, and possibly return a read-only view
+  @Override()
+  @UseGuards(OptionalJwtAuthGuard)
+  async getOne(@Param("id") id: ProjectId, @ParsedRequest() req: CrudRequest): Promise<Project> {
+    return this.getProject(req, id);
+  }
+
+  // Overriden to add JwtAuthGuard and support pagination
+  @Override()
+  @UseGuards(JwtAuthGuard)
+  getMany(
+    @ParsedRequest() req: CrudRequest,
+    @Query("page", ParseIntPipe) page = 1,
+    @Query("limit", ParseIntPipe) limit = 10
+  ): Promise<Pagination<Project>> {
+    const user_id = req.parsed.authPersist.userId;
+    return this.service.findAllUserProjectsPaginated(user_id, { page, limit });
+  }
+
+  @Override()
+  @UseGuards(JwtAuthGuard)
+  async updateOne(
+    @Param("id") id: ProjectId,
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: UpdateProjectDto
+  ) {
+    // Start off with some validations that can't be handled easily at the DTO layer
+    const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
+    if (dto.lockedDistricts && existingProject.numberOfDistricts !== dto.lockedDistricts.length) {
+      throw new BadRequestException({
+        error: "Bad Request",
+        message: { lockedDistricts: [`Length of array does not match "numberOfDistricts"`] }
+      } as Errors<UpdateProjectDto>);
+    }
+    validateNumberOfMembers(dto, existingProject.numberOfDistricts);
+
+    const staticMetadata = (await this.getGeoUnitProperties(existingProject.regionConfig.s3URI))
+      .staticMetadata;
+    const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
+      ([, field]) => field
+    );
+    const allowedVotingFields: readonly string[] =
+      getVotingMetricFields(staticMetadata).map(([, field]) => field) || [];
+    if (
+      dto.pinnedMetricFields &&
+      dto.pinnedMetricFields.some(
+        field =>
+          !(
+            CORE_METRIC_FIELDS.includes(field) ||
+            allowedDemographicFields.includes(field) ||
+            allowedVotingFields.includes(field)
+          )
+      )
+    ) {
+      throw new BadRequestException({
+        error: "Bad Request",
+        message: { pinnedMetricFields: [`Field not allowed in "pinnedMetricFields"`] }
+      } as Errors<UpdateProjectDto>);
+    }
+
+    // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
+    const dataWithDefinitions =
+      existingProject &&
+      dto.districtsDefinition &&
+      (!existingProject.districts ||
+        existingProject.regionConfigVersion !== existingProject.regionConfig.version ||
+        !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
+        ? {
+            ...dto,
+            districts: await this.getGeojson({
+              ...existingProject,
+              districtsDefinition: dto.districtsDefinition
+            }),
+            regionConfigVersion: existingProject.regionConfig.version
+          }
+        : dto;
+
+    // Only change updatedDt field when whitelisted fields have changed
+    const whitelistedFields: ReadonlyArray<keyof UpdateProjectDto> = [
+      "districtsDefinition",
+      "name"
+    ];
+    const fields = whitelistedFields.filter(field => field in dto);
+    const data = _.isEqual(_.pick(dataWithDefinitions, fields), _.pick(existingProject, fields))
+      ? { ...dataWithDefinitions }
+      : { ...dataWithDefinitions, updatedDt: new Date() };
+
+    return this.service.updateOne(req, {
+      ...data,
+      isFeatured: dto.visibility === ProjectVisibility.Private ? false : existingProject?.isFeatured
+    });
+  }
+
+  @Override()
+  @UseGuards(JwtAuthGuard)
+  async createOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: CreateProjectDto
+  ): Promise<Project> {
+    if (dto.numberOfDistricts) {
+      validateNumberOfMembers(dto, dto.numberOfDistricts);
+    }
+
+    // This is in a lambda bc prettier kept moving my @ts-ignore
+    const findTemplate = (id: ProjectTemplateId) =>
+      this.templateService.findOne(
+        // @ts-ignore
+        { id },
+        { relations: ["regionConfig", "referenceLayers", "chamber"] }
+      );
+    const template = dto.projectTemplate ? await findTemplate(dto.projectTemplate.id) : undefined;
+    if (dto.projectTemplate && !template) {
+      throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
+    }
+
+    const user = await this.usersService.findOne(req.parsed.authPersist.userId);
+    if (!user) {
+      throw new InternalServerErrorException(
+        `User not found for authenticated user id ${req.parsed.authPersist.userId}`
+      );
+    }
+
+    const chamber = dto.chamber?.id
+      ? await this.chambersService.findOne(dto.chamber?.id)
+      : undefined;
+
+    const regionConfig = dto.regionConfig
+      ? await this.regionConfigService.findOne({ id: dto.regionConfig.id })
+      : template
+      ? template.regionConfig
+      : undefined;
+    if (!regionConfig) {
+      throw new NotFoundException(`Unable to find region config: ${dto.regionConfig?.id}`);
+    }
+
+    const geoCollection = await this.topologyService.get(regionConfig.s3URI);
+    if (!geoCollection) {
+      throw new NotFoundException(
+        `Topology ${regionConfig.s3URI} not found`,
+        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
+      );
+    }
+
+    // Pulls out the fields on ProjectTemplate common to it & Project
+    const templateFields = ({
+      name,
+      regionConfig,
+      chamber,
+      numberOfDistricts,
+      numberOfMembers,
+      populationDeviation,
+      pinnedMetricFields,
+      districtsDefinition
+    }: ProjectTemplate) => ({
+      name,
+      regionConfig,
+      chamber,
+      numberOfDistricts,
+      numberOfMembers,
+      populationDeviation,
+      pinnedMetricFields,
+      districtsDefinition
+    });
+    // most template fields take precedence, but districtsDefinition should preferentially use the
+    // DTO data, to support imports w/ templates
+    const formdata = template
+      ? {
+          ...dto,
+          ...templateFields(template),
+          districtsDefinition: dto.districtsDefinition || template.districtsDefinition
+        }
+      : dto;
+    if (!formdata.numberOfDistricts) {
+      // The validation in the DTO should prevent this
+      throw new InternalServerErrorException();
+    }
+
+    const data = this.formatCreateProjectDto(formdata, geoCollection, regionConfig, req);
+    const districts = await this.getGeojson({
+      numberOfDistricts: formdata.numberOfDistricts,
+      districtsDefinition: data.districtsDefinition,
+      user,
+      chamber: template?.chamber || chamber,
+      regionConfig
+    });
+
+    try {
+      const project = await this.service.createOne(req, { ...data, districts });
+      // Copy any reference layers associated with the template to the project
+      if (template) {
+        // eslint-disable-next-line functional/no-loop-statement
+        for (const refLayer of template.referenceLayers) {
+          // We need to wait for reference layers to be copied, but then we don't
+          // actually need to do anything with the result
+          void (await this.referenceLayerService.create({
+            name: refLayer.name,
+            label_field: refLayer.label_field,
+            layer: refLayer.layer,
+            layer_type: refLayer.layer_type,
+            project
+          }));
+        }
+      }
+      return project;
+    } catch (error) {
+      this.logger.error(`Error creating project: ${error}`);
+      throw new InternalServerErrorException();
+    }
   }
 }
