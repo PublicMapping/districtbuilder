@@ -672,14 +672,14 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     topology: Topology<Objects<{}>>,
     geoLevels: readonly string[]
-  ): Promise<unknown[]> {
+  ): Promise<void[]> {
     const promises = geoLevels.map(geoLevel => {
       this.log(`Converting topojson to geojson for ${geoLevel}`);
       const geojson = topo2feature(topology, topology.objects[geoLevel]);
       const path = join(dir, `${geoLevel}.geojson`);
       const output = createWriteStream(path, { encoding: "utf8" });
-      return new Promise(resolve =>
-        new JsonStreamStringify(geojson).pipe(output).on("finish", () => resolve())
+      return new Promise<void>(resolve =>
+        new JsonStreamStringify(geojson).pipe(output).on("finish", () => resolve(void 0))
       );
     });
     this.log("Streaming geojson to disk");
