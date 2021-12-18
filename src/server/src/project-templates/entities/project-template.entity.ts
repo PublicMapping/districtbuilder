@@ -74,7 +74,7 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
     type: "character varying",
     array: true,
     name: "pinned_metric_fields",
-    default: () => `ARRAY[${DEFAULT_PINNED_METRIC_FIELDS.map(c => `'${c}'`).join(",")}]`
+    default: DEFAULT_PINNED_METRIC_FIELDS
   })
   pinnedMetricFields: string[];
 
