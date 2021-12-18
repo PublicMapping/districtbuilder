@@ -164,7 +164,7 @@ function validateNumberOfMembers(
       // Filter to user's projects for all other update requests, except for the duplicate endpoint.
     } else if (req.method !== "GET" && endpoint !== "duplicate") {
       return {
-        user_id: user ? user.id : undefined
+        "project_user.id": user ? user.id : undefined
       };
     } else {
       // Unauthenticated access is allowed for individual projects if they are
@@ -176,7 +176,7 @@ function validateNumberOfMembers(
       const visibleFilter = user
         ? [
             // User created project
-            { user_id: user.id },
+            { "project_user.id": user.id },
             // Or it's public
             ...publicallyVisible
           ]
