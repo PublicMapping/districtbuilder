@@ -4,6 +4,7 @@
 - [Publish Container Images](#publish-container-images)
 - [Terraform](#terraform)
 - [Migrations](#migrations)
+- [Updating region data](#updating-region-data)
 - [Restart services](#restart-services)
 
 **Note** when deploying a production release create a new issue using the [release issue template](../.github/ISSUE_TEMPLATE/release.md) and follow the checklist.
