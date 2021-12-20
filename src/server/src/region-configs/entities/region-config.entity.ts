@@ -28,16 +28,10 @@ export class RegionConfig implements IRegionConfig {
   @Column({ type: "character varying", name: "region_code" })
   regionCode: string;
 
-  @OneToMany(
-    () => ProjectTemplate,
-    projectTemplate => projectTemplate.regionConfig
-  )
+  @OneToMany(() => ProjectTemplate, projectTemplate => projectTemplate.regionConfig)
   projectTemplates: ProjectTemplate[];
 
-  @OneToMany(
-    () => Chamber,
-    chamber => chamber.regionConfig
-  )
+  @OneToMany(() => Chamber, chamber => chamber.regionConfig)
   @JoinColumn({ name: "chamber_id" })
   chambers: readonly Chamber[];
 

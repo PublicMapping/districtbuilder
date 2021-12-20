@@ -141,7 +141,7 @@ function groupForHierarchy(topology: Topology, definition: GeoUnitDefinition): H
     if (childGroupName) {
       const childCollection = topology.objects[childGroupName] as GeometryCollection;
       childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-        mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+        mutableMappings[geometry.properties[groupName]].push(geometry as unknown as Polygon);
       });
     }
     return [groupName, mutableMappings];
@@ -172,7 +172,7 @@ function getNodeForHierarchy(
   return remainingGroups.length > 1
     ? childGeoms.map(childGeom =>
         getNodeForHierarchy(
-          (childGeom as unknown) as GeometryObject<any>,
+          childGeom as unknown as GeometryObject<any>,
           { ...definition, groups: remainingGroups },
           geounitsByParentId
         )

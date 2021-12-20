@@ -23,22 +23,13 @@ export class User implements IUser {
   @Column({ default: false, type: "boolean" })
   hasSeenTour: boolean;
 
-  @ManyToMany(
-    () => Organization,
-    organization => organization.users
-  )
+  @ManyToMany(() => Organization, organization => organization.users)
   organizations: Organization[];
 
-  @OneToMany(
-    () => Project,
-    project => project.user
-  )
+  @OneToMany(() => Project, project => project.user)
   projects: Project[];
 
-  @OneToMany(
-    () => Organization,
-    organization => organization.admin
-  )
+  @OneToMany(() => Organization, organization => organization.admin)
   adminOrganizations: Organization[];
 
   // TODO: Is it possible to make this private? I only want to allow

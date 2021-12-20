@@ -2,9 +2,7 @@ import { ArgumentsHost, BadRequestException, Catch, ExceptionFilter } from "@nes
 import { ValidationError } from "class-validator";
 import { Response } from "express";
 
-function convertValidationErrors(
-  errors: readonly ValidationError[]
-): {
+function convertValidationErrors(errors: readonly ValidationError[]): {
   [field: string]: readonly string[];
 } {
   const fieldErrors = errors
