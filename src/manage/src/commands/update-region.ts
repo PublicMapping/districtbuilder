@@ -3,7 +3,7 @@ import { IArg } from "@oclif/parser/lib/args";
 import S3 from "aws-sdk/clients/s3";
 import cli from "cli-ux";
 import { createReadStream } from "fs";
-import { join, basename } from "path";
+import { join } from "path";
 import readDir from "recursive-readdir";
 import { shouldPublishFile } from "../lib/fileUtils";
 

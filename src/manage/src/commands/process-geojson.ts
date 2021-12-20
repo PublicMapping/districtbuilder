@@ -171,7 +171,7 @@ it when necessary (file sizes ~1GB+).
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
     // Setting 'multiple: true' makes this return an array, but the inferred type didn't get the message
-    const demographicsFlags = (flags.demographics as unknown) as readonly string[];
+    const demographicsFlags = flags.demographics as unknown as readonly string[];
     const demographics = splitPairs(demographicsFlags.join(","));
     const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
@@ -196,17 +196,17 @@ it when necessary (file sizes ~1GB+).
     }
 
     const firstFeature = baseGeoJson.features[0];
-    for (const [demo, _id] of demographics) {
+    for (const [demo] of demographics) {
       if (!(demo in firstFeature.properties)) {
         this.error(`Demographic: "${demo}" not present in features, exiting`);
       }
     }
-    for (const [prop, _id] of geoLevels) {
+    for (const [prop] of geoLevels) {
       if (!(prop in firstFeature.properties)) {
         this.error(`Geolevel: "${prop}" not present in features, exiting`);
       }
     }
-    for (const [prop, _id] of voting) {
+    for (const [prop] of voting) {
       if (!(prop in firstFeature.properties)) {
         this.error(`Voting data: "${prop}" not present in features, exiting`);
       }
@@ -320,7 +320,7 @@ it when necessary (file sizes ~1GB+).
   getDemographicsGroups(demographicsFlags: readonly string[]): readonly DemographicsGroup[] {
     return demographicsFlags.map(flags => {
       const pairs = splitPairs(flags);
-      const ids = pairs.map(([prop, id]) => id);
+      const ids = pairs.map(([, id]) => id);
       const [total, ...subgroups] = ids;
       return { total, subgroups };
     });
@@ -460,8 +460,9 @@ it when necessary (file sizes ~1GB+).
               : levelFips;
           // And then we want the tooltip to display something like "Blockgroup #CCCCCCD"
           // @ts-ignore
-          geometry.properties.name = `${geoLevel[0].toUpperCase() +
-            geoLevel.substring(1)} #${localFips}`;
+          geometry.properties.name = `${
+            geoLevel[0].toUpperCase() + geoLevel.substring(1)
+          } #${localFips}`;
         }
       });
     }
@@ -828,7 +829,7 @@ it when necessary (file sizes ~1GB+).
       if (childGroupName) {
         const childCollection = topology.objects[childGroupName] as GeometryCollection;
         childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-          mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+          mutableMappings[geometry.properties[groupName]].push(geometry as unknown as Polygon);
         });
       }
       return [groupName, mutableMappings];
@@ -858,7 +859,7 @@ it when necessary (file sizes ~1GB+).
     return remainingGroups.length > 1
       ? childGeoms.map(childGeom =>
           this.getNode(
-            (childGeom as unknown) as GeometryObject<any>,
+            childGeom as unknown as GeometryObject<any>,
             { ...definition, groups: remainingGroups },
             geounitsByParentId
           )

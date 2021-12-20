@@ -1,7 +1,7 @@
 import { Command } from "@oclif/command";
 import { IArg } from "@oclif/parser/lib/args";
 import cli from "cli-ux";
-import { createConnection, Repository } from "typeorm";
+import { createConnection } from "typeorm";
 import _ from "lodash";
 
 import { connectionOptions } from "../lib/dbUtils";
@@ -59,11 +59,13 @@ export default class CreateRandomProjects extends Command {
       if (!region) {
         this.log(`No regions in database`);
         this.exit(1);
+        return;
       }
       const geoCollection = await topologyService.get(region.s3URI);
       if (!geoCollection || !("merge" in geoCollection)) {
         this.log(`No active topology for region`);
         this.exit(1);
+        return;
       }
 
       const numCounties = geoCollection.hierarchyDefinition.length;
@@ -88,6 +90,7 @@ export default class CreateRandomProjects extends Command {
       if (!districts) {
         this.log(`Could not generate geojson`);
         this.exit(1);
+        return;
       }
       project.name = `Project ${i} ${region.regionCode}`;
       project.numberOfDistricts = numberOfDistricts;
