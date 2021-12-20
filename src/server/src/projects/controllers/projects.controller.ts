@@ -243,7 +243,9 @@ export class ProjectsController implements CrudController<Project> {
   @UseInterceptors(CrudRequestInterceptor)
   @Post(":id/duplicate")
   async duplicate(@ParsedRequest() req: CrudRequest, @Param("id") id: ProjectId): Promise<Project> {
-    const project = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
+    const userId =
+      typeof req.parsed.authPersist.userId === "string" ? req.parsed.authPersist.userId : undefined;
+    const project = await this.getProjectWithDistricts(id, userId);
     const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
     if (!geoCollection) {
       throw new NotFoundException(
@@ -251,11 +253,9 @@ export class ProjectsController implements CrudController<Project> {
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
     }
-    const user = await this.usersService.findOne(req.parsed.authPersist.userId);
+    const user = await this.usersService.findOne(userId);
     if (!user) {
-      throw new InternalServerErrorException(
-        `User not found for authenticated user id ${req.parsed.authPersist.userId}`
-      );
+      throw new InternalServerErrorException(`User not found for authenticated user id ${userId}`);
     }
 
     const dto = {
@@ -476,8 +476,9 @@ export class ProjectsController implements CrudController<Project> {
         if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
           // The numbers found in the hierarchy are the base geounit indices of the topology.
           // Access this item in the topology to find it's base geounit id.
-          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
-          mutableCsvRows.push([props[baseGeoLevel], districtOrArray]);
+          const props = baseGeoUnitProperties[hierarchyNumOrArray];
+          const baseId = props[baseGeoLevel] as string;
+          mutableCsvRows.push([baseId, districtOrArray]);
         } else if (typeof hierarchyNumOrArray !== "number") {
           // Keep recursing into the hierarchy until we reach the end
           accumulateCsvRows(districtOrArray, hierarchyNumOrArray);
@@ -653,7 +654,7 @@ export class ProjectsController implements CrudController<Project> {
   async sendToPlanScoreAPI(
     @Request() req: any,
     @Param("id") projectId: ProjectId
-  ): Promise<Project> {
+  ): Promise<unknown> {
     const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
     const districts = await this.exportGeoJSON(req, projectId);
     const geojson = districts && {
@@ -694,8 +695,8 @@ export class ProjectsController implements CrudController<Project> {
     @Query("page", ParseIntPipe) page = 1,
     @Query("limit", ParseIntPipe) limit = 10
   ): Promise<Pagination<Project>> {
-    const user_id = req.parsed.authPersist.userId;
-    return this.service.findAllUserProjectsPaginated(user_id, { page, limit });
+    const userId = req.parsed.authPersist.userId as string;
+    return this.service.findAllUserProjectsPaginated(userId, { page, limit });
   }
 
   @Override()
@@ -706,7 +707,8 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedBody() dto: UpdateProjectDto
   ) {
     // Start off with some validations that can't be handled easily at the DTO layer
-    const existingProject = await this.getProjectWithDistricts(id, req.parsed.authPersist.userId);
+    const userId = typeof req.parsed.authPersist.userId as string;
+    const existingProject = await this.getProjectWithDistricts(id, userId);
     if (dto.lockedDistricts && existingProject.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
         error: "Bad Request",
@@ -794,11 +796,10 @@ export class ProjectsController implements CrudController<Project> {
       throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
     }
 
-    const user = await this.usersService.findOne(req.parsed.authPersist.userId);
+    const userId = req.parsed.authPersist.userId as string;
+    const user = await this.usersService.findOne(userId);
     if (!user) {
-      throw new InternalServerErrorException(
-        `User not found for authenticated user id ${req.parsed.authPersist.userId}`
-      );
+      throw new InternalServerErrorException(`User not found for authenticated user id ${userId}`);
     }
 
     const chamber = dto.chamber?.id

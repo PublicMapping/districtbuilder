@@ -43,9 +43,9 @@ function getIds(
 @Controller("api/project_templates")
 export class ProjectTemplatesController {
   constructor(
-    private service: ProjectTemplatesService,
-    private orgService: OrganizationsService,
-    private topologyService: TopologyService
+    private readonly service: ProjectTemplatesService,
+    private readonly orgService: OrganizationsService,
+    private readonly topologyService: TopologyService
   ) {}
 
   async getOrg(organizationSlug: OrganizationSlug): Promise<Organization> {

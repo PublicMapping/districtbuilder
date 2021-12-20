@@ -118,7 +118,8 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     @ParsedRequest() req: CrudRequest,
     @Param("projectId") projectId: ProjectId
   ): Promise<IReferenceLayer[]> {
-    const userId = req.parsed.authPersist.userId;
+    const userId =
+      typeof req.parsed.authPersist.userId === "string" ? req.parsed.authPersist.userId : undefined;
     return this.service.getProjectReferenceLayers(projectId, userId);
   }
 

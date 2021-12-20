@@ -33,8 +33,8 @@ export class BadRequestExceptionFilter implements ExceptionFilter {
       "message" in errorResponse &&
       Array.isArray(errorResponse.message) &&
       errorResponse.message.every((item: any) => item instanceof ValidationError)
-        ? convertValidationErrors(errorResponse.message)
-        : errorResponse.message;
+        ? convertValidationErrors(errorResponse.message as readonly ValidationError[])
+        : (errorResponse.message as unknown);
 
     response.status(status).json({ error, message });
   }

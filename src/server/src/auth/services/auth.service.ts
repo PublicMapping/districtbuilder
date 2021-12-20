@@ -33,10 +33,10 @@ export class AuthService {
 
   constructor(
     @InjectRepository(EmailVerification)
-    private emailVerificationRepo: Repository<EmailVerification>,
-    private mailerService: MailerService,
-    private usersService: UsersService,
-    private jwtService: JwtService
+    private readonly emailVerificationRepo: Repository<EmailVerification>,
+    private readonly mailerService: MailerService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService
   ) {}
 
   async validateLogin(email: string, pass: string): Promise<User | LoginErrors> {

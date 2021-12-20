@@ -11,9 +11,9 @@ import TopologyLoadedIndicator from "./topology-loaded.indicator";
 @Controller("healthcheck")
 export class HealthcheckController {
   constructor(
-    private health: HealthCheckService,
+    private readonly health: HealthCheckService,
     private readonly db: TypeOrmHealthIndicator,
-    private topoLoaded: TopologyLoadedIndicator
+    private readonly topoLoaded: TopologyLoadedIndicator
   ) {}
 
   @Get()
