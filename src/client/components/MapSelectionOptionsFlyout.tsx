@@ -14,13 +14,11 @@ import { IStaticMetadata, GroupTotal } from "../../shared/entities";
 import { ElectionYear } from "../types";
 
 function getPopulationLabel(key: string) {
-  return key === "population"
-    ? "All people"
-    : key === "VAP"
-    ? "Voting age population (VAP)"
-    : key === "CVAP"
-    ? "Citizen voting age population (CVAP)"
-    : key;
+  return {
+    population: "All people",
+    VAP: "Voting age population (VAP)",
+    CVAP: "Citizen voting age population (CVAP)"
+ }[key] || key;
 }
 
 const style = {
