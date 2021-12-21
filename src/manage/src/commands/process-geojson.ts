@@ -171,7 +171,7 @@ it when necessary (file sizes ~1GB+).
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
     // Setting 'multiple: true' makes this return an array, but the inferred type didn't get the message
-    const demographicsFlags = (flags.demographics as unknown) as readonly string[];
+    const demographicsFlags = flags.demographics as unknown as readonly string[];
     const demographics = splitPairs(demographicsFlags.join(","));
     const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
@@ -456,8 +456,9 @@ it when necessary (file sizes ~1GB+).
               : levelFips;
           // And then we want the tooltip to display something like "Blockgroup #CCCCCCD"
           // @ts-ignore
-          geometry.properties.name = `${geoLevel[0].toUpperCase() +
-            geoLevel.substring(1)} #${localFips}`;
+          geometry.properties.name = `${
+            geoLevel[0].toUpperCase() + geoLevel.substring(1)
+          } #${localFips}`;
         }
       });
     }
@@ -824,7 +825,7 @@ it when necessary (file sizes ~1GB+).
       if (childGroupName) {
         const childCollection = topology.objects[childGroupName] as GeometryCollection;
         childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-          mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+          mutableMappings[geometry.properties[groupName]].push(geometry as unknown as Polygon);
         });
       }
       return [groupName, mutableMappings];
@@ -854,7 +855,7 @@ it when necessary (file sizes ~1GB+).
     return remainingGroups.length > 1
       ? childGeoms.map(childGeom =>
           this.getNode(
-            (childGeom as unknown) as GeometryObject<any>,
+            childGeom as unknown as GeometryObject<any>,
             { ...definition, groups: remainingGroups },
             geounitsByParentId
           )
