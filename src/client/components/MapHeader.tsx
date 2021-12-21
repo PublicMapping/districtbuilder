@@ -1,7 +1,13 @@
 /** @jsx jsx */
 import React, { useEffect, useState } from "react";
 import { Flex, Box, Label, Button, jsx, Select, Slider, Text, ThemeUIStyleObject } from "theme-ui";
-import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
+import {
+  GeoLevelInfo,
+  GeoLevelHierarchy,
+  GeoUnits,
+  IStaticMetadata,
+  GroupTotal
+} from "../../shared/entities";
 import { ElectionYear } from "../types";
 import { toggleFind } from "../actions/districtDrawing";
 import { geoLevelLabel, capitalizeFirstLetter, canSwitchGeoLevels } from "../functions";
@@ -148,7 +154,8 @@ const MapHeader = ({
   selectedGeounits,
   isReadOnly,
   limitSelectionToCounty,
-  electionYear
+  electionYear,
+  populationKey
 }: {
   readonly label?: string;
   readonly metadata?: IStaticMetadata;
@@ -161,6 +168,7 @@ const MapHeader = ({
   readonly findMenuOpen: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly electionYear: ElectionYear;
+  readonly populationKey: GroupTotal;
 }) => {
   const [isPaintBrushSizeSliderVisible, setPaintBrushSizeSliderVisibility] = useState(false);
   const topGeoLevelName = metadata
@@ -290,6 +298,7 @@ const MapHeader = ({
                 topGeoLevelName={topGeoLevelName}
                 metadata={metadata}
                 electionYear={electionYear}
+                populationKey={populationKey}
               />
             </Box>
           </React.Fragment>

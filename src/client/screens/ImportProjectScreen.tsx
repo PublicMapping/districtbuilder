@@ -33,7 +33,7 @@ import {
 } from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
-import { setImportFlagsModal } from "../actions/districtDrawing";
+import { setImportFlagsModal } from "../actions/projectModals";
 
 import { createProject, importCsv, fetchTotalPopulation } from "../api";
 import { InputField } from "../components/Field";

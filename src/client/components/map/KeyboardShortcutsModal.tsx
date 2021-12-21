@@ -4,7 +4,8 @@ import AriaModal from "react-aria-modal";
 import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import { connect } from "react-redux";
 
-import { SelectionTool, toggleKeyboardShortcutsModal } from "../../actions/districtDrawing";
+import { SelectionTool } from "../../actions/districtDrawing";
+import { toggleKeyboardShortcutsModal } from "../../actions/projectModals";
 import { State } from "../../reducers";
 import store from "../../store";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
@@ -158,7 +159,7 @@ const KeyboardShortcutsModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showKeyboardShortcutsModal
+    showModal: state.projectModals.showKeyboardShortcutsModal
   };
 }
 

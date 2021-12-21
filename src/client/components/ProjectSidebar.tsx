@@ -15,7 +15,8 @@ import {
   MetricsList,
   VotingMetricsList,
   ReferenceLayerId,
-  DemographicsGroup
+  DemographicsGroup,
+  GroupTotal
 } from "../../shared/entities";
 
 import {
@@ -258,7 +259,8 @@ const ProjectSidebar = ({
   hoveredDistrictId,
   saving,
   isReadOnly,
-  pinnedMetrics
+  pinnedMetrics,
+  populationKey
 }: {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -275,6 +277,7 @@ const ProjectSidebar = ({
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
   readonly pinnedMetrics?: readonly string[];
+  readonly populationKey: GroupTotal;
 } & LoadingProps) => {
   const multElections = hasMultipleElections(staticMetadata);
   const has2016Election = has16Election(staticMetadata);
@@ -438,8 +441,8 @@ const ProjectSidebar = ({
                 highlightedGeounits={highlightedGeounits}
                 hasElectionData={hasElectionData}
                 lockedDistricts={lockedDistricts}
-                saving={saving}
                 isReadOnly={isReadOnly}
+                populationKey={populationKey}
               />
             )}
           </tbody>
@@ -520,7 +523,8 @@ const SidebarRow = memo(
     hasElectionData,
     isReadOnly,
     popDeviation,
-    popDeviationThreshold
+    popDeviationThreshold,
+    populationKey
   }: {
     readonly district: DistrictGeoJSON;
     readonly pinnedMetricFields: readonly string[];
@@ -539,6 +543,7 @@ const SidebarRow = memo(
     readonly isReadOnly: boolean;
     readonly popDeviation: number;
     readonly popDeviationThreshold: number;
+    readonly populationKey: GroupTotal;
   }) => {
     const selectedDifference = selectedPopulationDifference || 0;
     const showPopulationChange = selectedDifference !== 0;
@@ -722,6 +727,8 @@ const SidebarRow = memo(
                   <DemographicsTooltip
                     demographics={demographics}
                     isMajorityMinority={isMajorityMinority(district)}
+                    demographicsGroups={demographicsGroups}
+                    populationKey={populationKey}
                   />
                 ) : (
                   <em>
@@ -741,7 +748,11 @@ const SidebarRow = memo(
                     left: "-2px"
                   }}
                 >
-                  <DemographicsChart demographics={demographics} />
+                  <DemographicsChart
+                    demographics={demographics}
+                    populationKey={populationKey}
+                    demographicsGroups={demographicsGroups}
+                  />
                 </span>
               </Flex>
             </Tooltip>
@@ -837,7 +848,7 @@ interface SidebarRowsProps {
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
   readonly hasElectionData: boolean;
-  readonly saving: SavingState;
+  readonly populationKey: GroupTotal;
   readonly isReadOnly: boolean;
 }
 
@@ -852,8 +863,9 @@ const SidebarRows = ({
   expandedProjectMetrics,
   pinnedMetrics,
   highlightedGeounits,
-  hasElectionData,
   lockedDistricts,
+  hasElectionData,
+  populationKey,
   isReadOnly
 }: SidebarRowsProps) => {
   // Results of the asynchronous demographics calculation. The two calculations have been
@@ -863,6 +875,7 @@ const SidebarRows = ({
     | { readonly total: DemographicCounts; readonly savedDistrict: readonly DemographicCounts[] }
     | undefined
   >(undefined);
+  const [cachedPopulationKey, setCachedPopulationKey] = useState<string>(populationKey);
 
   // Asynchronously recalculate demographics on state changes with web workers
   useEffect(() => {
@@ -887,24 +900,38 @@ const SidebarRows = ({
       );
 
       // Don't overwrite current results with outdated ones
-      !outdated &&
+      if (!outdated) {
         setSelectedDemographics({
           total: selectedTotals.demographics,
           savedDistrict: districtTotals
         });
+
+        if (populationKey !== cachedPopulationKey) {
+          setCachedPopulationKey(populationKey);
+        }
+      }
     }
 
-    // When there aren't any geounits highlighted or selected, there is no need to run the
-    // asynchronous calculation; it can simply be cleared out. This additional logic prevents
-    // the sidebar values from flickering after save.
-    areAnyGeoUnitsSelected(selectedGeounits) || areAnyGeoUnitsSelected(highlightedGeounits)
+    // When there aren't any geounits highlighted or selected, and no change to the key used for demographics data,
+    // there is no need to run the asynchronous calculation; it can simply be cleared out.
+    // This additional logic prevents the sidebar values from flickering after save.
+    areAnyGeoUnitsSelected(selectedGeounits) ||
+    areAnyGeoUnitsSelected(highlightedGeounits) ||
+    populationKey !== cachedPopulationKey
       ? void getData()
       : setSelectedDemographics(undefined);
 
     return () => {
       outdated = true;
     };
-  }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
+  }, [
+    project,
+    staticMetadata,
+    selectedGeounits,
+    highlightedGeounits,
+    populationKey,
+    cachedPopulationKey
+  ]);
 
   const popPerRep = getPopulationPerRepresentative(geojson, project.numberOfMembers);
   const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
@@ -947,6 +974,7 @@ const SidebarRows = ({
             isReadOnly={isReadOnly}
             popDeviation={project.populationDeviation}
             popDeviationThreshold={popDeviationThreshold}
+            populationKey={populationKey}
           />
         ) : null;
       })}

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Option to toggle which demographics to use for calculations [#1085](https://github.com/PublicMapping/districtbuilder/pull/1085)
 
 - Add project-level info to geojson 'metadata' property [#1076](https://github.com/PublicMapping/districtbuilder/pull/1076)
 - Add instructions on configuring PG Admin and on releasing new region data [#1081](https://github.com/PublicMapping/districtbuilder/pull/1081)

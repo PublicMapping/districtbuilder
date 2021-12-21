@@ -7,7 +7,7 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import { isUserLoggedIn } from "../jwt";
 import { IProject, IUser } from "../../shared/entities";
-import { showCopyMapModal } from "../actions/districtDrawing";
+import { showCopyMapModal } from "../actions/projectModals";
 import { resetProjectState } from "../actions/root";
 import { copyProject } from "../api";
 import { showActionFailedToast } from "../functions";
@@ -115,7 +115,7 @@ const CopyMapModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showCopyMapModal,
+    showModal: state.projectModals.showCopyMapModal,
     user: state.user
   };
 }

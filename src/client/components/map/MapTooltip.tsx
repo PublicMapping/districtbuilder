@@ -5,7 +5,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { Box, Divider, Heading, jsx, Grid, ThemeUIStyleObject } from "theme-ui";
 
-import { DemographicCounts, GeoUnits, IProject, IStaticMetadata } from "../../../shared/entities";
+import {
+  DemographicCounts,
+  GeoUnits,
+  IProject,
+  IStaticMetadata,
+  GroupTotal
+} from "../../../shared/entities";
 import { ElectionYear } from "../../types";
 
 import {
@@ -63,7 +69,8 @@ const MapTooltip = ({
   staticMetadata,
   project,
   map,
-  electionYear
+  electionYear,
+  populationKey
 }: {
   readonly geoLevelIndex: number;
   readonly highlightedGeounits: GeoUnits;
@@ -71,6 +78,7 @@ const MapTooltip = ({
   readonly project?: IProject;
   readonly map?: MapboxGL.Map;
   readonly electionYear: ElectionYear;
+  readonly populationKey: GroupTotal;
 }) => {
   const [point, setPoint] = useState({ x: 0, y: 0 });
   const [feature, setFeature] = useState<MapboxGL.MapboxGeoJSONFeature | undefined>(undefined);
@@ -252,7 +260,14 @@ const MapTooltip = ({
         </Grid>
         <Divider sx={{ my: 1, borderColor: "gray.6" }} />
         <Box sx={{ width: "100%" }}>
-          <DemographicsTooltip demographics={data.demographics} abbreviate={true} />
+          {demographicsGroups && (
+            <DemographicsTooltip
+              demographics={data.demographics}
+              abbreviate={true}
+              demographicsGroups={demographicsGroups}
+              populationKey={populationKey}
+            />
+          )}
           {voting && (
             <React.Fragment>
               <Divider sx={{ my: 1, borderColor: "gray.6" }} />
@@ -278,7 +293,8 @@ function mapStateToProps(state: State) {
     highlightedGeounits: state.project.highlightedGeounits,
     project: destructureResource(state.project.projectData, "project"),
     staticMetadata: destructureResource(state.project.staticData, "staticMetadata"),
-    electionYear: state.project.electionYear
+    electionYear: state.projectOptions.electionYear,
+    populationKey: state.projectOptions.populationKey
   };
 }
 

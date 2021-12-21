@@ -16,7 +16,7 @@ import {
   TypedArrays,
   IReferenceLayer
 } from "../../shared/entities";
-import { ElectionYear, EvaluateMetricWithValue } from "../types";
+import { EvaluateMetricWithValue } from "../types";
 
 import {
   projectDataFetch,
@@ -48,6 +48,7 @@ import ConvertMapModal from "../components/ConvertMapModal";
 import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
 import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
+import { ProjectOptionsState } from "../reducers/projectOptions";
 
 interface StateProps {
   readonly project?: IProject;
@@ -68,7 +69,8 @@ interface StateProps {
   readonly referenceLayers: Resource<readonly IReferenceLayer[]>;
   readonly mapLabel: string | undefined;
   readonly user: Resource<IUser>;
-  readonly electionYear: ElectionYear;
+  readonly limitSelectionToCounty: boolean;
+  readonly projectOptions: ProjectOptionsState;
 }
 
 const style: ThemeUIStyleObject = {
@@ -101,7 +103,8 @@ const ProjectScreen = ({
   isReadOnly,
   isArchived,
   user,
-  electionYear
+  limitSelectionToCounty,
+  projectOptions
 }: StateProps) => {
   const { projectId } = useParams();
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
@@ -177,6 +180,7 @@ const ProjectScreen = ({
             lockedDistricts={presentDrawingState.lockedDistricts}
             hoveredDistrictId={districtDrawing.hoveredDistrictId}
             saving={districtDrawing.saving}
+            populationKey={projectOptions.populationKey}
             isReadOnly={isReadOnly}
             pinnedMetrics={districtDrawing.undoHistory.present.state.pinnedMetricFields}
           />
@@ -207,10 +211,11 @@ const ProjectScreen = ({
                 paintBrushSize={districtDrawing.paintBrushSize}
                 geoLevelIndex={presentDrawingState.geoLevelIndex}
                 selectedGeounits={presentDrawingState.selectedGeounits}
-                limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
+                limitSelectionToCounty={limitSelectionToCounty}
                 advancedEditingEnabled={project?.advancedEditingEnabled}
                 isReadOnly={isReadOnly}
-                electionYear={electionYear}
+                electionYear={projectOptions.electionYear}
+                populationKey={projectOptions.populationKey}
               />
             ) : (
               <Flex></Flex>
@@ -244,7 +249,7 @@ const ProjectScreen = ({
                   evaluateMetric={evaluateMetric}
                   isReadOnly={isReadOnly}
                   isArchived={isArchived}
-                  limitSelectionToCounty={districtDrawing.limitSelectionToCounty}
+                  limitSelectionToCounty={limitSelectionToCounty}
                   label={mapLabel}
                   map={map}
                   setMap={setMap}
@@ -287,7 +292,8 @@ function mapStateToProps(state: State): StateProps {
     evaluateMetric: state.project.evaluateMetric,
     findMenuOpen: state.project.findMenuOpen,
     mapLabel: state.project.mapLabel,
-    electionYear: state.project.electionYear,
+    projectOptions: state.projectOptions,
+    limitSelectionToCounty: state.projectOptions.limitSelectionToCounty,
     districtDrawing: state.project,
     referenceLayers: state.project.referenceLayers,
     regionProperties: state.regionConfig.regionProperties,

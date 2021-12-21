@@ -9,7 +9,7 @@ import { State } from "../reducers";
 import store from "../store";
 import { Resource } from "../resource";
 import { joinOrganization } from "../actions/organizationJoin";
-import { showCopyMapModal } from "../actions/districtDrawing";
+import { showCopyMapModal } from "../actions/projectModals";
 import { createProject } from "../api";
 
 const style: ThemeUIStyleObject = {
@@ -112,7 +112,7 @@ const ConfirmJoinOrganization = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showCopyMapModal,
+    showModal: state.projectModals.showCopyMapModal,
     user: state.user
   };
 }

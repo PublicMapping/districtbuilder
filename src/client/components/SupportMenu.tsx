@@ -4,7 +4,7 @@ import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubu
 import Icon from "../components/Icon";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
-import { toggleKeyboardShortcutsModal } from "../actions/districtDrawing";
+import { toggleKeyboardShortcutsModal } from "../actions/projectModals";
 
 enum UserMenuKeys {
   Contact = "contact",

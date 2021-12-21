@@ -16,9 +16,9 @@ import {
   replaceSelectedGeounits,
   FindTool,
   setZoomToDistrictId,
-  PaintBrushSize,
-  showConvertMapModal
+  PaintBrushSize
 } from "../../actions/districtDrawing";
+import { showConvertMapModal } from "../../actions/projectModals";
 import { getDistrictColor } from "../../constants/colors";
 import {
   TypedArrays,
@@ -27,7 +27,8 @@ import {
   IStaticMetadata,
   LockedDistricts,
   ReferenceLayerId,
-  IReferenceLayer
+  IReferenceLayer,
+  GroupTotal
 } from "../../../shared/entities";
 import {
   DistrictsGeoJSON,
@@ -42,7 +43,8 @@ import {
   assertNever,
   hasMultipleElections,
   calculatePVI,
-  getPopulationPerRepresentative
+  getPopulationPerRepresentative,
+  getDemographicsPercentages
 } from "../../functions";
 import {
   GEOLEVELS_SOURCE_ID,
@@ -94,10 +96,11 @@ import { connect } from "react-redux";
 import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
 import Icon from "../Icon";
-import { ReferenceLayerTypes, DEMOGRAPHIC_FIELDS_ORDER } from "../../../shared/constants";
+import { ReferenceLayerTypes } from "../../../shared/constants";
 import { Resource } from "../../resource";
 import { getColor } from "@theme-ui/color";
 import theme from "../../theme";
+import { getDemographicsGroups } from "../../../shared/functions";
 
 function removeEvaluateMetricLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
@@ -234,6 +237,7 @@ interface Props {
   readonly label?: string;
   readonly map?: MapboxGL.Map;
   readonly electionYear: ElectionYear;
+  readonly populationKey: GroupTotal;
   // eslint-disable-next-line
   readonly setMap: (map: MapboxGL.Map) => void;
 }
@@ -335,7 +339,8 @@ const DistrictsMap = ({
   referenceLayers,
   showReferenceLayers,
   setMap,
-  electionYear
+  electionYear,
+  populationKey
 }: Props) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [selectionInProgress, setSelectionInProgress] = useState<boolean>();
@@ -572,25 +577,17 @@ const DistrictsMap = ({
       // eslint-disable-next-line
       feature.properties.populationDeviation = populationDeviation;
       if (feature.properties.demographics.population !== 0) {
-        // If specified, use first demographic group to determine which fields are "race" fields
-        // If not specified, use set of fields allowed in tooltip / chart
-        const coreGroup =
-          staticMetadata &&
-          staticMetadata.demographicsGroups &&
-          staticMetadata.demographicsGroups[0];
-        const demographics =
-          coreGroup?.subgroups ||
-          DEMOGRAPHIC_FIELDS_ORDER.filter(id => id in feature.properties.demographics);
-        const percents = demographics.map(demographicKey => {
-          const popSplit = Math.abs(
-            feature.properties.demographics[demographicKey] /
-              feature.properties.demographics.population
-          );
-          return { demographicKey, popSplit };
-        });
+        const demographicsGroups = getDemographicsGroups(staticMetadata);
+        const percents = Object.entries(
+          getDemographicsPercentages(
+            feature.properties.demographics,
+            demographicsGroups,
+            populationKey
+          )
+        );
         const majorityRace = maxBy(
-          percents.filter(({ popSplit }) => popSplit > 0.5),
-          ({ popSplit }) => popSplit
+          percents.filter(([, val]) => val > 0.5),
+          ([, val]) => val
         );
         if (!majorityRace) {
           // eslint-disable-next-line
@@ -601,9 +598,9 @@ const DistrictsMap = ({
           feature.properties.majorityRaceSplit = 1 - whiteSplit;
         } else {
           // eslint-disable-next-line
-          feature.properties.majorityRace = majorityRace.demographicKey;
+          feature.properties.majorityRace = majorityRace[0];
           // eslint-disable-next-line
-          feature.properties.majorityRaceSplit = majorityRace.popSplit;
+          feature.properties.majorityRaceSplit = majorityRace[1];
         }
         // eslint-disable-next-line
         feature.properties.majorityRaceFill =
@@ -629,7 +626,8 @@ const DistrictsMap = ({
     project.numberOfMembers,
     project.populationDeviation,
     evaluateMetric,
-    staticMetadata
+    staticMetadata,
+    populationKey
   ]);
 
   // Update layer styles when district is selected
@@ -1342,8 +1340,9 @@ function mapStateToProps(state: State) {
   return {
     findMenuOpen: state.project.findMenuOpen,
     findTool: state.project.findTool,
-    electionYear: state.project.electionYear,
-    showKeyboardShortcutsModal: state.project.showKeyboardShortcutsModal,
+    electionYear: state.projectOptions.electionYear,
+    populationKey: state.projectOptions.populationKey,
+    showKeyboardShortcutsModal: state.projectModals.showKeyboardShortcutsModal,
     referenceLayers: state.project.referenceLayers,
     showReferenceLayers: state.project.showReferenceLayers,
     isThisUsersMap:

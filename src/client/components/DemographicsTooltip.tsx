@@ -1,10 +1,11 @@
 /** @jsx jsx */
-import mapValues from "lodash/mapValues";
 import { Box, jsx, Styled, ThemeUIStyleObject, Divider } from "theme-ui";
 
 import { demographicsColors } from "../constants/colors";
 import { getDemographicLabel } from "../../shared/functions";
 import { DEMOGRAPHIC_FIELDS_ORDER } from "../../shared/constants";
+import { GroupTotal, DemographicsGroup } from "../../shared/entities";
+import { getDemographicsPercentages } from "../functions";
 
 const style: ThemeUIStyleObject = {
   label: {
@@ -64,19 +65,18 @@ const Row = ({
 const DemographicsTooltip = ({
   demographics,
   isMajorityMinority,
-  abbreviate
+  abbreviate,
+  demographicsGroups,
+  populationKey
 }: {
   readonly demographics: { readonly [id: string]: number };
   readonly isMajorityMinority?: boolean;
   readonly abbreviate?: boolean;
+  readonly demographicsGroups: readonly DemographicsGroup[];
+  readonly populationKey: GroupTotal;
 }) => {
-  // Only showing hard-coded core metrics here for space reasons, so we can hard-code population as well
-  // To handle cases where adjustments have caused negative pop. use absolute values
-  const percentages = mapValues(
-    demographics,
-    (population: number) =>
-      (demographics.population ? population / Math.abs(demographics.population) : 0) * 100
-  );
+  const percentages = getDemographicsPercentages(demographics, demographicsGroups, populationKey);
+  // Only showing hard-coded core metrics here for space / color reasons
   const rows = DEMOGRAPHIC_FIELDS_ORDER.filter(
     race => percentages[race] !== undefined
   ).map((id: typeof DEMOGRAPHIC_FIELDS_ORDER[number]) => (
