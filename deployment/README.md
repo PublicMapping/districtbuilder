@@ -136,8 +136,8 @@ Note that updates to the `s3_uri` column on production for an existing region **
 
 For existing regions, when updating data the best practice way is to overwrite the data on S3 and reload tasks once all data has been overwritten. To do so, for each region with updated data, do the following:
 
-- Make a backup of the data by running `aws s3 –profile=district-builder cp -r <existing URI> <existing URI>-backup-<yyyy-mm-dd>`
-- Copy the new data over the old with `aws s3 –profile=district-builder cp -r <new URI> <existing URI>`
+- Make a backup of the data by running `aws s3 –-profile=district-builder cp -r <existing URI> <existing URI>-backup-<yyyy-mm-dd>`
+- Copy the new data over the old with `aws s3 -–profile=district-builder cp -r <new URI> <existing URI>`
 
 #### Updating the database
 
