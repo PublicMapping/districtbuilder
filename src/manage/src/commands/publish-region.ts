@@ -76,13 +76,11 @@ export default class PublishRegion extends Command {
 
     this.log("Saving region config to database");
     const regionConfig = new RegionConfig();
-    /* tslint:disable:no-object-mutation */
     regionConfig.name = args.regionName;
     regionConfig.countryCode = args.countryCode;
     regionConfig.regionCode = args.regionCode;
     regionConfig.s3URI = `s3://${flags.bucketName}/${keyPrefix}/`;
     regionConfig.version = versionDt;
-    /* tslint:enable */
 
     const connection = await createConnection(connectionOptions);
     const repo = connection.getRepository(RegionConfig);
