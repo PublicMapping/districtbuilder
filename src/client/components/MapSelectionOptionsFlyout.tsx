@@ -13,13 +13,11 @@ import Icon from "./Icon";
 import { IStaticMetadata, GroupTotal } from "../../shared/entities";
 import { ElectionYear } from "../types";
 
-function getPopulationLabel(key: string) {
-  return {
-    population: "All people",
-    VAP: "Voting age population (VAP)",
-    CVAP: "Citizen voting age population (CVAP)"
- }[key] || key;
-}
+const POPULATION_LABELS: { readonly [key: string]: string } = {
+  population: "All people",
+  VAP: "Voting age population (VAP)",
+  CVAP: "Citizen voting age population (CVAP)"
+};
 
 const style = {
   button: {
@@ -134,7 +132,7 @@ const MapSelectionOptionsFlyout = ({
                       store.dispatch(setPopulationKey(key));
                     }}
                   />
-                  {getPopulationLabel(key)}
+                  {POPULATION_LABELS[key] || key}
                 </Label>
               ))}
             </li>
