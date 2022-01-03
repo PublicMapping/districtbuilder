@@ -99,7 +99,7 @@ export class AuthService {
           ? `${process.env.CLIENT_URL}/activate/${emailToken}/${org}`
           : `${process.env.CLIENT_URL}/activate/${emailToken}`
       },
-      template: "verify"
+      template: "./verify"
     });
 
     this.logSentEmail(info);
@@ -118,7 +118,7 @@ export class AuthService {
         user,
         url: `${process.env.CLIENT_URL}/password-reset/${emailToken}`
       },
-      template: "passwordreset"
+      template: "./passwordreset"
     });
 
     this.logSentEmail(info);
