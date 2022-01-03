@@ -13,6 +13,8 @@ import {
   globalProjectsSetRegion
 } from "../actions/projects";
 import { UserState } from "../reducers/user";
+import { userFetch } from "../actions/user";
+import { isUserLoggedIn } from "../jwt";
 import FeaturedProjectCard from "../components/FeaturedProjectCard";
 import PaginationFooter from "../components/PaginationFooter";
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -66,6 +68,7 @@ const PublishedMapsListScreen = ({
   regionConfigs
 }: StateProps) => {
   const [regionCode, setRegionCode] = useQueryParam("region", StringParam);
+  const isLoggedIn = isUserLoggedIn();
 
   useEffect(() => {
     if (regionCode) {
@@ -82,6 +85,10 @@ const PublishedMapsListScreen = ({
   useEffect(() => {
     !regionConfigs && store.dispatch(regionConfigsFetch());
   }, [regionConfigs]);
+
+  useEffect(() => {
+    isLoggedIn && store.dispatch(userFetch());
+  }, [isLoggedIn]);
 
   const regionConfigOptions = regionConfigs
     ? [...regionConfigs]
