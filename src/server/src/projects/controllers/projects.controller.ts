@@ -707,7 +707,7 @@ export class ProjectsController implements CrudController<Project> {
     @ParsedBody() dto: UpdateProjectDto
   ) {
     // Start off with some validations that can't be handled easily at the DTO layer
-    const userId = typeof req.parsed.authPersist.userId as string;
+    const userId = req.parsed.authPersist.userId as string;
     const existingProject = await this.getProjectWithDistricts(id, userId);
     if (dto.lockedDistricts && existingProject.numberOfDistricts !== dto.lockedDistricts.length) {
       throw new BadRequestException({
