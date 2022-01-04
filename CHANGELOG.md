@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Option to toggle which demographics to use for calculations [#1085](https://github.com/PublicMapping/districtbuilder/pull/1085)
 
 - Add project-level info to geojson 'metadata' property [#1076](https://github.com/PublicMapping/districtbuilder/pull/1076)
@@ -23,7 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix Reference Layer copy on other user's maps to reflect map's readonly status [#1078](https://github.com/PublicMapping/districtbuilder/pull/1078)
-- Fix Equal Population status so red "X" doesn't show if within deviation threshold [#1084] (https://github.com/PublicMapping/districtbuilder/pull/1084)
+- Fix Equal Population status so red "X" doesn't show if within deviation threshold [#1084](https://github.com/PublicMapping/districtbuilder/pull/1084)
+- Fix disappearing user data on Community Maps page refresh [#1090](https://github.com/PublicMapping/districtbuilder/pull/1090)
 
 ## [1.13.0] - 2021-11-30
 
