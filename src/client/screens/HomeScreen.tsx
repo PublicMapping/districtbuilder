@@ -39,6 +39,11 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
     isLoggedIn && store.dispatch(userFetch());
   }, [isLoggedIn]);
 
+  useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder | My Maps";
+  });
+
   return isSaving === "saved" && duplicatedProject !== null ? (
     <Redirect to={`/projects/${duplicatedProject.id}`} />
   ) : (

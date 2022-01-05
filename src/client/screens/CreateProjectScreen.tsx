@@ -217,6 +217,11 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       fetchTotalPopulation(data.regionConfig).then(population => setTotalPopulation(population));
   }, [data.regionConfig]);
 
+  useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder | New Map";
+  });
+
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
   ) : (

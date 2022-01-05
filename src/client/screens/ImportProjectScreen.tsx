@@ -439,6 +439,11 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
   }, [organization]);
 
   useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder | Import Map";
+  });
+
+  useEffect(() => {
     handleFileUpload();
   }, [file, templateData]);
 
