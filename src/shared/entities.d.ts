@@ -23,6 +23,7 @@ export interface IUser {
   readonly isEmailVerified: boolean;
   readonly hasSeenTour: boolean;
   readonly organizations: readonly OrganizationNest[];
+  readonly adminOrganizations: readonly OrganizationNest[];
 }
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;

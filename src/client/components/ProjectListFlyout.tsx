@@ -6,19 +6,21 @@ import { style, invertStyles } from "./MenuButton.styles";
 import Icon from "./Icon";
 import store from "../store";
 import { exportCsv, exportGeoJson, exportShp, duplicateProject } from "../actions/projectData";
-import { setDeleteProject } from "../actions/projects";
+import { setDeleteProject, setTemplateProject } from "../actions/projects";
 
 enum UserMenuKeys {
   Delete = "delete",
   CopyMap = "copy",
   ExportCsv = "csv",
   ExportShapefile = "shp",
-  ExportGeoJson = "geojson"
+  ExportGeoJson = "geojson",
+  CreateTemplate = "createtemplate"
 }
 
 interface FlyoutProps {
   readonly invert?: boolean;
   readonly project: IProject;
+  readonly isOrganizationAdmin: boolean;
 }
 
 // Flyout ("..." button) for each project on the project list page.
@@ -39,7 +41,9 @@ const ProjectListFlyout = (props: FlyoutProps) => {
             ? exportShp
             : userMenuKey === UserMenuKeys.CopyMap
             ? duplicateProject
-            : exportGeoJson;
+            : userMenuKey === UserMenuKeys.ExportGeoJson
+            ? exportGeoJson
+            : setTemplateProject;
         store.dispatch(action(props.project));
       }}
       sx={{ display: "inline-block" }}
@@ -56,25 +60,40 @@ const ProjectListFlyout = (props: FlyoutProps) => {
       </MenuButton>
       <Menu sx={{ ...style.menu }}>
         <ul sx={style.menuList}>
-          <li key={UserMenuKeys.ExportCsv}>
+          <li key={UserMenuKeys.ExportShapefile}>
             <MenuItem value={UserMenuKeys.ExportShapefile}>
               <Box sx={style.menuListItem}>Export Shapefile</Box>
             </MenuItem>
-            {!isArchived && (
+          </li>
+          {!isArchived && (
+            <li key={UserMenuKeys.ExportCsv}>
               <MenuItem value={UserMenuKeys.ExportCsv}>
                 <Box sx={style.menuListItem}>Export CSV</Box>
               </MenuItem>
-            )}
+            </li>
+          )}
+          <li key={UserMenuKeys.ExportGeoJson}>
             <MenuItem value={UserMenuKeys.ExportGeoJson}>
               <Box sx={style.menuListItem}>Export GeoJSON</Box>
             </MenuItem>
+          </li>
+          <li key={UserMenuKeys.CopyMap}>
             <MenuItem value={UserMenuKeys.CopyMap}>
               <Box sx={style.menuListItem}>Duplicate Map</Box>
             </MenuItem>
+          </li>
+          <li key={UserMenuKeys.Delete}>
             <MenuItem value={UserMenuKeys.Delete}>
               <Box sx={style.menuListItem}>Delete Map</Box>
             </MenuItem>
           </li>
+          {props.isOrganizationAdmin && (
+            <li key={UserMenuKeys.CreateTemplate}>
+              <MenuItem value={UserMenuKeys.CreateTemplate}>
+                <Box sx={style.menuListItem}>Copy to Template</Box>
+              </MenuItem>
+            </li>
+          )}
         </ul>
       </Menu>
     </Wrapper>

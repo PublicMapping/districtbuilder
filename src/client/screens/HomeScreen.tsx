@@ -20,6 +20,7 @@ import SiteHeader from "../components/SiteHeader";
 import HomeScreenProjectCard from "../components/HomeScreenProjectCard";
 import { SavingState } from "../types";
 import { Redirect } from "react-router-dom";
+import TemplateFromProjectModal from "../components/TemplateFromProjectModal";
 
 interface StateProps {
   readonly projects: Resource<readonly IProject[]>;
@@ -33,6 +34,7 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
   const isLoggedIn = isUserLoggedIn();
   const projectList =
     "resource" in projects ? projects.resource.filter(project => !project.archived) : [];
+  const isOrganizationAdmin = "resource" in user && user.resource.adminOrganizations.length > 0;
 
   useEffect(() => {
     isLoggedIn && store.dispatch(userProjectsFetch());
@@ -49,6 +51,9 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
   ) : (
     <Flex sx={{ flexDirection: "column" }}>
       <DeleteProjectModal />
+      {"resource" in user && (
+        <TemplateFromProjectModal adminOrganizations={user.resource.adminOrganizations} />
+      )}
       <SiteHeader user={user} />
       <Flex
         as="main"
@@ -88,7 +93,11 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
               }}
             >
               {projectList.map((project: IProject) => (
-                <HomeScreenProjectCard project={project} key={project.id} />
+                <HomeScreenProjectCard
+                  project={project}
+                  key={project.id}
+                  isOrganizationAdmin={isOrganizationAdmin}
+                />
               ))}
               {pagination.totalPages && (
                 <Box
