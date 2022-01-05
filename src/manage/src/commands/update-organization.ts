@@ -63,7 +63,6 @@ export default class UpdateOrganization extends Command {
     const templateRepo = connection.getRepository(ProjectTemplate);
     const userRepo = connection.getRepository(User);
 
-    /* tslint:disable:no-object-mutation */
     const result = await orgRepo.findOne({ slug: organizationDetails.slug });
 
     const admin = await userRepo.findOne({ id: organizationDetails.admin });
@@ -99,7 +98,6 @@ export default class UpdateOrganization extends Command {
       // @ts-ignore
       await templateRepo.save(template);
     }
-    /* tslint:enable */
 
     this.log("Organization saved to database");
   }

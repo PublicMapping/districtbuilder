@@ -23,11 +23,9 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
   @Column({ type: "character varying" })
   name: string;
 
-  @ManyToOne(
-    () => RegionConfig,
-    regionConfig => regionConfig.projectTemplates,
-    { nullable: false }
-  )
+  @ManyToOne(() => RegionConfig, regionConfig => regionConfig.projectTemplates, {
+    nullable: false
+  })
   @JoinColumn({ name: "region_config_id" })
   regionConfig: RegionConfig;
 
@@ -35,16 +33,10 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
   @JoinColumn({ name: "chamber_id" })
   chamber?: Chamber;
 
-  @OneToMany(
-    () => Project,
-    project => project.projectTemplate
-  )
+  @OneToMany(() => Project, project => project.projectTemplate)
   projects: Project[];
 
-  @OneToMany(
-    () => ReferenceLayer,
-    layer => layer.projectTemplate
-  )
+  @OneToMany(() => ReferenceLayer, layer => layer.projectTemplate)
   referenceLayers: ReferenceLayer[];
 
   @Column({ name: "number_of_districts", type: "integer" })
@@ -74,7 +66,7 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
     type: "character varying",
     array: true,
     name: "pinned_metric_fields",
-    default: () => `ARRAY[${DEFAULT_PINNED_METRIC_FIELDS.map(c => `'${c}'`).join(",")}]`
+    default: DEFAULT_PINNED_METRIC_FIELDS
   })
   pinnedMetricFields: string[];
 

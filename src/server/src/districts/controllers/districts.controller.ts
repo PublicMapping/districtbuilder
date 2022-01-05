@@ -141,9 +141,7 @@ export class DistrictsController {
     );
     const districtsDefinition = geoCollection.importFromCSV(blockToDistricts);
 
-    const maxDistrictId = Math.max(
-      ...districtsDefinition.flat(geoCollection.staticMetadata.geoLevels.length)
-    );
+    const maxDistrictId = Math.max(...Object.values(blockToDistricts));
     const rowFlags = flaggedRows.filter(r => !!r);
     const numFlags = rowFlags.length;
 

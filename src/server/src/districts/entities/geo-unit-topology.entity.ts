@@ -36,6 +36,10 @@ interface GeoUnitPolygonHierarchy {
   children: ReadonlyArray<GeoUnitPolygonHierarchy>;
 }
 
+type GroupedPolygons = {
+  [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
+};
+
 /*
  * Calculate Polsby-Popper compactness
  *
@@ -98,18 +102,15 @@ function group(
   });
 
   const firstGroup = definition.groups[0];
-  const toplevelCollection = topology.objects[firstGroup] as GeometryCollection;
-  return toplevelCollection.geometries.map(geom =>
-    getNode(geom, definition, Object.fromEntries(geounitsByParentId))
-  );
+  const toplevelCollection = topology.objects[firstGroup] as GeometryCollection<any>;
+  const geounits: GroupedPolygons = Object.fromEntries(geounitsByParentId);
+  return toplevelCollection.geometries.map(geom => getNode(geom, definition, geounits));
 }
 
 function getNode(
   geometry: GeometryObject<any>,
   definition: GeoUnitDefinition,
-  geounitsByParentId: {
-    [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
-  }
+  geounitsByParentId: GroupedPolygons
 ): GeoUnitPolygonHierarchy {
   const firstGroup = definition.groups[0];
   const remainingGroups = definition.groups.slice(1);
@@ -139,28 +140,27 @@ function groupForHierarchy(topology: Topology, definition: GeoUnitDefinition): H
     );
     const childGroupName = definition.groups[index + 1];
     if (childGroupName) {
-      const childCollection = topology.objects[childGroupName] as GeometryCollection;
+      const childCollection = topology.objects[childGroupName] as GeometryCollection<any>;
       childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-        mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+        if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+          mutableMappings[geometry.properties[groupName]].push(geometry);
+        }
       });
     }
     return [groupName, mutableMappings];
   });
 
   const firstGroup = definition.groups[0];
-  const toplevelCollection = topology.objects[firstGroup] as GeometryCollection;
-  return toplevelCollection.geometries.map(geom =>
-    getNodeForHierarchy(geom, definition, Object.fromEntries(geounitsByParentId))
-  );
+  const toplevelCollection = topology.objects[firstGroup] as GeometryCollection<any>;
+  const geounits: GroupedPolygons = Object.fromEntries(geounitsByParentId);
+  return toplevelCollection.geometries.map(geom => getNodeForHierarchy(geom, definition, geounits));
 }
 
 // Helper for recursively collecting geounit hierarchy node information
 function getNodeForHierarchy(
   geometry: GeometryObject<any>,
   definition: GeoUnitDefinition,
-  geounitsByParentId: {
-    [groupName: string]: { [geounitId: string]: ReadonlyArray<Polygon | MultiPolygon> };
-  }
+  geounitsByParentId: GroupedPolygons
 ): HierarchyDefinition {
   const firstGroup = definition.groups[0];
   const remainingGroups = definition.groups.slice(1);
@@ -172,7 +172,7 @@ function getNodeForHierarchy(
   return remainingGroups.length > 1
     ? childGeoms.map(childGeom =>
         getNodeForHierarchy(
-          (childGeom as unknown) as GeometryObject<any>,
+          childGeom as GeometryObject<any>,
           { ...definition, groups: remainingGroups },
           geounitsByParentId
         )
@@ -230,7 +230,7 @@ export class GeoUnitTopology {
         if (elem.length !== hierarchy.children.length) {
           return false;
         }
-        return elem.every((subelem, idx) =>
+        return elem.every((subelem: GeoUnitCollection, idx: number) =>
           addToDistrict(subelem, hierarchy.children[idx], level + 1)
         );
       } else if (typeof elem === "number" && elem >= 0) {

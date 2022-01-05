@@ -171,7 +171,7 @@ it when necessary (file sizes ~1GB+).
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
     // Setting 'multiple: true' makes this return an array, but the inferred type didn't get the message
-    const demographicsFlags = (flags.demographics as unknown) as readonly string[];
+    const demographicsFlags = flags.demographics as unknown as readonly string[];
     const demographics = splitPairs(demographicsFlags.join(","));
     const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
@@ -196,17 +196,17 @@ it when necessary (file sizes ~1GB+).
     }
 
     const firstFeature = baseGeoJson.features[0];
-    for (const [demo, _id] of demographics) {
+    for (const [demo] of demographics) {
       if (!(demo in firstFeature.properties)) {
         this.error(`Demographic: "${demo}" not present in features, exiting`);
       }
     }
-    for (const [prop, _id] of geoLevels) {
+    for (const [prop] of geoLevels) {
       if (!(prop in firstFeature.properties)) {
         this.error(`Geolevel: "${prop}" not present in features, exiting`);
       }
     }
-    for (const [prop, _id] of voting) {
+    for (const [prop] of voting) {
       if (!(prop in firstFeature.properties)) {
         this.error(`Voting data: "${prop}" not present in features, exiting`);
       }
@@ -320,7 +320,7 @@ it when necessary (file sizes ~1GB+).
   getDemographicsGroups(demographicsFlags: readonly string[]): readonly DemographicsGroup[] {
     return demographicsFlags.map(flags => {
       const pairs = splitPairs(flags);
-      const ids = pairs.map(([prop, id]) => id);
+      const ids = pairs.map(([, id]) => id);
       const [total, ...subgroups] = ids;
       return { total, subgroups };
     });
@@ -373,7 +373,6 @@ it when necessary (file sizes ~1GB+).
         const merged: any = mergeArcs(topo, geoms as any);
         const firstGeom = geoms[0];
 
-        /* tslint:disable:no-object-mutation */
         // It may be possible to do this without mutation, but it would require going
         // very against-the-grain with the topojson library, and would be less performant
         merged.properties = {};
@@ -403,12 +402,10 @@ it when necessary (file sizes ~1GB+).
             }
           }
         }
-        /* tslint:enable */
 
         return merged;
       });
 
-      // tslint:disable-next-line:no-object-mutation
       topo.objects[currGeoLevel] = {
         type: "GeometryCollection",
         geometries: Object.values(mergedGeoms)
@@ -423,7 +420,6 @@ it when necessary (file sizes ~1GB+).
         // are converted into vector tiles.
         // We are using the id here, rather than a property, because an id is needed
         // in order to use the `setFeatureState` capability on the front-end.
-        // tslint:disable-next-line:no-object-mutation
         geometry.id = index;
 
         // Add abbreviated label
@@ -460,8 +456,9 @@ it when necessary (file sizes ~1GB+).
               : levelFips;
           // And then we want the tooltip to display something like "Blockgroup #CCCCCCD"
           // @ts-ignore
-          geometry.properties.name = `${geoLevel[0].toUpperCase() +
-            geoLevel.substring(1)} #${localFips}`;
+          geometry.properties.name = `${
+            geoLevel[0].toUpperCase() + geoLevel.substring(1)
+          } #${localFips}`;
         }
       });
     }
@@ -672,14 +669,14 @@ it when necessary (file sizes ~1GB+).
     dir: string,
     topology: Topology<Objects<{}>>,
     geoLevels: readonly string[]
-  ): Promise<unknown[]> {
+  ): Promise<void[]> {
     const promises = geoLevels.map(geoLevel => {
       this.log(`Converting topojson to geojson for ${geoLevel}`);
       const geojson = topo2feature(topology, topology.objects[geoLevel]);
       const path = join(dir, `${geoLevel}.geojson`);
       const output = createWriteStream(path, { encoding: "utf8" });
-      return new Promise(resolve =>
-        new JsonStreamStringify(geojson).pipe(output).on("finish", () => resolve())
+      return new Promise<void>(resolve =>
+        new JsonStreamStringify(geojson).pipe(output).on("finish", () => resolve(void 0))
       );
     });
     this.log("Streaming geojson to disk");
@@ -828,7 +825,7 @@ it when necessary (file sizes ~1GB+).
       if (childGroupName) {
         const childCollection = topology.objects[childGroupName] as GeometryCollection;
         childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-          mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+          mutableMappings[geometry.properties[groupName]].push(geometry as unknown as Polygon);
         });
       }
       return [groupName, mutableMappings];
@@ -858,7 +855,7 @@ it when necessary (file sizes ~1GB+).
     return remainingGroups.length > 1
       ? childGeoms.map(childGeom =>
           this.getNode(
-            (childGeom as unknown) as GeometryObject<any>,
+            childGeom as unknown as GeometryObject<any>,
             { ...definition, groups: remainingGroups },
             geounitsByParentId
           )

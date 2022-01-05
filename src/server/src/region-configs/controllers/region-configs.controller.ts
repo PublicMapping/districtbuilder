@@ -54,6 +54,23 @@ export class RegionConfigsController implements CrudController<RegionConfig> {
   private readonly logger = new Logger(RegionConfigsController.name);
   constructor(public service: RegionConfigsService, public topologyService: TopologyService) {}
 
+  @Get(":regionId/properties/:geounit")
+  @UseGuards(OptionalJwtAuthGuard)
+  async getRegionProperties(
+    @Param("regionId") regionId: string,
+    @Param("geounit") geounit: string,
+    @Query("fields") fields: string[]
+  ): Promise<readonly RegionLookupProperties[]> {
+    const regionConfig = await this.service.findOne({ id: regionId });
+
+    const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
+    if (!geoCollection) {
+      throw new InternalServerErrorException();
+    }
+    const props = geoCollection.topologyProperties[geounit];
+    return fields ? props.map(f => _.pick(f, fields)) : props;
+  }
+
   @Override()
   @UseGuards(JwtAuthGuard)
   async createOne(
@@ -76,22 +93,5 @@ export class RegionConfigsController implements CrudController<RegionConfig> {
         throw new InternalServerErrorException();
       }
     }
-  }
-
-  @Get(":regionId/properties/:geounit")
-  @UseGuards(OptionalJwtAuthGuard)
-  async getRegionProperties(
-    @Param("regionId") regionId: string,
-    @Param("geounit") geounit: string,
-    @Query("fields") fields: string[]
-  ): Promise<readonly RegionLookupProperties[]> {
-    const regionConfig = await this.service.findOne({ id: regionId });
-
-    const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
-    if (!geoCollection) {
-      throw new InternalServerErrorException();
-    }
-    const props = geoCollection.topologyProperties[geounit];
-    return fields ? props.map(f => _.pick(f, fields)) : props;
   }
 }

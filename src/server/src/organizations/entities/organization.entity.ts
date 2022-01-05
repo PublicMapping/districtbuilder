@@ -39,13 +39,9 @@ export class Organization implements IOrganization {
   @Column({ type: "character varying", default: "" })
   region: string;
 
-  @ManyToMany(
-    () => User,
-    user => user.organizations,
-    {
-      eager: true
-    }
-  )
+  @ManyToMany(() => User, user => user.organizations, {
+    eager: true
+  })
   @JoinTable()
   users: User[];
 
@@ -53,9 +49,6 @@ export class Organization implements IOrganization {
   @JoinColumn({ name: "user_id" })
   admin: User;
 
-  @OneToMany(
-    () => ProjectTemplate,
-    template => template.organization
-  )
+  @OneToMany(() => ProjectTemplate, template => template.organization)
   projectTemplates: ProjectTemplate[];
 }

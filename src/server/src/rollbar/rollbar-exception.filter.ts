@@ -29,9 +29,9 @@ function isWhitelisted(exception: HttpException) {
 function parseIp(req: IGetUserAuthInfoRequest): string | undefined {
   if (req.headers["x-forwarded-for"]) {
     if (Array.isArray(req.headers["x-forwarded-for"])) {
-      return [...req.headers["x-forwarded-for"]].shift();
+      return req.headers["x-forwarded-for"][0];
     } else {
-      return req.headers["x-forwarded-for"]?.split(",").shift();
+      return req.headers["x-forwarded-for"]?.split(",")[0];
     }
   } else {
     return req.socket?.remoteAddress;
@@ -40,7 +40,7 @@ function parseIp(req: IGetUserAuthInfoRequest): string | undefined {
 
 @Catch()
 export class RollbarExceptionFilter extends BaseExceptionFilter {
-  constructor(private rollbar: RollbarService) {
+  constructor(private readonly rollbar: RollbarService) {
     // BaseExceptionFilter will load applicationRef itself if no argument is given
     super();
   }

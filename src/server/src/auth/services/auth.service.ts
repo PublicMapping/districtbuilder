@@ -33,10 +33,10 @@ export class AuthService {
 
   constructor(
     @InjectRepository(EmailVerification)
-    private emailVerificationRepo: Repository<EmailVerification>,
-    private mailerService: MailerService,
-    private usersService: UsersService,
-    private jwtService: JwtService
+    private readonly emailVerificationRepo: Repository<EmailVerification>,
+    private readonly mailerService: MailerService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService
   ) {}
 
   async validateLogin(email: string, pass: string): Promise<User | LoginErrors> {
@@ -99,7 +99,7 @@ export class AuthService {
           ? `${process.env.CLIENT_URL}/activate/${emailToken}/${org}`
           : `${process.env.CLIENT_URL}/activate/${emailToken}`
       },
-      template: "verify"
+      template: "./verify"
     });
 
     this.logSentEmail(info);
@@ -118,7 +118,7 @@ export class AuthService {
         user,
         url: `${process.env.CLIENT_URL}/password-reset/${emailToken}`
       },
-      template: "passwordreset"
+      template: "./passwordreset"
     });
 
     this.logSentEmail(info);
