@@ -109,9 +109,9 @@ it when necessary (file sizes ~1GB+).
       To create multiple groups, use the -d option once per group.
       e.g. -d population,white,black,asian,hispanic,other -d "VAP,VAP White, VAP Black, VAP Asian, VAP Hispanic, VAP Other" 
       `,
-      default: "population,white,black,asian,hispanic,other",
+      default: ["population,white,black,asian,hispanic,other"],
       multiple: true
-    } as const),
+    }),
 
     voting: flags.string({
       char: "v",
@@ -172,9 +172,7 @@ it when necessary (file sizes ~1GB+).
     const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
-    // Setting 'multiple: true' makes this return an array, but the inferred type didn't get the message
-    const demographicsFlags = flags.demographics as unknown as readonly string[];
-    const demographics = splitPairs(demographicsFlags.join(","));
+    const demographics = splitPairs(flags.demographics.join(","));
     const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
     const quantization = parseFloat(flags.quantization);
@@ -300,7 +298,7 @@ it when necessary (file sizes ~1GB+).
       votingMetaData,
       bbox,
       geoLevelHierarchyInfo,
-      this.getDemographicsGroups(demographicsFlags)
+      this.getDemographicsGroups(flags.demographics)
     );
   }
 
@@ -458,9 +456,8 @@ it when necessary (file sizes ~1GB+).
               : levelFips;
           // And then we want the tooltip to display something like "Blockgroup #CCCCCCD"
           // @ts-ignore
-          geometry.properties.name = `${
-            geoLevel[0].toUpperCase() + geoLevel.substring(1)
-          } #${localFips}`;
+          geometry.properties.name = `${geoLevel[0].toUpperCase() +
+            geoLevel.substring(1)} #${localFips}`;
         }
       });
     }
@@ -826,7 +823,7 @@ it when necessary (file sizes ~1GB+).
       if (childGroupName) {
         const childCollection = topology.objects[childGroupName] as GeometryCollection;
         childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-          mutableMappings[geometry.properties[groupName]].push(geometry as unknown as Polygon);
+          mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
         });
       }
       return [groupName, mutableMappings];
@@ -856,7 +853,7 @@ it when necessary (file sizes ~1GB+).
     return remainingGroups.length > 1
       ? childGeoms.map(childGeom =>
           this.getNode(
-            childGeom as unknown as GeometryObject<any>,
+            (childGeom as unknown) as GeometryObject<any>,
             { ...definition, groups: remainingGroups },
             geounitsByParentId
           )
