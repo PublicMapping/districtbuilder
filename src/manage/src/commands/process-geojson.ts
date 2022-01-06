@@ -21,6 +21,8 @@ import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
+import { serialize } from "v8";
+
 import {
   TypedArray,
   GeoLevelInfo,
@@ -250,7 +252,7 @@ it when necessary (file sizes ~1GB+).
       }
     }
 
-    await this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+    this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
 
@@ -509,13 +511,12 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Write TopoJSON file to disk
-  writeTopoJson(dir: string, topology: Topology<Objects<{}>>): Promise<void> {
+  writeTopoJson(dir: string, topology: Topology<Objects<{}>>) {
     this.log("Writing topojson file");
-    const path = join(dir, "topo.json");
-    const output = createWriteStream(path, { encoding: "utf8" });
-    return new Promise(resolve =>
-      new JsonStreamStringify(topology).pipe(output).on("finish", () => resolve())
-    );
+    const path = join(dir, "topo.buf");
+    const output = createWriteStream(path, { encoding: "binary" });
+    output.write(serialize(topology));
+    output.close();
   }
 
   // Makes an appropriately-sized typed array containing the data
