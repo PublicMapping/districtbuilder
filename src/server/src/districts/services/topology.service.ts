@@ -10,6 +10,7 @@ import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 import _ from "lodash";
 import { getObject, s3Options } from "../../common/s3-wrapper";
+import { deserialize } from "v8";
 
 interface Layers {
   [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | void>;
@@ -76,19 +77,19 @@ export class TopologyService {
   ): Promise<GeoUnitTopology | GeoUnitProperties | void> {
     try {
       const [topojsonResponse, staticMetadataResponse] = await Promise.all([
-        getObject(this.s3, s3Options(s3URI, "topo.json")),
+        getObject(this.s3, s3Options(s3URI, "topo.buf")),
         getObject(this.s3, s3Options(s3URI, "static-metadata.json"))
       ]);
 
       const staticMetadataBody = staticMetadataResponse.Body?.toString("utf8");
-      const topojsonBody = topojsonResponse.Body?.toString("utf8");
+      const topojsonBody = topojsonResponse.Body as Buffer;
       if (staticMetadataBody && topojsonBody) {
         const staticMetadata = JSON.parse(staticMetadataBody) as IStaticMetadata;
         const geoLevelHierarchy = staticMetadata.geoLevelHierarchy.map(gl => gl.id);
         if (!geoLevelHierarchy) {
           this.logger.error(`geoLevelHierarchy missing from static metadata for ${s3URI}`);
         }
-        const topology = JSON.parse(topojsonBody) as Topology;
+        const topology = deserialize(topojsonBody) as Topology;
         const [demographics, geoLevels, voting] = await Promise.all([
           this.fetchStaticFiles(s3URI, staticMetadata.demographics),
           this.fetchStaticFiles(s3URI, staticMetadata.geoLevels),
