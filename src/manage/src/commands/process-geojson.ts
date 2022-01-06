@@ -21,7 +21,7 @@ import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
-import { serialize } from "v8";
+import { serialize, deserialize } from "v8";
 
 import {
   TypedArray,
@@ -456,8 +456,9 @@ it when necessary (file sizes ~1GB+).
               : levelFips;
           // And then we want the tooltip to display something like "Blockgroup #CCCCCCD"
           // @ts-ignore
-          geometry.properties.name = `${geoLevel[0].toUpperCase() +
-            geoLevel.substring(1)} #${localFips}`;
+          geometry.properties.name = `${
+            geoLevel[0].toUpperCase() + geoLevel.substring(1)
+          } #${localFips}`;
         }
       });
     }
@@ -491,20 +492,41 @@ it when necessary (file sizes ~1GB+).
 
   // Reads a TopoJSON file from S3, given the S3 run directory
   async readTopoJsonFromS3(inputS3Dir: string): Promise<Topology<Objects<{}>>> {
+    const s3 = new S3();
     const uriComponents = inputS3Dir.split("/");
     const bucket = uriComponents[2];
-    const key = `${uriComponents.slice(3).join("/")}topo.json`;
-    const response: any = await new S3()
+    const keyPrefix = uriComponents.slice(3).join("/");
+
+    console.log(bucket);
+    const bufFileExists = await s3
+      .headObject({
+        Bucket: bucket,
+        Key: `${keyPrefix}topo.buf`
+      })
+      .promise()
+      .then(
+        () => true,
+        err => {
+          if (err.code === "NotFound") {
+            return false;
+          }
+          throw err;
+        }
+      );
+
+    // Use binary format if it exists, but fallback to text format otherwise
+    const key = bufFileExists ? `${keyPrefix}topo.buf` : `${keyPrefix}topo.json`;
+
+    const response: any = await s3
       .getObject({
         Bucket: bucket,
         Key: key
       })
       .promise();
 
-    // Note: we are not using streaming within the server when reading TopoJSON, so it hasn't been
-    // implemented that way here either. If we ever encounter a TopoJSON file that's large enough
-    // that it needs to be streamed, we'll need to convert both pieces of code appropriately.
-    return JSON.parse(response.Body.toString("utf8"));
+    return bufFileExists
+      ? deserialize(response.Body as Buffer)
+      : JSON.parse(response.Body?.toString("utf8"));
   }
 
   // Write TopoJSON file to disk
@@ -823,7 +845,7 @@ it when necessary (file sizes ~1GB+).
       if (childGroupName) {
         const childCollection = topology.objects[childGroupName] as GeometryCollection;
         childCollection.geometries.forEach((geometry: GeometryObject<any>) => {
-          mutableMappings[geometry.properties[groupName]].push((geometry as unknown) as Polygon);
+          mutableMappings[geometry.properties[groupName]].push(geometry as unknown as Polygon);
         });
       }
       return [groupName, mutableMappings];
@@ -853,7 +875,7 @@ it when necessary (file sizes ~1GB+).
     return remainingGroups.length > 1
       ? childGeoms.map(childGeom =>
           this.getNode(
-            (childGeom as unknown) as GeometryObject<any>,
+            childGeom as unknown as GeometryObject<any>,
             { ...definition, groups: remainingGroups },
             geounitsByParentId
           )
