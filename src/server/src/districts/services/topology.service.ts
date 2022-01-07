@@ -15,9 +15,11 @@ import _ from "lodash";
 import { getObject, s3Options } from "../../common/s3-wrapper";
 
 const MAX_RETRIES = 5;
-const BATCH_SIZE = cpus().length;
-// 10 largest states by population
-const STATE_ORDER = ["CA", "TX", "FL", "NY", "PA", "IL", "OH", "GA", "NC", "MI"];
+// Loading a topojson layer is a mix of I/O and CPU intensive work,
+// so we can afford to have more concurrent than we have cores, but not too many
+const BATCH_SIZE = cpus().length * 2;
+// 10 largest states by geojson file size
+const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
 
 type Layer = Promise<GeoUnitTopology | GeoUnitProperties | undefined>;
 
@@ -65,10 +67,8 @@ export class TopologyService {
           }),
           {}
         );
-        // Load archived regions first, as they use less memory
-        // Within that, load largest states first
+        // Load largest states first
         const sortedRegions = _.sortBy(regionConfigs, region => [
-          !region.archived,
           !STATE_ORDER.includes(region.regionCode),
           STATE_ORDER.indexOf(region.regionCode)
         ]);
