@@ -57,9 +57,12 @@ export class TopologyService {
   private readonly logger = new Logger(TopologyService.name);
   private readonly s3 = new S3();
 
-  constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
-    void repo.find().then(regionConfigs => {
+  constructor(@InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>) {}
+
+  public loadLayers() {
+    void this.repo.find().then(regionConfigs => {
       const getLayers = async () => {
+        // eslint-disable-next-line functional/immutable-data
         this._layers = regionConfigs.reduce(
           (layers, regionConfig) => ({
             ...layers,
@@ -77,6 +80,7 @@ export class TopologyService {
         await asyncLoop(
           sortedRegions.map(region => () => {
             const promise = this.fetchLayer(region.s3URI, region.archived);
+            // eslint-disable-next-line functional/immutable-data
             this._layers = { ...this._layers, [region.s3URI]: promise };
             return promise;
           }),
