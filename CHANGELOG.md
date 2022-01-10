@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update README with clearer instructions on email verification [#1082](https://github.com/PublicMapping/districtbuilder/pull/1082)
 - Update Node / Nest.JS / TypeORM / eslint / prettier [#1082](https://github.com/PublicMapping/districtbuilder/pull/1088)
 - Change page titles to be more descriptive [#1096](https://github.com/PublicMapping/districtbuilder/pull/1096)
+- Change serialization format for TopoJSON data [#1099](https://github.com/PublicMapping/districtbuilder/pull/1099)
 
 ### Fixed
 
