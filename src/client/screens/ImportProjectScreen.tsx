@@ -36,7 +36,7 @@ import { regionConfigsFetch } from "../actions/regionConfig";
 import { setImportFlagsModal } from "../actions/projectModals";
 
 import { createProject, importCsv, fetchTotalPopulation } from "../api";
-import { InputField } from "../components/Field";
+import Field, { InputField } from "../components/Field";
 import Icon from "../components/Icon";
 import ImportFlagsModal from "../components/ImportFlagsModal";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
@@ -444,11 +444,12 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
 
   useEffect(() => {
     // Set error if number of districts less than max district ID
-    if (
-      formData.numberOfDistricts !== null &&
-      maxDistrictId !== undefined &&
-      formData.numberOfDistricts < maxDistrictId
-    ) {
+    const selectedDistrict = formData.numberOfDistricts
+      ? formData.numberOfDistricts < maxDistrictId
+      : formData.chamber?.numberOfDistricts
+      ? formData.chamber.numberOfDistricts < maxDistrictId
+      : null;
+    if (maxDistrictId !== undefined && selectedDistrict) {
       setCreateProjectResource({
         data: formData,
         errors: {
@@ -735,6 +736,11 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                                 }}
                               />
                             </Box>
+                          ) : "errors" in createProjectResource ? (
+                            <Field
+                              field="numberOfDistricts"
+                              resource={createProjectResource}
+                            ></Field>
                           ) : null}
                           <Divider sx={{ width: "100%" }} />
                           <Box>
