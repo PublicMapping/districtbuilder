@@ -44,7 +44,7 @@ services:
     command: start:dev
 
   client:
-    image: node:12-slim
+    image: node:16-slim
     environment:
       - BASE_URL=${BASE_URL:-http://server:3005}
       - CHOKIDAR_USEPOLLING=true
