@@ -192,6 +192,12 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
     store.dispatch(organizationFeaturedProjectsFetch(organizationSlug));
   }, [organizationSlug]);
 
+  useEffect(() => {
+    //eslint-disable-next-line
+    document.title =
+      "DistrictBuilder " + ("resource" in organization ? `| ${organization.resource.name}` : "");
+  });
+
   function signupAndJoinOrg() {
     store.dispatch(showCopyMapModal(true));
   }

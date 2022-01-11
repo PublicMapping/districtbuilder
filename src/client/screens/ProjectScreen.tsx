@@ -147,6 +147,11 @@ const ProjectScreen = ({
     projectId && store.dispatch(projectDataFetch(projectId));
   }, [projectId, isLoggedIn]);
 
+  useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder " + (project ? `| ${project.name}` : "");
+  });
+
   return isFirstLoadPending ? (
     <CenteredContent>
       <Flex sx={{ justifyContent: "center" }}>

@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Increase alloted memory for VM in Vagrantfile [#1079](https://github.com/PublicMapping/districtbuilder/pull/1079)
 - Update README with clearer instructions on email verification [#1082](https://github.com/PublicMapping/districtbuilder/pull/1082)
 - Update Node / Nest.JS / TypeORM / eslint / prettier [#1082](https://github.com/PublicMapping/districtbuilder/pull/1088)
+- Change page titles to be more descriptive [#1096](https://github.com/PublicMapping/districtbuilder/pull/1096)
 
 ### Fixed
 

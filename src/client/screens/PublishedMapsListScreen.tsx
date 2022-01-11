@@ -90,6 +90,11 @@ const PublishedMapsListScreen = ({
     isLoggedIn && store.dispatch(userFetch());
   }, [isLoggedIn]);
 
+  useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder | Community Maps " + (regionCode ? `| ${regionCode}` : "");
+  });
+
   const regionConfigOptions = regionConfigs
     ? [...regionConfigs]
         .sort((a, b) => a.regionCode.localeCompare(b.regionCode))
