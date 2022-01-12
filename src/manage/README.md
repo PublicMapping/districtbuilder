@@ -21,7 +21,7 @@ $ npm install -g manage
 $ manage COMMAND
 running command...
 $ manage (-v|--version|version)
-manage/0.1.0 linux-x64 node-v12.22.6
+manage/0.1.0 linux-x64 node-v12.22.8
 $ manage --help [COMMAND]
 USAGE
   $ manage COMMAND
@@ -35,6 +35,7 @@ USAGE
 * [`manage help [COMMAND]`](#manage-help-command)
 * [`manage process-geojson FILE`](#manage-process-geojson-file)
 * [`manage publish-region STATICDATADIR COUNTRYCODE REGIONCODE REGIONNAME`](#manage-publish-region-staticdatadir-countrycode-regioncode-regionname)
+* [`manage serialize-topojson`](#manage-serialize-topojson)
 * [`manage update-organization CONFIG`](#manage-update-organization-config)
 * [`manage update-region STATICDATADIR UPDATES3DIR`](#manage-update-region-staticdatadir-updates3dir)
 
@@ -118,43 +119,52 @@ USAGE
   $ manage process-geojson FILE
 
 OPTIONS
-  -b, --big                            Use this for big GeoJSON files (~1GB+) that need to be streamed
+  -b, --big
+      Use this for big GeoJSON files (~1GB+) that need to be streamed
 
-  -d, --demographics=demographics      [default: population,white,black,asian,hispanic,other] Comma-separated census
-                                       demographics to select and aggregate
-                                       To use a different name for the property from the GeoJSON property,
-                                       separate values by ':'
-                                       e.g. -l pop:population,wht:white,blk:black
+  -d, --demographics=demographics
+      [default: population,white,black,asian,hispanic,other] Comma-separated group of census demographics to select and 
+      aggregate
+             To use a different name for the property from the GeoJSON property, separate values by ':'
+             e.g. -d pop:population,wht:white,blk:black
 
-  -f, --filterPrefix=filterPrefix      Filter to only base geounits containing the specified prefix
+             The first value in the group will be used as population, and the remaining values will be displayed
+             as a percentage of that population.
 
-  -l, --levels=levels                  [default: block,blockgroup,county] Comma-separated geolevel hierarchy: smallest
-                                       to largest
-                                       To use a different name for the layer ID from the GeoJSON property,
-                                       separate values by ':'
-                                       e.g. -l geoid:block,blockgroupuuid:blockgroup,county
+             To create multiple groups, use the -d option once per group.
+             e.g. -d population,white,black,asian,hispanic,other -d "VAP,VAP White, VAP Black, VAP Asian, VAP Hispanic, 
+      VAP Other"
 
-  -n, --levelMinZoom=levelMinZoom      [default: 8,0,0] Comma-separated minimum zoom level per geolevel, must match # of
-                                       levels
+  -f, --filterPrefix=filterPrefix
+      Filter to only base geounits containing the specified prefix
 
-  -o, --outputDir=outputDir            [default: ./] Directory to output files
+  -l, --levels=levels
+      [default: block,blockgroup,county] Comma-separated geolevel hierarchy: smallest to largest
+             To use a different name for the layer ID from the GeoJSON property, separate values by ':'
+             e.g. -l geoid:block,blockgroupuuid:blockgroup,county
 
-  -q, --quantization=quantization      [default: 1e5] Topojson quantization transform, 0 to skip
+  -n, --levelMinZoom=levelMinZoom
+      [default: 8,0,0] Comma-separated minimum zoom level per geolevel, must match # of levels
 
-  -s, --simplification=simplification  [default: 0.0000000025] Topojson simplification amount (minWeight)
+  -o, --outputDir=outputDir
+      [default: ./] Directory to output files
 
-  -u, --inputS3Dir=inputS3Dir          S3 directory for the previous run if we will be updating in-place
+  -q, --quantization=quantization
+      [default: 1e5] Topojson quantization transform, 0 to skip
 
-  -v, --labels=labels                  [default: election:presidential 2016] Comma-separated list of label key-value
-                                       pairs, separated by ':'
+  -s, --simplification=simplification
+      [default: 0.0000000025] Topojson simplification amount (minWeight)
 
-  -v, --voting=voting                  Comma-separated election data to select and aggregate
-                                       To use a different name for the layer property from the GeoJSON property,
-                                       separate values by ':'
-                                       e.g. -v voterep:republican,votedem:democrat,voteoth:other
+  -u, --inputS3Dir=inputS3Dir
+      S3 directory for the previous run if we will be updating in-place
 
-  -x, --levelMaxZoom=levelMaxZoom      [default: g,g,g] Comma-separated maximum zoom level per geolevel, must match # of
-                                       levels
+  -v, --voting=voting
+      Comma-separated election data to select and aggregate
+             To use a different name for the layer property from the GeoJSON property, separate values by ':'
+             e.g. -v voterep:republican,votedem:democrat,voteoth:other
+
+  -x, --levelMaxZoom=levelMaxZoom
+      [default: g,g,g] Comma-separated maximum zoom level per geolevel, must match # of levels
 
 DESCRIPTION
   Note: this can be a very memory-intensive operation,
@@ -186,6 +196,19 @@ ARGUMENTS
 
 OPTIONS
   -b, --bucketName=bucketName  [default: global-districtbuilder-dev-us-east-1] Bucket to upload the files to
+```
+
+## `manage serialize-topojson`
+
+reprocess topojson files into binary format
+
+```
+USAGE
+  $ manage serialize-topojson
+
+DESCRIPTION
+  Pass a list of s3_uri paths to reprocess, e.g.
+     serialize-topojson s3://bucket-name/regions/US/PA s3://other-bucket-name/regions/US/DE
 ```
 
 ## `manage update-organization CONFIG`

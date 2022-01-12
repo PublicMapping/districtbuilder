@@ -21,6 +21,8 @@ import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
+import { serialize, deserialize } from "v8";
+
 import {
   TypedArray,
   GeoLevelInfo,
@@ -107,9 +109,9 @@ it when necessary (file sizes ~1GB+).
       To create multiple groups, use the -d option once per group.
       e.g. -d population,white,black,asian,hispanic,other -d "VAP,VAP White, VAP Black, VAP Asian, VAP Hispanic, VAP Other" 
       `,
-      default: "population,white,black,asian,hispanic,other",
+      default: ["population,white,black,asian,hispanic,other"],
       multiple: true
-    } as const),
+    }),
 
     voting: flags.string({
       char: "v",
@@ -170,9 +172,7 @@ it when necessary (file sizes ~1GB+).
     const votingIds = voting.map(([, id]) => id);
     const minZooms = flags.levelMinZoom.split(",");
     const maxZooms = flags.levelMaxZoom.split(",");
-    // Setting 'multiple: true' makes this return an array, but the inferred type didn't get the message
-    const demographicsFlags = flags.demographics as unknown as readonly string[];
-    const demographics = splitPairs(demographicsFlags.join(","));
+    const demographics = splitPairs(flags.demographics.join(","));
     const demographicIds = demographics.map(([, id]) => id);
     const simplification = parseFloat(flags.simplification);
     const quantization = parseFloat(flags.quantization);
@@ -250,7 +250,7 @@ it when necessary (file sizes ~1GB+).
       }
     }
 
-    await this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+    this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
 
@@ -298,7 +298,7 @@ it when necessary (file sizes ~1GB+).
       votingMetaData,
       bbox,
       geoLevelHierarchyInfo,
-      this.getDemographicsGroups(demographicsFlags)
+      this.getDemographicsGroups(flags.demographics)
     );
   }
 
@@ -492,30 +492,50 @@ it when necessary (file sizes ~1GB+).
 
   // Reads a TopoJSON file from S3, given the S3 run directory
   async readTopoJsonFromS3(inputS3Dir: string): Promise<Topology<Objects<{}>>> {
+    const s3 = new S3();
     const uriComponents = inputS3Dir.split("/");
     const bucket = uriComponents[2];
-    const key = `${uriComponents.slice(3).join("/")}topo.json`;
-    const response: any = await new S3()
+    const keyPrefix = uriComponents.slice(3).join("/");
+
+    console.log(bucket);
+    const bufFileExists = await s3
+      .headObject({
+        Bucket: bucket,
+        Key: `${keyPrefix}topo.buf`
+      })
+      .promise()
+      .then(
+        () => true,
+        err => {
+          if (err.code === "NotFound") {
+            return false;
+          }
+          throw err;
+        }
+      );
+
+    // Use binary format if it exists, but fallback to text format otherwise
+    const key = bufFileExists ? `${keyPrefix}topo.buf` : `${keyPrefix}topo.json`;
+
+    const response: any = await s3
       .getObject({
         Bucket: bucket,
         Key: key
       })
       .promise();
 
-    // Note: we are not using streaming within the server when reading TopoJSON, so it hasn't been
-    // implemented that way here either. If we ever encounter a TopoJSON file that's large enough
-    // that it needs to be streamed, we'll need to convert both pieces of code appropriately.
-    return JSON.parse(response.Body.toString("utf8"));
+    return bufFileExists
+      ? deserialize(response.Body as Buffer)
+      : JSON.parse(response.Body?.toString("utf8"));
   }
 
   // Write TopoJSON file to disk
-  writeTopoJson(dir: string, topology: Topology<Objects<{}>>): Promise<void> {
+  writeTopoJson(dir: string, topology: Topology<Objects<{}>>) {
     this.log("Writing topojson file");
-    const path = join(dir, "topo.json");
-    const output = createWriteStream(path, { encoding: "utf8" });
-    return new Promise(resolve =>
-      new JsonStreamStringify(topology).pipe(output).on("finish", () => resolve())
-    );
+    const path = join(dir, "topo.buf");
+    const output = createWriteStream(path, { encoding: "binary" });
+    output.write(serialize(topology));
+    output.close();
   }
 
   // Makes an appropriately-sized typed array containing the data
