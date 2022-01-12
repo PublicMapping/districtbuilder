@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add project-level info to geojson 'metadata' property [#1076](https://github.com/PublicMapping/districtbuilder/pull/1076)
 - Add instructions on configuring PG Admin and on releasing new region data [#1081](https://github.com/PublicMapping/districtbuilder/pull/1081)
 - Add blog link to Resource menu [#1083](https://github.com/PublicMapping/districtbuilder/pull/1083)
+- Added cron task to REINDEX project table monthly [#1101](https://github.com/PublicMapping/districtbuilder/pull/1101)
 
 ### Changed
 
