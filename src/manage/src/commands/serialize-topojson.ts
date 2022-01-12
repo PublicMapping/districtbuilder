@@ -17,7 +17,7 @@ export default class SerializeTopojson extends Command {
 
   static strict = false;
 
-  // Streaming reader for GeoJSON files. Works on files over 1GB, but is slow.
+  // Streaming reader for GeoJSON files. Works on files over 512MB, but is slow.
   async readBigJson(path: string): Promise<FeatureCollection<Polygon, {}>> {
     return new Promise(resolve =>
       createReadStream(path, { encoding: "utf8" })

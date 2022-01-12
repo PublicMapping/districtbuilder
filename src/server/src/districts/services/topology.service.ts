@@ -16,7 +16,7 @@ import { getObject, s3Options } from "../../common/s3-wrapper";
 
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
-// so we can afford to have more concurrent than we have cores, but not too many
+// so we can afford to have more layers loading than we have cores, but not too many
 const BATCH_SIZE = cpus().length * 2;
 // 10 largest states by geojson file size
 const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
@@ -73,7 +73,7 @@ export class TopologyService {
           STATE_ORDER.indexOf(region.regionCode)
         ]);
 
-        // Load regions a number of regions in parallel, adding as each one completes
+        // Load a number of regions in parallel, adding another as each one completes
         await asyncLoop(
           sortedRegions.map(region => () => {
             const promise = this.fetchLayer(region.s3URI, region.archived);
