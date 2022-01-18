@@ -26,7 +26,7 @@ import MultiMemberForm from "./MultiMemberForm";
 import { patchProject } from "../api";
 import { extractErrors } from "../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     marginTop: 5
   },

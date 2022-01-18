@@ -76,7 +76,7 @@ interface InvalidForm extends ProjectForm {
   readonly valid: false;
 }
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     py: 3,
     px: 5,
@@ -316,7 +316,6 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                 <Card sx={{ variant: "card.flat" }}>
                   <SelectField
                     field="regionConfig"
-                    sx={{ width: "1000px" }}
                     label={
                       <Box as="span" sx={style.cardLabel}>
                         State
@@ -336,6 +335,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                     }
                     resource={createProjectResource}
                     selectProps={{
+                      sx: { width: "1000px" },
                       onChange:
                         "resource" in regionConfigs
                           ? (e: React.ChangeEvent<HTMLSelectElement>) => {

@@ -36,8 +36,7 @@ const ExportMenu = (props: ExportProps) => {
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light" },
           ...style.menuButton,
-          ...invertStyles(props),
-          ...props
+          ...invertStyles(props)
         }}
         className="export-menu"
       >

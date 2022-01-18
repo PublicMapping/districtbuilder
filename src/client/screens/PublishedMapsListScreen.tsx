@@ -1,7 +1,17 @@
 /** @jsx jsx */
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { Flex, jsx, Spinner, Box, Heading, Text, Label, Select } from "theme-ui";
+import {
+  Flex,
+  jsx,
+  Spinner,
+  Box,
+  Heading,
+  Text,
+  Label,
+  Select,
+  ThemeUIStyleObject
+} from "theme-ui";
 import { IProject, ProjectNest, IRegionConfig, PaginationMetadata } from "../../shared/entities";
 import "../App.css";
 import { State } from "../reducers";
@@ -30,7 +40,7 @@ interface StateProps {
   readonly regionConfigs?: readonly IRegionConfig[];
 }
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   projects: {
     pt: 4,
     pb: 8,
@@ -58,7 +68,7 @@ const style = {
   pagination: {
     cursor: "pointer"
   }
-} as const;
+};
 
 const PublishedMapsListScreen = ({
   globalProjects,
@@ -173,7 +183,7 @@ const PublishedMapsListScreen = ({
             </React.Fragment>
           ) : (
             <Flex sx={{ justifyContent: "center", alignItems: "center", height: "100%" }}>
-              <Spinner variant="spinner.large" />
+              <Spinner variant="styles.spinner.large" />
             </Flex>
           )}
         </Box>

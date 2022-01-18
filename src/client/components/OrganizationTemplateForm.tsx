@@ -6,14 +6,14 @@ import {
   OrganizationSlug,
   OrganizationNest
 } from "../../shared/entities";
-import { Box, jsx, Card, Label, Radio, Flex, Spinner } from "theme-ui";
+import { Box, jsx, Card, Label, Radio, Flex, Spinner, ThemeUIStyleObject } from "theme-ui";
 import OrganizationTemplates from "./OrganizationTemplates";
 import { useState, useEffect } from "react";
 import { organizationFetch, organizationReset } from "../actions/organization";
 import store from "../store";
 import React from "react";
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   formContainer: {
     width: "100%",
     display: "block",
@@ -66,7 +66,7 @@ const style = {
     textTransform: "none",
     fontWeight: "500"
   }
-} as const;
+};
 
 interface Props {
   readonly organization?: IOrganization;
@@ -151,7 +151,7 @@ const OrganizationTemplateForm = ({
       </Flex>
       {organizationSlug && !organization && (
         <Flex>
-          <Spinner variant="spinner.large" sx={{ m: "auto" }} />
+          <Spinner variant="styles.spinner.large" sx={{ m: "auto" }} />
         </Flex>
       )}
       {organization && user && (

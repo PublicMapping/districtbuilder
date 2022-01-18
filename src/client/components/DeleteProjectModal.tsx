@@ -9,7 +9,7 @@ import { projectArchive, setDeleteProject } from "../actions/projects";
 import { State } from "../reducers";
 import store from "../store";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   modal: {
     bg: "muted",
     p: 3,

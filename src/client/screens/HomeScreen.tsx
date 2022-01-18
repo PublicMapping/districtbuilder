@@ -161,7 +161,7 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
           )
         ) : ("isPending" in projects && projects.isPending) || isSaving === "saving" ? (
           <Flex sx={{ justifyContent: "center" }}>
-            <Spinner variant="spinner.large" />
+            <Spinner variant="styles.spinner.large" />
           </Flex>
         ) : null}
       </Flex>

@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link, useParams } from "react-router-dom";
-import { Box, Flex, Heading, jsx } from "theme-ui";
+import { Box, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import { organizationFetch } from "../actions/organization";
 import { organizationProjectsFetch } from "../actions/organizationProjects";
@@ -24,7 +24,7 @@ interface StateProps {
   readonly user: UserState;
 }
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   main: { width: "100%", mx: 0, flexDirection: "column" },
   header: {
     bg: "gray.0",
@@ -85,7 +85,7 @@ const style = {
   template: {
     flexDirection: "column"
   }
-} as const;
+};
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {
   const { organizationSlug } = useParams();

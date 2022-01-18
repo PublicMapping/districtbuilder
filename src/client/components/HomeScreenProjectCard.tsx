@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, Flex, Heading, jsx, Text } from "theme-ui";
+import { Box, Flex, Heading, jsx, Text, ThemeUIStyleObject } from "theme-ui";
 import { useHistory } from "react-router-dom";
 
 import { IProject } from "../../shared/entities";
@@ -7,7 +7,7 @@ import ProjectListFlyout from "./ProjectListFlyout";
 import TimeAgo from "timeago-react";
 import ProjectDistrictsMap from "./map/ProjectDistrictsMap";
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   featuredProject: {
     width: "100%",
     bg: "transparent",
@@ -59,7 +59,7 @@ const style = {
     top: "5px",
     right: "10px"
   }
-} as const;
+};
 
 const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
   const history = useHistory();
@@ -100,7 +100,7 @@ const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
         </Text>
       </Box>
       <span sx={style.flyoutButton}>
-        <ProjectListFlyout project={project} sx={{ display: "inline-block" }} />
+        <ProjectListFlyout project={project} />
       </span>
     </Flex>
   );

@@ -36,8 +36,7 @@ const SupportMenu = ({ project, ...props }: SupportProps & StateProps) => {
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light" },
           ...style.menuButton,
-          ...invertStyles(props),
-          ...props
+          ...invertStyles(props)
         }}
         className="support-menu"
       >

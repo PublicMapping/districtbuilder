@@ -19,7 +19,7 @@ import { selectEvaluationMetric } from "../../actions/districtDrawing";
 import { geoLevelLabelSingular, calculatePVI } from "../../functions";
 import { getPviBuckets, getPviSteps } from "../map";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   sidebar: {
     flexDirection: "column",
     flexShrink: 0,

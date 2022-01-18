@@ -9,7 +9,7 @@ import { geoLevelLabel } from "../../functions";
 import { IStaticMetadata } from "../../../shared/entities";
 import { destructureResource } from "../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   message: {
     position: "absolute",
     mt: 6,

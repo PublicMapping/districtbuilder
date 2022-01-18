@@ -31,7 +31,7 @@ const logout = () => {
   store.dispatch(resetState());
 };
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     alignItems: "center",
     justifyContent: "space-between",

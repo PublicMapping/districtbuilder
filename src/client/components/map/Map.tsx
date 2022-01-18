@@ -248,7 +248,7 @@ interface LabelId {
 type Label = Feature<Point, LabelId>;
 type Labels = FeatureCollection<Point, LabelId>;
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   archivedMessage: {
     position: "absolute",
     bg: "muted",

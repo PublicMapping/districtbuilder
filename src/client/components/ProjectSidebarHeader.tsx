@@ -20,9 +20,9 @@ interface LoadingProps {
   readonly isLoading: boolean;
 }
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
-    variant: "header.app",
+    variant: "styles.header.app",
     borderBottom: "1px solid",
     borderColor: "gray.2",
     m: 0
@@ -56,7 +56,7 @@ const ProjectSidebarHeader = ({
   StateProps) => {
   return (
     <Flex sx={style.header} className="sidebar-header">
-      <Flex sx={{ variant: "header.left" }}>
+      <Flex sx={{ variant: "styles.header.left" }}>
         <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
           Districts
         </Heading>
@@ -71,10 +71,10 @@ const ProjectSidebarHeader = ({
       </Flex>
       {isLoading || saving === "saving" ? (
         <Flex sx={{ alignItems: "center", justifyContent: "center" }}>
-          <Spinner variant="spinner.small" />
+          <Spinner variant="styles.spinner.small" />
         </Flex>
       ) : isReadOnly ? null : areAnyGeoUnitsSelected(selectedGeounits) ? (
-        <Flex sx={{ variant: "header.right" }}>
+        <Flex sx={{ variant: "styles.header.right" }}>
           <Tooltip
             placement="top-start"
             content={

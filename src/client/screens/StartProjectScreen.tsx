@@ -41,7 +41,7 @@ interface InvalidForm extends ProjectForm {
   readonly valid: false;
 }
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   page: {
     flexDirection: "column",
     minHeight: "100vh",

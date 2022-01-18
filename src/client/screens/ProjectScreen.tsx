@@ -73,7 +73,8 @@ interface StateProps {
   readonly projectOptions: ProjectOptionsState;
 }
 
-const style: ThemeUIStyleObject = {
+
+const style: Record<string, ThemeUIStyleObject> = {
   tourStart: {
     width: "300px",
     height: "10px",
@@ -155,7 +156,7 @@ const ProjectScreen = ({
   return isFirstLoadPending ? (
     <CenteredContent>
       <Flex sx={{ justifyContent: "center" }}>
-        <Spinner variant="spinner.large" />
+        <Spinner variant="styles.spinner.large" />
       </Flex>
     </CenteredContent>
   ) : "errorMessage" in user ? (

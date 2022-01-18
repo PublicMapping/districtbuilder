@@ -16,9 +16,12 @@
     "clear_cache:eslint": "rm -rf node_modules/.cache/eslint-loader"
   },
   "dependencies": {
+    "@emotion/react": "11.7.1",
+    "@emotion/styled": "11.6.0",
+    "@mdx-js/react": "1.6.22",
     "@redux-beacon/google-tag-manager": "1.0.1",
     "@szhsin/react-menu": "^1.9.1",
-    "@theme-ui/color": "0.4.0-rc.1",
+    "@theme-ui/color": "0.13.1",
     "@tippyjs/react": "^4.1.0",
     "@turf/bbox": "6.5.0",
     "@turf/boolean-intersects": "^6.4.0",
@@ -64,7 +67,7 @@
     "redux-beacon": "2.1.0",
     "redux-devtools-extension": "^2.13.8",
     "redux-loop": "5.0.1",
-    "theme-ui": "0.4.0-rc.14",
+    "theme-ui": "0.13.1",
     "timeago-react": "3.0.1",
     "ts.data.json": "0.3.0",
     "turf-polygon": "^1.0.3",

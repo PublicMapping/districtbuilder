@@ -11,7 +11,7 @@ import { toggleReferenceLayer } from "../actions/districtDrawing";
 import { toggleReferenceLayersModal } from "../actions/projectData";
 import ReferenceLayerFlyout from "./ReferenceLayerFlyout";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   referenceHeader: {
     p: 2,
     display: "block",

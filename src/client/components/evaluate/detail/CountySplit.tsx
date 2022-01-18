@@ -7,7 +7,7 @@ import { Resource } from "../../../resource";
 import { EvaluateMetricWithValue } from "../../../types";
 import { geoLevelLabel, geoLevelLabelSingular } from "../../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,

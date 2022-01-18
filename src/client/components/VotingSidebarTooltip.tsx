@@ -8,7 +8,7 @@ import { ElectionYear } from "../types";
 
 import React from "react";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     textAlign: "left",
     color: "muted",

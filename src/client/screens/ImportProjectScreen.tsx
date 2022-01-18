@@ -173,7 +173,7 @@ const blankForm: ConfigurableForm = {
   populationDeviation: DEFAULT_POPULATION_DEVIATION
 };
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     py: 3,
     px: 5,
@@ -590,7 +590,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                     <b>Error: {fileError}</b>
                   ) : (
                     <span>
-                      <Spinner variant="spinner.small" /> Uploading
+                      <Spinner variant="styles.spinner.small" /> Uploading
                     </span>
                   )}
                   <Button sx={{ variant: "buttons.linkStyle" }} onClick={() => resetForm()}>

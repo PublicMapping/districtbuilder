@@ -4,7 +4,7 @@ import { getEqualPopulationStops } from "../../map/index";
 import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
 import { computeRowFill } from "../../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,

@@ -2,7 +2,7 @@
 import { useMemo, useEffect, useState } from "react";
 import { useTable, Row, HeaderGroup, Cell, useSortBy, SortingRule, Column } from "react-table";
 import { Link } from "react-router-dom";
-import { Button, Flex, jsx, Styled } from "theme-ui";
+import { Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import { ProjectVisibility } from "../../shared/constants";
 import { OrganizationSlug, ProjectNest, IProjectTemplateWithProjects } from "../../shared/entities";
@@ -23,7 +23,7 @@ interface ProjectsTableProps {
   readonly organizationSlug: OrganizationSlug;
 }
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   main: { width: "100%", mx: 0, flexDirection: "column" },
   columnHeader: {
     borderBottom: "solid 3px red",
@@ -32,7 +32,7 @@ const style = {
     fontWeight: "bold"
   },
   columnRow: { padding: "10px", border: "solid 1px gray" }
-} as const;
+};
 
 const OrganizationAdminProjectsTable = ({ templates, organizationSlug }: ProjectsTableProps) => {
   // eslint-disable-next-line

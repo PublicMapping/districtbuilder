@@ -4,7 +4,7 @@ import { Box, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
 
 import { getPartyColor, capitalizeFirstLetter } from "../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   label: {
     textAlign: "left",
     py: 0,

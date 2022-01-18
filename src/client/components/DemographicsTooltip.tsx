@@ -7,7 +7,7 @@ import { DEMOGRAPHIC_FIELDS_ORDER } from "../../shared/constants";
 import { GroupTotal, DemographicsGroup } from "../../shared/entities";
 import { getDemographicsPercentages } from "../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   label: {
     textAlign: "left",
     py: 0,

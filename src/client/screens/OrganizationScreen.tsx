@@ -2,7 +2,18 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useParams, Link as RouterLink, useHistory } from "react-router-dom";
-import { Box, Button, Flex, Heading, Image, jsx, Spinner, Text, Link } from "theme-ui";
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Image,
+  jsx,
+  Spinner,
+  Text,
+  Link,
+  ThemeUIStyleObject
+} from "theme-ui";
 import { formatDate } from "../functions";
 
 import { showCopyMapModal } from "../actions/projectModals";
@@ -41,7 +52,7 @@ interface StateProps {
   readonly user: UserState;
 }
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   main: { width: "100%", mx: 0, flexDirection: "column" },
   header: {
     bg: "gray.0",
@@ -133,7 +144,7 @@ const style = {
     fontSize: "14pt",
     ml: 4
   }
-} as const;
+};
 
 const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
   const { organizationSlug } = useParams();
@@ -374,7 +385,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                 </Box>
               ) : (
                 <Flex sx={{ justifyContent: "center" }}>
-                  <Spinner variant="spinner.large" />
+                  <Spinner variant="styles.spinner.large" />
                 </Flex>
               )}
             </Box>
@@ -383,7 +394,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
           <PageNotFoundScreen model={"organization"} />
         ) : (
           <Flex sx={{ justifyContent: "center", marginTop: "6" }}>
-            <Spinner variant="spinner.large" />
+            <Spinner variant="styles.spinner.large" />
           </Flex>
         )}
       </Flex>

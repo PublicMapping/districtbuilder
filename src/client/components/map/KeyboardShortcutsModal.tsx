@@ -12,7 +12,7 @@ import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
 import { IStaticMetadata } from "../../../shared/entities";
 import { hasMultipleElections } from "../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",

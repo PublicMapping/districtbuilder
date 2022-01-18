@@ -13,7 +13,7 @@ import DemographicsTooltip from "../../DemographicsTooltip";
 import Tooltip from "../../Tooltip";
 import { getDemographicsGroups } from "../../../../shared/functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,

@@ -13,7 +13,7 @@ import { patchProject } from "../../api";
 import { State } from "../../reducers";
 import store from "../../store";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   modal: {
     bg: "muted",
     p: 3,

@@ -12,7 +12,7 @@ import { joinOrganization } from "../actions/organizationJoin";
 import { showCopyMapModal } from "../actions/projectModals";
 import { createProject } from "../api";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",

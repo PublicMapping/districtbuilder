@@ -29,7 +29,7 @@ import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 import { getLabel } from "./labels";
 import { getDemographicsGroups } from "../../../shared/functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   tooltip: {
     position: "absolute",
     margin: "20px",

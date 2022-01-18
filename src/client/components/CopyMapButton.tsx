@@ -16,8 +16,7 @@ const CopyMapButton = (props: CopyMapButtonProps) => {
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light" },
           ...style.menuButton,
-          ...invertStyles(props),
-          ...props
+          ...invertStyles(props)
         }}
         className="copyMap-menu"
         onClick={() => {

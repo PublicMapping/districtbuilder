@@ -78,15 +78,15 @@ interface MetricHeader {
   readonly tooltip: string;
 }
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   sidebar: {
-    variant: "sidebar.white",
+    variant: "styles.sidebar.white",
     ".rc-menu": {
       left: "-139px !important"
     }
   },
   sidebarExpanded: {
-    variant: "sidebar.expandedWhite",
+    variant: "styles.sidebar.expandedWhite",
     ".rc-menu": {
       left: "-139px !important"
     }

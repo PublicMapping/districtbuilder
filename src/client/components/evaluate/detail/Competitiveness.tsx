@@ -17,7 +17,7 @@ import PVIDisplay from "../../PVIDisplay";
 import Tooltip from "../../Tooltip";
 import CompetitivenessChart from "./CompetitivenessChart";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,
@@ -152,13 +152,13 @@ const CompetitivenessMetricDetail = ({
                             width: "15px",
                             height: "15px",
                             borderRadius: "small",
-                            bg:
-                              feature.properties.pvi &&
-                              computeRowFill(
-                                choroplethStops,
-                                calculatePVI(feature.properties.voting, metric.electionYear),
-                                true
-                              )
+                            bg: feature.properties.pvi
+                              ? computeRowFill(
+                                  choroplethStops,
+                                  calculatePVI(feature.properties.voting, metric.electionYear),
+                                  true
+                                )
+                              : undefined
                           }}
                         ></Styled.div>
                         <PVIDisplay properties={feature.properties} year={metric.electionYear} />
@@ -214,7 +214,7 @@ const CompetitivenessMetricDetail = ({
                     height: "18px",
                     color: "white"
                   }}
-                  variant="spinner.small"
+                  variant="styles.spinner.small"
                 />
               </span>
             )}

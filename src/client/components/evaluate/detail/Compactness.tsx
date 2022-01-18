@@ -5,7 +5,7 @@ import { EvaluateMetricWithValue, DistrictsGeoJSON } from "../../../types";
 import { getCompactnessDisplay } from "../../ProjectSidebar";
 import { computeRowFill } from "../../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,

@@ -54,7 +54,7 @@ const ActivateAccountScreen = () => {
             <Text
               as="p"
               sx={{
-                variant: "header.title",
+                variant: "styles.header.title",
                 textAlign: "center",
                 fontSize: 3,
                 mb: 4
@@ -84,7 +84,7 @@ const ActivateAccountScreen = () => {
         <Box style={{ color: "red" }}>{activationResource.errorMessage}</Box>
       ) : "isPending" in activationResource && activationResource.isPending ? (
         <Flex sx={{ justifyContent: "center" }}>
-          <Spinner variant="spinner.large" />
+          <Spinner variant="styles.spinner.large" />
         </Flex>
       ) : null}
     </CenteredContent>

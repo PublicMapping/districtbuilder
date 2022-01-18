@@ -19,7 +19,7 @@ import { MAX_UPLOAD_FILE_SIZE, ReferenceLayerTypes } from "../../shared/constant
 import { readString } from "react-papaparse";
 import Icon from "./Icon";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     marginTop: 5
   },

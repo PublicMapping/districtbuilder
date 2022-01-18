@@ -26,7 +26,7 @@ import {
 import store from "../store";
 import icons from "../icons";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   buttonGroup: {
     button: {
       margin: "0 !important"
@@ -52,7 +52,7 @@ const style: ThemeUIStyleObject = {
     }
   },
   header: {
-    variant: "header.app",
+    variant: "styles.header.app",
     backgroundColor: "white",
     alignItems: "center",
     justifyContent: "space-between",

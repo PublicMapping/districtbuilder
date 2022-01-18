@@ -10,7 +10,7 @@ import store from "../store";
 import { ImportRowFlag } from "../../shared/entities";
 import { MAX_IMPORT_ERRORS } from "../../shared/constants";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",
