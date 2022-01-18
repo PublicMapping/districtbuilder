@@ -56,7 +56,7 @@ interface Data {
 }
 
 const throttledDataSetter = throttle(
-  function<T>(setData: (arg0: T) => void, data: T) {
+  function <T>(setData: (arg0: T) => void, data: T) {
     setData(data);
   },
   100,

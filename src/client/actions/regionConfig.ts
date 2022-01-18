@@ -14,6 +14,6 @@ export const regionPropertiesFetch = createAction("Region properties fetch")<{
 export const regionPropertiesFetchSuccess = createAction("Region properties fetch success")<
   readonly RegionLookupProperties[]
 >();
-export const regionPropertiesFetchFailure = createAction("Region properties fetch failure")<
-  string
->();
+export const regionPropertiesFetchFailure = createAction(
+  "Region properties fetch failure"
+)<string>();

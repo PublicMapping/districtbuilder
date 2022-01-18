@@ -534,9 +534,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                       </Flex>
                     </Card>
                   </React.Fragment>
-                ) : (
-                  undefined
-                )}
+                ) : undefined}
                 <Box sx={{ mt: 3, textAlign: "left" }}>
                   <Button
                     type="submit"

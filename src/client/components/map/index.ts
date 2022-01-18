@@ -270,7 +270,8 @@ export function generateMapLayers(
       paint: {
         "fill-color": {
           property: "compactness",
-          stops: getCompactnessStops()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stops: getCompactnessStops() as unknown as any[][]
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
@@ -290,7 +291,8 @@ export function generateMapLayers(
         "fill-color": {
           property: "pvi",
           type: "interval",
-          stops: getPviSteps()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stops: getPviSteps() as unknown as any[][]
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
@@ -326,7 +328,8 @@ export function generateMapLayers(
         "fill-color": {
           property: "percentDeviation",
           type: "interval",
-          stops: getEqualPopulationStops(populationDeviation)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stops: getEqualPopulationStops(populationDeviation) as unknown as any[][]
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
@@ -680,7 +683,7 @@ export function setFeaturesSelectedFromGeoUnits(
  * Filters geounits to only those contained within the specified top-level geounit (usually county, but potentially something else such as ward or block group)
  */
 export function filterGeoUnitsByCounty(units: GeoUnits, county: number) {
-  return mapValues(units, function(geoUnitsForLevel) {
+  return mapValues(units, function (geoUnitsForLevel) {
     return new Map([
       ...Array.from(geoUnitsForLevel).filter(geounit => {
         return geounit[1][0] === county;

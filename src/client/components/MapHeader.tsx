@@ -34,10 +34,11 @@ const style: Record<string, ThemeUIStyleObject> = {
     "& button > svg": {
       marginRight: "0"
     },
-    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)": {
-      borderRadius: 0,
-      borderLeftWidth: 0
-    },
+    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)":
+      {
+        borderRadius: 0,
+        borderLeftWidth: 0
+      },
     "&:first-of-type > span > button, & > button:first-of-type": {
       borderTopRightRadius: 0,
       borderBottomRightRadius: 0
@@ -47,9 +48,10 @@ const style: Record<string, ThemeUIStyleObject> = {
       borderBottomLeftRadius: 0,
       borderLeftWidth: 0
     },
-    "&:not(:last-of-type):not(:first-of-type) > span > button[disabled], & > button:not(:last-of-type):not(:first-of-type)[disabled]": {
-      borderRightColor: "blue.7"
-    }
+    "&:not(:last-of-type):not(:first-of-type) > span > button[disabled], & > button:not(:last-of-type):not(:first-of-type)[disabled]":
+      {
+        borderRightColor: "blue.7"
+      }
   },
   header: {
     variant: "styles.header.app",

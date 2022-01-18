@@ -77,17 +77,17 @@ const DemographicsTooltip = ({
 }) => {
   const percentages = getDemographicsPercentages(demographics, demographicsGroups, populationKey);
   // Only showing hard-coded core metrics here for space / color reasons
-  const rows = DEMOGRAPHIC_FIELDS_ORDER.filter(
-    race => percentages[race] !== undefined
-  ).map((id: typeof DEMOGRAPHIC_FIELDS_ORDER[number]) => (
-    <Row
-      key={id}
-      id={id}
-      percent={percentages[id]}
-      color={demographicsColors[id]}
-      abbreviate={abbreviate}
-    />
-  ));
+  const rows = DEMOGRAPHIC_FIELDS_ORDER.filter(race => percentages[race] !== undefined).map(
+    (id: typeof DEMOGRAPHIC_FIELDS_ORDER[number]) => (
+      <Row
+        key={id}
+        id={id}
+        percent={percentages[id]}
+        color={demographicsColors[id]}
+        abbreviate={abbreviate}
+      />
+    )
+  );
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
       <Styled.table sx={{ margin: "0", width: "100%" }}>
