@@ -10,9 +10,15 @@ import { activateAccount } from "../api";
 import { isUserLoggedIn } from "../jwt";
 import CenteredContent from "../components/CenteredContent";
 import { Resource } from "../resource";
+import { OrganizationSlug } from "../../shared/entities";
+
+interface Params {
+  readonly token: string;
+  readonly organizationSlug: OrganizationSlug;
+}
 
 const ActivateAccountScreen = () => {
-  const { token, organizationSlug } = useParams();
+  const { token, organizationSlug } = useParams<Params>();
   const isLoggedIn = isUserLoggedIn();
   const history = useHistory();
   const [activationResource, setActivationResource] = useState<Resource<void>>({

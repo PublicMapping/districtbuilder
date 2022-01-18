@@ -33,7 +33,8 @@ import {
   IOrganization,
   IUser,
   ProjectNest,
-  IProject
+  IProject,
+  OrganizationSlug
 } from "../../shared/entities";
 
 import Icon from "../components/Icon";
@@ -50,6 +51,10 @@ interface StateProps {
   readonly organization: OrganizationState;
   readonly organizationProjects: OrganizationProjectsState;
   readonly user: UserState;
+}
+
+interface Params {
+  readonly organizationSlug: OrganizationSlug;
 }
 
 const style: Record<string, ThemeUIStyleObject> = {
@@ -147,7 +152,7 @@ const style: Record<string, ThemeUIStyleObject> = {
 };
 
 const OrganizationScreen = ({ organization, organizationProjects, user }: StateProps) => {
-  const { organizationSlug } = useParams();
+  const { organizationSlug } = useParams<Params>();
   const [projectTemplateData, setProjectTemplateData] = useState<CreateProjectData | undefined>(
     undefined
   );

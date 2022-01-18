@@ -183,19 +183,19 @@ export function getEqualPopulationLabels(popThreshold: number) {
 }
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
-  const largeGeolevel = {
+  const largeGeolevel: MapboxGL.LinePaint = {
     "line-color": "#000",
     "line-opacity": 1,
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 14, 4.5]
   };
 
-  const mediumGeolevel = {
+  const mediumGeolevel: MapboxGL.LinePaint = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 14, 0.6],
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.75, 14, 2.25]
   };
 
-  const smallGeolevel = {
+  const smallGeolevel: MapboxGL.LinePaint = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.3],
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 14, 1.5]
@@ -261,7 +261,6 @@ export function generateMapLayers(
   );
 
   map.addLayer(
-    // @ts-ignore
     {
       id: DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -281,7 +280,6 @@ export function generateMapLayers(
   );
 
   map.addLayer(
-    // @ts-ignore
     {
       id: DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -318,7 +316,6 @@ export function generateMapLayers(
   );
 
   map.addLayer(
-    // @ts-ignore
     {
       id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
       type: "fill",

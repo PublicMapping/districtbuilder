@@ -17,11 +17,16 @@ import { UserState } from "../reducers/user";
 import store from "../store";
 
 import PageNotFoundScreen from "./PageNotFoundScreen";
+import { OrganizationSlug } from "../../shared/entities";
 
 interface StateProps {
   readonly organization: OrganizationState;
   readonly organizationProjects: OrganizationProjectsState;
   readonly user: UserState;
+}
+
+interface Params {
+  readonly organizationSlug: OrganizationSlug;
 }
 
 const style: Record<string, ThemeUIStyleObject> = {
@@ -88,7 +93,7 @@ const style: Record<string, ThemeUIStyleObject> = {
 };
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {
-  const { organizationSlug } = useParams();
+  const { organizationSlug } = useParams<Params>();
   const templates =
     "resource" in organizationProjects.projectTemplates
       ? organizationProjects.projectTemplates.resource

@@ -642,7 +642,7 @@ const SidebarRow = memo(
         onMouseLeave={() => {
           store.dispatch(setHoveredDistrictId(null));
         }}
-        className={district.id ? null : "unassigned-row"}
+        className={district.id ? undefined : "unassigned-row"}
       >
         <Styled.td sx={style.td}>
           <Flex sx={{ alignItems: "center" }}>
