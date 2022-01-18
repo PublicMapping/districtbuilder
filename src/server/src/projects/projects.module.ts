@@ -21,7 +21,7 @@ import { ReferenceLayersModule } from "../reference-layers/reference-layers.modu
     RegionConfigsModule,
     ChambersModule,
     OrganizationsModule,
-    ProjectTemplatesModule,
+    forwardRef(() => ProjectTemplatesModule),
     forwardRef(() => ReferenceLayersModule),
     UsersModule
   ],

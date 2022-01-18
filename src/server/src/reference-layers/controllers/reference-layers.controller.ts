@@ -119,7 +119,7 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
   ): Promise<IReferenceLayer[]> {
     const userId =
       typeof req.parsed.authPersist.userId === "string" ? req.parsed.authPersist.userId : undefined;
-    return this.service.getProjectReferenceLayers(projectId, userId);
+    return this.service.getPublicReferenceLayers(projectId, userId);
   }
 
   @UseInterceptors(CrudRequestInterceptor)

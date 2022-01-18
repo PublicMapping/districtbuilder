@@ -278,6 +278,10 @@ export type IProjectTemplateWithProjects = IProjectTemplate & {
   readonly projects: readonly ProjectNest[];
 };
 
+export type CreateProjectTemplateData = Pick<IProjectTemplate, "description" | "details"> & {
+  readonly project: Pick<IProject, "id">;
+};
+
 export type ChamberId = string;
 
 export interface IChamber {
