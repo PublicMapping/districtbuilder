@@ -99,7 +99,7 @@ const OrganizationTemplateForm = ({
   return organizations.length > 0 ? (
     <React.Fragment>
       <Flex sx={{ ...style.formContainer }}>
-        <Card sx={{ variant: "card.flat" }}>
+        <Card sx={{ variant: "cards.flat" }}>
           <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
             Organization
           </legend>

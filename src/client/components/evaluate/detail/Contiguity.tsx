@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, Flex, jsx, Themed, ThemeUIStyleObject, Heading } from "theme-ui";
 import { DistrictProperties } from "../../../../shared/entities";
 import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
 import { CONTIGUITY_FILL_COLOR, EVALUATE_GRAY_FILL_COLOR } from "../../map/index";
@@ -70,20 +70,20 @@ const ContiguityMetricDetail = ({
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         {metric.value} of {metric.total} districts are contiguous
       </Heading>
-      <Styled.table sx={style.table}>
+      <Themed.table sx={style.table}>
         <thead>
-          <Styled.tr>
-            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.colLast }}>Contiguity</Styled.th>
-          </Styled.tr>
+          <Themed.tr>
+            <Themed.th sx={{ ...style.th, ...style.colFirst }}>Number</Themed.th>
+            <Themed.th sx={{ ...style.th, ...style.colLast }}>Contiguity</Themed.th>
+          </Themed.tr>
         </thead>
         <tbody>
           {geojson?.features.map(
             (feature, id) =>
               id > 0 && (
-                <Styled.tr key={id}>
-                  <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
-                  <Styled.td sx={{ ...style.td, ...style.colLast }}>
+                <Themed.tr key={id}>
+                  <Themed.td sx={{ ...style.td, ...style.colFirst }}>{id}</Themed.td>
+                  <Themed.td sx={{ ...style.td, ...style.colLast }}>
                     {feature.properties.contiguity ? (
                       <Flex sx={{ alignItems: "center" }}>
                         <Box
@@ -104,12 +104,12 @@ const ContiguityMetricDetail = ({
                     ) : (
                       <Box sx={style.blankValue}>–</Box>
                     )}
-                  </Styled.td>
-                </Styled.tr>
+                  </Themed.td>
+                </Themed.tr>
               )
           )}
         </tbody>
-      </Styled.table>
+      </Themed.table>
     </Box>
   );
 };

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React from "react";
-import { jsx, Box, Styled, Input } from "theme-ui";
+import { jsx, Box, Themed, Input } from "theme-ui";
 
 interface Props {
   readonly totalPopulation: number;
@@ -24,12 +24,12 @@ const MultiMemberForm = ({ totalPopulation, numberOfMembers, errors, onChange }:
             errors.map((msg: string, index: number) => (
               <React.Fragment key={index}>
                 {msg}
-                <Styled.div />
+                <Themed.div />
               </React.Fragment>
             ))}
         </Box>
       )}
-      <Styled.table sx={{ margin: "0", width: "100%" }}>
+      <Themed.table sx={{ margin: "0", width: "100%" }}>
         <thead sx={{ bg: "muted" }}>
           <tr>
             <td>Districts</td>
@@ -64,7 +64,7 @@ const MultiMemberForm = ({ totalPopulation, numberOfMembers, errors, onChange }:
             </tr>
           ))}
         </tbody>
-      </Styled.table>
+      </Themed.table>
     </React.Fragment>
   );
 };

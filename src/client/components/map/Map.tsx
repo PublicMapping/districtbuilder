@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { maxBy } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Button, Flex, Text, jsx, ThemeUIStyleObject, Styled } from "theme-ui";
+import { Box, Button, Flex, Text, jsx, ThemeUIStyleObject, Themed } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
@@ -1290,20 +1290,20 @@ const DistrictsMap = ({
         <Box sx={style.legendBox}>
           <Flex sx={{ alignItems: "center" }}>
             <Text sx={style.legendTitle}>Majority Race</Text>
-            <Styled.table sx={{ margin: "0", width: "100%" }}>
+            <Themed.table sx={{ margin: "0", width: "100%" }}>
               <thead>
-                <Styled.tr>
+                <Themed.tr>
                   {Object.keys(getMajorityRaceFills()).map(race => (
-                    <Styled.th sx={style.raceHeader} key={race}>
+                    <Themed.th sx={style.raceHeader} key={race}>
                       {race.charAt(0).toUpperCase() + race.slice(1)}
-                    </Styled.th>
+                    </Themed.th>
                   ))}
-                </Styled.tr>
+                </Themed.tr>
               </thead>
               <tbody>
-                <Styled.tr>
+                <Themed.tr>
                   {Object.keys(getMajorityRaceFills()).map(race => (
-                    <Styled.td sx={style.td} key={race}>
+                    <Themed.td sx={style.td} key={race}>
                       <Box
                         sx={{
                           ...style.legendColorSwatch,
@@ -1311,12 +1311,12 @@ const DistrictsMap = ({
                         }}
                       ></Box>
                       <Box sx={style.legendLabel}>&gt; 65%</Box>
-                    </Styled.td>
+                    </Themed.td>
                   ))}
-                </Styled.tr>
-                <Styled.tr>
+                </Themed.tr>
+                <Themed.tr>
                   {Object.keys(getMajorityRaceFills()).map(race => (
-                    <Styled.td sx={style.td} key={race}>
+                    <Themed.td sx={style.td} key={race}>
                       <Box
                         sx={{
                           ...style.legendColorSwatch,
@@ -1324,11 +1324,11 @@ const DistrictsMap = ({
                         }}
                       ></Box>
                       <Box sx={style.legendLabel}>50-65%</Box>
-                    </Styled.td>
+                    </Themed.td>
                   ))}
-                </Styled.tr>
+                </Themed.tr>
               </tbody>
-            </Styled.table>
+            </Themed.table>
           </Flex>
         </Box>
       )}

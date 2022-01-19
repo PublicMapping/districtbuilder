@@ -4,7 +4,7 @@ import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubu
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { Box, Button, Flex, Heading, Input, jsx, Styled, Text, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, Input, jsx, Themed, Text, ThemeUIStyleObject } from "theme-ui";
 import { IProject, IProjectTemplate } from "../../shared/entities";
 import {
   setProjectNameEditing,
@@ -139,9 +139,9 @@ const ProjectName = ({
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
       <Flex sx={style.modal}>
-        <Styled.a as={Link} to={`/o/${template.organization.slug}`}>
+        <Themed.a as={Link} to={`/o/${template.organization.slug}`}>
           {template.organization.name} ›
-        </Styled.a>
+        </Themed.a>
         <Heading>{template.name}</Heading>
         <Text sx={{ mb: 2 }}>
           {template.regionConfig.name} · {template.numberOfDistricts} districts

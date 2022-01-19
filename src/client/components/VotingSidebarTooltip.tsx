@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { mapValues, sum } from "lodash";
-import { Box, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, jsx, Themed, ThemeUIStyleObject, Heading } from "theme-ui";
 
 import { getPartyColor, capitalizeFirstLetter, extractYear } from "../functions";
 import { DemographicCounts } from "../../shared/entities";
@@ -42,13 +42,13 @@ const Row = ({
   readonly percent?: number;
   readonly color: string;
 }) => (
-  <Styled.tr
+  <Themed.tr
     sx={{
       color: "muted",
       border: "none"
     }}
   >
-    <Styled.td>
+    <Themed.td>
       <Box
         style={{
           backgroundColor: color
@@ -58,16 +58,16 @@ const Row = ({
           width: "15px"
         }}
       />
-    </Styled.td>
-    <Styled.td sx={style.label}>
+    </Themed.td>
+    <Themed.td sx={style.label}>
       <b>{capitalizeFirstLetter(party)}</b>
-    </Styled.td>
-    <Styled.td sx={style.number}>{votes?.toLocaleString(undefined)}</Styled.td>
-    <Styled.td sx={style.number}>
+    </Themed.td>
+    <Themed.td sx={style.number}>{votes?.toLocaleString(undefined)}</Themed.td>
+    <Themed.td sx={style.number}>
       {percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0"}
       {"%"}
-    </Styled.td>
-  </Styled.tr>
+    </Themed.td>
+  </Themed.tr>
 );
 
 const getRows = ({
@@ -118,17 +118,17 @@ const VotingSidebarTooltip = ({
       <Heading as="h5" sx={style.header}>
         Presidential 2016
       </Heading>
-      <Styled.table sx={{ margin: "0", width: "100%" }}>
+      <Themed.table sx={{ margin: "0", width: "100%" }}>
         <tbody>{rows16 || unspecifiedRows}</tbody>
-      </Styled.table>
+      </Themed.table>
       {rows20 && (
         <React.Fragment>
           <Heading as="h5" sx={style.header}>
             Presidential 2020
           </Heading>
-          <Styled.table sx={{ margin: "0", width: "100%" }}>
+          <Themed.table sx={{ margin: "0", width: "100%" }}>
             <tbody>{rows20}</tbody>
-          </Styled.table>
+          </Themed.table>
         </React.Fragment>
       )}
     </Box>

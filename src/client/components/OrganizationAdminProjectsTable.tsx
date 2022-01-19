@@ -2,7 +2,7 @@
 import { useMemo, useEffect, useState } from "react";
 import { useTable, Row, HeaderGroup, Cell, useSortBy, SortingRule, Column } from "react-table";
 import { Link } from "react-router-dom";
-import { Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Button, Flex, jsx, Themed, ThemeUIStyleObject } from "theme-ui";
 
 import { ProjectVisibility } from "../../shared/constants";
 import { OrganizationSlug, ProjectNest, IProjectTemplateWithProjects } from "../../shared/entities";
@@ -66,9 +66,9 @@ const OrganizationAdminProjectsTable = ({ templates, organizationSlug }: Project
         accessor: "project" as const,
         Cell: (p: Cell<ProjectRow>) => {
           return (
-            <Styled.a as={Link} to={`/projects/${p.value.id}`} target="_blank">
+            <Themed.a as={Link} to={`/projects/${p.value.id}`} target="_blank">
               {p.value.name}
-            </Styled.a>
+            </Themed.a>
           );
         }
       },

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { mapValues, sum } from "lodash";
-import { Box, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, jsx, Themed, ThemeUIStyleObject } from "theme-ui";
 
 import { getPartyColor, capitalizeFirstLetter } from "../functions";
 
@@ -32,13 +32,13 @@ const Row = ({
   readonly percent?: number;
   readonly color: string;
 }) => (
-  <Styled.tr
+  <Themed.tr
     sx={{
       color: "muted",
       border: "none"
     }}
   >
-    <Styled.td>
+    <Themed.td>
       <Box
         style={{
           backgroundColor: color
@@ -48,16 +48,16 @@ const Row = ({
           width: "15px"
         }}
       />
-    </Styled.td>
-    <Styled.td sx={style.label}>
+    </Themed.td>
+    <Themed.td sx={style.label}>
       <b>{capitalizeFirstLetter(party)}</b>
-    </Styled.td>
-    <Styled.td sx={style.number}>{votes?.toLocaleString(undefined)}</Styled.td>
-    <Styled.td sx={style.number}>
+    </Themed.td>
+    <Themed.td sx={style.number}>{votes?.toLocaleString(undefined)}</Themed.td>
+    <Themed.td sx={style.number}>
       {percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0"}
       {"%"}
-    </Styled.td>
-  </Styled.tr>
+    </Themed.td>
+  </Themed.tr>
 );
 
 const VotingTooltip = ({
@@ -80,9 +80,9 @@ const VotingTooltip = ({
   ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
-      <Styled.table sx={{ margin: "0", width: "100%" }}>
+      <Themed.table sx={{ margin: "0", width: "100%" }}>
         <tbody>{rows}</tbody>
-      </Styled.table>
+      </Themed.table>
     </Box>
   );
 };

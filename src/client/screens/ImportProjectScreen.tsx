@@ -548,7 +548,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
               }
             }}
           >
-            <Card sx={{ variant: "card.flat" }}>
+            <Card sx={{ variant: "cards.flat" }}>
               <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                 Upload file
               </legend>
@@ -621,7 +621,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
             </Card>
             {regionConfig && (
               <React.Fragment>
-                <Card sx={{ variant: "card.flat" }}>
+                <Card sx={{ variant: "cards.flat" }}>
                   <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                     State
                   </legend>
@@ -645,7 +645,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                   ("isPending" in organization && organization.isPending)
                 ) && (
                   <React.Fragment>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <fieldset sx={style.fieldset}>
                         <Flex sx={{ flexWrap: "wrap" }}>
                           <legend
@@ -784,7 +784,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                         </Flex>
                       </fieldset>
                     </Card>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <Flex sx={{ flexWrap: "wrap" }}>
                         <legend
                           sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}

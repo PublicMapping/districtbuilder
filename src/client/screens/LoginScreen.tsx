@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { connect } from "react-redux";
 import { Link, Redirect, useLocation } from "react-router-dom";
-import { Alert, Box, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Alert, Box, Card, Close, Flex, Heading, jsx, Themed } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { IUser } from "../../shared/entities";
@@ -36,7 +36,7 @@ const LoginScreen = ({ passwordResetNoticeShown, user }: StateProps) => {
       <Heading as="h1" sx={{ textAlign: "center" }}>
         <Logo sx={{ maxWidth: "15rem" }} />
       </Heading>
-      <Card sx={{ variant: "card.floating" }}>
+      <Card sx={{ variant: "cards.floating" }}>
         <LoginContent>
           <Heading as="h2" sx={{ fontSize: 4, mb: 5 }}>
             Log in
@@ -46,13 +46,13 @@ const LoginScreen = ({ passwordResetNoticeShown, user }: StateProps) => {
               <Flex>
                 <Box>
                   Log in or{" "}
-                  <Styled.a
+                  <Themed.a
                     as={Link}
                     sx={{ variant: "links.alert" }}
                     to={{ pathname: "/register", state: location.state }}
                   >
                     sign&nbsp;up
-                  </Styled.a>{" "}
+                  </Themed.a>{" "}
                   for a new account to create your &ldquo;{toParams.get("name")}&rdquo; map.
                 </Box>
                 <Close
@@ -77,15 +77,15 @@ const LoginScreen = ({ passwordResetNoticeShown, user }: StateProps) => {
       </Card>
       <Box sx={{ fontSize: 1, mt: 3, textAlign: "center" }}>
         Need an account?{" "}
-        <Styled.a as={Link} to={{ pathname: "/register", state: location.state }}>
+        <Themed.a as={Link} to={{ pathname: "/register", state: location.state }}>
           Sign up for free
-        </Styled.a>
+        </Themed.a>
       </Box>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Forgot password?{" "}
-        <Styled.a as={Link} to={{ pathname: "/forgot-password", state: location.state }}>
+        <Themed.a as={Link} to={{ pathname: "/forgot-password", state: location.state }}>
           Password reset
-        </Styled.a>
+        </Themed.a>
       </Box>
     </CenteredContent>
   );

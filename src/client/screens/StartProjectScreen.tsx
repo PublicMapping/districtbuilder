@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { useEffect, useState } from "react";
 import { Redirect, useLocation } from "react-router-dom";
-import { Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Flex, jsx, Themed, ThemeUIStyleObject } from "theme-ui";
 
 import { IProject, RegionConfigId, ChamberId } from "../../shared/entities";
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -88,9 +88,9 @@ export default () => {
       Error creating a project for this link.
       <p>
         Please contact&nbsp;
-        <Styled.a href="mailto:support@districtbuilder.org">
+        <Themed.a href="mailto:support@districtbuilder.org">
           support@districtbuilder.org
-        </Styled.a>{" "}
+        </Themed.a>{" "}
         for help.
       </p>
     </Flex>

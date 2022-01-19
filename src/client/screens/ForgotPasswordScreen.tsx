@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Box, Button, Card, Flex, Heading, jsx, Themed } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { initiateForgotPassword } from "../api";
@@ -32,7 +32,7 @@ const ForgotPasswordScreen = () => {
       <Heading as="h1" sx={{ textAlign: "center" }}>
         <Logo sx={{ maxWidth: "15rem" }} />
       </Heading>
-      <Card sx={{ variant: "card.floating" }}>
+      <Card sx={{ variant: "cards.floating" }}>
         <Flex
           as="form"
           sx={{ flexDirection: "column", textAlign: "left" }}
@@ -64,7 +64,7 @@ const ForgotPasswordScreen = () => {
                 Password reset email sent to <b>{data.email}</b>
               </p>
               <p sx={{ fontSize: 1, lineHeight: "1", mb: "0" }}>Used the wrong email address?</p>
-              <Styled.a
+              <Themed.a
                 as={Link}
                 to={{ pathname: "/forgot-password", state: location.state }}
                 onClick={(e: React.MouseEvent<HTMLAnchorElement>): void => {
@@ -74,7 +74,7 @@ const ForgotPasswordScreen = () => {
                 sx={{ fontSize: 1, color: "success.6" }}
               >
                 Reset your password again
-              </Styled.a>
+              </Themed.a>
             </Box>
           ) : (
             <React.Fragment>
@@ -103,23 +103,23 @@ const ForgotPasswordScreen = () => {
       </Card>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Know your password?{" "}
-        <Styled.a
+        <Themed.a
           as={Link}
           to={{ pathname: "/login", state: location.state }}
           sx={{ color: "primary" }}
         >
           Log in
-        </Styled.a>
+        </Themed.a>
       </Box>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Need an account?{" "}
-        <Styled.a
+        <Themed.a
           as={Link}
           to={{ pathname: "/register", state: location.state }}
           sx={{ color: "primary" }}
         >
           Sign up for free
-        </Styled.a>
+        </Themed.a>
       </Box>
     </CenteredContent>
   );

@@ -13,7 +13,7 @@ import {
   jsx,
   Label,
   Radio,
-  Styled,
+  Themed,
   ThemeUIStyleObject
 } from "theme-ui";
 
@@ -289,7 +289,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
             )}
             {!("resource" in organization) && (
               <React.Fragment>
-                <Card sx={{ variant: "card.flat" }}>
+                <Card sx={{ variant: "cards.flat" }}>
                   <FormError resource={createProjectResource} />
                   <InputField
                     field="name"
@@ -313,7 +313,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                     }}
                   />
                 </Card>
-                <Card sx={{ variant: "card.flat" }}>
+                <Card sx={{ variant: "cards.flat" }}>
                   <SelectField
                     field="regionConfig"
                     label={
@@ -324,12 +324,12 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                     description={
                       <Box as="span" sx={style.cardHint}>
                         What state do you want to map? If you don’t see it in the list,{" "}
-                        <Styled.a
+                        <Themed.a
                           href="https://districtbuilder.us1.list-manage.com/subscribe?u=61da999c9897859f1c1fff262&id=70fdf1ae35"
                           target="_blank"
                         >
                           sign up for our mailing list
-                        </Styled.a>{" "}
+                        </Themed.a>{" "}
                         to know when new states are available!
                       </Box>
                     }
@@ -363,7 +363,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                 </Card>
                 {data.regionConfig ? (
                   <React.Fragment>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <fieldset sx={style.fieldset}>
                         <Flex sx={{ flexWrap: "wrap" }}>
                           <legend
@@ -495,7 +495,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                         </Flex>
                       </fieldset>
                     </Card>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <Flex sx={{ flexWrap: "wrap" }}>
                         <legend
                           sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}

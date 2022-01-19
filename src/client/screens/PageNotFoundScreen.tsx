@@ -10,7 +10,7 @@ interface StateProps {
 const PageNotFoundScreen = ({ model }: StateProps) => {
   return (
     <CenteredContent>
-      <Card sx={{ variant: "card.floating", mb: 5 }}>
+      <Card sx={{ variant: "cards.floating", mb: 5 }}>
         <Heading as="h2" sx={{ fontSize: 4, mb: 20, textAlign: "left" }}>
           Page not found!
         </Heading>

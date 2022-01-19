@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Link, Redirect, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
-import { Alert, Box, Card, Close, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Alert, Box, Card, Close, Flex, Heading, jsx, Themed } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { isUserLoggedIn } from "../jwt";
@@ -35,7 +35,7 @@ const RegistrationScreen = ({ user }: StateProps) => {
           <Heading as="h1" sx={{ textAlign: "center" }}>
             <Logo sx={{ maxWidth: "15rem" }} />
           </Heading>
-          <Card sx={{ variant: "card.floating" }}>
+          <Card sx={{ variant: "cards.floating" }}>
             <RegisterContent>
               <Heading as="h2" sx={{ mb: 5, textAlign: "left" }}>
                 Create an account!
@@ -45,13 +45,13 @@ const RegistrationScreen = ({ user }: StateProps) => {
                   <Flex>
                     <Box>
                       Create an account or{" "}
-                      <Styled.a
+                      <Themed.a
                         as={Link}
                         sx={{ variant: "links.alert" }}
                         to={{ pathname: "/login", state: location.state }}
                       >
                         log in
-                      </Styled.a>{" "}
+                      </Themed.a>{" "}
                       to create your &ldquo;{toParams.get("name")}&rdquo; map.
                     </Box>
                     <Close
@@ -66,13 +66,13 @@ const RegistrationScreen = ({ user }: StateProps) => {
           </Card>
           <Box sx={{ fontSize: 1, textAlign: "center" }}>
             Already have an account?{" "}
-            <Styled.a
+            <Themed.a
               as={Link}
               to={{ pathname: "/login", state: location.state }}
               sx={{ color: "primary" }}
             >
               Log in
-            </Styled.a>
+            </Themed.a>
           </Box>
         </React.Fragment>
       )}
