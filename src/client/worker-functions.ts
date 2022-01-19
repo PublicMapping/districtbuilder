@@ -1,13 +1,12 @@
+import * as Comlink from "comlink";
 import stringify from "json-stable-stringify";
 import memoize from "memoizee";
 
 import { DemographicCounts, GeoUnits, IProject, IStaticMetadata, S3URI } from "../shared/entities";
 import { StaticCounts } from "../client/types";
-/* eslint import/no-webpack-loader-syntax: off */
-import createWorker from "workerize-loader!./worker";
-import * as WorkerType from "./worker";
+import { WorkerFunctions } from "./worker";
 
-const worker = createWorker<typeof WorkerType>();
+const worker = Comlink.wrap<WorkerFunctions>(new Worker(new URL("./worker.ts", import.meta.url)));
 
 // eslint-disable-next-line
 function replacer(key: string, value: any): any {

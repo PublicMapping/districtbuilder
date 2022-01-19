@@ -108,6 +108,7 @@
     "@types/styled-system__css": "^5.0.13",
     "@typescript-eslint/eslint-plugin": "5.7.0",
     "@typescript-eslint/parser": "5.7.0",
+    "comlink": "^4.3.1",
     "eslint": "8.5.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-functional": "4.0.2",
@@ -117,12 +118,11 @@
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-react": "7.28.0",
     "http-proxy-middleware": "0.20.0",
-    "prettier": "2.5.1",
-    "workerize-loader": "^1.3.0"
+    "prettier": "2.5.1"
   },
   "jest": {
     "moduleNameMapper": {
-      "workerize-loader!./worker": "<rootDir>/src/client/worker.mock.js"
+      "./worker-functions": "<rootDir>/src/client/worker.mock.js"
     }
   }
 }
