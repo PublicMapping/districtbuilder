@@ -16,7 +16,6 @@ import { editSelectedGeounits, PaintBrushSize } from "../../actions/districtDraw
 import { areAnyGeoUnitsSelected, mergeGeoUnits } from "../../functions";
 import paint from "../../media/paint.png";
 import store from "../../store";
-import { MapboxGeoJSONFeature } from "mapbox-gl";
 
 import {
   featuresToUnlockedGeoUnits,

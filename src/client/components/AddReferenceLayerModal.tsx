@@ -219,6 +219,7 @@ const AddReferenceLayerModal = ({
           layer_type: layerType,
           layer: geojson,
           numberOfFeatures: geojson.features.length,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           fields: Object.keys(geojson.features[0].properties) || null
         }
       });
@@ -240,6 +241,7 @@ const AddReferenceLayerModal = ({
 
   function onReaderLoadGeoJson(event: ProgressEvent<FileReader>) {
     const geojson = event.target?.result && JSON.parse(event.target?.result.toString());
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     geojson && setGeoJSON(geojson);
   }
 

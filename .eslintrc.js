@@ -47,11 +47,7 @@ module.exports = {
     "functional/no-conditional-statement": ["off"],
     "functional/no-expression-statement": "off",
     "functional/no-return-void": "off",
-    // TODO: turn these rules back on and fix the errors
-    "@typescript-eslint/ban-types": "off",
-    "@typescript-eslint/no-unsafe-return": "off",
-    "@typescript-eslint/no-unsafe-argument": "off",
-    "@typescript-eslint/no-loss-of-precision": "off",
-    "@typescript-eslint/no-unnecessary-type-constraint": "off"
+    "@typescript-eslint/prefer-readonly-parameter-types": "off",
+    "@typescript-eslint/no-unsafe-argument": "off"
   }
 };

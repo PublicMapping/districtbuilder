@@ -385,12 +385,15 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
         setStateAbbrev(stateAbbrev || null);
 
         // Filter to organizations and templates that match the state FIPS code
-        const organizations = destructureResource(user, "organizations") || [];
+        const organizations: readonly IOrganization[] =
+          destructureResource(user, "organizations") || [];
         stateAbbrev &&
           setOrganizationsForImport(
             organizations
               .map((o: IOrganization) => filterProjectTemplates(o, stateAbbrev))
-              .filter((org: IOrganization | undefined) => org !== undefined)
+              .filter(
+                (org: IOrganization | undefined) => org !== undefined
+              ) as readonly IOrganization[]
           );
 
         const regionConfig =
