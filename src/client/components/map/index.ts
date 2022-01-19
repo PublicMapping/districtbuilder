@@ -1,6 +1,5 @@
 import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { cloneDeep } from "lodash";
-import { join } from "path";
 import { s3ToHttps } from "../../s3";
 import {
   GeoUnitCollection,
@@ -232,7 +231,7 @@ export function generateMapLayers(
 
   map.addSource(GEOLEVELS_SOURCE_ID, {
     type: "vector",
-    tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
+    tiles: [`${s3ToHttps(path)}tiles/{z}/{x}/{y}.pbf`],
     minzoom: minZoom,
     maxzoom: maxZoom
   });
@@ -512,7 +511,6 @@ export function generateMapLayers(
 
   geoLevels.forEach(level => {
     map.addLayer(
-      // @ts-ignore
       {
         id: levelToLineLayerId(level.id),
         type: "line",
