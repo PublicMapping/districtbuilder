@@ -13,6 +13,7 @@
     "start:prod": "node dist/server/src/main",
     "lint": "eslint 'src/**/*.{ts,tsx,json}'",
     "fix": "eslint 'src/**/*.{ts,tsx,json}' --fix",
+    "reindex": "node dist/server/src/commands/reindex",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
