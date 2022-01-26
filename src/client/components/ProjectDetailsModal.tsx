@@ -56,6 +56,10 @@ const style: ThemeUIStyleObject = {
     maxWidth: "90vw",
     overflow: "visible"
   },
+  modalBodyContainer: {
+    maxHeight: "calc(100vh - 16rem)",
+    overflow: "auto"
+  },
   customInputContainer: {
     width: "100%",
     mb: 5
@@ -63,12 +67,14 @@ const style: ThemeUIStyleObject = {
   multiMemberContainer: {
     overflow: "hidden",
     maxHeight: "calc(100vh - 42rem)",
+    minHeight: "10rem",
     width: "100%",
     "> div": {
       overflow: "auto",
       width: "100%",
       flex: "0 0 auto",
-      maxHeight: "inherit"
+      maxHeight: "inherit",
+      minHeight: "10rem"
     },
     thead: {
       position: "sticky",
@@ -198,7 +204,7 @@ const ProjectDetailModal = ({
               }
             }}
           >
-            <Box>
+            <Box sx={style.modalBodyContainer}>
               <Flex sx={{ flexWrap: "wrap" }}>
                 <Box sx={style.customInputContainer}>
                   <FormError resource={projectDetailsResource} />
@@ -293,7 +299,6 @@ const ProjectDetailModal = ({
                 </Box>
               </Flex>
             </Box>
-
             <Divider />
             <Flex sx={style.footer}>
               <Button
