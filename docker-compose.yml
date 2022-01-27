@@ -44,15 +44,11 @@ services:
     command: start:dev
 
   client:
-    image: node:12-slim
+    image: node:16-slim
     environment:
       - BASE_URL=${BASE_URL:-http://server:3005}
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=250
-      # Without this, ESLint will not respect our .eslintrc.js files when run via react-scripts start.
-      # This is apparently no longer needed in later versions of react-scripts, but for our version
-      # this is the way to force ESLint to respect our .eslintrc.js config files.
-      - EXTEND_ESLINT=true
       - PORT=3003
     volumes:
       - ./:/home/node/app

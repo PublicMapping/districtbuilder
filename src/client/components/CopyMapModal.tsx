@@ -16,7 +16,7 @@ import store from "../store";
 import { AuthModalContent } from "./AuthComponents";
 import { Resource } from "../resource";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",

@@ -4,9 +4,8 @@ import { PaginatedResponse } from "../types";
 
 export const userProjectsFetch = createAction("Projects fetch")();
 export const userProjectsFetchPage = createAction("User projects fetch page")<number>();
-export const userProjectsFetchSuccess = createAction("Projects fetch success")<
-  PaginatedResponse<IProject>
->();
+export const userProjectsFetchSuccess =
+  createAction("Projects fetch success")<PaginatedResponse<IProject>>();
 export const userProjectsFetchFailure = createAction("Projects fetch failure")<string>();
 
 export const globalProjectsFetch = createAction("Global projects fetch")();

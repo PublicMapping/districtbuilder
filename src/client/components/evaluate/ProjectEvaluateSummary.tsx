@@ -7,9 +7,9 @@ import { EvaluateMetricWithValue } from "../../types";
 import { formatPviByDistrict } from "../../functions";
 import { selectEvaluationMetric, toggleEvaluate } from "../../actions/districtDrawing";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
-    variant: "header.app",
+    variant: "styles.header.app",
     borderBottom: "1px solid",
     borderColor: "gray.2",
     paddingBottom: "20px",
@@ -40,7 +40,7 @@ const style: ThemeUIStyleObject = {
     flexDirection: "row"
   },
   metricValue: {
-    variant: "header.right",
+    variant: "styles.header.right",
     textAlign: "right"
   },
   metricTitle: {
@@ -75,9 +75,9 @@ const ProjectEvaluateView = ({
     }
   }
   return (
-    <Flex sx={{ variant: "sidebar.gray", maxWidth: "507px" }}>
+    <Flex sx={{ variant: "styles.sidebar.gray", maxWidth: "507px" }}>
       <Flex sx={style.header} className="evaluate-header">
-        <Flex sx={{ variant: "header.left", justifyContent: "space-between" }}>
+        <Flex sx={{ variant: "styles.header.left", justifyContent: "space-between" }}>
           <Heading as="h2" sx={{ variant: "text.h4", m: "0" }}>
             Evaluate
           </Heading>

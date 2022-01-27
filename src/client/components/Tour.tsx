@@ -7,7 +7,7 @@ import { patchUser } from "../api";
 import { geoLevelLabel, getPopulationPerRepresentative } from "../functions";
 import { ReactComponent as SalamanderIllustration } from "../media/tour-salamander-builder.svg";
 import { DistrictsGeoJSON } from "../types";
-import { Styled } from "theme-ui";
+import { Themed } from "theme-ui";
 
 /* eslint-disable */
 interface Props {
@@ -184,7 +184,7 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <div>
-              <Styled.div
+              <Themed.div
                 sx={{
                   borderWidth: "1px",
                   borderStyle: "solid",
@@ -199,15 +199,15 @@ class Tour extends Component<Props, State> {
                   height="auto"
                   alt="User clicks on two geounits in the application and the sidebar updates."
                 />
-              </Styled.div>
+              </Themed.div>
               <p>
                 We’re ready to start building! By default, District 1 is selected in the sidebar. As
                 you add {largestGeoLevelPlural}, you can see the population of District 1 increase.
               </p>
-              <Styled.div sx={{ bg: "success.1", color: "success.8", borderRadius: "2", p: 3 }}>
+              <Themed.div sx={{ bg: "success.1", color: "success.8", borderRadius: "2", p: 3 }}>
                 <strong>Try it now:</strong> click on a {largestGeoLevelSingular} on the map to add
                 it to District 1.
-              </Styled.div>
+              </Themed.div>
             </div>
           ),
           placement: "left",
@@ -242,7 +242,7 @@ class Tour extends Component<Props, State> {
         {
           content: (
             <div>
-              <Styled.div
+              <Themed.div
                 sx={{
                   maxWidth: "250px",
                   mx: "auto",
@@ -259,7 +259,7 @@ class Tour extends Component<Props, State> {
                   height="auto"
                   alt="User toggles geolevel selection"
                 />
-              </Styled.div>
+              </Themed.div>
               {geoLevelsPlural.length === 1 ? (
                 <p>
                   The only census boundary available for this map is {largestGeoLevelPlural}. Try to

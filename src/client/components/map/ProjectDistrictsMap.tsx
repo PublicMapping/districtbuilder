@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, jsx, Spinner } from "theme-ui";
+import { Box, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 import MapboxGL from "mapbox-gl";
 import React, { useEffect, useRef, useState } from "react";
 import bbox from "@turf/bbox";
@@ -10,7 +10,7 @@ import { ProjectNest } from "../../../shared/entities";
 import { DistrictGeoJSON } from "../../types";
 import { getDistrictColor } from "../../constants/colors";
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   mapContainer: {
     display: "inline-block",
     position: "relative",
@@ -24,7 +24,7 @@ const style = {
     left: 0,
     right: 0
   }
-} as const;
+};
 
 const ProjectDistrictsMap = ({
   project,
@@ -105,7 +105,7 @@ const ProjectDistrictsMap = ({
       </Box>
       {!mapLoaded && (
         <Box sx={{ ...style.mapContainer, ...{ position: "absolute" } }}>
-          <Spinner variant="spinner.small" />
+          <Spinner variant="styles.spinner.small" />
         </Box>
       )}
     </React.Fragment>

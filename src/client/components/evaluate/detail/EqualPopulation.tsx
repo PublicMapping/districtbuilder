@@ -1,10 +1,10 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, Flex, jsx, Themed, ThemeUIStyleObject, Heading } from "theme-ui";
 import { getEqualPopulationStops } from "../../map/index";
 import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../../../types";
 import { computeRowFill } from "../../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,
@@ -83,27 +83,27 @@ const EqualPopulationMetricDetail = ({
           Math.floor(metric.populationPerRepresentative).toLocaleString()}
         &nbsp;/&nbsp;Rep.)
       </Heading>
-      <Styled.table sx={style.table}>
+      <Themed.table sx={style.table}>
         <thead>
-          <Styled.tr>
-            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
-            <Styled.th sx={style.th}>Deviation (%)</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.number }}>Number of reps</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.number, ...style.colLast }}>Deviation</Styled.th>
-          </Styled.tr>
+          <Themed.tr>
+            <Themed.th sx={{ ...style.th, ...style.colFirst }}>Number</Themed.th>
+            <Themed.th sx={style.th}>Deviation (%)</Themed.th>
+            <Themed.th sx={{ ...style.th, ...style.number }}>Number of reps</Themed.th>
+            <Themed.th sx={{ ...style.th, ...style.number, ...style.colLast }}>Deviation</Themed.th>
+          </Themed.tr>
         </thead>
         <tbody>
           {geojson?.features.map(
             (feature, id) =>
               id > 0 && (
-                <Styled.tr key={id}>
-                  <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
+                <Themed.tr key={id}>
+                  <Themed.td sx={{ ...style.td, ...style.colFirst }}>{id}</Themed.td>
 
-                  <Styled.td sx={style.td}>
+                  <Themed.td sx={style.td}>
                     {feature.properties.percentDeviation !== undefined &&
                     feature.properties.populationDeviation !== undefined ? (
                       <Flex sx={{ alignItems: "center" }}>
-                        <Styled.div
+                        <Themed.div
                           sx={{
                             mr: 2,
                             width: "15px",
@@ -117,23 +117,23 @@ const EqualPopulationMetricDetail = ({
                                 true
                               )
                           }}
-                        ></Styled.div>
+                        ></Themed.div>
                         <Box>{Math.floor(feature.properties.percentDeviation * 1000) / 10}%</Box>
                       </Flex>
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}
-                  </Styled.td>
+                  </Themed.td>
 
-                  <Styled.td sx={{ ...style.td, ...style.number }}>
+                  <Themed.td sx={{ ...style.td, ...style.number }}>
                     {numberOfMembers !== undefined && numberOfMembers[id - 1] ? (
                       numberOfMembers[id - 1]
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}
-                  </Styled.td>
+                  </Themed.td>
 
-                  <Styled.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
+                  <Themed.td sx={{ ...style.td, ...style.number, ...style.colLast }}>
                     {feature.properties.populationDeviation !== undefined ? (
                       Math.ceil(feature.properties.populationDeviation) === 0 ? (
                         // Need this to handle negative 0, which Math.ceil likes to return
@@ -144,12 +144,12 @@ const EqualPopulationMetricDetail = ({
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}
-                  </Styled.td>
-                </Styled.tr>
+                  </Themed.td>
+                </Themed.tr>
               )
           )}
         </tbody>
-      </Styled.table>
+      </Themed.table>
     </Box>
   );
 };

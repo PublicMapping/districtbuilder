@@ -32,7 +32,7 @@ const DemographicsChart = ({
       {DEMOGRAPHIC_FIELDS_ORDER.map(
         field =>
           field in percentages && (
-            <Bar width={`${percentages[field]}%`} color={demographicsColors[field]} />
+            <Bar width={`${percentages[field]}%`} color={demographicsColors[field]} key={field} />
           )
       )}
     </Flex>

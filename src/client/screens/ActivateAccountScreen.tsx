@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { Box, Flex, Spinner, Card, Styled, jsx, Text } from "theme-ui";
+import { Box, Flex, Spinner, Card, Themed, jsx, Text } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 import { ReactComponent as SuccessIllustration } from "../media/successfully-registered-illustration.svg";
 
@@ -10,9 +10,15 @@ import { activateAccount } from "../api";
 import { isUserLoggedIn } from "../jwt";
 import CenteredContent from "../components/CenteredContent";
 import { Resource } from "../resource";
+import { OrganizationSlug } from "../../shared/entities";
+
+interface Params {
+  readonly token: string;
+  readonly organizationSlug: OrganizationSlug;
+}
 
 const ActivateAccountScreen = () => {
-  const { token, organizationSlug } = useParams();
+  const { token, organizationSlug } = useParams<Params>();
   const isLoggedIn = isUserLoggedIn();
   const history = useHistory();
   const [activationResource, setActivationResource] = useState<Resource<void>>({
@@ -42,7 +48,7 @@ const ActivateAccountScreen = () => {
           <Logo sx={{ width: "15rem", mx: "auto", mb: 4 }} />
           <Card
             sx={{
-              variant: "card.floating",
+              variant: "cards.floating",
               display: "flex",
               flexDirection: "column",
               justifyContent: "stretch"
@@ -54,7 +60,7 @@ const ActivateAccountScreen = () => {
             <Text
               as="p"
               sx={{
-                variant: "header.title",
+                variant: "styles.header.title",
                 textAlign: "center",
                 fontSize: 3,
                 mb: 4
@@ -63,7 +69,7 @@ const ActivateAccountScreen = () => {
               Thank you for activating your account!
             </Text>
 
-            <Styled.a
+            <Themed.a
               as={Link}
               to={
                 !isLoggedIn && organizationSlug
@@ -77,14 +83,14 @@ const ActivateAccountScreen = () => {
               sx={{ variant: "linkButton" }}
             >
               {!isLoggedIn ? "Log in" : "Start mapping!"}
-            </Styled.a>
+            </Themed.a>
           </Card>
         </Box>
       ) : "errorMessage" in activationResource ? (
         <Box style={{ color: "red" }}>{activationResource.errorMessage}</Box>
       ) : "isPending" in activationResource && activationResource.isPending ? (
         <Flex sx={{ justifyContent: "center" }}>
-          <Spinner variant="spinner.large" />
+          <Spinner variant="styles.spinner.large" />
         </Flex>
       ) : null}
     </CenteredContent>

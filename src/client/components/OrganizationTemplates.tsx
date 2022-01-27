@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { IOrganization, IUser, CreateProjectData } from "../../shared/entities";
-import { Box, Heading, jsx } from "theme-ui";
+import { Box, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 import TemplateCard from "./TemplateCard";
 
 interface Props {
@@ -12,7 +12,7 @@ interface IProps {
   readonly templateSelected: (templateData: CreateProjectData) => Promise<void>;
 }
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   templates: {
     py: 5
   },
@@ -37,7 +37,7 @@ const style = {
     justifyContent: "space-between",
     marginTop: "4"
   }
-} as const;
+};
 
 const OrganizationTemplates = ({ organization, user, templateSelected }: Props & IProps) => {
   return (

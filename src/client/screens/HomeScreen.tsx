@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon";
-import { Box, Flex, Heading, Text, jsx, Styled, Spinner } from "theme-ui";
+import { Box, Flex, Heading, Text, jsx, Themed, Spinner } from "theme-ui";
 import { ReactComponent as NoMapsIllustration } from "../media/no-maps-illustration.svg";
 import PaginationFooter from "../components/PaginationFooter";
 
@@ -59,21 +59,21 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
             <Heading as="h1" sx={{ variant: "text.h3", mr: "auto" }}>
               Maps
             </Heading>
-            <Styled.a
+            <Themed.a
               as={Link}
               to="/import-project"
               sx={{ variant: "links.secondaryButton", fontSize: 2, px: 4, py: 2, mr: 2 }}
             >
               Import
-            </Styled.a>
-            <Styled.a
+            </Themed.a>
+            <Themed.a
               as={Link}
               to="/create-project"
               sx={{ variant: "links.button", fontSize: 2, px: 4, py: 2 }}
             >
               <Icon name="plus-circle" />
               New map
-            </Styled.a>
+            </Themed.a>
           </Flex>
         )}
 
@@ -124,44 +124,44 @@ const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }:
                 We believe in the power of individuals like you to draw maps that reflect local
                 communities and lead to fair representation. We are excited to see what you build!
                 And for extra help, check out the{" "}
-                <Styled.a
+                <Themed.a
                   href="https://github.com/PublicMapping/districtbuilder/wiki/Getting-Started-with-DistrictBuilder"
                   target="_blank"
                 >
                   getting started guide
-                </Styled.a>{" "}
-                or see <Styled.a href="/maps">community maps</Styled.a>. If you want to start
+                </Themed.a>{" "}
+                or see <Themed.a href="/maps">community maps</Themed.a>. If you want to start
                 mapping for an organization, you&rsquo;ll need to{" "}
-                <Styled.a
+                <Themed.a
                   href="https://github.com/PublicMapping/districtbuilder/wiki/Join-an-Organization"
                   target="_blank"
                 >
                   join the organization
-                </Styled.a>{" "}
+                </Themed.a>{" "}
                 first.
               </Text>
               <Flex>
-                <Styled.a
+                <Themed.a
                   as={Link}
                   to="/create-project"
                   sx={{ variant: "links.button", fontSize: 3, px: 4, py: 2 }}
                 >
                   <Icon name="plus-circle" />
                   Create a map
-                </Styled.a>
-                <Styled.a
+                </Themed.a>
+                <Themed.a
                   as={Link}
                   to="/import-project"
                   sx={{ variant: "links.secondaryButton", fontSize: 3, px: 4, py: 2, ml: 2 }}
                 >
                   Import map
-                </Styled.a>
+                </Themed.a>
               </Flex>
             </Flex>
           )
         ) : ("isPending" in projects && projects.isPending) || isSaving === "saving" ? (
           <Flex sx={{ justifyContent: "center" }}>
-            <Spinner variant="spinner.large" />
+            <Spinner variant="styles.spinner.large" />
           </Flex>
         ) : null}
       </Flex>

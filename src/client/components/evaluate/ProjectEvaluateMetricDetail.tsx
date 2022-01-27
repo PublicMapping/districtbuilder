@@ -13,9 +13,9 @@ import { Resource } from "../../resource";
 import CompetitivenessMetricDetail from "./detail/Competitiveness";
 import MajorityRaceMetricDetail from "./detail/MajorityRace";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
-    variant: "header.app",
+    variant: "styles.header.app",
     flexDirection: "column",
     justifyContent: "center",
     bg: "muted",
@@ -51,7 +51,7 @@ const ProjectEvaluateMetricDetail = ({
   readonly staticMetadata?: IStaticMetadata;
 }) => {
   return (
-    <Flex sx={{ variant: "sidebar.white" }}>
+    <Flex sx={{ variant: "styles.sidebar.white" }}>
       <Flex sx={style.header} className="evaluate-metric-header">
         <Box sx={{ display: "block" }}>
           <Button

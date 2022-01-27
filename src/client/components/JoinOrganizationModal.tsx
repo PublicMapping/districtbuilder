@@ -13,7 +13,7 @@ import ConfirmJoinOrganization from "./ConfirmJoinOrganization";
 import { Resource } from "../resource";
 import { CreateProjectData } from "../../shared/entities";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",

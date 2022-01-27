@@ -9,7 +9,7 @@ import { State } from "../reducers";
 import store from "../store";
 import { referenceLayerDelete, setDeleteReferenceLayer } from "../actions/projectData";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   modal: {
     bg: "muted",
     p: 3,

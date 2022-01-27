@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { Fragment, memo, useEffect, useState } from "react";
-import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, jsx, Themed, ThemeUIStyleObject } from "theme-ui";
 import { pickBy, sum } from "lodash";
 
 import {
@@ -78,15 +78,15 @@ interface MetricHeader {
   readonly tooltip: string;
 }
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   sidebar: {
-    variant: "sidebar.white",
+    variant: "styles.sidebar.white",
     ".rc-menu": {
       left: "-139px !important"
     }
   },
   sidebarExpanded: {
-    variant: "sidebar.expandedWhite",
+    variant: "styles.sidebar.expandedWhite",
     ".rc-menu": {
       left: "-139px !important"
     }
@@ -232,14 +232,14 @@ const PinnableMetricHeader = ({
   readonly isReadOnly: boolean;
 }) => {
   return (
-    <Styled.th sx={{ ...style.th, ...style.number }}>
+    <Themed.th sx={{ ...style.th, ...style.number }}>
       <Tooltip content={tooltip}>
         <span>{text}</span>
       </Tooltip>
       {pinnedMetrics && expandedProjectMetrics && (
         <MetricPinButton metric={metric} pinnedMetrics={pinnedMetrics} isReadOnly={isReadOnly} />
       )}
-    </Styled.th>
+    </Themed.th>
   );
 };
 
@@ -400,14 +400,14 @@ const ProjectSidebar = ({
         saving={saving}
       />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
-        <Styled.table sx={style.table}>
+        <Themed.table sx={style.table}>
           <thead>
-            <Styled.tr>
-              <Styled.th sx={style.th}>
+            <Themed.tr>
+              <Themed.th sx={style.th}>
                 <Tooltip content="District number">
                   <span>Number</span>
                 </Tooltip>
-              </Styled.th>
+              </Themed.th>
               {pinnedMetrics &&
                 metricHeaders.map(
                   metric =>
@@ -423,8 +423,8 @@ const ProjectSidebar = ({
                       />
                     )
                 )}
-              <Styled.th sx={style.th}></Styled.th>
-            </Styled.tr>
+              <Themed.th sx={style.th}></Themed.th>
+            </Themed.tr>
           </thead>
           <tbody>
             {project && geojson && staticMetadata && geoUnitHierarchy && pinnedMetrics && (
@@ -446,7 +446,7 @@ const ProjectSidebar = ({
               />
             )}
           </tbody>
-        </Styled.table>
+        </Themed.table>
       </Box>
       {!expandedProjectMetrics && (
         <ProjectReferenceLayers
@@ -616,13 +616,13 @@ const SidebarRow = memo(
 
     const demographicsDisplay = ([id, metric]: readonly string[]) =>
       isVisible(metric) && (
-        <Styled.td key={metric} sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+        <Themed.td key={metric} sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
           <span>
             {getTotal(id) !== undefined
               ? `${computeDemographicSplit(demographics[id], getTotal(id) || 0)}%`
               : demographics[id].toLocaleString()}
           </span>
-        </Styled.td>
+        </Themed.td>
       );
 
     const meetsThreshold =
@@ -631,7 +631,7 @@ const SidebarRow = memo(
     const belowThreshold = intermediateDeviation > 0;
 
     return (
-      <Styled.tr
+      <Themed.tr
         sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
         onClick={() => {
           store.dispatch(setSelectedDistrictId(district.id as number));
@@ -642,9 +642,9 @@ const SidebarRow = memo(
         onMouseLeave={() => {
           store.dispatch(setHoveredDistrictId(null));
         }}
-        className={district.id ? null : "unassigned-row"}
+        className={district.id ? undefined : "unassigned-row"}
       >
-        <Styled.td sx={style.td}>
+        <Themed.td sx={style.td}>
           <Flex sx={{ alignItems: "center" }}>
             {district.id ? (
               <Fragment>
@@ -660,14 +660,14 @@ const SidebarRow = memo(
               </Fragment>
             )}
           </Flex>
-        </Styled.td>
+        </Themed.td>
         {isVisible("population") && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <Themed.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             {populationDisplay}
-          </Styled.td>
+          </Themed.td>
         )}
         {isVisible("populationDeviation") && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <Themed.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <Tooltip
               placement="top-start"
               content={
@@ -716,10 +716,10 @@ const SidebarRow = memo(
                 </span>
               </span>
             </Tooltip>
-          </Styled.td>
+          </Themed.td>
         )}
         {isVisible("raceChart") && (
-          <Styled.td sx={style.td}>
+          <Themed.td sx={style.td}>
             <Tooltip
               placement="top-start"
               content={
@@ -756,26 +756,26 @@ const SidebarRow = memo(
                 </span>
               </Flex>
             </Tooltip>
-          </Styled.td>
+          </Themed.td>
         )}
         {coreDemographicMetricFields.map(demographicsDisplay)}
         {isVisible("majorityRace") && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <Themed.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <span>{getMajorityRaceDisplay(district)}</span>
-          </Styled.td>
+          </Themed.td>
         )}
         {extraDemographicMetricFields.map(demographicsDisplay)}
         {hasElectionData && isVisible("pvi") && (
-          <Styled.td sx={{ ...style.td, ...style.number }}>
+          <Themed.td sx={{ ...style.td, ...style.number }}>
             <PVIDisplay properties={district.properties} />
-          </Styled.td>
+          </Themed.td>
         )}
         {voting &&
           electionsMetricFields.map(
             ([id, metric]) =>
               isVisible(metric) &&
               id in voting && (
-                <Styled.td key={metric} sx={{ ...style.td, ...style.number }}>
+                <Themed.td key={metric} sx={{ ...style.td, ...style.number }}>
                   <Tooltip
                     placement="top-start"
                     content={
@@ -791,14 +791,14 @@ const SidebarRow = memo(
                   >
                     <span>{getPartyVoteShareDisplay(id)}%</span>
                   </Tooltip>
-                </Styled.td>
+                </Themed.td>
               )
           )}
         {isVisible("compactness") && (
-          <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
+          <Themed.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Themed.td>
         )}
         {!expandedProjectMetrics && (
-          <Styled.td>
+          <Themed.td>
             {isReadOnly ? null : isDistrictLocked ? (
               <Tooltip
                 content={
@@ -825,12 +825,12 @@ const SidebarRow = memo(
                 </Tooltip>
               )
             )}
-          </Styled.td>
+          </Themed.td>
         )}
-        <Styled.td>
+        <Themed.td>
           <DistrictOptionsFlyout districtId={districtId} isDistrictHovered={isDistrictHovered} />
-        </Styled.td>
-      </Styled.tr>
+        </Themed.td>
+      </Themed.tr>
     );
   }
 );

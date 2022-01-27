@@ -173,7 +173,7 @@ const blankForm: ConfigurableForm = {
   populationDeviation: DEFAULT_POPULATION_DEVIATION
 };
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     py: 3,
     px: 5,
@@ -385,12 +385,15 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
         setStateAbbrev(stateAbbrev || null);
 
         // Filter to organizations and templates that match the state FIPS code
-        const organizations = destructureResource(user, "organizations") || [];
+        const organizations: readonly IOrganization[] =
+          destructureResource(user, "organizations") || [];
         stateAbbrev &&
           setOrganizationsForImport(
             organizations
               .map((o: IOrganization) => filterProjectTemplates(o, stateAbbrev))
-              .filter((org: IOrganization | undefined) => org !== undefined)
+              .filter(
+                (org: IOrganization | undefined) => org !== undefined
+              ) as readonly IOrganization[]
           );
 
         const regionConfig =
@@ -545,7 +548,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
               }
             }}
           >
-            <Card sx={{ variant: "card.flat" }}>
+            <Card sx={{ variant: "cards.flat" }}>
               <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                 Upload file
               </legend>
@@ -590,7 +593,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                     <b>Error: {fileError}</b>
                   ) : (
                     <span>
-                      <Spinner variant="spinner.small" /> Uploading
+                      <Spinner variant="styles.spinner.small" /> Uploading
                     </span>
                   )}
                   <Button sx={{ variant: "buttons.linkStyle" }} onClick={() => resetForm()}>
@@ -618,7 +621,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
             </Card>
             {regionConfig && (
               <React.Fragment>
-                <Card sx={{ variant: "card.flat" }}>
+                <Card sx={{ variant: "cards.flat" }}>
                   <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                     State
                   </legend>
@@ -642,7 +645,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                   ("isPending" in organization && organization.isPending)
                 ) && (
                   <React.Fragment>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <fieldset sx={style.fieldset}>
                         <Flex sx={{ flexWrap: "wrap" }}>
                           <legend
@@ -781,7 +784,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                         </Flex>
                       </fieldset>
                     </Card>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <Flex sx={{ flexWrap: "wrap" }}>
                         <legend
                           sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}

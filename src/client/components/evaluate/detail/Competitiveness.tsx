@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Box, Button, Flex, Heading, jsx, Spinner, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, Spinner, Themed, ThemeUIStyleObject } from "theme-ui";
 
 import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
 import { checkPlanScoreAPI } from "../../../api";
@@ -17,7 +17,7 @@ import PVIDisplay from "../../PVIDisplay";
 import Tooltip from "../../Tooltip";
 import CompetitivenessChart from "./CompetitivenessChart";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,
@@ -130,48 +130,48 @@ const CompetitivenessMetricDetail = ({
         ) || " N/A"}
       </Heading>
       <CompetitivenessChart pviBuckets={pviBuckets} />
-      <Styled.table sx={style.table}>
+      <Themed.table sx={style.table}>
         <thead>
-          <Styled.tr>
-            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.colLast }}>Partisan Voting Index</Styled.th>
-          </Styled.tr>
+          <Themed.tr>
+            <Themed.th sx={{ ...style.th, ...style.colFirst }}>Number</Themed.th>
+            <Themed.th sx={{ ...style.th, ...style.colLast }}>Partisan Voting Index</Themed.th>
+          </Themed.tr>
         </thead>
         <tbody>
           {geojson?.features.map(
             (feature, id) =>
               id > 0 && (
-                <Styled.tr key={id}>
-                  <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
-                  <Styled.td sx={{ ...style.td, ...style.colLast }}>
+                <Themed.tr key={id}>
+                  <Themed.td sx={{ ...style.td, ...style.colFirst }}>{id}</Themed.td>
+                  <Themed.td sx={{ ...style.td, ...style.colLast }}>
                     {feature.properties.voting && metric.electionYear ? (
                       <Flex sx={{ alignItems: "center" }}>
-                        <Styled.div
+                        <Themed.div
                           sx={{
                             mr: 2,
                             width: "15px",
                             height: "15px",
                             borderRadius: "small",
-                            bg:
-                              feature.properties.pvi &&
-                              computeRowFill(
-                                choroplethStops,
-                                calculatePVI(feature.properties.voting, metric.electionYear),
-                                true
-                              )
+                            bg: feature.properties.pvi
+                              ? computeRowFill(
+                                  choroplethStops,
+                                  calculatePVI(feature.properties.voting, metric.electionYear),
+                                  true
+                                )
+                              : undefined
                           }}
-                        ></Styled.div>
+                        ></Themed.div>
                         <PVIDisplay properties={feature.properties} year={metric.electionYear} />
                       </Flex>
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}
-                  </Styled.td>
-                </Styled.tr>
+                  </Themed.td>
+                </Themed.tr>
               )
           )}
         </tbody>
-      </Styled.table>
+      </Themed.table>
       <Box
         sx={{
           mb: 2,
@@ -214,16 +214,16 @@ const CompetitivenessMetricDetail = ({
                     height: "18px",
                     color: "white"
                   }}
-                  variant="spinner.small"
+                  variant="styles.spinner.small"
                 />
               </span>
             )}
           </Button>
         ) : (
           planScoreLink && (
-            <Styled.a href={planScoreLink} target="_blank">
+            <Themed.a href={planScoreLink} target="_blank">
               View on PlanScore
-            </Styled.a>
+            </Themed.a>
           )
         )}
       </Box>

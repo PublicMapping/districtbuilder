@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link, Redirect } from "react-router-dom";
-import { Box, Button, Card, Flex, Heading, jsx, Styled } from "theme-ui";
+import { Box, Button, Card, Flex, Heading, jsx, Themed } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
 import { showPasswordResetNotice } from "../actions/auth";
@@ -40,7 +40,7 @@ const ResetPasswordScreen = () => {
       <Heading as="h1" sx={{ textAlign: "center" }}>
         <Logo sx={{ maxWidth: "15rem" }} />
       </Heading>
-      <Card sx={{ variant: "card.floating" }}>
+      <Card sx={{ variant: "cards.floating" }}>
         <Flex
           as="form"
           sx={{ flexDirection: "column", textAlign: "left" }}
@@ -86,15 +86,15 @@ const ResetPasswordScreen = () => {
       </Card>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Know your password?{" "}
-        <Styled.a as={Link} to="/login" sx={{ color: "primary" }}>
+        <Themed.a as={Link} to="/login" sx={{ color: "primary" }}>
           Log in
-        </Styled.a>
+        </Themed.a>
       </Box>
       <Box sx={{ fontSize: 1, textAlign: "center" }}>
         Need an account?{" "}
-        <Styled.a as={Link} to="/register" sx={{ color: "primary" }}>
+        <Themed.a as={Link} to="/register" sx={{ color: "primary" }}>
           Sign up for free
-        </Styled.a>
+        </Themed.a>
       </Box>
     </CenteredContent>
   );

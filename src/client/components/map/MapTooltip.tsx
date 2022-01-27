@@ -29,7 +29,7 @@ import { levelToLineLayerId, levelToSelectionLayerId } from ".";
 import { getLabel } from "./labels";
 import { getDemographicsGroups } from "../../../shared/functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   tooltip: {
     position: "absolute",
     margin: "20px",
@@ -56,7 +56,7 @@ interface Data {
 }
 
 const throttledDataSetter = throttle(
-  function<T>(setData: (arg0: T) => void, data: T) {
+  function <T>(setData: (arg0: T) => void, data: T) {
     setData(data);
   },
   100,

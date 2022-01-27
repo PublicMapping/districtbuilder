@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { connect } from "react-redux";
-import { Box, Flex, Heading, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, Flex, Heading, jsx, Themed, ThemeUIStyleObject } from "theme-ui";
 
 import { GroupTotal, IStaticMetadata } from "../../../../shared/entities";
 
@@ -13,7 +13,7 @@ import DemographicsTooltip from "../../DemographicsTooltip";
 import Tooltip from "../../Tooltip";
 import { getDemographicsGroups } from "../../../../shared/functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,
@@ -87,26 +87,26 @@ const MajorityRaceMetricDetail = ({
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         Your map has {metric.value?.toString() || " "} Majority-Minority districts
       </Heading>
-      <Styled.table sx={style.table}>
+      <Themed.table sx={style.table}>
         <thead>
-          <Styled.tr>
-            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
-            <Styled.th sx={style.th}>Majority Race</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.colLast }}>Demographics</Styled.th>
-          </Styled.tr>
+          <Themed.tr>
+            <Themed.th sx={{ ...style.th, ...style.colFirst }}>Number</Themed.th>
+            <Themed.th sx={style.th}>Majority Race</Themed.th>
+            <Themed.th sx={{ ...style.th, ...style.colLast }}>Demographics</Themed.th>
+          </Themed.tr>
         </thead>
         <tbody>
           {metadata &&
             geojson?.features.map(
               (feature, id) =>
                 id > 0 && (
-                  <Styled.tr key={id}>
-                    <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
+                  <Themed.tr key={id}>
+                    <Themed.td sx={{ ...style.td, ...style.colFirst }}>{id}</Themed.td>
 
-                    <Styled.td sx={style.td}>
+                    <Themed.td sx={style.td}>
                       {feature.properties.majorityRace !== undefined ? (
                         <Flex sx={{ alignItems: "center" }}>
-                          <Styled.div
+                          <Themed.div
                             sx={{
                               mr: 2,
                               width: "15px",
@@ -114,15 +114,15 @@ const MajorityRaceMetricDetail = ({
                               borderRadius: "small",
                               bg: feature.properties.majorityRaceFill
                             }}
-                          ></Styled.div>
+                          ></Themed.div>
                           <Box>{getMajorityRaceDisplay(feature)}</Box>
                         </Flex>
                       ) : (
                         <Box sx={style.blankValue}>-</Box>
                       )}
-                    </Styled.td>
+                    </Themed.td>
 
-                    <Styled.td sx={{ ...style.td, ...style.colLast }}>
+                    <Themed.td sx={{ ...style.td, ...style.colLast }}>
                       <Tooltip
                         placement="top-start"
                         content={
@@ -151,12 +151,12 @@ const MajorityRaceMetricDetail = ({
                           </span>
                         </span>
                       </Tooltip>
-                    </Styled.td>
-                  </Styled.tr>
+                    </Themed.td>
+                  </Themed.tr>
                 )
             )}
         </tbody>
-      </Styled.table>
+      </Themed.table>
     </Box>
   );
 };

@@ -16,7 +16,7 @@ import store from "../store";
 import { AuthModalContent } from "./AuthComponents";
 import { Resource } from "../resource";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",
@@ -102,7 +102,7 @@ const ConvertMapModal = ({
               <Flex sx={style.footer}>
                 {saving ? (
                   <React.Fragment>
-                    <Spinner variant="spinner.large" sx={{ alignSelf: "center", mb: 4 }} />
+                    <Spinner variant="styles.spinner.large" sx={{ alignSelf: "center", mb: 4 }} />
                     <Button
                       id="primary-action"
                       sx={{ marginBottom: 3 }}

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { RefAttributes } from "react";
-import { Box, Flex, Input, InputProps, jsx, Label, Select, SelectProps, Styled } from "theme-ui";
+import { Box, Flex, Input, InputProps, jsx, Label, Select, SelectProps, Themed } from "theme-ui";
 
 import { validate as validatePassword } from "../../shared/password-validator";
 import { ErrorMap } from "../../shared/types";
@@ -34,7 +34,7 @@ export default function Field<D, R>({
           fieldErrors.map((msg: string, index: number) => (
             <React.Fragment key={index}>
               {msg}
-              <Styled.div />
+              <Themed.div />
             </React.Fragment>
           ))}
       </Box>

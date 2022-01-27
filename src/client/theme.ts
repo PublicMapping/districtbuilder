@@ -1,4 +1,3 @@
-import { Theme as StyledSystemTheme } from "@styled-system/css";
 import { darken } from "@theme-ui/color";
 import { Theme } from "theme-ui";
 
@@ -44,10 +43,9 @@ const appButtonStyles = {
   }
 };
 
-const theme: Theme & StyledSystemTheme = {
+const theme: Theme = {
   fonts: {
-    body:
-      "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
+    body: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
     heading:
       'frank-new, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     monospace: "Menlo, monospace"
@@ -166,7 +164,7 @@ const theme: Theme & StyledSystemTheme = {
       fontWeight: "bold"
     }
   },
-  card: {
+  cards: {
     flat: {
       borderRadius: "small",
       backgroundColor: "muted",
@@ -489,23 +487,14 @@ const theme: Theme & StyledSystemTheme = {
         borderRadius: "small",
         outline: "none"
       }
-    }
-  },
-  spinner: {
-    small: {
-      color: "primary",
-      size: "24px",
-      strokeWidth: "3px"
     },
-    medium: {
-      color: "primary",
-      size: "48px",
-      strokeWidth: "3px"
-    },
-    large: {
-      color: "primary",
-      strokeWidth: "3px",
-      size: "60px"
+    linkButton: {
+      ...appButtonStyles,
+      backgroundColor: "primary",
+      color: "muted",
+      textDecoration: "none",
+      px: 3,
+      py: 2
     }
   },
   styles: {
@@ -552,81 +541,93 @@ const theme: Theme & StyledSystemTheme = {
     },
     td: {
       py: 1
-    }
-  },
-  linkButton: {
-    ...appButtonStyles,
-    backgroundColor: "primary",
-    color: "muted",
-    textDecoration: "none",
-    px: 3,
-    py: 2
-  },
-  header: {
-    app: {
-      height: heights.header,
-      flexShrink: 0,
-      antiAlias: "",
-      p: 2
     },
-    title: {
-      fontFamily: "heading",
-      fontWeight: "light",
-      fontSize: 2
+    spinner: {
+      small: {
+        color: "primary",
+        size: "24px",
+        strokeWidth: "3px"
+      },
+      medium: {
+        color: "primary",
+        size: "48px",
+        strokeWidth: "3px"
+      },
+      large: {
+        color: "primary",
+        strokeWidth: "3px",
+        size: "60px"
+      }
     },
-    left: {
-      justifyContent: "flex-start",
-      alignItems: "center",
-      flex: 1,
-      pl: 0
+    header: {
+      app: {
+        height: heights.header,
+        flexShrink: 0,
+        antiAlias: "",
+        p: 2
+      },
+      title: {
+        fontFamily: "heading",
+        fontWeight: "light",
+        fontSize: 2
+      },
+      left: {
+        justifyContent: "flex-start",
+        alignItems: "center",
+        flex: 1,
+        pl: 0
+      },
+      center: {
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1
+      },
+      right: {
+        justifyContent: "flex-end",
+        alignItems: "center",
+        flex: 1
+      }
     },
-    center: {
-      justifyContent: "center",
-      alignItems: "center",
-      flex: 1
-    },
-    right: {
-      justifyContent: "flex-end",
-      alignItems: "center",
-      flex: 1
-    }
-  },
-  sidebar: {
-    white: {
-      bg: "muted",
-      boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
-      display: "flex",
-      flexDirection: "column",
-      flexShrink: 0,
-      height: "100%",
-      minWidth: "400px",
-      position: "relative",
-      color: "gray.8",
-      zIndex: 200
-    },
-    expandedWhite: {
-      bg: "muted",
-      boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
-      display: "flex",
-      flexDirection: "column",
-      flexShrink: 0,
-      height: "100%",
-      minWidth: "100%",
-      position: "relative",
-      color: "gray.8",
-      zIndex: 200
-    },
-    gray: {
-      bg: "gray.0",
-      boxShadow: "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
-      display: "flex",
-      flexDirection: "column",
-      flexShrink: 0,
-      height: "100%",
-      minWidth: "400px",
-      position: "relative",
-      color: "gray.8",
-      zIndex: 200
+    sidebar: {
+      white: {
+        bg: "muted",
+        boxShadow:
+          "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
+        display: "flex",
+        flexDirection: "column",
+        flexShrink: 0,
+        height: "100%",
+        minWidth: "400px",
+        position: "relative",
+        color: "gray.8",
+        zIndex: 200
+      },
+      expandedWhite: {
+        bg: "muted",
+        boxShadow:
+          "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
+        display: "flex",
+        flexDirection: "column",
+        flexShrink: 0,
+        height: "100%",
+        minWidth: "100%",
+        position: "relative",
+        color: "gray.8",
+        zIndex: 200
+      },
+      gray: {
+        bg: "gray.0",
+        boxShadow:
+          "0 0 0 1px rgba(16,22,26,.1), 0 0 0 rgba(16,22,26,0), 0 1px 1px rgba(16,22,26,.2)",
+        display: "flex",
+        flexDirection: "column",
+        flexShrink: 0,
+        height: "100%",
+        minWidth: "400px",
+        position: "relative",
+        color: "gray.8",
+        zIndex: 200
+      }
     }
   }
 };

@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx, Box, Checkbox, Label, Radio, Heading } from "theme-ui";
+import { jsx, Box, Checkbox, Label, Radio, Heading, ThemeUIStyleObject } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu } from "react-aria-menubutton";
 import { style as menuStyle } from "./MenuButton.styles";
 import store from "../store";
@@ -19,7 +19,7 @@ const POPULATION_LABELS: { readonly [key: string]: string } = {
   CVAP: "Citizen voting age population (CVAP)"
 };
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   button: {
     outline: "none",
     display: "inline-block",
@@ -47,7 +47,7 @@ const style = {
       minWidth: "32px"
     }
   }
-} as const;
+};
 
 const MapSelectionOptionsFlyout = ({
   limitSelectionToCounty,

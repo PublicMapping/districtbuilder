@@ -17,7 +17,7 @@ import { ReactComponent as SignupIconAudience } from "../media/signup-icon-audie
 import { ReactComponent as SignupIconDollar } from "../media/signup-icon-dollar.svg";
 import { ReactComponent as SignupIconSearch } from "../media/signup-icon-search.svg";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     flex: "auto",
     display: "flex",

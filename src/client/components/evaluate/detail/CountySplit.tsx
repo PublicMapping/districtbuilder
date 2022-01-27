@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, Flex, jsx, Themed, ThemeUIStyleObject, Heading } from "theme-ui";
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../../shared/entities";
 import { useState, useEffect } from "react";
 import { getLabelLookup } from "../../map/labels";
@@ -7,7 +7,7 @@ import { Resource } from "../../../resource";
 import { EvaluateMetricWithValue } from "../../../types";
 import { geoLevelLabel, geoLevelLabelSingular } from "../../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,
@@ -103,41 +103,41 @@ const CountySplitMetricDetail = ({
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
         {metric.value} / {metric.total} {geoLevelLabel(geoLevel)} {metric.description}
       </Heading>
-      <Styled.table sx={style.table}>
+      <Themed.table sx={style.table}>
         <thead>
-          <Styled.tr>
-            <Styled.th sx={{ ...style.th, ...style.colFirst }}>
+          <Themed.tr>
+            <Themed.th sx={{ ...style.th, ...style.colFirst }}>
               {geoLevelLabelSingular(geoLevel)}
-            </Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.colLast }}>Split</Styled.th>
-          </Styled.tr>
+            </Themed.th>
+            <Themed.th sx={{ ...style.th, ...style.colLast }}>Split</Themed.th>
+          </Themed.tr>
         </thead>
         <tbody>
           {countyLookup ? (
             project?.districtsDefinition.map((d, id) => (
-              <Styled.tr key={id}>
-                <Styled.td sx={{ ...style.td, ...style.colFirst }}>
+              <Themed.tr key={id}>
+                <Themed.td sx={{ ...style.td, ...style.colFirst }}>
                   {countyLookup && id in countyLookup && staticMetadata
                     ? getLabelLookup(geoLevel, countyLookup[id])
                     : staticMetadata
                     ? getLabelLookup(geoLevel, undefined, id)
                     : ""}
-                </Styled.td>
-                <Styled.td sx={{ ...style.td, ...style.colLast }}>
+                </Themed.td>
+                <Themed.td sx={{ ...style.td, ...style.colLast }}>
                   <Flex sx={{ alignItems: "center" }}>
                     <Box sx={Array.isArray(d) ? style.fillBox : style.unfilledBox}></Box>
                     <Box>{Array.isArray(d) ? "Split" : "Not split"}</Box>
                   </Flex>
-                </Styled.td>
-              </Styled.tr>
+                </Themed.td>
+              </Themed.tr>
             ))
           ) : (
-            <Styled.tr>
-              <Styled.td sx={style.td}>Loading...</Styled.td>
-            </Styled.tr>
+            <Themed.tr>
+              <Themed.td sx={style.td}>Loading...</Themed.td>
+            </Themed.tr>
           )}
         </tbody>
-      </Styled.table>
+      </Themed.table>
     </Box>
   );
 };

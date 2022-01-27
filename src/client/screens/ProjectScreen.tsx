@@ -14,7 +14,8 @@ import {
   RegionLookupProperties,
   IUser,
   TypedArrays,
-  IReferenceLayer
+  IReferenceLayer,
+  ProjectId
 } from "../../shared/entities";
 import { EvaluateMetricWithValue } from "../types";
 
@@ -73,7 +74,11 @@ interface StateProps {
   readonly projectOptions: ProjectOptionsState;
 }
 
-const style: ThemeUIStyleObject = {
+interface Params {
+  readonly projectId: ProjectId;
+}
+
+const style: Record<string, ThemeUIStyleObject> = {
   tourStart: {
     width: "300px",
     height: "10px",
@@ -106,7 +111,7 @@ const ProjectScreen = ({
   limitSelectionToCounty,
   projectOptions
 }: StateProps) => {
-  const { projectId } = useParams();
+  const { projectId } = useParams<Params>();
   const [map, setMap] = useState<MapboxGL.Map | undefined>(undefined);
   const isLoggedIn = isUserLoggedIn();
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
@@ -155,7 +160,7 @@ const ProjectScreen = ({
   return isFirstLoadPending ? (
     <CenteredContent>
       <Flex sx={{ justifyContent: "center" }}>
-        <Spinner variant="spinner.large" />
+        <Spinner variant="styles.spinner.large" />
       </Flex>
     </CenteredContent>
   ) : "errorMessage" in user ? (

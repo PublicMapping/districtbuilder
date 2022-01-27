@@ -19,7 +19,7 @@ import { MAX_UPLOAD_FILE_SIZE, ReferenceLayerTypes } from "../../shared/constant
 import { readString } from "react-papaparse";
 import Icon from "./Icon";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     marginTop: 5
   },
@@ -219,6 +219,7 @@ const AddReferenceLayerModal = ({
           layer_type: layerType,
           layer: geojson,
           numberOfFeatures: geojson.features.length,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           fields: Object.keys(geojson.features[0].properties) || null
         }
       });
@@ -226,15 +227,21 @@ const AddReferenceLayerModal = ({
 
   function onReaderLoadCsv(event: ProgressEvent<FileReader>) {
     const csvText = event.target?.result && event.target.result.toString();
-    const results =
-      csvText &&
-      readString(csvText, { header: true, transformHeader: (s: string) => s.toLowerCase() });
-    const geojson = results && convertCsvToGeojson(results);
-    geojson && setGeoJSON(geojson);
+    csvText &&
+      readString(csvText, {
+        worker: true,
+        header: true,
+        transformHeader: (s: string) => s.toLowerCase(),
+        complete: results => {
+          const geojson = results && convertCsvToGeojson(results);
+          geojson && setGeoJSON(geojson);
+        }
+      });
   }
 
   function onReaderLoadGeoJson(event: ProgressEvent<FileReader>) {
     const geojson = event.target?.result && JSON.parse(event.target?.result.toString());
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     geojson && setGeoJSON(geojson);
   }
 
