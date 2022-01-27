@@ -33,7 +33,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Update backend, Yarn dependencies and build server
         docker-compose \
             run --rm --no-deps --entrypoint "bash -c" server \
-            "yarn install && yarn build"
+            "yarn install && npm rebuild && yarn build"
 
         # Update manage, Yarn dependencies and build
         docker-compose \
