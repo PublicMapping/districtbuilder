@@ -65,21 +65,7 @@ const style: ThemeUIStyleObject = {
     mb: 5
   },
   multiMemberContainer: {
-    overflow: "hidden",
-    maxHeight: "calc(100vh - 42rem)",
-    minHeight: "10rem",
-    width: "100%",
-    "> div": {
-      overflow: "auto",
-      width: "100%",
-      flex: "0 0 auto",
-      maxHeight: "inherit",
-      minHeight: "10rem"
-    },
-    thead: {
-      position: "sticky",
-      top: 0
-    }
+    width: "100%"
   }
 };
 
@@ -251,16 +237,14 @@ const ProjectDetailModal = ({
                   </Label>
                   {formData.isMultiMember ? (
                     <Box sx={style.multiMemberContainer}>
-                      <Box>
-                        <MultiMemberForm
-                          errors={extractErrors(projectDetailsResource, "numberOfMembers")}
-                          totalPopulation={totalPopulation}
-                          numberOfMembers={formData.numberOfMembers}
-                          onChange={numberOfMembers => {
-                            setProjectDetailsResource({ data: { ...formData, numberOfMembers } });
-                          }}
-                        />
-                      </Box>
+                      <MultiMemberForm
+                        errors={extractErrors(projectDetailsResource, "numberOfMembers")}
+                        totalPopulation={totalPopulation}
+                        numberOfMembers={formData.numberOfMembers}
+                        onChange={numberOfMembers => {
+                          setProjectDetailsResource({ data: { ...formData, numberOfMembers } });
+                        }}
+                      />
                     </Box>
                   ) : null}
                 </Box>
