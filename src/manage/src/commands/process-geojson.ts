@@ -251,6 +251,7 @@ it when necessary (file sizes ~1GB+).
     }
 
     this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+    await this.writeTopoJsonLegacy(flags.outputDir, topoJsonHierarchy);
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
 
@@ -536,6 +537,15 @@ it when necessary (file sizes ~1GB+).
     const output = createWriteStream(path, { encoding: "binary" });
     output.write(serialize(topology));
     output.close();
+  }
+
+  writeTopoJsonLegacy(dir: string, topology: Topology<Objects<{}>>): Promise<void> {
+    this.log("Writing topojson file");
+    const path = join(dir, "topo.json");
+    const output = createWriteStream(path, { encoding: "utf8" });
+    return new Promise(resolve =>
+      new JsonStreamStringify(topology).pipe(output).on("finish", () => resolve())
+    );
   }
 
   // Makes an appropriately-sized typed array containing the data
