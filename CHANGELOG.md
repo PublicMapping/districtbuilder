@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix 404 error when deleting reference layers [#1119](https://github.com/PublicMapping/districtbuilder/pull/1119)
 - Fix Reference Layer copy on other user's maps to reflect map's readonly status [#1078](https://github.com/PublicMapping/districtbuilder/pull/1078)
 - Fix Equal Population status so red "X" doesn't show if within deviation threshold [#1084](https://github.com/PublicMapping/districtbuilder/pull/1084)
 - Fix disappearing user data on Community Maps page refresh [#1090](https://github.com/PublicMapping/districtbuilder/pull/1090)
