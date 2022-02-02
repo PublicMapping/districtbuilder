@@ -46,7 +46,6 @@ import { ProjectVisibility } from "../../../../shared/constants";
     },
     projectId: {
       type: "string",
-      primary: true,
       field: "id"
     }
   },
