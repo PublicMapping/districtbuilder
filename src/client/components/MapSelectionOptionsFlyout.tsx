@@ -66,7 +66,9 @@ const MapSelectionOptionsFlyout = ({
   const hasMultipleElections =
     votingIds.some(id => id.endsWith("16")) && votingIds.some(id => id.endsWith("20"));
   const populations =
-    metadata?.demographicsGroups?.flatMap(group => (group.total ? [group.total] : [])) || [];
+    metadata?.demographicsGroups?.flatMap(group =>
+      group.total && Object.keys(POPULATION_LABELS).includes(group.total) ? [group.total] : []
+    ) || [];
   const hasMultiplePopulationTotals = populations.length > 1;
   return (
     <Wrapper closeOnSelection={false}>
@@ -132,7 +134,7 @@ const MapSelectionOptionsFlyout = ({
                       store.dispatch(setPopulationKey(key));
                     }}
                   />
-                  {POPULATION_LABELS[key] || key}
+                  {POPULATION_LABELS[key]}
                 </Label>
               ))}
             </li>
