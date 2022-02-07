@@ -81,7 +81,14 @@ Once you've setup WSL and Docker, you can clone and setup this project from with
 
 ### Hot Reloading 🔥
 
-Next, run `scripts/server` to start the application:
+_Note:_ Environments that use Vagrant require the [Vagrant notification forwarder plugin](https://github.com/mhallin/vagrant-notify-forwarder) for hot reloading. To install, run
+
+```bash
+$ vagrant plugin install vagrant-notify-forwarder
+$ vagrant reload
+```
+
+Run `scripts/server` to start the application:
 
 ```bash
  $ ./scripts/server
