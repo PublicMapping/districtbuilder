@@ -142,15 +142,6 @@ export async function createProject(data: CreateProjectData): Promise<IProject> 
   });
 }
 
-export async function convertAndCopyProject(id: ProjectId): Promise<IProject> {
-  return new Promise((resolve, reject) => {
-    apiAxios
-      .post(`/api/projects/${id}/convert-and-copy`)
-      .then(response => resolve(response.data))
-      .catch(error => reject(error.response?.data || error));
-  });
-}
-
 export async function copyProject(id: ProjectId): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios

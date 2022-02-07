@@ -45,7 +45,6 @@ import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
-import ConvertMapModal from "../components/ConvertMapModal";
 import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
 import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
@@ -271,7 +270,6 @@ const ProjectScreen = ({
                   />
                 )}
                 <CopyMapModal project={project} />
-                <ConvertMapModal project={project} />
                 <KeyboardShortcutsModal
                   isReadOnly={isReadOnly}
                   evaluateMode={evaluateMode}

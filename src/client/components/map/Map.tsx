@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { maxBy } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Button, Flex, Text, jsx, ThemeUIStyleObject, Themed } from "theme-ui";
+import { Box, Flex, Text, jsx, ThemeUIStyleObject, Themed } from "theme-ui";
 import bbox from "@turf/bbox";
 import { BBox2d } from "@turf/helpers/lib/geojson";
 
@@ -18,7 +18,6 @@ import {
   setZoomToDistrictId,
   PaintBrushSize
 } from "../../actions/districtDrawing";
-import { showConvertMapModal } from "../../actions/projectModals";
 import { getDistrictColor } from "../../constants/colors";
 import {
   TypedArrays,
@@ -538,12 +537,12 @@ const DistrictsMap = ({
       // eslint-disable-next-line functional/immutable-data
       feature.properties.findOutlineColor =
         findMenuOpen &&
-        ((findTool === FindTool.Unassigned && id === 0) ||
-          (findTool === FindTool.NonContiguous &&
-            id !== 0 &&
-            feature.geometry.coordinates.length >= 2))
+          ((findTool === FindTool.Unassigned && id === 0) ||
+            (findTool === FindTool.NonContiguous &&
+              id !== 0 &&
+              feature.geometry.coordinates.length >= 2))
           ? // Set pink outline to make unassigned/non-contiguous districts stand out
-            "#F25DFE"
+          "#F25DFE"
           : "transparent";
       // eslint-disable-next-line functional/immutable-data
       feature.properties.color = districtColor;
@@ -557,7 +556,7 @@ const DistrictsMap = ({
       feature.properties.percentDeviation =
         feature.properties.demographics.population !== 0 && feature.id !== 0
           ? // Special case - for 0% deviation, off-by-one counts as 0 when population is not evenly divisible
-            project.populationDeviation === 0 &&
+          project.populationDeviation === 0 &&
             Math.abs(populationDeviation) <= 1 &&
             targetPopulation % 1 !== 0
             ? 0
@@ -606,9 +605,9 @@ const DistrictsMap = ({
         feature.properties.majorityRaceFill =
           feature.properties.majorityRace && feature.properties.majorityRaceSplit
             ? getMajorityRaceSplitFill(
-                feature.properties.majorityRace,
-                feature.properties.majorityRaceSplit
-              )
+              feature.properties.majorityRace,
+              feature.properties.majorityRaceSplit
+            )
             : "ffffff";
       }
 
@@ -902,8 +901,8 @@ const DistrictsMap = ({
         // assigned, wait until districts GeoJSON is updated before removing
         // selected state.
         map.isStyleLoaded() && map.isSourceLoaded(DISTRICTS_SOURCE_ID)
-        ? removeSelectedFeatures(map, staticMetadata)
-        : map.once("idle", () => removeSelectedFeatures(map, staticMetadata)));
+          ? removeSelectedFeatures(map, staticMetadata)
+          : map.once("idle", () => removeSelectedFeatures(map, staticMetadata)));
     // We don't want to tigger this effect when `selectedDistrictId` changes
     // eslint-disable-next-line
   }, [map, selectedGeounits, staticMetadata]);
@@ -1164,12 +1163,6 @@ const DistrictsMap = ({
         <Box sx={style.archivedMessage}>
           <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
           and can no longer be edited.
-          <Box>
-            {/* eslint-disable-next-line */}
-            <Button onClick={() => store.dispatch(showConvertMapModal(true))}>
-              Convert to 2020
-            </Button>
-          </Box>
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (

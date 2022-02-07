@@ -6,7 +6,6 @@ import { Action } from "../actions";
 import {
   showAdvancedEditingModal,
   showCopyMapModal,
-  showConvertMapModal,
   setImportFlagsModal,
   toggleKeyboardShortcutsModal
 } from "../actions/projectModals";
@@ -15,7 +14,6 @@ import { resetProjectState } from "../actions/root";
 export interface ProjectModalsState {
   readonly showAdvancedEditingModal: boolean;
   readonly showCopyMapModal: boolean;
-  readonly showConvertMapModal: boolean;
   readonly showKeyboardShortcutsModal: boolean;
   readonly showImportFlagsModal: boolean;
 }
@@ -23,7 +21,6 @@ export interface ProjectModalsState {
 export const initialProjectModalsState: ProjectModalsState = {
   showAdvancedEditingModal: false,
   showCopyMapModal: false,
-  showConvertMapModal: false,
   showImportFlagsModal: false,
   showKeyboardShortcutsModal: false
 };
@@ -52,11 +49,6 @@ const districtDrawingReducer: LoopReducer<ProjectModalsState, Action> = (
       return {
         ...state,
         showCopyMapModal: action.payload
-      };
-    case getType(showConvertMapModal):
-      return {
-        ...state,
-        showConvertMapModal: action.payload
       };
     case getType(setImportFlagsModal):
       return {
