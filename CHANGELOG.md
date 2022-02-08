@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix lack of error message in the import page when selecting a chamber with too few districts [#1091](https://github.com/PublicMapping/districtbuilder/pull/1091)
 - Fix import performance on larger regions [#1100](https://github.com/PublicMapping/districtbuilder/pull/1100)
 - Only show All, VAP & CVAP options for population choice [#1122](https://github.com/PublicMapping/districtbuilder/pull/1122)
+- Fix hot reloading on environments using Vagrant [#1126](https://github.com/PublicMapping/districtbuilder/pull/1126)
 
 ## [1.13.0] - 2021-11-30
 

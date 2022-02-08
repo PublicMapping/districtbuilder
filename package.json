@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false CHOKIDAR_USEPOLLING=true  react-scripts start",
+    "start": "GENERATE_SOURCEMAP=false  react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --testPathPattern=src/client",
     "eject": "react-scripts eject",
