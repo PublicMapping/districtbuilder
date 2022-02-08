@@ -65,7 +65,6 @@ import { UsersService } from "../../users/services/users.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
 import { Errors } from "../../../../shared/types";
 import axios from "axios";
-import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 import { Brackets } from "typeorm";
 import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
 import { ProjectTemplatesService } from "../../project-templates/services/project-templates.service";
@@ -214,7 +213,7 @@ export class ProjectsController implements CrudController<Project> {
 
   private formatCreateProjectDto(
     dto: CreateProjectDto,
-    geoCollection: GeoUnitTopology | GeoUnitProperties,
+    geoCollection: GeoUnitTopology,
     regionConfig: RegionConfig,
     req: CrudRequest
   ) {
@@ -343,7 +342,7 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   // Helper for obtaining a topology or props for a given S3 URI, throws exception if not found
-  async getGeoUnitProperties(s3URI: string): Promise<GeoUnitTopology | GeoUnitProperties> {
+  async getGeoUnitProperties(s3URI: string): Promise<GeoUnitTopology> {
     const geoCollection = await this.topologyService.get(s3URI);
     if (!geoCollection) {
       throw new NotFoundException(
@@ -449,7 +448,7 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   exportToCsv(
-    geoCollection: GeoUnitTopology | GeoUnitProperties,
+    geoCollection: GeoUnitTopology,
     districtsDefinition: DistrictsDefinition
   ): [string, number][] {
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
@@ -470,7 +469,7 @@ export class ProjectsController implements CrudController<Project> {
         if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
           // The numbers found in the hierarchy are the base geounit indices of the topology.
           // Access this item in the topology to find it's base geounit id.
-          const props = baseGeoUnitProperties[hierarchyNumOrArray];
+          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
           const baseId = props[baseGeoLevel] as string;
           mutableCsvRows.push([baseId, districtOrArray]);
         } else if (typeof hierarchyNumOrArray !== "number") {
