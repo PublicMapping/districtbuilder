@@ -153,7 +153,7 @@ export function getEqualPopulationStops(popThresholdNum: number): ChoroplethStep
 export function getMajorityRaceSplitFill(majorityRace: string, majorityRaceSplit: number): string {
   const fills = getMajorityRaceFills();
   return fills[majorityRace]
-    ? majorityRaceSplit > 0.65
+    ? majorityRaceSplit > 65
       ? fills[majorityRace][0]
       : fills[majorityRace][1]
     : "#ffffff";
