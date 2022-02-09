@@ -9,8 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Option to toggle which demographics to use for calculations [#1085](https://github.com/PublicMapping/districtbuilder/pull/1085)
+### Changed
 
+### Fixed
+
+## [1.14.0] - 2022-02-09
+
+### Added
+
+- Option to toggle which demographics to use for calculations [#1085](https://github.com/PublicMapping/districtbuilder/pull/1085)
 - Add project-level info to geojson 'metadata' property [#1076](https://github.com/PublicMapping/districtbuilder/pull/1076)
 - Add instructions on configuring PG Admin and on releasing new region data [#1081](https://github.com/PublicMapping/districtbuilder/pull/1081)
 - Add blog link to Resource menu [#1083](https://github.com/PublicMapping/districtbuilder/pull/1083)
@@ -425,7 +432,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...HEAD
+[1.14.0]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...1.14.0
 [1.13.0]: https://github.com/publicmapping/districtbuilder/compare/1.12.1...1.13.0
 [1.12.1]: https://github.com/publicmapping/districtbuilder/compare/1.12.0...1.12.1
 [1.12.0]: https://github.com/publicmapping/districtbuilder/compare/1.11.0...1.12.0
