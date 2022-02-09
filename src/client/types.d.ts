@@ -111,3 +111,11 @@ export interface ReferenceLayerImportResponse {
 export interface ReferenceLayerWithGeojson extends IReferenceLayer {
   readonly layer: ReferenceLayerGeojson;
 }
+
+export interface RegionPropertiesNamesResource {
+  readonly name: string;
+}
+
+export interface ArchivedRegionProperties {
+  readonly resource: regionPropertiesNamesResource[];
+}

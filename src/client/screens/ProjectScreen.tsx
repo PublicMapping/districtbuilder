@@ -200,6 +200,7 @@ const ProjectScreen = ({
             project={project}
             regionProperties={regionProperties}
             staticMetadata={staticMetadata}
+            isArchived={isArchived}
           />
         )}
         {

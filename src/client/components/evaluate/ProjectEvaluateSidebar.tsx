@@ -2,7 +2,13 @@
 import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
-import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, PviBucket } from "../../types";
+import {
+  ArchivedRegionProperties,
+  DistrictsGeoJSON,
+  EvaluateMetricWithValue,
+  ElectionYear,
+  PviBucket
+} from "../../types";
 import store from "../../store";
 import {
   hasMultipleElections,
@@ -18,6 +24,7 @@ import { selectEvaluationMetric } from "../../actions/districtDrawing";
 
 import { geoLevelLabelSingular, calculatePVI } from "../../functions";
 import { getPviBuckets, getPviSteps } from "../map";
+import { archivedCountyNames } from "../../constants/archivedCountyNames";
 
 const style: Record<string, ThemeUIStyleObject> = {
   sidebar: {
@@ -36,13 +43,15 @@ const ProjectEvaluateSidebar = ({
   metric,
   project,
   regionProperties,
-  staticMetadata
+  staticMetadata,
+  isArchived
 }: {
   readonly geojson?: DistrictsGeoJSON;
   readonly metric: EvaluateMetricWithValue | undefined;
   readonly project?: IProject;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
+  readonly isArchived: boolean;
 }) => {
   const [electionYear, setEvaluateElectionYear] = useState<ElectionYear>("combined");
   const popThreshold = project && project.populationDeviation;
@@ -64,12 +73,16 @@ const ProjectEvaluateSidebar = ({
     staticMetadata?.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id;
 
   useEffect(() => {
-    if (project && project.regionConfig.regionCode && geoLevel) {
+    if (project && project.regionConfig.regionCode && geoLevel && !isArchived) {
       store.dispatch(
         regionPropertiesFetch({ regionConfigId: project.regionConfig.id, geoLevel: geoLevel })
       );
     }
   }, [project, geoLevel]);
+
+  const countyNames: ArchivedRegionProperties = {
+    resource: archivedCountyNames[`${project.regionConfig.regionCode}`]
+  };
 
   const numEqualPopDistricts =
     geojson &&
@@ -267,7 +280,7 @@ const ProjectEvaluateSidebar = ({
           setElectionYear={setEvaluateElectionYear}
           geoLevel={geoLevel}
           pviBuckets={pviBuckets}
-          regionProperties={regionProperties}
+          regionProperties={isArchived ? countyNames : regionProperties}
           staticMetadata={staticMetadata}
         />
       ) : (

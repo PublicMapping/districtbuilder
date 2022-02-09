@@ -90,6 +90,7 @@ const CountySplitMetricDetail = ({
 }) => {
   const [countyLookup, setCountyLookup] = useState<CountyLookup | undefined>(undefined);
 
+
   useEffect(() => {
     if ("resource" in regionProperties && !countyLookup) {
       setCountyLookup(
