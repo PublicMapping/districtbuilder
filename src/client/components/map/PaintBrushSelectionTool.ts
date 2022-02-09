@@ -16,7 +16,6 @@ import { editSelectedGeounits, PaintBrushSize } from "../../actions/districtDraw
 import { areAnyGeoUnitsSelected, mergeGeoUnits } from "../../functions";
 import paint from "../../media/paint.png";
 import store from "../../store";
-import { MapboxGeoJSONFeature } from "mapbox-gl";
 
 import {
   featuresToUnlockedGeoUnits,
@@ -37,7 +36,7 @@ import {
  * Note that this is only additive (does not deselect geounits).
  */
 const PaintBrushSelectionTool: ISelectionTool = {
-  enable: function(
+  enable: function (
     map: MapboxGL.Map,
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
@@ -213,7 +212,7 @@ const PaintBrushSelectionTool: ISelectionTool = {
       });
     }
   },
-  disable: function(map: MapboxGL.Map) {
+  disable: function (map: MapboxGL.Map) {
     map.boxZoom.enable();
     map.dragPan.enable();
     // eslint-disable-next-line

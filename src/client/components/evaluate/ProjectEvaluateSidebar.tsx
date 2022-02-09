@@ -19,7 +19,7 @@ import { selectEvaluationMetric } from "../../actions/districtDrawing";
 import { geoLevelLabelSingular, calculatePVI } from "../../functions";
 import { getPviBuckets, getPviSteps } from "../map";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   sidebar: {
     flexDirection: "column",
     flexShrink: 0,
@@ -50,7 +50,7 @@ const ProjectEvaluateSidebar = ({
   const featuresWithCompactness = geojson?.features
     .slice(1)
     .filter(f => f.properties.compactness !== 0);
-  const totalCompactness = featuresWithCompactness?.reduce(function(accumulator, feature) {
+  const totalCompactness = featuresWithCompactness?.reduce(function (accumulator, feature) {
     return accumulator + feature.properties.compactness;
   }, 0);
   const avgCompactness =
@@ -84,7 +84,7 @@ const ProjectEvaluateSidebar = ({
       );
     }).length;
   const numDistrictsWithGeometries =
-    geojson && geojson.features.filter(f => f.geometry.coordinates.length > 0).length;
+    geojson && geojson.features.filter(f => f.id !== 0 && f.geometry.coordinates.length > 0).length;
 
   const pviBuckets: readonly (PviBucket | undefined)[] | undefined =
     geojson &&
@@ -231,10 +231,20 @@ const ProjectEvaluateSidebar = ({
       name: `${geoLevel ? geoLevelLabelSingular(geoLevel) : ""} splits`,
       type: "count",
       description: "are split",
-      shortText:
-        "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
-      longText:
-        "County splits occur when a county is split between two or more districts. Some states require minimizing county splits, to the extent practicable.",
+      shortText: `${
+        geoLevel ? `${geoLevelLabelSingular(geoLevel)} splits` : "Splits"
+      } occur when a ${
+        geoLevel ? geoLevel : "jurisdiction"
+      } is split between two or more districts. Some states require minimizing ${
+        geoLevel ? geoLevel : ""
+      } splits, to the extent practicable.`,
+      longText: `${
+        geoLevel ? `${geoLevelLabelSingular(geoLevel)} splits` : "Splits"
+      } occur when a ${
+        geoLevel ? geoLevel : "jurisdiction"
+      } is split between two or more districts. Some states require minimizing ${
+        geoLevel ? geoLevel : ""
+      } splits, to the extent practicable.`,
       showInSummary: true,
       value: project?.districtsDefinition.filter(x => Array.isArray(x)).length || 0,
       total: project ? project.districtsDefinition.length : 0,

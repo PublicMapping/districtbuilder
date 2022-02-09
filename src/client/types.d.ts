@@ -9,11 +9,15 @@ import {
   DemographicCounts,
   PaginationMetadata,
   IProject,
-  IReferenceLayer
+  IReferenceLayer,
+  ProjectProperties
 } from "../shared/entities";
 
+// TODO #179: Move to shared/entities
 export type DistrictGeoJSON = Feature<MultiPolygon, DistrictProperties>;
-export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
+export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties> & {
+  readonly metadata?: ProjectProperties;
+};
 
 export interface DynamicProjectData {
   readonly project: IProject;

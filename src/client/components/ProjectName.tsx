@@ -4,7 +4,7 @@ import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubu
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { Box, Button, Flex, Heading, Input, jsx, Styled, Text } from "theme-ui";
+import { Box, Button, Flex, Heading, Input, jsx, Themed, Text, ThemeUIStyleObject } from "theme-ui";
 import { IProject, IProjectTemplate } from "../../shared/entities";
 import {
   setProjectNameEditing,
@@ -17,7 +17,7 @@ import { SavingState } from "../types";
 import Icon from "./Icon";
 import { style as menuButtonStyles } from "./MenuButton.styles";
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   modal: {
     bg: "muted",
     p: 5,
@@ -39,7 +39,7 @@ const style = {
     color: "muted",
     alignItems: "center"
   }
-} as const;
+};
 
 enum MenuKeys {
   Rename = "Rename",
@@ -139,9 +139,9 @@ const ProjectName = ({
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
       <Flex sx={style.modal}>
-        <Styled.a as={Link} to={`/o/${template.organization.slug}`}>
+        <Themed.a as={Link} to={`/o/${template.organization.slug}`}>
           {template.organization.name} ›
-        </Styled.a>
+        </Themed.a>
         <Heading>{template.name}</Heading>
         <Text sx={{ mb: 2 }}>
           {template.regionConfig.name} · {template.numberOfDistricts} districts
@@ -192,7 +192,7 @@ const ProjectName = ({
         </Flex>
       ) : (
         <React.Fragment>
-          <Text as="h1" sx={{ variant: "header.title", m: 0 }}>
+          <Text as="h1" sx={{ variant: "styles.header.title", m: 0 }}>
             {isReadOnly ? `${project.name} by ${project.user.name}` : project.name}
           </Text>
           {!isReadOnly && EditButton}

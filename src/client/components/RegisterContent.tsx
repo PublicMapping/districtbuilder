@@ -12,7 +12,7 @@ import { InputField, PasswordField } from "./Field";
 import FormError from "./FormError";
 import { WriteResource } from "../resource";
 import { userFetch } from "../actions/user";
-import { showCopyMapModal } from "../actions/districtDrawing";
+import { showCopyMapModal } from "../actions/projectModals";
 import store from "../store";
 import { Resource } from "../resource";
 

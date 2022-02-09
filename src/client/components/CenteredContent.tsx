@@ -2,7 +2,7 @@
 import React from "react";
 import { Flex, jsx } from "theme-ui";
 
-const CenteredContent = ({ children }: { readonly children: React.ReactNode }) => {
+const CenteredContent = ({ children }: { readonly children?: React.ReactNode }) => {
   return (
     <Flex
       sx={{

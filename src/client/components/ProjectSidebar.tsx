@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { Fragment, memo, useEffect, useState } from "react";
-import { Box, Button, Flex, jsx, Styled, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, jsx, Themed, ThemeUIStyleObject } from "theme-ui";
 import { pickBy, sum } from "lodash";
 
 import {
@@ -15,7 +15,8 @@ import {
   MetricsList,
   VotingMetricsList,
   ReferenceLayerId,
-  DemographicsGroup
+  DemographicsGroup,
+  GroupTotal
 } from "../../shared/entities";
 
 import {
@@ -77,15 +78,15 @@ interface MetricHeader {
   readonly tooltip: string;
 }
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   sidebar: {
-    variant: "sidebar.white",
+    variant: "styles.sidebar.white",
     ".rc-menu": {
       left: "-139px !important"
     }
   },
   sidebarExpanded: {
-    variant: "sidebar.expandedWhite",
+    variant: "styles.sidebar.expandedWhite",
     ".rc-menu": {
       left: "-139px !important"
     }
@@ -231,14 +232,14 @@ const PinnableMetricHeader = ({
   readonly isReadOnly: boolean;
 }) => {
   return (
-    <Styled.th sx={{ ...style.th, ...style.number }}>
+    <Themed.th sx={{ ...style.th, ...style.number }}>
       <Tooltip content={tooltip}>
         <span>{text}</span>
       </Tooltip>
       {pinnedMetrics && expandedProjectMetrics && (
         <MetricPinButton metric={metric} pinnedMetrics={pinnedMetrics} isReadOnly={isReadOnly} />
       )}
-    </Styled.th>
+    </Themed.th>
   );
 };
 
@@ -258,7 +259,8 @@ const ProjectSidebar = ({
   hoveredDistrictId,
   saving,
   isReadOnly,
-  pinnedMetrics
+  pinnedMetrics,
+  populationKey
 }: {
   readonly project?: IProject;
   readonly geojson?: DistrictsGeoJSON;
@@ -275,6 +277,7 @@ const ProjectSidebar = ({
   readonly saving: SavingState;
   readonly isReadOnly: boolean;
   readonly pinnedMetrics?: readonly string[];
+  readonly populationKey: GroupTotal;
 } & LoadingProps) => {
   const multElections = hasMultipleElections(staticMetadata);
   const has2016Election = has16Election(staticMetadata);
@@ -397,14 +400,14 @@ const ProjectSidebar = ({
         saving={saving}
       />
       <Box sx={{ overflowY: "auto", flex: 1 }}>
-        <Styled.table sx={style.table}>
+        <Themed.table sx={style.table}>
           <thead>
-            <Styled.tr>
-              <Styled.th sx={style.th}>
+            <Themed.tr>
+              <Themed.th sx={style.th}>
                 <Tooltip content="District number">
                   <span>Number</span>
                 </Tooltip>
-              </Styled.th>
+              </Themed.th>
               {pinnedMetrics &&
                 metricHeaders.map(
                   metric =>
@@ -420,8 +423,8 @@ const ProjectSidebar = ({
                       />
                     )
                 )}
-              <Styled.th sx={style.th}></Styled.th>
-            </Styled.tr>
+              <Themed.th sx={style.th}></Themed.th>
+            </Themed.tr>
           </thead>
           <tbody>
             {project && geojson && staticMetadata && geoUnitHierarchy && pinnedMetrics && (
@@ -438,12 +441,12 @@ const ProjectSidebar = ({
                 highlightedGeounits={highlightedGeounits}
                 hasElectionData={hasElectionData}
                 lockedDistricts={lockedDistricts}
-                saving={saving}
                 isReadOnly={isReadOnly}
+                populationKey={populationKey}
               />
             )}
           </tbody>
-        </Styled.table>
+        </Themed.table>
       </Box>
       {!expandedProjectMetrics && (
         <ProjectReferenceLayers
@@ -520,7 +523,8 @@ const SidebarRow = memo(
     hasElectionData,
     isReadOnly,
     popDeviation,
-    popDeviationThreshold
+    popDeviationThreshold,
+    populationKey
   }: {
     readonly district: DistrictGeoJSON;
     readonly pinnedMetricFields: readonly string[];
@@ -539,6 +543,7 @@ const SidebarRow = memo(
     readonly isReadOnly: boolean;
     readonly popDeviation: number;
     readonly popDeviationThreshold: number;
+    readonly populationKey: GroupTotal;
   }) => {
     const selectedDifference = selectedPopulationDifference || 0;
     const showPopulationChange = selectedDifference !== 0;
@@ -611,13 +616,13 @@ const SidebarRow = memo(
 
     const demographicsDisplay = ([id, metric]: readonly string[]) =>
       isVisible(metric) && (
-        <Styled.td key={metric} sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+        <Themed.td key={metric} sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
           <span>
             {getTotal(id) !== undefined
               ? `${computeDemographicSplit(demographics[id], getTotal(id) || 0)}%`
               : demographics[id].toLocaleString()}
           </span>
-        </Styled.td>
+        </Themed.td>
       );
 
     const meetsThreshold =
@@ -626,7 +631,7 @@ const SidebarRow = memo(
     const belowThreshold = intermediateDeviation > 0;
 
     return (
-      <Styled.tr
+      <Themed.tr
         sx={{ bg: selected ? selectedDistrictColor : "inherit", cursor: "pointer" }}
         onClick={() => {
           store.dispatch(setSelectedDistrictId(district.id as number));
@@ -637,9 +642,9 @@ const SidebarRow = memo(
         onMouseLeave={() => {
           store.dispatch(setHoveredDistrictId(null));
         }}
-        className={district.id ? null : "unassigned-row"}
+        className={district.id ? undefined : "unassigned-row"}
       >
-        <Styled.td sx={style.td}>
+        <Themed.td sx={style.td}>
           <Flex sx={{ alignItems: "center" }}>
             {district.id ? (
               <Fragment>
@@ -655,14 +660,14 @@ const SidebarRow = memo(
               </Fragment>
             )}
           </Flex>
-        </Styled.td>
+        </Themed.td>
         {isVisible("population") && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <Themed.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             {populationDisplay}
-          </Styled.td>
+          </Themed.td>
         )}
         {isVisible("populationDeviation") && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <Themed.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <Tooltip
               placement="top-start"
               content={
@@ -711,10 +716,10 @@ const SidebarRow = memo(
                 </span>
               </span>
             </Tooltip>
-          </Styled.td>
+          </Themed.td>
         )}
         {isVisible("raceChart") && (
-          <Styled.td sx={style.td}>
+          <Themed.td sx={style.td}>
             <Tooltip
               placement="top-start"
               content={
@@ -722,6 +727,8 @@ const SidebarRow = memo(
                   <DemographicsTooltip
                     demographics={demographics}
                     isMajorityMinority={isMajorityMinority(district)}
+                    demographicsGroups={demographicsGroups}
+                    populationKey={populationKey}
                   />
                 ) : (
                   <em>
@@ -741,30 +748,34 @@ const SidebarRow = memo(
                     left: "-2px"
                   }}
                 >
-                  <DemographicsChart demographics={demographics} />
+                  <DemographicsChart
+                    demographics={demographics}
+                    populationKey={populationKey}
+                    demographicsGroups={demographicsGroups}
+                  />
                 </span>
               </Flex>
             </Tooltip>
-          </Styled.td>
+          </Themed.td>
         )}
         {coreDemographicMetricFields.map(demographicsDisplay)}
         {isVisible("majorityRace") && (
-          <Styled.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
+          <Themed.td sx={{ ...style.td, ...style.number, ...{ color: textColor } }}>
             <span>{getMajorityRaceDisplay(district)}</span>
-          </Styled.td>
+          </Themed.td>
         )}
         {extraDemographicMetricFields.map(demographicsDisplay)}
         {hasElectionData && isVisible("pvi") && (
-          <Styled.td sx={{ ...style.td, ...style.number }}>
+          <Themed.td sx={{ ...style.td, ...style.number }}>
             <PVIDisplay properties={district.properties} />
-          </Styled.td>
+          </Themed.td>
         )}
         {voting &&
           electionsMetricFields.map(
             ([id, metric]) =>
               isVisible(metric) &&
               id in voting && (
-                <Styled.td key={metric} sx={{ ...style.td, ...style.number }}>
+                <Themed.td key={metric} sx={{ ...style.td, ...style.number }}>
                   <Tooltip
                     placement="top-start"
                     content={
@@ -780,14 +791,14 @@ const SidebarRow = memo(
                   >
                     <span>{getPartyVoteShareDisplay(id)}%</span>
                   </Tooltip>
-                </Styled.td>
+                </Themed.td>
               )
           )}
         {isVisible("compactness") && (
-          <Styled.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Styled.td>
+          <Themed.td sx={{ ...style.td, ...style.number }}>{compactnessDisplay}</Themed.td>
         )}
         {!expandedProjectMetrics && (
-          <Styled.td>
+          <Themed.td>
             {isReadOnly ? null : isDistrictLocked ? (
               <Tooltip
                 content={
@@ -814,12 +825,12 @@ const SidebarRow = memo(
                 </Tooltip>
               )
             )}
-          </Styled.td>
+          </Themed.td>
         )}
-        <Styled.td>
+        <Themed.td>
           <DistrictOptionsFlyout districtId={districtId} isDistrictHovered={isDistrictHovered} />
-        </Styled.td>
-      </Styled.tr>
+        </Themed.td>
+      </Themed.tr>
     );
   }
 );
@@ -837,7 +848,7 @@ interface SidebarRowsProps {
   readonly highlightedGeounits: GeoUnits;
   readonly lockedDistricts: LockedDistricts;
   readonly hasElectionData: boolean;
-  readonly saving: SavingState;
+  readonly populationKey: GroupTotal;
   readonly isReadOnly: boolean;
 }
 
@@ -852,8 +863,9 @@ const SidebarRows = ({
   expandedProjectMetrics,
   pinnedMetrics,
   highlightedGeounits,
-  hasElectionData,
   lockedDistricts,
+  hasElectionData,
+  populationKey,
   isReadOnly
 }: SidebarRowsProps) => {
   // Results of the asynchronous demographics calculation. The two calculations have been
@@ -863,6 +875,7 @@ const SidebarRows = ({
     | { readonly total: DemographicCounts; readonly savedDistrict: readonly DemographicCounts[] }
     | undefined
   >(undefined);
+  const [cachedPopulationKey, setCachedPopulationKey] = useState<string>(populationKey);
 
   // Asynchronously recalculate demographics on state changes with web workers
   useEffect(() => {
@@ -887,24 +900,38 @@ const SidebarRows = ({
       );
 
       // Don't overwrite current results with outdated ones
-      !outdated &&
+      if (!outdated) {
         setSelectedDemographics({
           total: selectedTotals.demographics,
           savedDistrict: districtTotals
         });
+
+        if (populationKey !== cachedPopulationKey) {
+          setCachedPopulationKey(populationKey);
+        }
+      }
     }
 
-    // When there aren't any geounits highlighted or selected, there is no need to run the
-    // asynchronous calculation; it can simply be cleared out. This additional logic prevents
-    // the sidebar values from flickering after save.
-    areAnyGeoUnitsSelected(selectedGeounits) || areAnyGeoUnitsSelected(highlightedGeounits)
+    // When there aren't any geounits highlighted or selected, and no change to the key used for demographics data,
+    // there is no need to run the asynchronous calculation; it can simply be cleared out.
+    // This additional logic prevents the sidebar values from flickering after save.
+    areAnyGeoUnitsSelected(selectedGeounits) ||
+    areAnyGeoUnitsSelected(highlightedGeounits) ||
+    populationKey !== cachedPopulationKey
       ? void getData()
       : setSelectedDemographics(undefined);
 
     return () => {
       outdated = true;
     };
-  }, [project, staticMetadata, selectedGeounits, highlightedGeounits]);
+  }, [
+    project,
+    staticMetadata,
+    selectedGeounits,
+    highlightedGeounits,
+    populationKey,
+    cachedPopulationKey
+  ]);
 
   const popPerRep = getPopulationPerRepresentative(geojson, project.numberOfMembers);
   const demographicsMetricFields = getDemographicsMetricFields(staticMetadata);
@@ -947,6 +974,7 @@ const SidebarRows = ({
             isReadOnly={isReadOnly}
             popDeviation={project.populationDeviation}
             popDeviationThreshold={popDeviationThreshold}
+            populationKey={populationKey}
           />
         ) : null;
       })}

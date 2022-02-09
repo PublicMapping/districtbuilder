@@ -56,7 +56,7 @@ function areAllUnlockedChildGeoUnitsSelected(
  * Allows users to individually select/deselect specific geounits by clicking them.
  */
 const DefaultSelectionTool: ISelectionTool = {
-  enable: function(
+  enable: function (
     map: MapboxGL.Map,
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
@@ -142,7 +142,7 @@ const DefaultSelectionTool: ISelectionTool = {
     // Save the click handler function so it can be removed later
     this.clickHandler = clickHandler; // eslint-disable-line
   },
-  disable: function(map: MapboxGL.Map) {
+  disable: function (map: MapboxGL.Map) {
     /* eslint-disable */
     this.clickHandler && map.off("click", this.clickHandler);
     this.setCursor && map.off("mousemove", DISTRICTS_LAYER_ID, this.setCursor);

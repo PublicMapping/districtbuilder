@@ -1,7 +1,13 @@
 /** @jsx jsx */
 import React, { useEffect, useState } from "react";
 import { Flex, Box, Label, Button, jsx, Select, Slider, Text, ThemeUIStyleObject } from "theme-ui";
-import { GeoLevelInfo, GeoLevelHierarchy, GeoUnits, IStaticMetadata } from "../../shared/entities";
+import {
+  GeoLevelInfo,
+  GeoLevelHierarchy,
+  GeoUnits,
+  IStaticMetadata,
+  GroupTotal
+} from "../../shared/entities";
 import { ElectionYear } from "../types";
 import { toggleFind } from "../actions/districtDrawing";
 import { geoLevelLabel, capitalizeFirstLetter, canSwitchGeoLevels } from "../functions";
@@ -20,7 +26,7 @@ import {
 import store from "../store";
 import icons from "../icons";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   buttonGroup: {
     button: {
       margin: "0 !important"
@@ -28,10 +34,11 @@ const style: ThemeUIStyleObject = {
     "& button > svg": {
       marginRight: "0"
     },
-    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)": {
-      borderRadius: 0,
-      borderLeftWidth: 0
-    },
+    "&:not(:last-of-type):not(:first-of-type) > span > button, & > button:not(:last-of-type):not(:first-of-type)":
+      {
+        borderRadius: 0,
+        borderLeftWidth: 0
+      },
     "&:first-of-type > span > button, & > button:first-of-type": {
       borderTopRightRadius: 0,
       borderBottomRightRadius: 0
@@ -41,12 +48,13 @@ const style: ThemeUIStyleObject = {
       borderBottomLeftRadius: 0,
       borderLeftWidth: 0
     },
-    "&:not(:last-of-type):not(:first-of-type) > span > button[disabled], & > button:not(:last-of-type):not(:first-of-type)[disabled]": {
-      borderRightColor: "blue.7"
-    }
+    "&:not(:last-of-type):not(:first-of-type) > span > button[disabled], & > button:not(:last-of-type):not(:first-of-type)[disabled]":
+      {
+        borderRightColor: "blue.7"
+      }
   },
   header: {
-    variant: "header.app",
+    variant: "styles.header.app",
     backgroundColor: "white",
     alignItems: "center",
     justifyContent: "space-between",
@@ -148,7 +156,8 @@ const MapHeader = ({
   selectedGeounits,
   isReadOnly,
   limitSelectionToCounty,
-  electionYear
+  electionYear,
+  populationKey
 }: {
   readonly label?: string;
   readonly metadata?: IStaticMetadata;
@@ -161,6 +170,7 @@ const MapHeader = ({
   readonly findMenuOpen: boolean;
   readonly limitSelectionToCounty: boolean;
   readonly electionYear: ElectionYear;
+  readonly populationKey: GroupTotal;
 }) => {
   const [isPaintBrushSizeSliderVisible, setPaintBrushSizeSliderVisibility] = useState(false);
   const topGeoLevelName = metadata
@@ -290,6 +300,7 @@ const MapHeader = ({
                 topGeoLevelName={topGeoLevelName}
                 metadata={metadata}
                 electionYear={electionYear}
+                populationKey={populationKey}
               />
             </Box>
           </React.Fragment>

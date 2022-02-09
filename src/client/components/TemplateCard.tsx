@@ -1,12 +1,12 @@
 /** @jsx jsx */
 import { useState } from "react";
-import { Box, Button, Flex, Heading, jsx, Text, Spinner } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, Text, Spinner, ThemeUIStyleObject } from "theme-ui";
 
 import { IOrganization, IProjectTemplate, IUser, CreateProjectData } from "../../shared/entities";
 import { isUserLoggedIn } from "../jwt";
 import Tooltip from "./Tooltip";
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   template: {
     flexDirection: "column",
     padding: "15px",
@@ -19,7 +19,7 @@ const style = {
     background: "lightgray",
     color: "black"
   }
-} as const;
+};
 
 function checkIfUserInOrg(org: IOrganization, user: IUser) {
   const userExists = org.users.filter(u => {
@@ -60,7 +60,7 @@ const TemplateCard = ({
       }}
       sx={style.useTemplateBtn}
     >
-      {inProgress && <Spinner variant="spinner.small" />}
+      {inProgress && <Spinner variant="styles.spinner.small" />}
       Use this template
     </Button>
   );

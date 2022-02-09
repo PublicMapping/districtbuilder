@@ -41,6 +41,7 @@ const ProjectListFlyout = (props: FlyoutProps) => {
             : exportGeoJson;
         store.dispatch(action(props.project));
       }}
+      sx={{ display: "inline-block" }}
     >
       <MenuButton
         sx={{

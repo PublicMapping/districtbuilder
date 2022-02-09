@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { Box, Button, Input, Flex, jsx, Label, Radio } from "theme-ui";
+import { Box, Button, Input, Flex, jsx, Label, Radio, ThemeUIStyleObject } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import { useClipboard } from "use-clipboard-copy";
 
@@ -11,7 +11,7 @@ import store from "../store";
 import { style as menuButtonStyles, invertStyles } from "./MenuButton.styles";
 import Tooltip from "./Tooltip";
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   input: {
     border: "none",
     borderRight: "1px solid",
@@ -35,7 +35,7 @@ const style = {
     width: "space.6",
     flex: "none"
   }
-} as const;
+};
 
 enum ShareMenuKeys {
   Private = "Private",

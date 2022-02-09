@@ -6,55 +6,108 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
+
 ### Changed
+
 ### Fixed
 
+## [1.14.0] - 2022-02-09
+
+### Added
+
+- Option to toggle which demographics to use for calculations [#1085](https://github.com/PublicMapping/districtbuilder/pull/1085)
+- Add project-level info to geojson 'metadata' property [#1076](https://github.com/PublicMapping/districtbuilder/pull/1076)
+- Add instructions on configuring PG Admin and on releasing new region data [#1081](https://github.com/PublicMapping/districtbuilder/pull/1081)
+- Add blog link to Resource menu [#1083](https://github.com/PublicMapping/districtbuilder/pull/1083)
+- Added cron task to REINDEX project table monthly [#1101](https://github.com/PublicMapping/districtbuilder/pull/1101)
+- Add scrolling to Map configuration modal for best viewing multi-member district list [#1110](https://github.com/PublicMapping/districtbuilder/pull/1110)
+
+### Changed
+
+- Update evaluate copy to reflect terminology to match the top level geo of the map [#1077](https://github.com/PublicMapping/districtbuilder/pull/1077)
+- Increase alloted memory for VM in Vagrantfile [#1079](https://github.com/PublicMapping/districtbuilder/pull/1079)
+- Update README with clearer instructions on email verification [#1082](https://github.com/PublicMapping/districtbuilder/pull/1082)
+- Update Node / Nest.JS / TypeORM / eslint / prettier [#1082](https://github.com/PublicMapping/districtbuilder/pull/1088)
+- Update Node / Create React App / Theme-UI / TypeORM / eslint / prettier [#1104](https://github.com/PublicMapping/districtbuilder/pull/1104)
+- Change page titles to be more descriptive [#1096](https://github.com/PublicMapping/districtbuilder/pull/1096)
+- Change serialization format for TopoJSON data [#1099](https://github.com/PublicMapping/districtbuilder/pull/1099)
+
+### Fixed
+
+- Fix 404 error when deleting reference layers [#1119](https://github.com/PublicMapping/districtbuilder/pull/1119)
+- Fix Reference Layer copy on other user's maps to reflect map's readonly status [#1078](https://github.com/PublicMapping/districtbuilder/pull/1078)
+- Fix Equal Population status so red "X" doesn't show if within deviation threshold [#1084](https://github.com/PublicMapping/districtbuilder/pull/1084)
+- Fix disappearing user data on Community Maps page refresh [#1090](https://github.com/PublicMapping/districtbuilder/pull/1090)
+- Fix lack of error message in the import page when selecting a chamber with too few districts [#1091](https://github.com/PublicMapping/districtbuilder/pull/1091)
+- Fix import performance on larger regions [#1100](https://github.com/PublicMapping/districtbuilder/pull/1100)
+- Only show All, VAP & CVAP options for population choice [#1122](https://github.com/PublicMapping/districtbuilder/pull/1122)
+- Fix hot reloading on environments using Vagrant [#1126](https://github.com/PublicMapping/districtbuilder/pull/1126)
+- Fix incorrect assignment of majority race on majority-minority evaluate screen [#1127](https://github.com/PublicMapping/districtbuilder/pull/1127)
 
 ## [1.13.0] - 2021-11-30
+
 ### Added
-- Add support for creating/importing projects with multi-member districts [#1060](https://github.com/PublicMapping/districtbuilder/pull/1060) 
-- Add Map Configuration  modal [#1065](https://github.com/PublicMapping/districtbuilder/pull/1065)
+
+- Add support for creating/importing projects with multi-member districts [#1060](https://github.com/PublicMapping/districtbuilder/pull/1060)
+- Add Map Configuration modal [#1065](https://github.com/PublicMapping/districtbuilder/pull/1065)
+
 ### Changed
+
 - Update Competitiveness metric on Evaluate [#1068](https://github.com/PublicMapping/districtbuilder/pull/1068)
+
 ### Fixed
+
 - Improve PlanScore integration and display toast on errors [#1062](https://github.com/PublicMapping/districtbuilder/pull/1062)
 - Fix duplicate regions in Community Maps dropdown [#1070](https://github.com/PublicMapping/districtbuilder/pull/1070)
 
 ## [1.12.1] - 2021-10-29
+
 ### Fixed
+
 - Fix import for regions that have a geounit with 1 identical geometry nested under it [#1053](https://github.com/PublicMapping/districtbuilder/pull/1053)
 - Fix simplification for geojson with invalid geometries [#1054](https://github.com/PublicMapping/districtbuilder/pull/1054)
 - Fix population deviation tooltip [#1055](https://github.com/PublicMapping/districtbuilder/pull/1055)
 
 ## [1.12.0] - 2021-10-25
+
 ### Changed
+
 - Support negative/adjusted population values [#1043](https://github.com/PublicMapping/districtbuilder/pull/1043)
 
 ## [1.11.0] - 2021-10-11
+
 ### Added
+
 - Add support for demographic groups, to support VAP / CVAP fields [#1034](https://github.com/PublicMapping/districtbuilder/pull/1034)
 - Added bulk-reprocess-regions command [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
 - Import using a project template [#1033](https://github.com/PublicMapping/districtbuilder/pull/1033)
 
 ### Changed
+
 - Don't require AWS credentials to load public S3 assets [#1036](https://github.com/PublicMapping/districtbuilder/pull/1036)
 - Blocks and blockgroups are now populated with FIPS code in name field [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
 - The process-geojson command now returns non-zero exit codes on error [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
 - The process-geojson, publish-region, and update-region commands now include the input file in the output [#1022](https://github.com/PublicMapping/districtbuilder/pull/1022)
 
 ## [1.10.1] - 2021-09-29
+
 ### Fixed
+
 - Fixed project import [#1029](https://github.com/PublicMapping/districtbuilder/pull/1029)
 - Copy project template id when duplicating project [#1037](https://github.com/PublicMapping/districtbuilder/pull/1037)
 
 ## [1.10.0] - 2021-09-28
+
 ### Added
+
 - Add support for uploading reference layers to a project [#902](https://github.com/PublicMapping/districtbuilder/pull/902)
 - Show / delete reference layers for a project [#999](https://github.com/PublicMapping/districtbuilder/pull/999)
 - Copy project template reference layers to project [#1018](https://github.com/PublicMapping/districtbuilder/pull/1018)
 
 ### Changed
+
 - Support extra demographic fields on metrics viewer [#984](https://github.com/PublicMapping/districtbuilder/pull/984)
 - Sort region configs by region code [#1004](https://github.com/PublicMapping/districtbuilder/pull/1004)
 - Fix mini-maps for DC and other small regions [#1009](https://github.com/PublicMapping/districtbuilder/pull/1009)
@@ -62,9 +115,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.9.0] - 2021-08-30
 
 ### Changed
+
 - Updated copy on home screen for new users [#985](https://github.com/PublicMapping/districtbuilder/pull/985)
 - Disable migration transactions in order to create project indexes concurrently [#989](https://github.com/PublicMapping/districtbuilder/pull/989)
+
 ### Fixed
+
 - Disable Send to Plan Score button for incomplete projects [#957](https://github.com/PublicMapping/districtbuilder/pull/957)
 - Fix Send to Plan Score button for other users projects [#958](https://github.com/PublicMapping/districtbuilder/pull/958)
 - Restore Community Maps & fix API perf. [#969](https://github.com/PublicMapping/districtbuilder/pull/969)
@@ -79,10 +135,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.8.0] - 2021-08-19
 
 ### Added
+
 - Add levers to tune LB health check configuration [#950](https://github.com/PublicMapping/districtbuilder/pull/950)
 
-
 ### Changed
+
 - Parameterize `max_old_space_size` [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
 - Don't define container-level CPU reservation [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
 - Remove CPU and memory limits for tasks on EC2 [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
@@ -90,6 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scale `vm.max_map_count` with container memory usage [#942](https://github.com/PublicMapping/districtbuilder/pull/942)
 
 ### Fixed
+
 - Fix CSV import by increasing max JSON payload to 25mb [#951](https://github.com/PublicMapping/districtbuilder/pull/951)
 - Fix CSV export for other user's projects [#943](https://github.com/PublicMapping/districtbuilder/pull/943)
 
@@ -101,6 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry regions that fail to load in TopologyService [#944](https://github.com/PublicMapping/districtbuilder/pull/944)
 
 ### Fixed
+
 - Fixed export GeoJSON endpoint cache busting [#940](https://github.com/PublicMapping/districtbuilder/pull/940)
 - Fixed EC2-based ECS setup to use correct container [#938](https://github.com/PublicMapping/districtbuilder/pull/938)
 - Fixed healthcheck when archived regions are loaded [#938](https://github.com/PublicMapping/districtbuilder/pull/938)
@@ -108,6 +167,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.7.1] - 2021-08-12
 
 ### Fixed
+
 - Fixed loading mini-maps for Projects w/o cached districts column [#928](https://github.com/PublicMapping/districtbuilder/pull/928)
 
 ## [1.7.0] - 2021-08-12
@@ -372,7 +432,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...HEAD
+[1.14.0]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...1.14.0
 [1.13.0]: https://github.com/publicmapping/districtbuilder/compare/1.12.1...1.13.0
 [1.12.1]: https://github.com/publicmapping/districtbuilder/compare/1.12.0...1.12.1
 [1.12.0]: https://github.com/publicmapping/districtbuilder/compare/1.11.0...1.12.0

@@ -29,7 +29,7 @@ export type ProjectExportRow = {
 
 @Injectable()
 export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate> {
-  constructor(@InjectRepository(ProjectTemplate) repo: Repository<ProjectTemplate>) {
+  constructor(@InjectRepository(ProjectTemplate) readonly repo: Repository<ProjectTemplate>) {
     super(repo);
   }
 

@@ -4,13 +4,13 @@ import { connect } from "react-redux";
 
 import { Box, Heading, jsx, ThemeUIStyleObject, Button } from "theme-ui";
 
-import { setImportFlagsModal } from "../actions/districtDrawing";
+import { setImportFlagsModal } from "../actions/projectModals";
 import { State } from "../reducers";
 import store from "../store";
 import { ImportRowFlag } from "../../shared/entities";
 import { MAX_IMPORT_ERRORS } from "../../shared/constants";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",
@@ -116,7 +116,7 @@ const ImportFlagsModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showImportFlagsModal
+    showModal: state.projectModals.showImportFlagsModal
   };
 }
 

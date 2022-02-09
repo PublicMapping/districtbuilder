@@ -1,8 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import S3 from "aws-sdk/clients/s3";
+import { spawn } from "child_process";
+import { cpus } from "os";
 import { Topology } from "topojson-specification";
 import { Repository } from "typeorm";
+import { deserialize } from "v8";
 
 import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
@@ -11,8 +14,41 @@ import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 import _ from "lodash";
 import { getObject, s3Options } from "../../common/s3-wrapper";
 
+const MAX_RETRIES = 5;
+// Loading a topojson layer is a mix of I/O and CPU intensive work,
+// so we can afford to have more layers loading than we have cores, but not too many
+const BATCH_SIZE = cpus().length * 2;
+// 10 largest states by geojson file size
+const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
+
+type Layer = Promise<GeoUnitTopology | GeoUnitProperties | undefined>;
+
 interface Layers {
-  [s3URI: string]: Promise<GeoUnitTopology | GeoUnitProperties | void>;
+  [s3URI: string]: null | Layer;
+}
+
+// https://stackoverflow.com/a/48007240
+async function asyncLoop<T>(asyncFns: ReadonlyArray<() => Promise<T>>, concurrent = 5) {
+  // queue up simultaneous calls
+  const queue: Promise<T>[] = [];
+  // eslint-disable-next-line functional/no-loop-statement
+  for (const fn of asyncFns) {
+    // fire the async function, add its promise to the queue, and remove
+    // it from queue when complete
+    const p = fn().then(res => {
+      // eslint-disable-next-line functional/immutable-data
+      queue.splice(queue.indexOf(p), 1);
+      return res;
+    });
+    // eslint-disable-next-line functional/immutable-data
+    queue.push(p);
+    // if max concurrent, wait for one to finish
+    if (queue.length >= concurrent) {
+      await Promise.race(queue);
+    }
+  }
+  // wait for the rest of the calls to finish
+  await Promise.all(queue);
 }
 
 @Injectable()
@@ -21,29 +57,35 @@ export class TopologyService {
   private readonly logger = new Logger(TopologyService.name);
   private readonly s3 = new S3();
 
-  constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
-    void repo.find().then(regionConfigs => {
+  constructor(@InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>) {}
+
+  public loadLayers() {
+    void this.repo.find().then(regionConfigs => {
       const getLayers = async () => {
+        // eslint-disable-next-line functional/immutable-data
         this._layers = regionConfigs.reduce(
-          (layers, regionConfig) => ({ ...layers, [regionConfig.s3URI]: void 0 }),
+          (layers, regionConfig) => ({
+            ...layers,
+            [regionConfig.s3URI]: null
+          }),
           {}
         );
-        const archivedURIs = regionConfigs.filter(r => r.archived).map(r => r.s3URI);
-        const activeURIs = regionConfigs.filter(r => !r.archived).map(r => r.s3URI);
+        // Load largest states first
+        const sortedRegions = _.sortBy(regionConfigs, region => [
+          !STATE_ORDER.includes(region.regionCode),
+          STATE_ORDER.indexOf(region.regionCode)
+        ]);
 
-        // Archived regions don't have high memory requirements once loaded, so we take care of them first
-        // eslint-disable-next-line
-        for (const s3URI of archivedURIs) {
-          this._layers[s3URI] = this.fetchLayer(s3URI, true);
-        }
-        // Block until loading archived layers is complete
-        await Promise.all(Object.values(_.pick(this._layers, archivedURIs)));
-
-        // Next we load all remaining (unarchived) regions
-        // eslint-disable-next-line
-        for (const s3URI of activeURIs) {
-          this._layers[s3URI] = this.fetchLayer(s3URI, false);
-        }
+        // Load a number of regions in parallel, adding another as each one completes
+        await asyncLoop(
+          sortedRegions.map(region => () => {
+            const promise = this.fetchLayer(region.s3URI, region.archived);
+            // eslint-disable-next-line functional/immutable-data
+            this._layers = { ...this._layers, [region.s3URI]: promise };
+            return promise;
+          }),
+          BATCH_SIZE
+        );
       };
       void getLayers();
     });
@@ -53,7 +95,7 @@ export class TopologyService {
     return this._layers && Object.freeze({ ...this._layers });
   }
 
-  public async get(s3URI: S3URI): Promise<GeoUnitTopology | GeoUnitProperties | void> {
+  public async get(s3URI: S3URI): Promise<GeoUnitTopology | GeoUnitProperties | undefined> {
     if (!this._layers) {
       return;
     }
@@ -66,29 +108,32 @@ export class TopologyService {
         this.logger.error(err);
       });
     }
-    return this._layers[s3URI];
+    const layer = this._layers[s3URI];
+    if (layer !== null) {
+      return layer;
+    }
   }
 
   private async fetchLayer(
     s3URI: S3URI,
     archived: boolean,
     numRetries = 0
-  ): Promise<GeoUnitTopology | GeoUnitProperties | void> {
+  ): Promise<GeoUnitTopology | GeoUnitProperties | undefined> {
     try {
       const [topojsonResponse, staticMetadataResponse] = await Promise.all([
-        getObject(this.s3, s3Options(s3URI, "topo.json")),
+        getObject(this.s3, s3Options(s3URI, "topo.buf")),
         getObject(this.s3, s3Options(s3URI, "static-metadata.json"))
       ]);
 
       const staticMetadataBody = staticMetadataResponse.Body?.toString("utf8");
-      const topojsonBody = topojsonResponse.Body?.toString("utf8");
+      const topojsonBody = topojsonResponse.Body as Buffer;
       if (staticMetadataBody && topojsonBody) {
         const staticMetadata = JSON.parse(staticMetadataBody) as IStaticMetadata;
         const geoLevelHierarchy = staticMetadata.geoLevelHierarchy.map(gl => gl.id);
         if (!geoLevelHierarchy) {
           this.logger.error(`geoLevelHierarchy missing from static metadata for ${s3URI}`);
         }
-        const topology = JSON.parse(topojsonBody) as Topology;
+        const topology = deserialize(topojsonBody) as Topology;
         const [demographics, geoLevels, voting] = await Promise.all([
           this.fetchStaticFiles(s3URI, staticMetadata.demographics),
           this.fetchStaticFiles(s3URI, staticMetadata.geoLevels),
@@ -114,7 +159,15 @@ export class TopologyService {
       this.logger.error(
         `Failed to load topology for '${s3URI}' ${numRetries + 1} times, err ${err}`
       );
-      return this.fetchLayer(s3URI, archived, numRetries + 1);
+      if (numRetries < MAX_RETRIES) {
+        return this.fetchLayer(s3URI, archived, numRetries + 1);
+      } else {
+        // Nest spawns multiple processes, so to shutdown the main container process we need to
+        // kill all running node instances
+        spawn("pkill", ["node"]).once("exit", () => {
+          process.exit(1);
+        });
+      }
     }
   }
 

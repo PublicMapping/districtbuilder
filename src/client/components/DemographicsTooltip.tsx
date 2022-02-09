@@ -1,12 +1,13 @@
 /** @jsx jsx */
-import mapValues from "lodash/mapValues";
-import { Box, jsx, Styled, ThemeUIStyleObject, Divider } from "theme-ui";
+import { Box, jsx, Themed, ThemeUIStyleObject, Divider } from "theme-ui";
 
 import { demographicsColors } from "../constants/colors";
 import { getDemographicLabel } from "../../shared/functions";
 import { DEMOGRAPHIC_FIELDS_ORDER } from "../../shared/constants";
+import { GroupTotal, DemographicsGroup } from "../../shared/entities";
+import { getDemographicsPercentages } from "../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   label: {
     textAlign: "left",
     py: 0,
@@ -35,14 +36,14 @@ const Row = ({
   readonly color: string;
   readonly abbreviate?: boolean;
 }) => (
-  <Styled.tr
+  <Themed.tr
     sx={{
       color: "muted",
       border: "none"
     }}
   >
-    <Styled.td sx={style.label}>{abbreviate ? id : getDemographicLabel(id)}</Styled.td>
-    <Styled.td sx={{ minWidth: "50px", py: 0 }}>
+    <Themed.td sx={style.label}>{abbreviate ? id : getDemographicLabel(id)}</Themed.td>
+    <Themed.td sx={{ minWidth: "50px", py: 0 }}>
       <Box
         style={{
           width: percent ? `${Math.min(percent, 100)}%` : 0
@@ -53,46 +54,45 @@ const Row = ({
           borderRadius: "1px"
         }}
       />
-    </Styled.td>
-    <Styled.td sx={style.number}>
+    </Themed.td>
+    <Themed.td sx={style.number}>
       {percent ? percent.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0"}
       {"%"}
-    </Styled.td>
-  </Styled.tr>
+    </Themed.td>
+  </Themed.tr>
 );
 
 const DemographicsTooltip = ({
   demographics,
   isMajorityMinority,
-  abbreviate
+  abbreviate,
+  demographicsGroups,
+  populationKey
 }: {
   readonly demographics: { readonly [id: string]: number };
   readonly isMajorityMinority?: boolean;
   readonly abbreviate?: boolean;
+  readonly demographicsGroups: readonly DemographicsGroup[];
+  readonly populationKey: GroupTotal;
 }) => {
-  // Only showing hard-coded core metrics here for space reasons, so we can hard-code population as well
-  // To handle cases where adjustments have caused negative pop. use absolute values
-  const percentages = mapValues(
-    demographics,
-    (population: number) =>
-      (demographics.population ? population / Math.abs(demographics.population) : 0) * 100
+  const percentages = getDemographicsPercentages(demographics, demographicsGroups, populationKey);
+  // Only showing hard-coded core metrics here for space / color reasons
+  const rows = DEMOGRAPHIC_FIELDS_ORDER.filter(race => percentages[race] !== undefined).map(
+    (id: typeof DEMOGRAPHIC_FIELDS_ORDER[number]) => (
+      <Row
+        key={id}
+        id={id}
+        percent={percentages[id]}
+        color={demographicsColors[id]}
+        abbreviate={abbreviate}
+      />
+    )
   );
-  const rows = DEMOGRAPHIC_FIELDS_ORDER.filter(
-    race => percentages[race] !== undefined
-  ).map((id: typeof DEMOGRAPHIC_FIELDS_ORDER[number]) => (
-    <Row
-      key={id}
-      id={id}
-      percent={percentages[id]}
-      color={demographicsColors[id]}
-      abbreviate={abbreviate}
-    />
-  ));
   return (
     <Box sx={{ width: "100%", minHeight: "100%" }}>
-      <Styled.table sx={{ margin: "0", width: "100%" }}>
+      <Themed.table sx={{ margin: "0", width: "100%" }}>
         <tbody>{rows}</tbody>
-      </Styled.table>
+      </Themed.table>
       {isMajorityMinority && (
         <Box>
           <Divider sx={{ my: 1, borderColor: "gray.6" }} />

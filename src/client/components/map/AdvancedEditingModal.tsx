@@ -6,13 +6,14 @@ import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import Icon from "../Icon";
 import { GeoLevelInfo, ProjectId } from "../../../shared/entities";
-import { setGeoLevelIndex, showAdvancedEditingModal } from "../../actions/districtDrawing";
+import { setGeoLevelIndex } from "../../actions/districtDrawing";
+import { showAdvancedEditingModal } from "../../actions/projectModals";
 import { projectFetch } from "../../actions/projectData";
 import { patchProject } from "../../api";
 import { State } from "../../reducers";
 import store from "../../store";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   modal: {
     bg: "muted",
     p: 3,
@@ -130,7 +131,7 @@ const AdvancedEditingModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showAdvancedEditingModal
+    showModal: state.projectModals.showAdvancedEditingModal
   };
 }
 

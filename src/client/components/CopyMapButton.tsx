@@ -3,7 +3,7 @@ import { Button, jsx } from "theme-ui";
 import { Wrapper } from "react-aria-menubutton";
 import { style, invertStyles } from "./MenuButton.styles";
 import store from "../store";
-import { showCopyMapModal } from "../actions/districtDrawing";
+import { showCopyMapModal } from "../actions/projectModals";
 
 interface CopyMapButtonProps {
   readonly invert?: boolean;
@@ -16,8 +16,7 @@ const CopyMapButton = (props: CopyMapButtonProps) => {
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light" },
           ...style.menuButton,
-          ...invertStyles(props),
-          ...props
+          ...invertStyles(props)
         }}
         className="copyMap-menu"
         onClick={() => {

@@ -7,7 +7,7 @@ import * as H from "history";
 import Icon from "../components/Icon";
 import SupportMenu from "../components/SupportMenu";
 import OrganizationDropdown from "../components/OrganizationDropdown";
-import { Alert, Styled, Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Alert, Themed, Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
@@ -31,7 +31,7 @@ const logout = () => {
   store.dispatch(resetState());
 };
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     alignItems: "center",
     justifyContent: "space-between",
@@ -170,9 +170,9 @@ const SiteHeader = ({ user }: Props) => {
             {"errors" in resendEmail && (
               <Box sx={{ fontWeight: "body" }}>
                 Error resending email. If this error persists, please contact us at{" "}
-                <Styled.a sx={{ color: "muted" }} href="mailto:support@districtbuilder.org">
+                <Themed.a sx={{ color: "muted" }} href="mailto:support@districtbuilder.org">
                   support@districtbuilder.org
-                </Styled.a>
+                </Themed.a>
                 .
               </Box>
             )}

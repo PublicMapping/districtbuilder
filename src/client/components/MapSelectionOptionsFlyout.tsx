@@ -1,62 +1,87 @@
 /** @jsx jsx */
-import { jsx, Checkbox, Label, Select } from "theme-ui";
+import { jsx, Box, Checkbox, Label, Radio, Heading, ThemeUIStyleObject } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu } from "react-aria-menubutton";
-import { style } from "./MenuButton.styles";
+import { style as menuStyle } from "./MenuButton.styles";
 import store from "../store";
-import { toggleLimitDrawingToWithinCounty, setElectionYear } from "../actions/districtDrawing";
+import {
+  toggleLimitDrawingToWithinCounty,
+  setElectionYear,
+  setPopulationKey
+} from "../actions/projectOptions";
 import Tooltip from "./Tooltip";
 import Icon from "./Icon";
-import { IStaticMetadata } from "../../shared/entities";
+import { IStaticMetadata, GroupTotal } from "../../shared/entities";
 import { ElectionYear } from "../types";
+
+const POPULATION_LABELS: { readonly [key: string]: string } = {
+  population: "All people",
+  VAP: "Voting age population (VAP)",
+  CVAP: "Citizen voting age population (CVAP)"
+};
+
+const style: Record<string, ThemeUIStyleObject> = {
+  button: {
+    outline: "none",
+    display: "inline-block",
+    height: "22px",
+    width: "22px",
+    textAlign: "center",
+    borderRadius: "100px",
+    cursor: "pointer",
+    "&:hover:not([disabled]):not(:active)": {
+      bg: "rgba(89, 89, 89, 0.1)"
+    },
+    "&:focus": {
+      boxShadow: "0 0 0 2px rgb(109 152 186 / 30%)"
+    }
+  },
+  menuItem: {
+    mb: 2
+  },
+  inputLabel: {
+    textTransform: "none",
+    color: "heading",
+    lineHeight: "normal",
+    fontWeight: "medium",
+    "> div": {
+      minWidth: "32px"
+    }
+  }
+};
 
 const MapSelectionOptionsFlyout = ({
   limitSelectionToCounty,
   metadata,
   topGeoLevelName,
-  electionYear
+  electionYear,
+  populationKey
 }: {
   readonly limitSelectionToCounty: boolean;
   readonly metadata?: IStaticMetadata;
   readonly topGeoLevelName?: string;
   readonly electionYear: ElectionYear;
+  readonly populationKey: GroupTotal;
 }) => {
   const votingIds = metadata?.voting?.map(file => file.id) || [];
   const hasMultipleElections =
     votingIds.some(id => id.endsWith("16")) && votingIds.some(id => id.endsWith("20"));
+  const populations =
+    metadata?.demographicsGroups?.flatMap(group =>
+      group.total && Object.keys(POPULATION_LABELS).includes(group.total) ? [group.total] : []
+    ) || [];
+  const hasMultiplePopulationTotals = populations.length > 1;
   return (
     <Wrapper closeOnSelection={false}>
       <Tooltip content="Drawing options">
-        <MenuButton
-          sx={{
-            outline: "none",
-            display: "inline-block",
-            height: "22px",
-            width: "22px",
-            textAlign: "center",
-            borderRadius: "100px",
-            cursor: "pointer",
-            "&:hover:not([disabled]):not(:active)": {
-              bg: "rgba(89, 89, 89, 0.1)"
-            },
-            "&:focus": {
-              boxShadow: "0 0 0 2px rgb(109 152 186 / 30%)"
-            }
-          }}
-        >
+        <MenuButton sx={style.button}>
           <Icon name="cog" />
         </MenuButton>
       </Tooltip>
-      <Menu sx={{ ...style.menu }}>
-        <ul sx={style.menuList}>
-          <li>
-            <Label
-              sx={{
-                textTransform: "none",
-                color: "heading",
-                lineHeight: "1.2",
-                fontWeight: "medium"
-              }}
-            >
+      <Menu sx={{ ...menuStyle.menu, p: 3 }}>
+        <ul sx={menuStyle.menuList}>
+          <li sx={style.menuItem}>
+            <Heading as="h4">Drawing</Heading>
+            <Label sx={style.inputLabel}>
               <Checkbox
                 onChange={() => {
                   store.dispatch(toggleLimitDrawingToWithinCounty());
@@ -67,25 +92,51 @@ const MapSelectionOptionsFlyout = ({
             </Label>
           </li>
           {hasMultipleElections && (
-            <li>
-              <Label
-                htmlFor="election-dropdown"
-                sx={{ display: "inline-block", width: "auto", mb: 0, mr: 2 }}
-              >
-                Election data:
+            <li sx={style.menuItem}>
+              <Heading as="h4">Tooltip</Heading>
+              <legend>Election</legend>
+
+              <Label sx={style.inputLabel}>
+                <Radio
+                  name="map-selection-election-year"
+                  value="16"
+                  checked={electionYear === "16"}
+                  onChange={() => {
+                    store.dispatch(setElectionYear("16"));
+                  }}
+                />
+                Presidential 2016
               </Label>
-              <Select
-                id="election-dropdown"
-                value={electionYear}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  const year = e.currentTarget.value;
-                  (year === "16" || year === "20") && store.dispatch(setElectionYear(year));
-                }}
-                sx={{ width: "150px" }}
-              >
-                <option value={"16"}>Presidential 2016</option>
-                <option value={"20"}>Presidential 2020</option>
-              </Select>
+              <Label sx={style.inputLabel}>
+                <Radio
+                  name="map-selection-election-year"
+                  value="20"
+                  checked={electionYear === "20"}
+                  onChange={() => {
+                    store.dispatch(setElectionYear("20"));
+                  }}
+                />
+                <Box>Presidential 2020</Box>
+              </Label>
+            </li>
+          )}
+          {hasMultiplePopulationTotals && (
+            <li>
+              <Heading as="h4">Districts</Heading>
+              <legend>Population</legend>
+              {populations?.map(key => (
+                <Label sx={style.inputLabel} key={key}>
+                  <Radio
+                    name="map-selection-population"
+                    value={key}
+                    checked={populationKey === key}
+                    onChange={() => {
+                      store.dispatch(setPopulationKey(key));
+                    }}
+                  />
+                  {POPULATION_LABELS[key]}
+                </Label>
+              ))}
             </li>
           )}
         </ul>

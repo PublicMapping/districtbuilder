@@ -3,6 +3,11 @@
 
 Vagrant.require_version ">= 2.2"
 
+unless Vagrant.has_plugin?("vagrant-notify-forwarder")
+  $stderr.puts "\nERROR: vagrant-notify-forwarder not found; please run `vagrant plugin install vagrant-notify-forwarder`"
+  exit(1)
+end
+
 ANSIBLE_VERSION = "2.9.*"
 
 Vagrant.configure(2) do |config|
@@ -12,7 +17,7 @@ Vagrant.configure(2) do |config|
   config.vm.synced_folder "~/.aws", "/home/vagrant/.aws"
 
   config.vm.provider :virtualbox do |vb|
-    vb.memory = 6144
+    vb.memory = 8192
     vb.cpus = 4
   end
 

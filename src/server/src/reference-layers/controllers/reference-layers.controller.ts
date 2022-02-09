@@ -46,7 +46,6 @@ import { ProjectVisibility } from "../../../../shared/constants";
     },
     projectId: {
       type: "string",
-      primary: true,
       field: "id"
     }
   },
@@ -111,6 +110,29 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
   private readonly logger = new Logger(ReferenceLayer.name);
   constructor(public service: ReferenceLayersService, public projectsService: ProjectsService) {}
 
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get("project/:projectId")
+  getProjectReferenceLayers(
+    @ParsedRequest() req: CrudRequest,
+    @Param("projectId") projectId: ProjectId
+  ): Promise<IReferenceLayer[]> {
+    const userId =
+      typeof req.parsed.authPersist.userId === "string" ? req.parsed.authPersist.userId : undefined;
+    return this.service.getProjectReferenceLayers(projectId, userId);
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get(":id/geojson")
+  async getGeojson(
+    @Param("id") id: ReferenceLayerId,
+    @ParsedRequest() req: CrudRequest
+  ): Promise<FeatureCollection> {
+    const refLayer = await this.getOne(id, req);
+    return refLayer.layer;
+  }
+
   @Override()
   @UseGuards(JwtAuthGuard)
   async createOne(
@@ -172,27 +194,5 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
       throw new NotFoundException(`Layer ID ${id} is not a valid UUID`);
     }
     return await this.base.deleteOneBase(req);
-  }
-
-  @UseInterceptors(CrudRequestInterceptor)
-  @UseGuards(OptionalJwtAuthGuard)
-  @Get(":id/geojson")
-  async getGeojson(
-    @Param("id") id: ReferenceLayerId,
-    @ParsedRequest() req: CrudRequest
-  ): Promise<FeatureCollection> {
-    const refLayer = await this.getOne(id, req);
-    return refLayer.layer;
-  }
-
-  @UseInterceptors(CrudRequestInterceptor)
-  @UseGuards(OptionalJwtAuthGuard)
-  @Get("project/:projectId")
-  getProjectReferenceLayers(
-    @ParsedRequest() req: CrudRequest,
-    @Param("projectId") projectId: ProjectId
-  ): Promise<IReferenceLayer[]> {
-    const userId = req.parsed.authPersist.userId;
-    return this.service.getProjectReferenceLayers(projectId, userId);
   }
 }

@@ -13,7 +13,7 @@ import {
   jsx,
   Label,
   Radio,
-  Styled,
+  Themed,
   ThemeUIStyleObject
 } from "theme-ui";
 
@@ -76,7 +76,7 @@ interface InvalidForm extends ProjectForm {
   readonly valid: false;
 }
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     py: 3,
     px: 5,
@@ -217,6 +217,11 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
       fetchTotalPopulation(data.regionConfig).then(population => setTotalPopulation(population));
   }, [data.regionConfig]);
 
+  useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder | New Map";
+  });
+
   return "resource" in createProjectResource ? (
     <Redirect to={`/projects/${createProjectResource.resource.id}`} />
   ) : (
@@ -284,7 +289,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
             )}
             {!("resource" in organization) && (
               <React.Fragment>
-                <Card sx={{ variant: "card.flat" }}>
+                <Card sx={{ variant: "cards.flat" }}>
                   <FormError resource={createProjectResource} />
                   <InputField
                     field="name"
@@ -308,10 +313,9 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                     }}
                   />
                 </Card>
-                <Card sx={{ variant: "card.flat" }}>
+                <Card sx={{ variant: "cards.flat" }}>
                   <SelectField
                     field="regionConfig"
-                    sx={{ width: "1000px" }}
                     label={
                       <Box as="span" sx={style.cardLabel}>
                         State
@@ -320,17 +324,18 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                     description={
                       <Box as="span" sx={style.cardHint}>
                         What state do you want to map? If you don’t see it in the list,{" "}
-                        <Styled.a
+                        <Themed.a
                           href="https://districtbuilder.us1.list-manage.com/subscribe?u=61da999c9897859f1c1fff262&id=70fdf1ae35"
                           target="_blank"
                         >
                           sign up for our mailing list
-                        </Styled.a>{" "}
+                        </Themed.a>{" "}
                         to know when new states are available!
                       </Box>
                     }
                     resource={createProjectResource}
                     selectProps={{
+                      sx: { width: "1000px" },
                       onChange:
                         "resource" in regionConfigs
                           ? (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -358,7 +363,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                 </Card>
                 {data.regionConfig ? (
                   <React.Fragment>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <fieldset sx={style.fieldset}>
                         <Flex sx={{ flexWrap: "wrap" }}>
                           <legend
@@ -490,7 +495,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                         </Flex>
                       </fieldset>
                     </Card>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <Flex sx={{ flexWrap: "wrap" }}>
                         <legend
                           sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}
@@ -529,9 +534,7 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
                       </Flex>
                     </Card>
                   </React.Fragment>
-                ) : (
-                  undefined
-                )}
+                ) : undefined}
                 <Box sx={{ mt: 3, textAlign: "left" }}>
                   <Button
                     type="submit"

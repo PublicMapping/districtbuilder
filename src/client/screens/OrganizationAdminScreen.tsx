@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { connect } from "react-redux";
 import { Link, useParams } from "react-router-dom";
-import { Box, Flex, Heading, jsx } from "theme-ui";
+import { Box, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import { organizationFetch } from "../actions/organization";
 import { organizationProjectsFetch } from "../actions/organizationProjects";
@@ -17,6 +17,7 @@ import { UserState } from "../reducers/user";
 import store from "../store";
 
 import PageNotFoundScreen from "./PageNotFoundScreen";
+import { OrganizationSlug } from "../../shared/entities";
 
 interface StateProps {
   readonly organization: OrganizationState;
@@ -24,7 +25,11 @@ interface StateProps {
   readonly user: UserState;
 }
 
-const style = {
+interface Params {
+  readonly organizationSlug: OrganizationSlug;
+}
+
+const style: Record<string, ThemeUIStyleObject> = {
   main: { width: "100%", mx: 0, flexDirection: "column" },
   header: {
     bg: "gray.0",
@@ -85,10 +90,10 @@ const style = {
   template: {
     flexDirection: "column"
   }
-} as const;
+};
 
 const OrganizationAdminScreen = ({ organization, user, organizationProjects }: StateProps) => {
-  const { organizationSlug } = useParams();
+  const { organizationSlug } = useParams<Params>();
   const templates =
     "resource" in organizationProjects.projectTemplates
       ? organizationProjects.projectTemplates.resource

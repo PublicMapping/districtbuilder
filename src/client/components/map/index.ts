@@ -1,6 +1,5 @@
 import MapboxGL, { MapboxGeoJSONFeature } from "mapbox-gl";
 import { cloneDeep } from "lodash";
-import { join } from "path";
 import { s3ToHttps } from "../../s3";
 import {
   GeoUnitCollection,
@@ -154,7 +153,7 @@ export function getEqualPopulationStops(popThresholdNum: number): ChoroplethStep
 export function getMajorityRaceSplitFill(majorityRace: string, majorityRaceSplit: number): string {
   const fills = getMajorityRaceFills();
   return fills[majorityRace]
-    ? majorityRaceSplit > 0.65
+    ? majorityRaceSplit > 65
       ? fills[majorityRace][0]
       : fills[majorityRace][1]
     : "#ffffff";
@@ -183,19 +182,19 @@ export function getEqualPopulationLabels(popThreshold: number) {
 }
 
 export function getGeolevelLinePaintStyle(geoLevel: string) {
-  const largeGeolevel = {
+  const largeGeolevel: MapboxGL.LinePaint = {
     "line-color": "#000",
     "line-opacity": 1,
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 14, 4.5]
   };
 
-  const mediumGeolevel = {
+  const mediumGeolevel: MapboxGL.LinePaint = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.2, 14, 0.6],
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.75, 14, 2.25]
   };
 
-  const smallGeolevel = {
+  const smallGeolevel: MapboxGL.LinePaint = {
     "line-color": "#000",
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.1, 14, 0.3],
     "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0, 14, 1.5]
@@ -232,7 +231,7 @@ export function generateMapLayers(
 
   map.addSource(GEOLEVELS_SOURCE_ID, {
     type: "vector",
-    tiles: [join(s3ToHttps(path), "tiles/{z}/{x}/{y}.pbf")],
+    tiles: [`${s3ToHttps(path)}tiles/{z}/{x}/{y}.pbf`],
     minzoom: minZoom,
     maxzoom: maxZoom
   });
@@ -261,7 +260,6 @@ export function generateMapLayers(
   );
 
   map.addLayer(
-    // @ts-ignore
     {
       id: DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -271,7 +269,8 @@ export function generateMapLayers(
       paint: {
         "fill-color": {
           property: "compactness",
-          stops: getCompactnessStops()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stops: getCompactnessStops() as unknown as any[][]
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
@@ -281,7 +280,6 @@ export function generateMapLayers(
   );
 
   map.addLayer(
-    // @ts-ignore
     {
       id: DISTRICTS_COMPETITIVENESS_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -292,7 +290,8 @@ export function generateMapLayers(
         "fill-color": {
           property: "pvi",
           type: "interval",
-          stops: getPviSteps()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stops: getPviSteps() as unknown as any[][]
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
@@ -318,7 +317,6 @@ export function generateMapLayers(
   );
 
   map.addLayer(
-    // @ts-ignore
     {
       id: DISTRICTS_EQUAL_POPULATION_CHOROPLETH_LAYER_ID,
       type: "fill",
@@ -329,7 +327,8 @@ export function generateMapLayers(
         "fill-color": {
           property: "percentDeviation",
           type: "interval",
-          stops: getEqualPopulationStops(populationDeviation)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stops: getEqualPopulationStops(populationDeviation) as unknown as any[][]
         },
         "fill-outline-color": "gray",
         "fill-opacity": 0.9
@@ -512,7 +511,6 @@ export function generateMapLayers(
 
   geoLevels.forEach(level => {
     map.addLayer(
-      // @ts-ignore
       {
         id: levelToLineLayerId(level.id),
         type: "line",
@@ -683,7 +681,7 @@ export function setFeaturesSelectedFromGeoUnits(
  * Filters geounits to only those contained within the specified top-level geounit (usually county, but potentially something else such as ward or block group)
  */
 export function filterGeoUnitsByCounty(units: GeoUnits, county: number) {
-  return mapValues(units, function(geoUnitsForLevel) {
+  return mapValues(units, function (geoUnitsForLevel) {
     return new Map([
       ...Array.from(geoUnitsForLevel).filter(geounit => {
         return geounit[1][0] === county;

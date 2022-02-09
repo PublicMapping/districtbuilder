@@ -1,7 +1,7 @@
 import { isThisYear, isToday } from "date-fns";
 import format from "date-fns/format";
 import { FeatureCollection, Feature, Point } from "geojson";
-import { cloneDeep, mapKeys, pickBy } from "lodash";
+import { cloneDeep, mapKeys, mapValues, pick, pickBy } from "lodash";
 import { toast } from "react-toastify";
 
 import {
@@ -14,7 +14,9 @@ import {
   GeoUnitHierarchy,
   NestedArray,
   IStaticMetadata,
-  ReferenceLayerProperties
+  ReferenceLayerProperties,
+  GroupTotal,
+  DemographicsGroup
 } from "../shared/entities";
 
 import { Resource, WriteResource } from "./resource";
@@ -176,6 +178,29 @@ export function isMajorityMinority(f: DistrictGeoJSON): boolean {
   return (
     (f.properties.majorityRace && f.properties.majorityRace !== "white" && f.id !== 0) || false
   );
+}
+
+export function getDemographicsPercentages(
+  demographics: { readonly [id: string]: number },
+  demographicsGroups: readonly DemographicsGroup[],
+  populationKey: GroupTotal
+): { readonly [id: string]: number } {
+  // To handle cases where adjustments have caused negative pop. use absolute values
+  const total = Math.abs(demographics[populationKey]);
+  const group =
+    demographicsGroups.find(group => group.total === populationKey) || demographicsGroups[0];
+  const selectedDemographics = pick(demographics, group.subgroups);
+  const renamedDemographics =
+    populationKey === "population"
+      ? selectedDemographics
+      : mapKeys(selectedDemographics, (val, key) =>
+          // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+          key.slice(populationKey.length + 1).toLowerCase()
+        );
+  const percentages = mapValues(renamedDemographics, (population: number) =>
+    Math.min((total ? population / total : 0) * 100, 100)
+  );
+  return percentages;
 }
 
 /**

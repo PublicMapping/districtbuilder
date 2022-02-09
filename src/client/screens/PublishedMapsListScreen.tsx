@@ -1,7 +1,17 @@
 /** @jsx jsx */
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { Flex, jsx, Spinner, Box, Heading, Text, Label, Select } from "theme-ui";
+import {
+  Flex,
+  jsx,
+  Spinner,
+  Box,
+  Heading,
+  Text,
+  Label,
+  Select,
+  ThemeUIStyleObject
+} from "theme-ui";
 import { IProject, ProjectNest, IRegionConfig, PaginationMetadata } from "../../shared/entities";
 import "../App.css";
 import { State } from "../reducers";
@@ -13,6 +23,8 @@ import {
   globalProjectsSetRegion
 } from "../actions/projects";
 import { UserState } from "../reducers/user";
+import { userFetch } from "../actions/user";
+import { isUserLoggedIn } from "../jwt";
 import FeaturedProjectCard from "../components/FeaturedProjectCard";
 import PaginationFooter from "../components/PaginationFooter";
 import { regionConfigsFetch } from "../actions/regionConfig";
@@ -28,7 +40,7 @@ interface StateProps {
   readonly regionConfigs?: readonly IRegionConfig[];
 }
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   projects: {
     pt: 4,
     pb: 8,
@@ -56,7 +68,7 @@ const style = {
   pagination: {
     cursor: "pointer"
   }
-} as const;
+};
 
 const PublishedMapsListScreen = ({
   globalProjects,
@@ -66,6 +78,7 @@ const PublishedMapsListScreen = ({
   regionConfigs
 }: StateProps) => {
   const [regionCode, setRegionCode] = useQueryParam("region", StringParam);
+  const isLoggedIn = isUserLoggedIn();
 
   useEffect(() => {
     if (regionCode) {
@@ -82,6 +95,15 @@ const PublishedMapsListScreen = ({
   useEffect(() => {
     !regionConfigs && store.dispatch(regionConfigsFetch());
   }, [regionConfigs]);
+
+  useEffect(() => {
+    isLoggedIn && store.dispatch(userFetch());
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder | Community Maps " + (regionCode ? `| ${regionCode}` : "");
+  });
 
   const regionConfigOptions = regionConfigs
     ? [...regionConfigs]
@@ -161,7 +183,7 @@ const PublishedMapsListScreen = ({
             </React.Fragment>
           ) : (
             <Flex sx={{ justifyContent: "center", alignItems: "center", height: "100%" }}>
-              <Spinner variant="spinner.large" />
+              <Spinner variant="styles.spinner.large" />
             </Flex>
           )}
         </Box>

@@ -43,7 +43,7 @@ import {
  * https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/
  */
 const RectangleSelectionTool: ISelectionTool = {
-  enable: function(
+  enable: function (
     map: MapboxGL.Map,
     geoLevelId: string,
     staticMetadata: IStaticMetadata,
@@ -294,7 +294,7 @@ const RectangleSelectionTool: ISelectionTool = {
       store.dispatch(clearHighlightedGeounits());
     }
   },
-  disable: function(map: MapboxGL.Map) {
+  disable: function (map: MapboxGL.Map) {
     map.boxZoom.enable();
     map.dragPan.enable();
     // eslint-disable-next-line

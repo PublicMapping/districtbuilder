@@ -1,11 +1,11 @@
 /** @jsx jsx */
-import { Box, Flex, jsx, Styled, ThemeUIStyleObject, Heading } from "theme-ui";
+import { Box, Flex, jsx, Themed, ThemeUIStyleObject, Heading } from "theme-ui";
 import { getCompactnessStops } from "../../map/index";
 import { EvaluateMetricWithValue, DistrictsGeoJSON } from "../../../types";
 import { getCompactnessDisplay } from "../../ProjectSidebar";
 import { computeRowFill } from "../../../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   table: {
     mx: 0,
     mb: 2,
@@ -70,23 +70,23 @@ const CompactnessMetricDetail = ({
         Average compactness of
         {metric.value ? ` ${Math.floor(metric.value * 100)}%` : " "}
       </Heading>
-      <Styled.table sx={style.table}>
+      <Themed.table sx={style.table}>
         <thead>
-          <Styled.tr>
-            <Styled.th sx={{ ...style.th, ...style.colFirst }}>Number</Styled.th>
-            <Styled.th sx={{ ...style.th, ...style.colLast }}>Compactness</Styled.th>
-          </Styled.tr>
+          <Themed.tr>
+            <Themed.th sx={{ ...style.th, ...style.colFirst }}>Number</Themed.th>
+            <Themed.th sx={{ ...style.th, ...style.colLast }}>Compactness</Themed.th>
+          </Themed.tr>
         </thead>
         <tbody>
           {geojson?.features.map(
             (feature, id) =>
               id > 0 && (
-                <Styled.tr key={id}>
-                  <Styled.td sx={{ ...style.td, ...style.colFirst }}>{id}</Styled.td>
-                  <Styled.td sx={{ ...style.td, ...style.colLast }}>
+                <Themed.tr key={id}>
+                  <Themed.td sx={{ ...style.td, ...style.colFirst }}>{id}</Themed.td>
+                  <Themed.td sx={{ ...style.td, ...style.colLast }}>
                     {feature.properties.compactness ? (
                       <Flex sx={{ alignItems: "center" }}>
-                        <Styled.div
+                        <Themed.div
                           sx={{
                             mr: 2,
                             width: "15px",
@@ -94,18 +94,18 @@ const CompactnessMetricDetail = ({
                             borderRadius: "small",
                             bg: computeRowFill(choroplethStops, feature.properties.compactness)
                           }}
-                        ></Styled.div>
+                        ></Themed.div>
                         <Box>{getCompactnessDisplay(feature.properties)}</Box>
                       </Flex>
                     ) : (
                       <Box sx={style.blankValue}>-</Box>
                     )}
-                  </Styled.td>
-                </Styled.tr>
+                  </Themed.td>
+                </Themed.tr>
               )
           )}
         </tbody>
-      </Styled.table>
+      </Themed.table>
     </Box>
   );
 };

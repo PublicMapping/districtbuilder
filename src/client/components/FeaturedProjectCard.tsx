@@ -1,11 +1,11 @@
 /** @jsx jsx */
-import { Box, Flex, Heading, jsx, Text } from "theme-ui";
+import { Box, Flex, Heading, jsx, Text, ThemeUIStyleObject } from "theme-ui";
 import { useHistory } from "react-router-dom";
 
 import { ProjectNest } from "../../shared/entities";
 import ProjectDistrictsMap from "./map/ProjectDistrictsMap";
 
-const style = {
+const style: Record<string, ThemeUIStyleObject> = {
   featuredProject: {
     flexDirection: "column",
     bg: "#fff",
@@ -21,7 +21,7 @@ const style = {
     borderTopWidth: "1px",
     borderTopStyle: "solid"
   }
-} as const;
+};
 
 const FeaturedProjectCard = ({ project }: { readonly project: ProjectNest }) => {
   const history = useHistory();

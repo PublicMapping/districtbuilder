@@ -9,8 +9,8 @@ interface StateProps {
 
 const PageNotFoundScreen = ({ model }: StateProps) => {
   return (
-    <CenteredContent sx={{ mb: 5 }}>
-      <Card sx={{ variant: "card.floating" }}>
+    <CenteredContent>
+      <Card sx={{ variant: "cards.floating", mb: 5 }}>
         <Heading as="h2" sx={{ fontSize: 4, mb: 20, textAlign: "left" }}>
           Page not found!
         </Heading>

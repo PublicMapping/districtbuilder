@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { Box, jsx, ThemeUIStyleObject } from "theme-ui";
 
 import { IOrganization, IUser } from "../../shared/entities";
-import { showCopyMapModal } from "../actions/districtDrawing";
+import { showCopyMapModal } from "../actions/projectModals";
 import { State } from "../reducers";
 import store from "../store";
 import { AuthModalContent } from "./AuthComponents";
@@ -13,7 +13,7 @@ import ConfirmJoinOrganization from "./ConfirmJoinOrganization";
 import { Resource } from "../resource";
 import { CreateProjectData } from "../../shared/entities";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     display: "flex",
     flexDirection: "column",
@@ -79,7 +79,7 @@ const JoinOrganizationModal = ({
 
 function mapStateToProps(state: State) {
   return {
-    showModal: state.project.showCopyMapModal,
+    showModal: state.projectModals.showCopyMapModal,
     user: state.user
   };
 }

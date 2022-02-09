@@ -24,7 +24,7 @@ import PublishedMapsListScreen from "./screens/PublishedMapsListScreen";
 import { PushReplaceHistory, QueryParamProvider } from "use-query-params";
 import { createBrowserHistory } from "history";
 
-const PrivateRoute = ({ children, ...props }: RouteProps) => {
+const PrivateRoute = ({ children, ...props }: { children: React.ReactNode } & RouteProps) => {
   const savedJWT = getJWT();
   const notLoggedIn = !savedJWT || jwtIsExpired(savedJWT);
   return (

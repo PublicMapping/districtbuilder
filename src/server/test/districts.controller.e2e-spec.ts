@@ -7,6 +7,7 @@ import { IRegionConfig } from "../../shared/entities";
 import { RegionConfig } from "../src/region-configs/entities/region-config.entity";
 import { RegionConfigsService } from "../src/region-configs/services/region-configs.service";
 import { DistrictsModule } from "../src/districts/districts.module";
+import { TopologyService } from "../src/districts/services/topology.service";
 
 describe("DistrictsController", () => {
   let app: INestApplication;
@@ -37,6 +38,7 @@ describe("DistrictsController", () => {
 
     app = moduleRef.createNestApplication();
     await app.init();
+    app.select(DistrictsModule).get(TopologyService, { strict: true }).loadLayers();
   });
 
   afterAll(async () => {

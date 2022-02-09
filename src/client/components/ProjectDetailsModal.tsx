@@ -26,7 +26,7 @@ import MultiMemberForm from "./MultiMemberForm";
 import { patchProject } from "../api";
 import { extractErrors } from "../functions";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   footer: {
     marginTop: 5
   },
@@ -56,24 +56,16 @@ const style: ThemeUIStyleObject = {
     maxWidth: "90vw",
     overflow: "visible"
   },
+  modalBodyContainer: {
+    maxHeight: "calc(100vh - 16rem)",
+    overflow: "auto"
+  },
   customInputContainer: {
     width: "100%",
     mb: 5
   },
   multiMemberContainer: {
-    overflow: "hidden",
-    maxHeight: "calc(100vh - 42rem)",
-    width: "100%",
-    "> div": {
-      overflow: "auto",
-      width: "100%",
-      flex: "0 0 auto",
-      maxHeight: "inherit"
-    },
-    thead: {
-      position: "sticky",
-      top: 0
-    }
+    width: "100%"
   }
 };
 
@@ -198,7 +190,7 @@ const ProjectDetailModal = ({
               }
             }}
           >
-            <Box>
+            <Box sx={style.modalBodyContainer}>
               <Flex sx={{ flexWrap: "wrap" }}>
                 <Box sx={style.customInputContainer}>
                   <FormError resource={projectDetailsResource} />
@@ -245,16 +237,14 @@ const ProjectDetailModal = ({
                   </Label>
                   {formData.isMultiMember ? (
                     <Box sx={style.multiMemberContainer}>
-                      <Box>
-                        <MultiMemberForm
-                          errors={extractErrors(projectDetailsResource, "numberOfMembers")}
-                          totalPopulation={totalPopulation}
-                          numberOfMembers={formData.numberOfMembers}
-                          onChange={numberOfMembers => {
-                            setProjectDetailsResource({ data: { ...formData, numberOfMembers } });
-                          }}
-                        />
-                      </Box>
+                      <MultiMemberForm
+                        errors={extractErrors(projectDetailsResource, "numberOfMembers")}
+                        totalPopulation={totalPopulation}
+                        numberOfMembers={formData.numberOfMembers}
+                        onChange={numberOfMembers => {
+                          setProjectDetailsResource({ data: { ...formData, numberOfMembers } });
+                        }}
+                      />
                     </Box>
                   ) : null}
                 </Box>
@@ -293,7 +283,6 @@ const ProjectDetailModal = ({
                 </Box>
               </Flex>
             </Box>
-
             <Divider />
             <Flex sx={style.footer}>
               <Button

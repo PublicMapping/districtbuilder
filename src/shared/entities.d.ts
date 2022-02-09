@@ -95,6 +95,16 @@ export type DistrictProperties = {
   /* eslint-enable */
 };
 
+export interface ProjectProperties {
+  readonly completed: boolean;
+  readonly creator: Pick<IUser, "id" | "name">;
+  readonly regionConfig: Pick<
+    IRegionConfig,
+    "id" | "name" | "countryCode" | "regionCode" | "s3URI"
+  >;
+  readonly chamber?: IChamber;
+}
+
 export interface IStaticFile {
   readonly id: string;
   readonly fileName: string;
@@ -109,9 +119,10 @@ export interface GeoLevelInfo {
 }
 
 export type GeoLevelHierarchy = readonly GeoLevelInfo[];
+export type GroupTotal = string;
 export interface DemographicsGroup {
   readonly subgroups: readonly string[];
-  readonly total?: string;
+  readonly total?: GroupTotal;
   readonly tooltip?: string;
 }
 

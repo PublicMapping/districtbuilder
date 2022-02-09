@@ -33,10 +33,10 @@ import {
 } from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
-import { setImportFlagsModal } from "../actions/districtDrawing";
+import { setImportFlagsModal } from "../actions/projectModals";
 
 import { createProject, importCsv, fetchTotalPopulation } from "../api";
-import { InputField } from "../components/Field";
+import Field, { InputField } from "../components/Field";
 import Icon from "../components/Icon";
 import ImportFlagsModal from "../components/ImportFlagsModal";
 import { ReactComponent as Logo } from "../media/logos/mark-white.svg";
@@ -173,7 +173,7 @@ const blankForm: ConfigurableForm = {
   populationDeviation: DEFAULT_POPULATION_DEVIATION
 };
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   header: {
     py: 3,
     px: 5,
@@ -385,12 +385,15 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
         setStateAbbrev(stateAbbrev || null);
 
         // Filter to organizations and templates that match the state FIPS code
-        const organizations = destructureResource(user, "organizations") || [];
+        const organizations: readonly IOrganization[] =
+          destructureResource(user, "organizations") || [];
         stateAbbrev &&
           setOrganizationsForImport(
             organizations
               .map((o: IOrganization) => filterProjectTemplates(o, stateAbbrev))
-              .filter((org: IOrganization | undefined) => org !== undefined)
+              .filter(
+                (org: IOrganization | undefined) => org !== undefined
+              ) as readonly IOrganization[]
           );
 
         const regionConfig =
@@ -439,16 +442,22 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
   }, [organization]);
 
   useEffect(() => {
+    //eslint-disable-next-line
+    document.title = "DistrictBuilder | Import Map";
+  });
+
+  useEffect(() => {
     handleFileUpload();
   }, [file, templateData]);
 
   useEffect(() => {
     // Set error if number of districts less than max district ID
-    if (
-      formData.numberOfDistricts !== null &&
-      maxDistrictId !== undefined &&
-      formData.numberOfDistricts < maxDistrictId
-    ) {
+    const selectedDistrict = formData.numberOfDistricts
+      ? formData.numberOfDistricts < maxDistrictId
+      : formData.chamber?.numberOfDistricts
+      ? formData.chamber.numberOfDistricts < maxDistrictId
+      : null;
+    if (maxDistrictId !== undefined && selectedDistrict) {
       setCreateProjectResource({
         data: formData,
         errors: {
@@ -539,7 +548,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
               }
             }}
           >
-            <Card sx={{ variant: "card.flat" }}>
+            <Card sx={{ variant: "cards.flat" }}>
               <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                 Upload file
               </legend>
@@ -584,7 +593,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                     <b>Error: {fileError}</b>
                   ) : (
                     <span>
-                      <Spinner variant="spinner.small" /> Uploading
+                      <Spinner variant="styles.spinner.small" /> Uploading
                     </span>
                   )}
                   <Button sx={{ variant: "buttons.linkStyle" }} onClick={() => resetForm()}>
@@ -612,7 +621,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
             </Card>
             {regionConfig && (
               <React.Fragment>
-                <Card sx={{ variant: "card.flat" }}>
+                <Card sx={{ variant: "cards.flat" }}>
                   <legend sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}>
                     State
                   </legend>
@@ -636,7 +645,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                   ("isPending" in organization && organization.isPending)
                 ) && (
                   <React.Fragment>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <fieldset sx={style.fieldset}>
                         <Flex sx={{ flexWrap: "wrap" }}>
                           <legend
@@ -735,6 +744,11 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                                 }}
                               />
                             </Box>
+                          ) : "errors" in createProjectResource ? (
+                            <Field
+                              field="numberOfDistricts"
+                              resource={createProjectResource}
+                            ></Field>
                           ) : null}
                           <Divider sx={{ width: "100%" }} />
                           <Box>
@@ -770,7 +784,7 @@ const ImportProjectScreen = ({ organization, regionConfigs, user }: StateProps) 
                         </Flex>
                       </fieldset>
                     </Card>
-                    <Card sx={{ variant: "card.flat" }}>
+                    <Card sx={{ variant: "cards.flat" }}>
                       <Flex sx={{ flexWrap: "wrap" }}>
                         <legend
                           sx={{ ...style.cardLabel, ...style.legend, ...{ flex: "0 0 100%" } }}

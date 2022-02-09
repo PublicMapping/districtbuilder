@@ -15,7 +15,7 @@ import store from "../../store";
 import { destructureResource } from "../../functions";
 import { ChangeEvent, useEffect } from "react";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   menu: {
     position: "absolute",
     top: "-1px",

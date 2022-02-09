@@ -21,13 +21,13 @@ import { UndoHistory } from "../reducers/undoRedo";
 
 import { style as menuButtonStyle } from "./MenuButton.styles";
 
-const style: ThemeUIStyleObject = {
+const style: Record<string, ThemeUIStyleObject> = {
   undoRedo: {
     variant: "buttons.icon",
     color: "muted"
   },
   projectHeader: {
-    variant: "header.app",
+    variant: "styles.header.app",
     backgroundColor: "blue.8",
     borderBottom: "1px solid",
     borderColor: "blue.6"
@@ -93,7 +93,7 @@ const ProjectHeader = ({
   readonly isReadOnly: boolean;
 } & StateProps) => (
   <Flex sx={style.projectHeader}>
-    <Flex sx={{ variant: "header.left" }}>
+    <Flex sx={{ variant: "styles.header.left" }}>
       <Link
         to="/"
         sx={{
@@ -107,7 +107,7 @@ const ProjectHeader = ({
       <HeaderDivider />
       {project ? <ProjectName project={project} isReadOnly={isReadOnly} /> : "..."}
     </Flex>
-    <Flex sx={{ variant: "header.right" }}>
+    <Flex sx={{ variant: "styles.header.right" }}>
       {!isReadOnly ? (
         <React.Fragment>
           {map && (

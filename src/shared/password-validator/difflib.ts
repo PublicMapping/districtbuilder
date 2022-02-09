@@ -49,7 +49,7 @@ let Differ,
   _has,
   __indexOf =
     [].indexOf ||
-    function(item) {
+    function (item) {
       for (let i = 0, l = this.length; i < l; i++) {
         if (i in this && this[i] === item) return i;
       }
@@ -58,7 +58,7 @@ let Differ,
 
 (floor = Math.floor), (max = Math.max), (min = Math.min);
 
-_calculateRatio = function(matches, length) {
+_calculateRatio = function (matches, length) {
   if (length) {
     return (2.0 * matches) / length;
   } else {
@@ -66,7 +66,7 @@ _calculateRatio = function(matches, length) {
   }
 };
 
-_arrayCmp = function(a, b) {
+_arrayCmp = function (a, b) {
   let i, la, lb, _i, _ref, _ref1;
   (_ref = [a.length, b.length]), (la = _ref[0]), (lb = _ref[1]);
   for (
@@ -84,11 +84,11 @@ _arrayCmp = function(a, b) {
   return la - lb;
 };
 
-_has = function(obj, key) {
+_has = function (obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key);
 };
 
-_any = function(items) {
+_any = function (items) {
   let item, _i, _len;
   for (_i = 0, _len = items.length; _i < _len; _i++) {
     item = items[_i];
@@ -99,7 +99,7 @@ _any = function(items) {
   return false;
 };
 
-SequenceMatcher = (function() {
+SequenceMatcher = (function () {
   /*
       SequenceMatcher is a flexible class for comparing pairs of sequences of
       any type, so long as the sequence elements are hashable.  The basic
@@ -239,7 +239,7 @@ SequenceMatcher = (function() {
     this.setSeqs(a, b);
   }
 
-  SequenceMatcher.prototype.setSeqs = function(a, b) {
+  SequenceMatcher.prototype.setSeqs = function (a, b) {
     /*
       Set the two sequences to be compared.
 
@@ -252,7 +252,7 @@ SequenceMatcher = (function() {
     return this.setSeq2(b);
   };
 
-  SequenceMatcher.prototype.setSeq1 = function(a) {
+  SequenceMatcher.prototype.setSeq1 = function (a) {
     /*
       Set the first sequence to be compared.
 
@@ -279,7 +279,7 @@ SequenceMatcher = (function() {
     return (this.matchingBlocks = this.opcodes = null);
   };
 
-  SequenceMatcher.prototype.setSeq2 = function(b) {
+  SequenceMatcher.prototype.setSeq2 = function (b) {
     /*
           Set the second sequence to be compared.
 
@@ -308,7 +308,7 @@ SequenceMatcher = (function() {
     return this._chainB();
   };
 
-  SequenceMatcher.prototype._chainB = function() {
+  SequenceMatcher.prototype._chainB = function () {
     let b, b2j, elt, i, idxs, indices, isjunk, junk, n, ntest, popular, _i, _j, _len, _len1, _ref;
     b = this.b;
     this.b2j = b2j = {};
@@ -341,15 +341,15 @@ SequenceMatcher = (function() {
         }
       }
     }
-    this.isbjunk = function(b) {
+    this.isbjunk = function (b) {
       return _has(junk, b);
     };
-    return (this.isbpopular = function(b) {
+    return (this.isbpopular = function (b) {
       return _has(popular, b);
     });
   };
 
-  SequenceMatcher.prototype.findLongestMatch = function(alo, ahi, blo, bhi) {
+  SequenceMatcher.prototype.findLongestMatch = function (alo, ahi, blo, bhi) {
     /*
       Find longest matching block in a[alo...ahi] and b[blo...bhi].
 
@@ -457,7 +457,7 @@ SequenceMatcher = (function() {
     return [besti, bestj, bestsize];
   };
 
-  SequenceMatcher.prototype.getMatchingBlocks = function() {
+  SequenceMatcher.prototype.getMatchingBlocks = function () {
     /*
           Return list of triples describing matching subsequences.
 
@@ -546,7 +546,7 @@ SequenceMatcher = (function() {
     return (this.matchingBlocks = nonAdjacent);
   };
 
-  SequenceMatcher.prototype.getOpcodes = function() {
+  SequenceMatcher.prototype.getOpcodes = function () {
     /*
       Return list of 5-tuples describing how to turn a into b.
 
@@ -600,7 +600,7 @@ SequenceMatcher = (function() {
     return answer;
   };
 
-  SequenceMatcher.prototype.getGroupedOpcodes = function(n) {
+  SequenceMatcher.prototype.getGroupedOpcodes = function (n) {
     let codes, group, groups, i1, i2, j1, j2, nn, tag, _i, _len, _ref, _ref1, _ref2, _ref3;
     if (n == null) {
       n = 3;
@@ -678,7 +678,7 @@ SequenceMatcher = (function() {
     return groups;
   };
 
-  SequenceMatcher.prototype.ratio = function() {
+  SequenceMatcher.prototype.ratio = function () {
     /*
           Return a measure of the sequences' similarity (float in [0,1]).
 
@@ -711,7 +711,7 @@ SequenceMatcher = (function() {
     return _calculateRatio(matches, this.a.length + this.b.length);
   };
 
-  SequenceMatcher.prototype.quickRatio = function() {
+  SequenceMatcher.prototype.quickRatio = function () {
     /*
           Return an upper bound on ratio() relatively quickly.
 
@@ -747,7 +747,7 @@ SequenceMatcher = (function() {
     return _calculateRatio(matches, this.a.length + this.b.length);
   };
 
-  SequenceMatcher.prototype.realQuickRatio = function() {
+  SequenceMatcher.prototype.realQuickRatio = function () {
     /*
           Return an upper bound on ratio() very quickly.
 
@@ -763,7 +763,7 @@ SequenceMatcher = (function() {
   return SequenceMatcher;
 })();
 
-_countLeading = function(line, ch) {
+_countLeading = function (line, ch) {
   /*
       Return number of `ch` characters at the start of `line`.
 
@@ -779,7 +779,7 @@ _countLeading = function(line, ch) {
   return i;
 };
 
-Differ = (function() {
+Differ = (function () {
   /*
       Differ is a class for comparing sequences of lines of text, and
       producing human-readable differences or deltas.  Differ uses
@@ -866,7 +866,7 @@ Differ = (function() {
       */
   }
 
-  Differ.prototype.compare = function(a, b) {
+  Differ.prototype.compare = function (a, b) {
     /*
           Compare two sequences of lines; generate the resulting delta.
 
@@ -927,7 +927,7 @@ Differ = (function() {
     return lines;
   };
 
-  Differ.prototype._dump = function(tag, x, lo, hi) {
+  Differ.prototype._dump = function (tag, x, lo, hi) {
     /*
           Generate comparison results for a same-tagged range.
       */
@@ -940,7 +940,7 @@ Differ = (function() {
     return _results;
   };
 
-  Differ.prototype._plainReplace = function(a, alo, ahi, b, blo, bhi) {
+  Differ.prototype._plainReplace = function (a, alo, ahi, b, blo, bhi) {
     let first, g, line, lines, second, _i, _j, _len, _len1, _ref;
     if (bhi - blo < ahi - alo) {
       first = this._dump("+", b, blo, bhi);
@@ -961,7 +961,7 @@ Differ = (function() {
     return lines;
   };
 
-  Differ.prototype._fancyReplace = function(a, alo, ahi, b, blo, bhi) {
+  Differ.prototype._fancyReplace = function (a, alo, ahi, b, blo, bhi) {
     /*
           When replacing one block of lines with another, search the blocks
           for *similar* lines; the best-matching pair (if any) is used as a
@@ -1121,7 +1121,7 @@ Differ = (function() {
     return lines;
   };
 
-  Differ.prototype._fancyHelper = function(a, alo, ahi, b, blo, bhi) {
+  Differ.prototype._fancyHelper = function (a, alo, ahi, b, blo, bhi) {
     let g;
     g = [];
     if (alo < ahi) {
@@ -1136,7 +1136,7 @@ Differ = (function() {
     return g;
   };
 
-  Differ.prototype._qformat = function(aline, bline, atags, btags) {
+  Differ.prototype._qformat = function (aline, bline, atags, btags) {
     /*
           Format "?" output and deal with leading tabs.
 
@@ -1171,7 +1171,7 @@ Differ = (function() {
   return Differ;
 })();
 
-IS_LINE_JUNK = function(line, pat) {
+IS_LINE_JUNK = function (line, pat) {
   if (pat == null) {
     pat = /^\s*#?\s*$/;
   }
@@ -1191,7 +1191,7 @@ IS_LINE_JUNK = function(line, pat) {
   return pat.test(line);
 };
 
-IS_CHARACTER_JUNK = function(ch, ws) {
+IS_CHARACTER_JUNK = function (ch, ws) {
   if (ws == null) {
     ws = " \t";
   }
@@ -1212,7 +1212,7 @@ IS_CHARACTER_JUNK = function(ch, ws) {
   return __indexOf.call(ws, ch) >= 0;
 };
 
-_formatRangeUnified = function(start, stop) {
+_formatRangeUnified = function (start, stop) {
   /*
       Convert range to the "ed" format'
     */
@@ -1229,7 +1229,7 @@ _formatRangeUnified = function(start, stop) {
   return "" + beginning + "," + length;
 };
 
-unifiedDiff = function(a, b, _arg) {
+unifiedDiff = function (a, b, _arg) {
   let file1Range,
     file2Range,
     first,
@@ -1382,7 +1382,7 @@ unifiedDiff = function(a, b, _arg) {
   return lines;
 };
 
-_formatRangeContext = function(start, stop) {
+_formatRangeContext = function (start, stop) {
   /*
       Convert range to the "ed" format'
     */
@@ -1399,7 +1399,7 @@ _formatRangeContext = function(start, stop) {
   return "" + beginning + "," + (beginning + length - 1);
 };
 
-contextDiff = function(a, b, _arg) {
+contextDiff = function (a, b, _arg) {
   let file1Range,
     file2Range,
     first,
@@ -1529,7 +1529,7 @@ contextDiff = function(a, b, _arg) {
       lines.push("*** " + file1Range + " ****" + lineterm);
       if (
         _any(
-          (function() {
+          (function () {
             let _j, _len1, _ref3, _results;
             _results = [];
             for (_j = 0, _len1 = group.length; _j < _len1; _j++) {
@@ -1565,7 +1565,7 @@ contextDiff = function(a, b, _arg) {
       lines.push("--- " + file2Range + " ----" + lineterm);
       if (
         _any(
-          (function() {
+          (function () {
             let _l, _len3, _ref5, _results;
             _results = [];
             for (_l = 0, _len3 = group.length; _l < _len3; _l++) {
@@ -1602,7 +1602,7 @@ contextDiff = function(a, b, _arg) {
   return lines;
 };
 
-ndiff = function(a, b, linejunk, charjunk) {
+ndiff = function (a, b, linejunk, charjunk) {
   if (charjunk == null) {
     charjunk = IS_CHARACTER_JUNK;
   }
@@ -1639,7 +1639,7 @@ ndiff = function(a, b, linejunk, charjunk) {
   return new Differ(linejunk, charjunk).compare(a, b);
 };
 
-restore = function(delta, which) {
+restore = function (delta, which) {
   /*
       Generate one of the two sequences that generated a delta.
 
