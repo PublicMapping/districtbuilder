@@ -85,11 +85,13 @@ const ProjectHeader = ({
   evaluateMode,
   map,
   project,
+  isArchived,
   isReadOnly,
   undoHistory
 }: {
   readonly map?: MapboxGL.Map;
   readonly project?: IProject;
+  readonly isArchived: boolean;
   readonly isReadOnly: boolean;
 } & StateProps) => (
   <Flex sx={style.projectHeader}>
@@ -130,13 +132,13 @@ const ProjectHeader = ({
           )}
           <ShareMenu invert={true} project={project} />
           <SupportMenu invert={true} project={true} />
-          {project ? <ExportMenu invert={true} project={project} /> : null}
+          {project ? <ExportMenu isArchived={isArchived} invert={true} project={project} /> : null}
           <EvaluateButton evaluateMode={evaluateMode} />
         </React.Fragment>
       ) : (
         <React.Fragment>
           <CopyMapButton invert={true} />
-          {project && <ExportMenu invert={true} project={project} />}
+          {project && <ExportMenu isArchived={isArchived} invert={true} project={project} />}
           <EvaluateButton evaluateMode={evaluateMode} />
         </React.Fragment>
       )}

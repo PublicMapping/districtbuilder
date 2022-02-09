@@ -171,7 +171,7 @@ const ProjectScreen = ({
     </Flex>
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
-      <ProjectHeader map={map} project={project} isReadOnly={isReadOnly} />
+      <ProjectHeader map={map} project={project} isArchived={isArchived} isReadOnly={isReadOnly} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         {!evaluateMode ? (
           <ProjectSidebar
