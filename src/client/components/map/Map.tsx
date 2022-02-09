@@ -586,7 +586,7 @@ const DistrictsMap = ({
           )
         );
         const majorityRace = maxBy(
-          percents.filter(([, val]) => val > 0.5),
+          percents.filter(([, val]) => val > 50),
           ([, val]) => val
         );
         if (!majorityRace) {
@@ -595,7 +595,7 @@ const DistrictsMap = ({
           const whiteSplit =
             feature.properties.demographics.white / feature.properties.demographics.population;
           // eslint-disable-next-line
-          feature.properties.majorityRaceSplit = 1 - whiteSplit;
+          feature.properties.majorityRaceSplit = (1 - whiteSplit) * 100;
         } else {
           // eslint-disable-next-line
           feature.properties.majorityRace = majorityRace[0];

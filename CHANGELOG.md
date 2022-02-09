@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix import performance on larger regions [#1100](https://github.com/PublicMapping/districtbuilder/pull/1100)
 - Only show All, VAP & CVAP options for population choice [#1122](https://github.com/PublicMapping/districtbuilder/pull/1122)
 - Fix hot reloading on environments using Vagrant [#1126](https://github.com/PublicMapping/districtbuilder/pull/1126)
+- Fix incorrect assignment of majority race on majority-minority evaluate screen [#1127](https://github.com/PublicMapping/districtbuilder/pull/1127)
 
 ## [1.13.0] - 2021-11-30
 
