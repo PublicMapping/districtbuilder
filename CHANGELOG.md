@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Stop loading archived topology [#1132](https://github.com/PublicMapping/districtbuilder/pull/1132) 
+
 ### Fixed
 
 ## [1.14.0] - 2022-02-09
