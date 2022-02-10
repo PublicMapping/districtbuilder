@@ -1,0 +1,94 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${DB_DEBUG}" ]]; then
+    set -x
+fi
+
+S3_URIS=(
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/AK/2021-08-13T09:23:10.238Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/AL/2021-08-13T02:30:40.369Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/AR/2021-08-13T06:43:09.147Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/AZ/2021-08-12T21:42:38.860Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/CA/2021-08-13T17:07:33.785Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/CO/2021-10-26T03:41:25.119Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/CT/2021-10-26T00:33:03.521Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/DC/2021-08-13T09:30:57.826Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/DE/2021-08-13T09:33:21.756Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/FL/2021-08-12T23:20:51.764Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/GA/2021-08-13T00:54:52.804Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/HI/2021-08-13T08:14:36.412Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/IA/2021-08-13T07:04:13.080Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/ID/2021-08-12T22:37:52.328Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/IL/2021-08-12T21:17:43.961Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/IN/2021-09-25T22:14:17.196Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/KS/2021-08-13T07:25:22.917Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/KY/2021-08-13T10:53:12.868Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/LA/2021-08-13T06:19:58.665Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/MA/2021-08-26T04:34:52.224Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/MD/2021-10-26T04:11:55.734Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/ME/2021-11-09T05:45:39.150Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/MI/2021-08-12T22:15:23.087Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/MN/2021-08-13T05:36:28.223Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/MO/2021-08-26T06:00:34.143Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/MS/2021-08-16T22:06:02.598Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/MT/2021-08-12T23:47:43.719Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/NC/2021-08-13T02:01:34.979Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/ND/2021-11-09T05:17:57.283Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/NE/2021-08-13T08:11:04.020Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/NH/2021-08-13T08:31:17.998Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/NJ/2021-09-28T15:16:51.806Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/NM/2021-08-13T12:27:10.872Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/NV/2021-10-26T01:02:17.677Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/NY/2021-10-24T19:42:40.981Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/OH/2021-08-13T00:20:02.287Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/OK/2021-08-12T20:02:31.231Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/OR/2021-09-25T21:13:46.552Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/PA/2021-08-13T13:08:34.609Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/PR/2022-01-07T22:22:27.542Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/RI/2021-08-13T08:34:27.788Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/SC/2021-08-13T05:57:28.817Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/SD/2021-08-13T13:20:27.234Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/TN/2021-08-26T07:08:17.785Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/TX/2021-08-13T05:02:45.713Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/UT/2021-08-13T07:56:41.547Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/VA/2021-11-09T06:55:41.244Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/VT/2021-08-13T09:51:55.169Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/WA/2021-10-26T02:40:59.376Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/WI/2021-08-13T01:25:55.432Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/WV/2021-08-16T22:53:12.903Z/"
+    "s3://global-districtbuilder-dev-us-east-1/regions/US/WY/2021-08-13T10:07:40.461Z/"
+);
+
+function usage() {
+    echo -n \
+        "Usage: $(basename "$0")
+Load region configs for all 50 states + DC + PR
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    else
+        # Bring up PostgreSQL and NestJS in a way that respects
+        # configured service health checks.
+        docker-compose \
+            -f docker-compose.yml \
+            up -d database server
+
+        for S3_URI in "${S3_URIS[@]}"; do
+          docker-compose \
+              exec database psql -U districtbuilder districtbuilder -c "
+                INSERT INTO region_config
+                VALUES (
+                  DEFAULT,
+                  '${S3_URI:53:2}',
+                  'US',
+                  '${S3_URI:53:2}',
+                  '$S3_URI'
+                ) ON CONFLICT DO NOTHING"
+        done
+    fi
+fi
