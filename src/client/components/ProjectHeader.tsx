@@ -137,7 +137,7 @@ const ProjectHeader = ({
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <CopyMapButton invert={true} />
+          {!isArchived && <CopyMapButton invert={true} />}
           {project && <ExportMenu isArchived={isArchived} invert={true} project={project} />}
           <EvaluateButton evaluateMode={evaluateMode} />
         </React.Fragment>
