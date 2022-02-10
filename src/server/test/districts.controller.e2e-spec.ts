@@ -16,7 +16,8 @@ describe("DistrictsController", () => {
     name: "Delaware",
     regionCode: "DE",
     countryCode: "US",
-    s3URI: "s3://global-districtbuilder-dev-us-east-1/regions/US/DE/2020-09-09T19:50:10.921Z/"
+    s3URI: "s3://global-districtbuilder-dev-us-east-1/regions/US/DE/2020-09-09T19:50:10.921Z/",
+    archived: false
   } as IRegionConfig;
 
   let regionConfigsService = {
