@@ -36,11 +36,7 @@ import * as _ from "lodash";
 import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
-import {
-  MakeDistrictsErrors,
-  ConvertProjectErrors,
-  CORE_METRIC_FIELDS
-} from "../../../../shared/constants";
+import { MakeDistrictsErrors, CORE_METRIC_FIELDS } from "../../../../shared/constants";
 import {
   DistrictsDefinition,
   ProjectId,
@@ -69,7 +65,6 @@ import { UsersService } from "../../users/services/users.service";
 import { UpdateProjectDto } from "../entities/update-project.dto";
 import { Errors } from "../../../../shared/types";
 import axios from "axios";
-import { CrosswalkService } from "../services/crosswalk.service";
 import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 import { Brackets } from "typeorm";
 import { getDemographicsMetricFields, getVotingMetricFields } from "../../../../shared/functions";
@@ -214,7 +209,6 @@ export class ProjectsController implements CrudController<Project> {
     private readonly organizationService: OrganizationsService,
     private readonly regionConfigService: RegionConfigsService,
     private readonly referenceLayerService: ReferenceLayersService,
-    private readonly crosswalkService: CrosswalkService,
     private readonly chambersService: ChambersService
   ) {}
 
@@ -515,102 +509,6 @@ export class ProjectsController implements CrudController<Project> {
       header: true,
       columns: [`${baseGeoLevel.toUpperCase()}ID`, "DISTRICT"]
     });
-  }
-
-  // Creates a copy of a project in an archived 2010-census region,
-  // with it's districts converted to use a new 2020-census region
-  @UseInterceptors(CrudRequestInterceptor)
-  @UseGuards(JwtAuthGuard)
-  @Post(":id/convert-and-copy")
-  async convertAndCopy(
-    @ParsedRequest() req: CrudRequest,
-    @Param("id") projectId: ProjectId
-  ): Promise<Project> {
-    const project = await this.getProject(req, projectId);
-    const regionCode = project.regionConfig.regionCode;
-    if (!project.regionConfig.archived) {
-      throw new BadRequestException(
-        "The project region must be archived to convert it",
-        ConvertProjectErrors.REGION_NOT_ARCHIVED
-      );
-    }
-    const newRegion = await this.regionConfigService.findOne({
-      where: { archived: false, regionCode }
-    });
-    if (newRegion === undefined || newRegion.archived) {
-      throw new BadRequestException(
-        `There is not an unarchived region for ${regionCode}`,
-        ConvertProjectErrors.NO_ACTIVE_REGION
-      );
-    }
-    const crosswalk = await this.crosswalkService.getCrosswalk(regionCode);
-    if (crosswalk === undefined) {
-      throw new BadRequestException(
-        `There is not an unarchived region for ${regionCode}`,
-        ConvertProjectErrors.NO_ACTIVE_REGION
-      );
-    }
-
-    const archivedTopoProperties = await this.getGeoUnitProperties(project.regionConfig.s3URI);
-    const newGeoUnitTopology = await this.getGeoUnitTopology(newRegion.s3URI);
-
-    const oldBlockToDistricts = Object.fromEntries(
-      this.exportToCsv(archivedTopoProperties, project.districtsDefinition)
-    );
-
-    // CSV export contains every block<->district pair
-    // Crosswalk maps new block -> old in many<->many fashion, specifying percent of old block in new block
-    // Sum district share for each new block and assign block to the district w/ largest share
-
-    // Written in non-functional style for higher perf.
-    const blockSums: { [blockId: string]: { readonly [districtId: number]: number } } = {};
-    // eslint-disable-next-line functional/no-loop-statement
-    for (const [newFips, oldBlocks] of Object.entries(crosswalk)) {
-      // eslint-disable-next-line functional/no-loop-statement
-      for (const { fips, amount } of oldBlocks) {
-        const districtId = oldBlockToDistricts[fips];
-        const districtSums = blockSums[newFips] || {};
-        const sum = (districtSums[districtId] || 0) + amount;
-        // eslint-disable-next-line functional/immutable-data
-        blockSums[newFips] = { ...districtSums, [districtId]: sum };
-      }
-    }
-
-    const blockToDistricts = _.mapValues(blockSums, districtSums => {
-      const [largestDistrict] = _.maxBy(Object.entries(districtSums), ([, sum]) => sum) || [0, 0];
-      return Number(largestDistrict);
-    });
-
-    const districtsDefinition = newGeoUnitTopology.importFromCSV(blockToDistricts);
-
-    const districts = await this.getGeojson({
-      numberOfDistricts: project.numberOfDistricts,
-      user: project.user,
-      regionConfig: newRegion,
-      chamber: project.chamber,
-      districtsDefinition
-    });
-
-    try {
-      return this.service.save({
-        name: `${project.name} (2020)`,
-        regionConfig: newRegion,
-        regionConfigVersion: newRegion.version,
-        chamber: project.chamber,
-        projectTemplate: project.projectTemplate,
-        numberOfDistricts: project.numberOfDistricts,
-        user: req.parsed.authPersist.userId,
-        visibility: project.visibility,
-        lockedDistricts: project.lockedDistricts,
-        populationDeviation: project.populationDeviation,
-        pinnedMetricFields: project.pinnedMetricFields,
-        districtsDefinition,
-        districts
-      });
-    } catch (error) {
-      this.logger.error(`Error creating converted project: ${error}`);
-      throw new InternalServerErrorException();
-    }
   }
 
   @UseInterceptors(CrudRequestInterceptor)
