@@ -1,4 +1,6 @@
-export const archivedCountyNames = {
+import { ArchivedRegionProperties } from "../types";
+
+export const archivedCountyNames: ArchivedRegionProperties = {
   AK: [
     {
       name: "Denali Borough"

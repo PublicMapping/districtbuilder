@@ -2,20 +2,14 @@
 import { jsx, ThemeUIStyleObject, Container, Box } from "theme-ui";
 
 import { IProject, IStaticMetadata, RegionLookupProperties } from "../../../shared/entities";
-import {
-  ArchivedRegionProperties,
-  DistrictsGeoJSON,
-  EvaluateMetricWithValue,
-  ElectionYear,
-  PviBucket
-} from "../../types";
+import { DistrictsGeoJSON, EvaluateMetricWithValue, ElectionYear, PviBucket } from "../../types";
 import store from "../../store";
 import {
   hasMultipleElections,
   isMajorityMinority,
   getPopulationPerRepresentative
 } from "../../functions";
-import { regionPropertiesFetch } from "../../actions/regionConfig";
+import { regionPropertiesFetch, regionPropertiesFetchSuccess } from "../../actions/regionConfig";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
 import { useState, useEffect } from "react";
@@ -73,16 +67,16 @@ const ProjectEvaluateSidebar = ({
     staticMetadata?.geoLevelHierarchy[staticMetadata.geoLevelHierarchy.length - 1].id;
 
   useEffect(() => {
-    if (project && project.regionConfig.regionCode && geoLevel && !isArchived) {
-      store.dispatch(
-        regionPropertiesFetch({ regionConfigId: project.regionConfig.id, geoLevel: geoLevel })
-      );
+    if (project && project.regionConfig.regionCode && geoLevel) {
+      !isArchived
+        ? store.dispatch(
+            regionPropertiesFetch({ regionConfigId: project.regionConfig.id, geoLevel: geoLevel })
+          )
+        : store.dispatch(
+            regionPropertiesFetchSuccess(archivedCountyNames[`${project.regionConfig.regionCode}`])
+          );
     }
   }, [project, geoLevel]);
-
-  const countyNames: ArchivedRegionProperties = {
-    resource: archivedCountyNames[`${project.regionConfig.regionCode}`]
-  };
 
   const numEqualPopDistricts =
     geojson &&
@@ -280,7 +274,7 @@ const ProjectEvaluateSidebar = ({
           setElectionYear={setEvaluateElectionYear}
           geoLevel={geoLevel}
           pviBuckets={pviBuckets}
-          regionProperties={isArchived ? countyNames : regionProperties}
+          regionProperties={regionProperties}
           staticMetadata={staticMetadata}
         />
       ) : (
