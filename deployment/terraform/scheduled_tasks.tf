@@ -1,11 +1,11 @@
 resource "aws_cloudwatch_event_rule" "reindex_task" {
-  name                = "reindex-scheduled-ecs-event-rule"
+  name                = "reindex-scheduled-ecs-event-rule-${var.environment}"
   // Run monthly at 5AM UTC (midnight EST)
   schedule_expression = "cron(0 5 1 * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "reindex_task" {
-  target_id = "reindex-scheduled-ecs-event-rule"
+  target_id = "reindex-scheduled-ecs-event-rule-${var.environment}"
   rule      = aws_cloudwatch_event_rule.reindex_task.name
   arn       = aws_ecs_cluster.app.arn
   role_arn  = aws_iam_role.ecs_task_role.arn
