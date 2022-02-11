@@ -36,7 +36,7 @@ const CompetitivenessChart = ({
           const margin = { top: 0, bottom: 50, left: 0, right: 0 };
 
           const xMax = parent.width - margin.left - margin.right;
-          const yMax = parent.height - margin.top - margin.bottom;
+          const yMax = parent.height ? parent.height - margin.top - margin.bottom : 10;
 
           const leftAxisWidth = 30;
           const leftTickLabelsOffset = 10;
