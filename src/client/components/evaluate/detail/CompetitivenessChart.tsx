@@ -39,6 +39,7 @@ const CompetitivenessChart = ({
           const yMax = parent.height - margin.top - margin.bottom;
 
           const leftAxisWidth = 30;
+          const leftTickLabelsOffset = 10;
 
           // accessors
           const x = (d: PviBucket) => d.name;
@@ -89,6 +90,13 @@ const CompetitivenessChart = ({
                 left={leftAxisWidth}
                 orientation="left"
                 numTicks={yValueMax}
+                labelOffset={leftTickLabelsOffset + 5}
+                tickFormat={yScale.tickFormat(1)}
+                tickLabelProps={() => ({
+                  verticalAnchor: "middle",
+                  dx: -leftTickLabelsOffset,
+                  fontSize: 9
+                })}
               />
             </svg>
           );
