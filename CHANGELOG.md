@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Duplicated maps keep reference layers [#1137](https://github.com/PublicMapping/districtbuilder/pull/1137)
+
 ## [1.14.0] - 2022-02-09
 
 ### Added
