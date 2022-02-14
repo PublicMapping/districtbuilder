@@ -13,11 +13,6 @@ export enum MakeDistrictsErrors {
   INVALID_DEFINITION = "INVALID_DEFINITION"
 }
 
-export enum ConvertProjectErrors {
-  REGION_NOT_ARCHIVED = "REGION_NOT_ARCHIVED",
-  NO_ACTIVE_REGION = "NO_ACTIVE_REGION"
-}
-
 export enum JoinOrganizationErrors {
   USER_NOT_FOUND = "USER_NOT_FOUND",
   ORGANIZATION_NOT_FOUND = "ORGANIZATION_NOT_FOUND"

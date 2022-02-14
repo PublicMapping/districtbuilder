@@ -45,7 +45,6 @@ import { useBeforeunload } from "react-beforeunload";
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import SiteHeader from "../components/SiteHeader";
 import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
-import ConvertMapModal from "../components/ConvertMapModal";
 import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
 import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
@@ -172,7 +171,7 @@ const ProjectScreen = ({
     </Flex>
   ) : (
     <Flex sx={{ height: "100%", flexDirection: "column" }}>
-      <ProjectHeader map={map} project={project} isReadOnly={isReadOnly} />
+      <ProjectHeader map={map} project={project} isArchived={isArchived} isReadOnly={isReadOnly} />
       <Flex sx={{ flex: 1, overflowY: "auto" }}>
         {!evaluateMode ? (
           <ProjectSidebar
@@ -201,6 +200,7 @@ const ProjectScreen = ({
             project={project}
             regionProperties={regionProperties}
             staticMetadata={staticMetadata}
+            isArchived={isArchived}
           />
         )}
         {
@@ -271,7 +271,6 @@ const ProjectScreen = ({
                   />
                 )}
                 <CopyMapModal project={project} />
-                <ConvertMapModal project={project} />
                 <KeyboardShortcutsModal
                   isReadOnly={isReadOnly}
                   evaluateMode={evaluateMode}

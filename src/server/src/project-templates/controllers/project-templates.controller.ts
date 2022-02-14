@@ -24,10 +24,9 @@ import { ProjectTemplatesService } from "../services/project-templates.service";
 import { TopologyService } from "../../districts/services/topology.service";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { getDemographicLabel } from "../../../../shared/functions";
-import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
 
 function getIds(
-  topoLayers: { [s3uri: string]: GeoUnitTopology | GeoUnitProperties },
+  topoLayers: { [s3uri: string]: GeoUnitTopology },
   prop: "demographics" | "voting"
 ): readonly string[] {
   return [
@@ -107,7 +106,7 @@ export class ProjectTemplatesController {
     // available when the user last updated their project
     const projectRows = await this.service.findAdminOrgProjectsWithDistrictProperties(slug);
     const regionURIs = new Set(projectRows.map(row => row.regionS3URI));
-    const topoLayers: { [s3uri: string]: GeoUnitTopology | GeoUnitProperties } = {};
+    const topoLayers: { [s3uri: string]: GeoUnitTopology } = {};
     // eslint-disable-next-line
     for (const [s3uri, layerPromise] of Object.entries(this.topologyService.layers() || {})) {
       const layer = await layerPromise;

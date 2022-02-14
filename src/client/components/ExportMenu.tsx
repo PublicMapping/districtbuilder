@@ -14,11 +14,13 @@ enum UserMenuKeys {
 }
 
 interface ExportProps {
+  readonly isArchived: boolean;
   readonly invert?: boolean;
   readonly project: IProject;
 }
 
 const ExportMenu = (props: ExportProps) => {
+  const isArchived = props.isArchived;
   return (
     <Wrapper
       sx={{ position: "relative", pr: 1 }}
@@ -50,11 +52,13 @@ const ExportMenu = (props: ExportProps) => {
               <Box sx={style.menuListItem}>Export Shapefile</Box>
             </MenuItem>
           </li>
-          <li key={UserMenuKeys.ExportCsv}>
-            <MenuItem value={UserMenuKeys.ExportCsv}>
-              <Box sx={style.menuListItem}>Export CSV</Box>
-            </MenuItem>
-          </li>
+          {!isArchived && (
+            <li key={UserMenuKeys.ExportCsv}>
+              <MenuItem value={UserMenuKeys.ExportCsv}>
+                <Box sx={style.menuListItem}>Export CSV</Box>
+              </MenuItem>
+            </li>
+          )}
           <li key={UserMenuKeys.ExportGeoJson}>
             <MenuItem value={UserMenuKeys.ExportGeoJson}>
               <Box sx={style.menuListItem}>Export GeoJSON</Box>

@@ -10,7 +10,8 @@ import {
   PaginationMetadata,
   IProject,
   IReferenceLayer,
-  ProjectProperties
+  ProjectProperties,
+  RegionLookupProperties
 } from "../shared/entities";
 
 // TODO #179: Move to shared/entities
@@ -110,4 +111,8 @@ export interface ReferenceLayerImportResponse {
 
 export interface ReferenceLayerWithGeojson extends IReferenceLayer {
   readonly layer: ReferenceLayerGeojson;
+}
+
+export interface ArchivedRegionProperties {
+  readonly [key: string]: RegionLookupProperties[];
 }

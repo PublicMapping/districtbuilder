@@ -10,7 +10,6 @@ import { deserialize } from "v8";
 import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
-import { GeoUnitProperties } from "../entities/geo-unit-properties.entity";
 import _ from "lodash";
 import { getObject, s3Options } from "../../common/s3-wrapper";
 
@@ -21,7 +20,7 @@ const BATCH_SIZE = cpus().length * 2;
 // 10 largest states by geojson file size
 const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
 
-type Layer = Promise<GeoUnitTopology | GeoUnitProperties | undefined>;
+type Layer = Promise<GeoUnitTopology | undefined>;
 
 interface Layers {
   [s3URI: string]: null | Layer;
@@ -70,8 +69,9 @@ export class TopologyService {
           }),
           {}
         );
+        const unarchivedRegions = _.filter(regionConfigs, region => !region.archived);
         // Load largest states first
-        const sortedRegions = _.sortBy(regionConfigs, region => [
+        const sortedRegions = _.sortBy(unarchivedRegions, region => [
           !STATE_ORDER.includes(region.regionCode),
           STATE_ORDER.indexOf(region.regionCode)
         ]);
@@ -79,7 +79,7 @@ export class TopologyService {
         // Load a number of regions in parallel, adding another as each one completes
         await asyncLoop(
           sortedRegions.map(region => () => {
-            const promise = this.fetchLayer(region.s3URI, region.archived);
+            const promise = this.fetchLayer(region.s3URI);
             // eslint-disable-next-line functional/immutable-data
             this._layers = { ...this._layers, [region.s3URI]: promise };
             return promise;
@@ -95,7 +95,7 @@ export class TopologyService {
     return this._layers && Object.freeze({ ...this._layers });
   }
 
-  public async get(s3URI: S3URI): Promise<GeoUnitTopology | GeoUnitProperties | undefined> {
+  public async get(s3URI: S3URI): Promise<GeoUnitTopology | undefined> {
     if (!this._layers) {
       return;
     }
@@ -114,11 +114,7 @@ export class TopologyService {
     }
   }
 
-  private async fetchLayer(
-    s3URI: S3URI,
-    archived: boolean,
-    numRetries = 0
-  ): Promise<GeoUnitTopology | GeoUnitProperties | undefined> {
+  private async fetchLayer(s3URI: S3URI, numRetries = 0): Promise<GeoUnitTopology | undefined> {
     try {
       const [topojsonResponse, staticMetadataResponse] = await Promise.all([
         getObject(this.s3, s3Options(s3URI, "topo.buf")),
@@ -141,7 +137,9 @@ export class TopologyService {
         ]);
 
         this.logger.debug(`downloaded data for s3URI ${s3URI}`);
-        const geoUnitTopology = new GeoUnitTopology(
+        // We no longer use archived read-only region topology for exports,
+        // so always return geoUnitTopology
+        return new GeoUnitTopology(
           topology,
           { groups: geoLevelHierarchy.slice().reverse() },
           staticMetadata,
@@ -149,9 +147,6 @@ export class TopologyService {
           voting,
           geoLevels
         );
-        // For archived read-only regions, we get the properties of the topology (which are used for exports)
-        // and let the much larger TopoJSON geometries get garbage collected
-        return archived ? GeoUnitProperties.fromTopology(geoUnitTopology) : geoUnitTopology;
       } else {
         this.logger.error("Invalid TopoJSON or metadata bodies");
       }
@@ -160,7 +155,7 @@ export class TopologyService {
         `Failed to load topology for '${s3URI}' ${numRetries + 1} times, err ${err}`
       );
       if (numRetries < MAX_RETRIES) {
-        return this.fetchLayer(s3URI, archived, numRetries + 1);
+        return this.fetchLayer(s3URI, numRetries + 1);
       } else {
         // Nest spawns multiple processes, so to shutdown the main container process we need to
         // kill all running node instances

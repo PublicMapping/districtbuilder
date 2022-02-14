@@ -9,7 +9,7 @@ import {
   isMajorityMinority,
   getPopulationPerRepresentative
 } from "../../functions";
-import { regionPropertiesFetch } from "../../actions/regionConfig";
+import { regionPropertiesFetch, regionPropertiesFetchSuccess } from "../../actions/regionConfig";
 import ProjectEvaluateMetricDetail from "./ProjectEvaluateMetricDetail";
 import ProjectEvaluateSummary from "./ProjectEvaluateSummary";
 import { useState, useEffect } from "react";
@@ -18,6 +18,7 @@ import { selectEvaluationMetric } from "../../actions/districtDrawing";
 
 import { geoLevelLabelSingular, calculatePVI } from "../../functions";
 import { getPviBuckets, getPviSteps } from "../map";
+import { archivedCountyNames } from "../../constants/archivedCountyNames";
 
 const style: Record<string, ThemeUIStyleObject> = {
   sidebar: {
@@ -36,13 +37,15 @@ const ProjectEvaluateSidebar = ({
   metric,
   project,
   regionProperties,
-  staticMetadata
+  staticMetadata,
+  isArchived
 }: {
   readonly geojson?: DistrictsGeoJSON;
   readonly metric: EvaluateMetricWithValue | undefined;
   readonly project?: IProject;
   readonly regionProperties: Resource<readonly RegionLookupProperties[]>;
   readonly staticMetadata?: IStaticMetadata;
+  readonly isArchived: boolean;
 }) => {
   const [electionYear, setEvaluateElectionYear] = useState<ElectionYear>("combined");
   const popThreshold = project && project.populationDeviation;
@@ -65,9 +68,13 @@ const ProjectEvaluateSidebar = ({
 
   useEffect(() => {
     if (project && project.regionConfig.regionCode && geoLevel) {
-      store.dispatch(
-        regionPropertiesFetch({ regionConfigId: project.regionConfig.id, geoLevel: geoLevel })
-      );
+      !isArchived
+        ? store.dispatch(
+            regionPropertiesFetch({ regionConfigId: project.regionConfig.id, geoLevel: geoLevel })
+          )
+        : store.dispatch(
+            regionPropertiesFetchSuccess(archivedCountyNames[`${project.regionConfig.regionCode}`])
+          );
     }
   }, [project, geoLevel]);
 
