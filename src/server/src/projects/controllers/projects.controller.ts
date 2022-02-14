@@ -71,6 +71,7 @@ import { ProjectTemplatesService } from "../../project-templates/services/projec
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 import { ReferenceLayersService } from "../../reference-layers/services/reference-layers.service";
 import { ChambersService } from "../../chambers/services/chambers";
+import { ReferenceLayer } from "../../reference-layers/entities/reference-layer.entity";
 
 function validateNumberOfMembers(
   dto: CreateProjectDto | UpdateProjectDto,
@@ -232,6 +233,22 @@ export class ProjectsController implements CrudController<Project> {
     };
   }
 
+  private async copyReferenceLayers(project: Project, refLayers: ReferenceLayer[]): Promise<void> {
+    // We need to wait for reference layers to be copied, but then we don't
+    // actually need to do anything with the result
+    await Promise.all(
+      refLayers.map(refLayer =>
+        this.referenceLayerService.create({
+          name: refLayer.name,
+          label_field: refLayer.label_field,
+          layer: refLayer.layer,
+          layer_type: refLayer.layer_type,
+          project
+        })
+      )
+    );
+  }
+
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(CrudRequestInterceptor)
   @Post(":id/duplicate")
@@ -270,9 +287,14 @@ export class ProjectsController implements CrudController<Project> {
     };
 
     try {
-      return await this.service.save(
+      const projectCopy = await this.service.save(
         this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
       );
+      await this.copyReferenceLayers(
+        projectCopy,
+        await this.referenceLayerService.getProjectReferenceLayers(id)
+      );
+      return projectCopy;
     } catch (error) {
       this.logger.error(`Error creating project: ${error}`);
       throw new InternalServerErrorException();
@@ -767,18 +789,7 @@ export class ProjectsController implements CrudController<Project> {
       const project = await this.service.createOne(req, { ...data, districts });
       // Copy any reference layers associated with the template to the project
       if (template) {
-        // eslint-disable-next-line functional/no-loop-statement
-        for (const refLayer of template.referenceLayers) {
-          // We need to wait for reference layers to be copied, but then we don't
-          // actually need to do anything with the result
-          void (await this.referenceLayerService.create({
-            name: refLayer.name,
-            label_field: refLayer.label_field,
-            layer: refLayer.layer,
-            layer_type: refLayer.layer_type,
-            project
-          }));
-        }
+        await this.copyReferenceLayers(project, template.referenceLayers);
       }
       return project;
     } catch (error) {
