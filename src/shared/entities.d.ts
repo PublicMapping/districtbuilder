@@ -327,7 +327,11 @@ export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 export type IntArray = Int8Array | Int16Array | Int32Array;
 export type TypedArray = UintArray | IntArray;
 export type TypedArrays = ReadonlyArray<TypedArray>;
+
 export type RegionLookupProperties = Record<string, unknown>;
+export type TopologyProperties = {
+  readonly [geounit: string]: readonly RegionLookupProperties[];
+};
 
 export type DistrictImportField = "" | "BLOCKID" | "DISTRICT";
 

@@ -67,7 +67,7 @@ export class RegionConfigsController implements CrudController<RegionConfig> {
     if (!geoCollection) {
       throw new InternalServerErrorException();
     }
-    const props = geoCollection.topologyProperties[geounit];
+    const props = (await geoCollection.getTopologyProperties())[geounit];
     return fields ? props.map(f => _.pick(f, fields)) : props;
   }
 
