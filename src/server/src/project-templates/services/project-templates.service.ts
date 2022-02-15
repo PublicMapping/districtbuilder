@@ -11,6 +11,8 @@ import {
   UserId,
   ProjectId
 } from "../../../../shared/entities";
+import { Organization } from "../../organizations/entities/organization.entity";
+import { Project } from "../../projects/entities/project.entity";
 
 export type ProjectExportRow = {
   readonly userId: UserId;
@@ -120,5 +122,32 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
       .orderBy("projects.name")
       .getMany();
     return data;
+  }
+
+  async createFromProject(
+    description: string,
+    details: string,
+    organization: Organization,
+    project: Project
+  ): Promise<ProjectTemplate> {
+    const template = new ProjectTemplate();
+    /* eslint-disable functional/immutable-data */
+    template.description = description;
+    template.details = details;
+    template.organization = organization;
+
+    template.name = project.name;
+    template.numberOfDistricts = project.numberOfDistricts;
+    template.districtsDefinition = project.districtsDefinition;
+    template.numberOfMembers = project.numberOfMembers;
+    template.pinnedMetricFields = project.pinnedMetricFields;
+    template.populationDeviation = project.populationDeviation;
+
+    template.regionConfig = project.regionConfig;
+    template.chamber = project.chamber;
+    /* eslint-enable functional/immutable-data */
+
+    // @ts-ignore
+    return this.repo.save(template);
   }
 }

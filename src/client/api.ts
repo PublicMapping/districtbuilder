@@ -20,7 +20,9 @@ import {
   PlanScoreAPIResponse,
   IReferenceLayer,
   ReferenceLayerId,
-  CreateReferenceLayerData
+  CreateReferenceLayerData,
+  IProjectTemplate,
+  CreateProjectTemplateData
 } from "../shared/entities";
 import {
   DistrictsGeoJSON,
@@ -371,6 +373,18 @@ export async function fetchOrganizationProjects(
       .catch(error => {
         reject(error.response.data);
       });
+  });
+}
+
+export async function createProjectTemplate(
+  slug: OrganizationSlug,
+  data: CreateProjectTemplateData
+): Promise<IProjectTemplate> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/project_templates/${slug}`, data)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.response?.data || error));
   });
 }
 

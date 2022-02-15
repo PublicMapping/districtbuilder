@@ -15,7 +15,8 @@ import {
   userProjectsFetch,
   userProjectsFetchSuccess,
   userProjectsFetchFailure,
-  userProjectsFetchPage
+  userProjectsFetchPage,
+  setTemplateProject
 } from "../actions/projects";
 
 import { IProject, PaginationMetadata } from "../../shared/entities";
@@ -27,6 +28,7 @@ export interface ProjectsState {
   readonly projects: Resource<readonly IProject[]>;
   readonly globalProjects: Resource<readonly IProject[]>;
   readonly deleteProject?: IProject;
+  readonly templateProject?: IProject;
   readonly globalProjectsPagination: PaginationMetadata;
   readonly userProjectsPagination: PaginationMetadata;
   readonly globalProjectsRegion: string | null;
@@ -170,6 +172,11 @@ const projectsReducer: LoopReducer<ProjectsState, Action> = (
       return {
         ...state,
         deleteProject: action.payload
+      };
+    case getType(setTemplateProject):
+      return {
+        ...state,
+        templateProject: action.payload
       };
     case getType(projectArchive):
       return loop(

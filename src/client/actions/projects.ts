@@ -20,6 +20,10 @@ export const setDeleteProject = createAction("Set the id for the delete project 
   IProject | undefined
 >();
 
+export const setTemplateProject = createAction("Set the id for the template project modal")<
+  IProject | undefined
+>();
+
 export const projectArchive = createAction("Archive project")<ProjectId>();
 export const projectArchiveSuccess = createAction("Archive project success")<IProject>();
 export const projectArchiveFailure = createAction("Archive project failure")<string>();

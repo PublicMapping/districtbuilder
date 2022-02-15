@@ -23,6 +23,7 @@ export interface IUser {
   readonly isEmailVerified: boolean;
   readonly hasSeenTour: boolean;
   readonly organizations: readonly OrganizationNest[];
+  readonly adminOrganizations: readonly OrganizationNest[];
 }
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
@@ -276,6 +277,10 @@ export type IProjectTemplate = ProjectTemplateFields & {
 
 export type IProjectTemplateWithProjects = IProjectTemplate & {
   readonly projects: readonly ProjectNest[];
+};
+
+export type CreateProjectTemplateData = Pick<IProjectTemplate, "description" | "details"> & {
+  readonly project: Pick<IProject, "id">;
 };
 
 export type ChamberId = string;
