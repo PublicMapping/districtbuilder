@@ -36,13 +36,15 @@ const CompetitivenessChart = ({
           const margin = { top: 0, bottom: 50, left: 0, right: 0 };
 
           const xMax = parent.width - margin.left - margin.right;
-          const yMax = parent.height - margin.top - margin.bottom;
+          const yMax = parent.height ? parent.height - margin.top - margin.bottom : 10;
 
           const leftAxisWidth = 30;
+          const leftTickLabelsOffset = 10;
 
           // accessors
           const x = (d: PviBucket) => d.name;
           const y = (d: PviBucket) => (d.count ? +d.count : 0);
+          const yValueMax = Math.max(...chartData.map(y));
 
           const xScale = scaleBand({
             range: [leftAxisWidth, xMax],
@@ -54,7 +56,7 @@ const CompetitivenessChart = ({
           const yScale = scaleLinear({
             range: [yMax, 10],
             round: true,
-            domain: [0, Math.max(...chartData.map(y))]
+            domain: [0, yValueMax]
           });
 
           const xPoint = (data: PviBucket) => xScale(x(data));
@@ -87,7 +89,14 @@ const CompetitivenessChart = ({
                 label="# of districts"
                 left={leftAxisWidth}
                 orientation="left"
-                numTicks={4}
+                numTicks={yValueMax}
+                labelOffset={leftTickLabelsOffset + 5}
+                tickFormat={yScale.tickFormat(1)}
+                tickLabelProps={() => ({
+                  verticalAnchor: "middle",
+                  dx: -leftTickLabelsOffset,
+                  fontSize: 9
+                })}
               />
             </svg>
           );
