@@ -2,13 +2,11 @@
 import { Box, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 import MapboxGL from "mapbox-gl";
 import React, { useEffect, useRef, useState } from "react";
-import bbox from "@turf/bbox";
 
-import { BBox2d } from "@turf/helpers/lib/geojson";
-
-import { ProjectNest } from "../../../shared/entities";
+import { IStaticMetadata, ProjectNest } from "../../../shared/entities";
 import { DistrictGeoJSON } from "../../types";
 import { getDistrictColor } from "../../constants/colors";
+import { fetchMemoizedStateBbox } from "../../api";
 
 const style: Record<string, ThemeUIStyleObject> = {
   mapContainer: {
@@ -35,13 +33,20 @@ const ProjectDistrictsMap = ({
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const [bounds, setBounds] = useState<[number, number, number, number] | null>(null);
+  project.regionConfig &&
+    !bounds &&
+    fetchMemoizedStateBbox(project.regionConfig).then((bboxData: IStaticMetadata["bbox"]) => {
+      // Conversion from readonly -> mutable to match Mapbox interface
+      setBounds([...bboxData]);
+    });
 
   // TODO #179 - the districts property can't be defined in the shared/entities.d.ts right now
   // @ts-ignore
   const districts: DistrictsGeoJSON | undefined = project.districts;
 
   useEffect(() => {
-    if (mapRef.current === null) {
+    if (mapRef.current === null || bounds === null) {
       return;
     }
 
@@ -54,7 +59,6 @@ const ProjectDistrictsMap = ({
         feature.properties.color = id === 0 ? "#EDEDED" : getDistrictColor(id);
       });
 
-    const bounds = districts && (bbox(districts) as BBox2d);
     const map = new MapboxGL.Map({
       container: mapRef.current,
       style: {
@@ -90,7 +94,7 @@ const ProjectDistrictsMap = ({
     return () => {
       map.off("load", onLoad);
     };
-  }, [mapRef, districts]);
+  }, [mapRef, districts, bounds]);
 
   return (
     <React.Fragment>
