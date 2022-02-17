@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { saveAs } from "file-saver";
+import memoize from "memoizee";
 
 import {
   CreateProjectData,
@@ -22,7 +23,8 @@ import {
   ReferenceLayerId,
   CreateReferenceLayerData,
   IProjectTemplate,
-  CreateProjectTemplateData
+  CreateProjectTemplateData,
+  IStaticMetadata
 } from "../shared/entities";
 import {
   DistrictsGeoJSON,
@@ -402,6 +404,16 @@ export async function fetchOrganizationFeaturedProjects(
       });
   });
 }
+
+export const fetchMemoizedStateBbox = memoize(
+  async (region: IRegionConfig): Promise<IStaticMetadata["bbox"]> => {
+    const staticMetadata = await fetchStaticMetadata(region.s3URI);
+    return staticMetadata.bbox;
+  },
+  {
+    normalizer: (args: [region: IRegionConfig]) => JSON.stringify(args[0].id)
+  }
+);
 
 export async function exportOrganizationProjectsCsv(slug: OrganizationSlug): Promise<void> {
   return new Promise((resolve, reject) => {
