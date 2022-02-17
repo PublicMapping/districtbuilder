@@ -1,4 +1,4 @@
-import { ProjectVisibility, ReferenceLayerTypes } from "./constants";
+import { ProjectVisibility, ReferenceLayerTypes, ReferenceLayerColors } from "./constants";
 
 export type UserId = string;
 
@@ -181,6 +181,7 @@ export interface IReferenceLayer {
   readonly name: string;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly label_field: string;
+  readonly layer_color: ReferenceLayerColors;
 }
 
 export interface ReferenceLayerProperties {
@@ -253,6 +254,7 @@ export interface CreateReferenceLayerData {
   readonly project: Pick<IProject, "id">;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly label_field?: string;
+  readonly layer_color: ReferenceLayerColors;
 }
 
 export type UpdateProjectData = Pick<
