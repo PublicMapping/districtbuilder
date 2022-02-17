@@ -1,12 +1,15 @@
 /** @jsx jsx */
 import { jsx, Box, IconButton } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
-import { IReferenceLayer } from "../../shared/entities";
+import { IReferenceLayer, ProjectId } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
+import { patchReferenceLayer } from "../api";
+import { showActionFailedToast } from "../functions";
 import Icon from "./Icon";
 import store from "../store";
 import { setDeleteReferenceLayer } from "../actions/projectData";
 import { ReferenceLayerColors } from "../../shared/constants";
+import { projectReferenceLayersFetch } from "../actions/projectData";
 
 enum LayerMenuKeys {
   Delete = "delete"
@@ -14,9 +17,10 @@ enum LayerMenuKeys {
 
 interface FlyoutProps {
   readonly layer: IReferenceLayer;
+  readonly projectId: ProjectId;
 }
 
-const ReferenceLayerFlyout = ({ layer }: FlyoutProps) => {
+const ReferenceLayerFlyout = ({ layer, projectId }: FlyoutProps) => {
   return (
     <Wrapper>
       <MenuButton
@@ -37,7 +41,20 @@ const ReferenceLayerFlyout = ({ layer }: FlyoutProps) => {
               <Box sx={{ ...style.menuListItem, py: 0 }}>
                 {Object.values(ReferenceLayerColors).map((color, i) => {
                   return (
-                    <IconButton key={i} sx={{ borderRadius: 0, p: 0, m: 0.75 }}>
+                    <IconButton
+                      key={i}
+                      sx={{ borderRadius: 0, p: 0, m: 0.75 }}
+                      onClick={() => {
+                        const layerData = {
+                          layer_color: color
+                        };
+                        patchReferenceLayer(layer.id, layerData)
+                          .then(() => {
+                            store.dispatch(projectReferenceLayersFetch(projectId));
+                          })
+                          .catch(showActionFailedToast);
+                      }}
+                    >
                       <svg height="28" width="28">
                         <rect width="100%" height="100%" fill={color} />
                       </svg>

@@ -2,11 +2,11 @@
 import { useState } from "react";
 import { Button, Flex, Box, Heading, jsx, ThemeUIStyleObject, Checkbox, Label } from "theme-ui";
 
-import { IReferenceLayer, ReferenceLayerId } from "../../shared/entities";
+import { IReferenceLayer, ProjectId, ReferenceLayerId } from "../../shared/entities";
 import Icon from "./Icon";
 
 import store from "../store";
-import { ReferenceLayerTypes } from "../../shared/constants";
+import { ReferenceLayerColors, ReferenceLayerTypes } from "../../shared/constants";
 import { toggleReferenceLayer } from "../actions/districtDrawing";
 import { toggleReferenceLayersModal } from "../actions/projectData";
 import ReferenceLayerFlyout from "./ReferenceLayerFlyout";
@@ -50,11 +50,13 @@ const style: Record<string, ThemeUIStyleObject> = {
 const ReferenceLayer = ({
   isReadOnly,
   layer,
-  checked
+  checked,
+  projectId
 }: {
   readonly isReadOnly: boolean;
   readonly layer: IReferenceLayer;
   readonly checked: boolean;
+  readonly projectId: ProjectId;
 }) => (
   <Flex sx={{ alignItems: "center", pb: 1, width: "100%" }}>
     <Box sx={{ display: "inline" }}>
@@ -70,12 +72,12 @@ const ReferenceLayer = ({
     </Box>
     <Icon
       name={layer.layer_type === ReferenceLayerTypes.Point ? "mapPin" : "roundedSquare"}
-      color={layer.layer_type === ReferenceLayerTypes.Point ? "green" : "blue.4"}
+      color={layer.layer_color ? layer.layer_color : ReferenceLayerColors.Green}
     ></Icon>
     <span sx={{ pl: 1 }}>{layer.name}</span>
     {!isReadOnly && (
       <Box sx={{ ml: "auto" }}>
-        <ReferenceLayerFlyout layer={layer} />
+        <ReferenceLayerFlyout layer={layer} projectId={projectId} />
       </Box>
     )}
   </Flex>
@@ -84,11 +86,13 @@ const ReferenceLayer = ({
 const ProjectReferenceLayers = ({
   isReadOnly,
   referenceLayers,
-  showReferenceLayers
+  showReferenceLayers,
+  projectId
 }: {
   readonly isReadOnly: boolean;
   readonly referenceLayers?: readonly IReferenceLayer[];
   readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
+  readonly projectId: ProjectId;
 }) => {
   const [isExpanded, setExpanded] = useState(referenceLayers?.length !== 0);
 
@@ -116,6 +120,7 @@ const ProjectReferenceLayers = ({
                 layer={layer}
                 checked={showReferenceLayers.has(layer.id)}
                 isReadOnly={isReadOnly}
+                projectId={projectId}
               />
             ))
           ) : referenceLayers !== undefined ? (

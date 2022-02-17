@@ -449,11 +449,12 @@ const ProjectSidebar = ({
           </tbody>
         </Themed.table>
       </Box>
-      {!expandedProjectMetrics && (
+      {project && !expandedProjectMetrics && (
         <ProjectReferenceLayers
           isReadOnly={isReadOnly}
           referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
           showReferenceLayers={showReferenceLayers}
+          projectId={project.id}
         />
       )}
     </Flex>

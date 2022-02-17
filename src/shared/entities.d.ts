@@ -190,6 +190,8 @@ export interface ReferenceLayerProperties {
   readonly [id: string]: number | string;
 }
 
+export type UpdateReferenceLayer = Pick<IReferenceLayer, "layer_color">;
+
 export type VotingMetricField = "dem16" | "rep16" | "other16" | "dem20" | "rep20" | "other20";
 
 export type MetricsList = readonly (readonly [string, string])[];
