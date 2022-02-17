@@ -149,7 +149,7 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     } catch (error) {
       if (error instanceof QueryFailedError) {
         throw new BadRequestException(
-          "The following fields are required: name, project, layer_type, layer"
+          "The following fields are required: name, project, layer_type, layer_color, layer"
         );
       } else {
         this.logger.error(`Error creating reference layer: ${error}`);
