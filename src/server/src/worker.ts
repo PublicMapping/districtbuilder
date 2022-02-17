@@ -3,6 +3,8 @@ import length from "@turf/length";
 import polygonToLine from "@turf/polygon-to-line";
 import { Feature, MultiPolygon as GeoJSONMultiPolygon } from "geojson";
 import _, { mapValues } from "lodash";
+import LRU from "lru-cache";
+import os from "os";
 import { expose } from "threads/worker";
 import * as topojson from "topojson-client";
 import {
@@ -42,6 +44,25 @@ type GroupedPolygons = {
 };
 
 type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
+
+// Reserve 80% of total memory for topology data, split amongst each worker
+// Remaining 20% is left available to handle increases in memory when responding to API requests
+const maxCacheSize = Math.ceil((os.totalmem() / os.cpus().length) * 0.8);
+
+const cachedTopology = new LRU<string, Topology>({
+  max: 100,
+  maxSize: maxCacheSize
+});
+
+async function getTopology(regionConfig: IRegionConfig) {
+  const cachedLayer = cachedTopology.get(regionConfig.s3URI);
+  if (cachedLayer) {
+    return cachedLayer;
+  }
+  const layer = await getTopologyFromDisk(regionConfig);
+  cachedTopology.set(regionConfig.s3URI, layer);
+  return layer;
+}
 
 // Groups a topology into a hierarchy of geounits corresponding to a geo unit definition structure.
 // Note: this function, along with getNodeForHierarchy are copy-pasted directly (w/rename) from
@@ -217,7 +238,7 @@ async function merge({
   demographics,
   voting
 }: MergeArgs): Promise<DistrictsGeoJSON | null> {
-  const topology = await getTopologyFromDisk(regionConfig);
+  const topology = await getTopology(regionConfig);
   const geoLevelIds = staticMetadata.geoLevelHierarchy.map(level => level.id);
   const definition = { groups: geoLevelIds.slice().reverse() };
   const hierarchy = group(topology, definition);
@@ -318,7 +339,7 @@ async function importFromCSV(
     readonly [block: string]: number;
   }
 ): Promise<DistrictsDefinition> {
-  const topology = await getTopologyFromDisk(regionConfig);
+  const topology = await getTopology(regionConfig);
   const baseGeoLevel = staticMetadata.geoLevelHierarchy[0].id;
   const baseGeoUnitProperties = (await getTopologyProperties(regionConfig))[baseGeoLevel];
 
@@ -351,7 +372,7 @@ async function exportToCSV(
   regionConfig: IRegionConfig,
   districtsDefinition: DistrictsDefinition
 ): Promise<[string, number][]> {
-  const topology = await getTopologyFromDisk(regionConfig);
+  const topology = await getTopology(regionConfig);
   const baseGeoLevel = staticMetadata.geoLevelHierarchy[0].id;
   const baseGeoUnitProperties = (await getTopologyProperties(regionConfig))[baseGeoLevel];
 
@@ -385,7 +406,7 @@ async function exportToCSV(
 }
 
 async function getTopologyProperties(regionConfig: IRegionConfig): Promise<TopologyProperties> {
-  const topology = await getTopologyFromDisk(regionConfig);
+  const topology = await getTopology(regionConfig);
   return mapValues(topology.objects, collection =>
     collection.type === "GeometryCollection"
       ? collection.geometries.map(feature => feature.properties || {})
