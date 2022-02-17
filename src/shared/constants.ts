@@ -54,6 +54,15 @@ export enum ReferenceLayerTypes {
   Point = "POINT"
 }
 
+export enum ReferenceLayerColors {
+  Green = "#17c42f",
+  Orange = "#f3ad37",
+  Purple = "#7549f6",
+  Blue = "#0018ff",
+  Pink = "#eaa0bd",
+  Red = "#f62756"
+}
+
 export const DEFAULT_POPULATION_DEVIATION = 5;
 
 export const DEFAULT_PINNED_METRIC_FIELDS = [
