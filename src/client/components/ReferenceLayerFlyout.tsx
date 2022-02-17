@@ -18,11 +18,7 @@ interface FlyoutProps {
 
 const ReferenceLayerFlyout = ({ layer }: FlyoutProps) => {
   return (
-    <Wrapper
-      onSelection={() => {
-        store.dispatch(setDeleteReferenceLayer(layer));
-      }}
-    >
+    <Wrapper>
       <MenuButton
         sx={{
           ...{ variant: "buttons.ghost", fontWeight: "light", "& > svg": { m: "0 !important" } },
@@ -54,7 +50,12 @@ const ReferenceLayerFlyout = ({ layer }: FlyoutProps) => {
           <hr style={{ opacity: 0.35 }} />
           <li key={LayerMenuKeys.Delete}>
             <MenuItem value={LayerMenuKeys.Delete}>
-              <Box sx={style.menuListItem}>Remove from map</Box>
+              <Box
+                onClick={() => store.dispatch(setDeleteReferenceLayer(layer))}
+                sx={{ ...style.menuListItem, color: "#F17960" }}
+              >
+                Remove from map
+              </Box>
             </MenuItem>
           </li>
         </ul>
