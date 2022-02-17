@@ -31,6 +31,7 @@ import {
   TypedArrays
 } from "../../shared/entities";
 import { getAllBaseIndices, getDemographics, getVoting } from "../../shared/functions";
+import { NUM_WORKERS } from "./common/constants";
 import { getTopologyFromDisk } from "./common/functions";
 import { DistrictsGeoJSON } from "./projects/entities/project.entity";
 
@@ -46,8 +47,8 @@ type GroupedPolygons = {
 type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 
 // Reserve 80% of total memory for topology data, split amongst each worker
-// Remaining 20% is left available to handle increases in memory when responding to API requests
-const maxCacheSize = Math.ceil((os.totalmem() / os.cpus().length) * 0.8);
+// Remaining 20% is left available to the framework / handling requests
+const maxCacheSize = Math.ceil((os.totalmem() / NUM_WORKERS) * 0.8);
 
 const cachedTopology = new LRU<string, Topology>({
   max: 100,

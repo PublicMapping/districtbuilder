@@ -63,6 +63,6 @@ export class GeoUnitTopology {
   }
 
   async getTopologyProperties(): Promise<TopologyProperties> {
-    return getTopologyProperties(this.regionConfig);
+    return getTopologyProperties(this.regionConfig, this.staticMetadata);
   }
 }
