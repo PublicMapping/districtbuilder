@@ -4,6 +4,7 @@ import polygonToLine from "@turf/polygon-to-line";
 import { Feature, MultiPolygon as GeoJSONMultiPolygon } from "geojson";
 import _, { mapValues } from "lodash";
 import LRU from "lru-cache";
+import sizeof from "object-sizeof";
 import os from "os";
 import { expose } from "threads/worker";
 import * as topojson from "topojson-client";
@@ -52,7 +53,31 @@ const maxCacheSize = Math.ceil((os.totalmem() / NUM_WORKERS) * 0.8);
 
 const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarchy[]]>({
   max: 100,
-  maxSize: maxCacheSize
+  maxSize: maxCacheSize,
+  sizeCalculation: ([topology]: [Topology, unknown]) => {
+    const numFeatures = Object.values(topology.objects)
+      .map(gc => (gc.type === "GeometryCollection" ? gc.geometries.length : 0))
+      .reduce((sum, length) => sum + length, 0);
+    // Multiples size of first feature by number of features for each collection
+    // Feature properties are consistent in each geolevel, so this should be accurate
+    const featureSize = Object.values(topology.objects)
+      .map(gc =>
+        gc.type === "GeometryCollection"
+          ? gc.geometries.length * sizeof(gc.geometries[0].properties)
+          : 0
+      )
+      .reduce((sum, size) => sum + size, 0);
+    // Getting the accurate byte size of 'arcs' is slow bc it is very large
+    // Using a heuristic here takes this from 1s to 10ms
+    const sliceSize = Math.min(1000, topology.arcs.length);
+    const avgArcSize = sizeof(topology.arcs.slice(0, sliceSize)) / sliceSize;
+    const arcSize = avgArcSize * topology.arcs.length;
+    // Hierarchy size:
+    // 1 node per feature, each node has 1 geom pointer (8 bytes) + 1 array (12 bytes)
+    //  Each node is pointed to by its parent node (8 bytes)
+    const hierarchySize = numFeatures * 28;
+    return featureSize + arcSize + hierarchySize;
+  }
 });
 
 async function getTopology(
