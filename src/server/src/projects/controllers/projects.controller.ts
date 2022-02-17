@@ -213,13 +213,12 @@ export class ProjectsController implements CrudController<Project> {
 
   private formatCreateProjectDto(
     dto: CreateProjectDto,
-    geoCollection: GeoUnitTopology,
+    districtsLength: number,
     regionConfig: RegionConfig,
     req: CrudRequest
   ) {
     // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
-    const districtsDefinition =
-      dto.districtsDefinition || new Array(geoCollection.districtsDefLength).fill(0);
+    const districtsDefinition = dto.districtsDefinition || new Array(districtsLength).fill(0);
     const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
     const numberOfMembers = dto.numberOfMembers || new Array(dto.numberOfDistricts).fill(1);
     return {
@@ -255,13 +254,6 @@ export class ProjectsController implements CrudController<Project> {
     const userId =
       typeof req.parsed.authPersist.userId === "string" ? req.parsed.authPersist.userId : undefined;
     const project = await this.getProjectWithDistricts(id, userId);
-    const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
-    if (!geoCollection) {
-      throw new NotFoundException(
-        `Topology ${project.regionConfig.s3URI} not found`,
-        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
-      );
-    }
     const user = await this.usersService.findOne(userId);
     if (!user) {
       throw new InternalServerErrorException(`User not found for authenticated user id ${userId}`);
@@ -287,7 +279,7 @@ export class ProjectsController implements CrudController<Project> {
 
     try {
       const projectCopy = await this.service.save(
-        this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
+        this.formatCreateProjectDto(dto, dto.districtsDefinition.length, project.regionConfig, req)
       );
       await this.copyReferenceLayers(
         projectCopy,
@@ -719,7 +711,12 @@ export class ProjectsController implements CrudController<Project> {
       throw new InternalServerErrorException();
     }
 
-    const data = this.formatCreateProjectDto(formdata, geoCollection, regionConfig, req);
+    const data = this.formatCreateProjectDto(
+      formdata,
+      geoCollection.districtsDefLength,
+      regionConfig,
+      req
+    );
     const districts = await this.getGeojson({
       numberOfDistricts: formdata.numberOfDistricts,
       districtsDefinition: data.districtsDefinition,
