@@ -29,7 +29,7 @@ const ReferenceLayerFlyout = ({ layer }: FlyoutProps) => {
       >
         <Icon name="ellipsis" />
       </MenuButton>
-      <Menu sx={{ ...style.menu }}>
+      <Menu sx={{ ...style.menu, mt: -150 }}>
         <ul sx={style.menuList}>
           <li key={"color-select"}>
             <MenuItem value="color-select">
