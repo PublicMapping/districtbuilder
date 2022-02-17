@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Add modal to allow organization admins to create templates from projects [#1107](https://github.com/PublicMapping/districtbuilder/pull/1107)
 
 ### Changed
@@ -16,11 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change formatting of the PVI chart y-axis [#1136](https://github.com/PublicMapping/districtbuilder/pull/1136)
 
 ### Fixed
- - parameterize REINDEX rules so both staging and prod can exist [#1130](https://github.com/PublicMapping/districtbuilder/pull/1130)
 
+- parameterize REINDEX rules so both staging and prod can exist [#1130](https://github.com/PublicMapping/districtbuilder/pull/1130)
 - Duplicated maps keep reference layers [#1137](https://github.com/PublicMapping/districtbuilder/pull/1137)
-
 - Fix bounds for AK mini-map [#1145](https://github.com/PublicMapping/districtbuilder/pull/1145)
+- Fix TopologyService health check[#1148](https://github.com/PublicMapping/districtbuilder/pull/1148)
 
 ## [1.14.0] - 2022-02-09
 

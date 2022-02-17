@@ -59,7 +59,7 @@ export class TopologyService {
   constructor(@InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>) {}
 
   public loadLayers() {
-    void this.repo.find().then(regionConfigs => {
+    void this.repo.find({ archived: false }).then(regionConfigs => {
       const getLayers = async () => {
         // eslint-disable-next-line functional/immutable-data
         this._layers = regionConfigs.reduce(
@@ -69,9 +69,8 @@ export class TopologyService {
           }),
           {}
         );
-        const unarchivedRegions = _.filter(regionConfigs, region => !region.archived);
         // Load largest states first
-        const sortedRegions = _.sortBy(unarchivedRegions, region => [
+        const sortedRegions = _.sortBy(regionConfigs, region => [
           !STATE_ORDER.includes(region.regionCode),
           STATE_ORDER.indexOf(region.regionCode)
         ]);
