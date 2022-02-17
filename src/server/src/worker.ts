@@ -50,19 +50,25 @@ type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 // Remaining 20% is left available to the framework / handling requests
 const maxCacheSize = Math.ceil((os.totalmem() / NUM_WORKERS) * 0.8);
 
-const cachedTopology = new LRU<string, Topology>({
+const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarchy[]]>({
   max: 100,
   maxSize: maxCacheSize
 });
 
-async function getTopology(regionConfig: IRegionConfig) {
-  const cachedLayer = cachedTopology.get(regionConfig.s3URI);
-  if (cachedLayer) {
-    return cachedLayer;
+async function getTopology(
+  regionConfig: IRegionConfig,
+  staticMetadata: IStaticMetadata
+): Promise<[Topology, readonly GeoUnitPolygonHierarchy[]]> {
+  const cachedData = cachedTopology.get(regionConfig.s3URI);
+  if (cachedData) {
+    return cachedData;
   }
-  const layer = await getTopologyFromDisk(regionConfig);
-  cachedTopology.set(regionConfig.s3URI, layer);
-  return layer;
+  const topology = await getTopologyFromDisk(regionConfig);
+  const geoLevelIds = staticMetadata.geoLevelHierarchy.map(level => level.id);
+  const definition = { groups: geoLevelIds.slice().reverse() };
+  const hierarchy = group(topology, definition);
+  cachedTopology.set(regionConfig.s3URI, [topology, hierarchy]);
+  return [topology, hierarchy];
 }
 
 // Groups a topology into a hierarchy of geounits corresponding to a geo unit definition structure.
@@ -239,10 +245,7 @@ async function merge({
   demographics,
   voting
 }: MergeArgs): Promise<DistrictsGeoJSON | null> {
-  const topology = await getTopology(regionConfig);
-  const geoLevelIds = staticMetadata.geoLevelHierarchy.map(level => level.id);
-  const definition = { groups: geoLevelIds.slice().reverse() };
-  const hierarchy = group(topology, definition);
+  const [topology, hierarchy] = await getTopology(regionConfig, staticMetadata);
 
   // mutableDistrictGeoms contains the individual geometries prior to being merged
   // indexed by district id then by geolevel index
@@ -340,9 +343,11 @@ async function importFromCSV(
     readonly [block: string]: number;
   }
 ): Promise<DistrictsDefinition> {
-  const topology = await getTopology(regionConfig);
+  const [topology] = await getTopology(regionConfig, staticMetadata);
   const baseGeoLevel = staticMetadata.geoLevelHierarchy[0].id;
-  const baseGeoUnitProperties = (await getTopologyProperties(regionConfig))[baseGeoLevel];
+  const baseGeoUnitProperties = (await getTopologyProperties(regionConfig, staticMetadata))[
+    baseGeoLevel
+  ];
 
   // The geounit hierarchy and district definition have the same structure (except the
   // hierarchy always goes out to the base geounit level), so we use it as a starting point
@@ -373,9 +378,11 @@ async function exportToCSV(
   regionConfig: IRegionConfig,
   districtsDefinition: DistrictsDefinition
 ): Promise<[string, number][]> {
-  const topology = await getTopology(regionConfig);
+  const [topology] = await getTopology(regionConfig, staticMetadata);
   const baseGeoLevel = staticMetadata.geoLevelHierarchy[0].id;
-  const baseGeoUnitProperties = (await getTopologyProperties(regionConfig))[baseGeoLevel];
+  const baseGeoUnitProperties = (await getTopologyProperties(regionConfig, staticMetadata))[
+    baseGeoLevel
+  ];
 
   // First column is the base geounit id, second column is the district id
   const mutableCsvRows: [string, number][] = [];
@@ -406,8 +413,11 @@ async function exportToCSV(
   return mutableCsvRows;
 }
 
-async function getTopologyProperties(regionConfig: IRegionConfig): Promise<TopologyProperties> {
-  const topology = await getTopology(regionConfig);
+async function getTopologyProperties(
+  regionConfig: IRegionConfig,
+  staticMetadata: IStaticMetadata
+): Promise<TopologyProperties> {
+  const [topology] = await getTopology(regionConfig, staticMetadata);
   return mapValues(topology.objects, collection =>
     collection.type === "GeometryCollection"
       ? collection.geometries.map(feature => feature.properties || {})
