@@ -58,14 +58,18 @@ const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarc
     const numFeatures = Object.values(topology.objects)
       .map(gc => (gc.type === "GeometryCollection" ? gc.geometries.length : 0))
       .reduce((sum, length) => sum + length, 0);
-    // Multiples size of first feature by number of features for each collection
-    // Feature properties are consistent in each geolevel, so this should be accurate
+    // Multiples size of avg feature by number of features for each collection
     const featureSize = Object.values(topology.objects)
-      .map(gc =>
-        gc.type === "GeometryCollection"
-          ? gc.geometries.length * sizeof(gc.geometries[0].properties)
-          : 0
-      )
+      .map(gc => {
+        if (gc.type !== "GeometryCollection") {
+          return 0;
+        }
+        // hopefully the first chunk of geometries is representative of all of them
+        // properties should be similar on each, but arcs is variable
+        const sliceSize = Math.min(1000, gc.geometries.length);
+        const avgFeatureSize = sizeof(gc.geometries.slice(0, sliceSize)) / sliceSize;
+        return gc.geometries.length * avgFeatureSize;
+      })
       .reduce((sum, size) => sum + size, 0);
     // Getting the accurate byte size of 'arcs' is slow bc it is very large
     // Using a heuristic here takes this from 1s to 10ms
@@ -73,9 +77,9 @@ const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarc
     const avgArcSize = sizeof(topology.arcs.slice(0, sliceSize)) / sliceSize;
     const arcSize = avgArcSize * topology.arcs.length;
     // Hierarchy size:
-    // 1 node per feature, each node has 1 geom pointer (8 bytes) + 1 array (12 bytes)
+    // 1 node per feature, each node has 1 geom pointer (8 bytes) + 1 array (16 bytes)
     //  Each node is pointed to by its parent node (8 bytes)
-    const hierarchySize = numFeatures * 28;
+    const hierarchySize = numFeatures * 32;
     return featureSize + arcSize + hierarchySize;
   }
 });
