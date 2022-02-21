@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Stop loading archived topology [#1132](https://github.com/PublicMapping/districtbuilder/pull/1132)
 - Change formatting of the PVI chart y-axis [#1136](https://github.com/PublicMapping/districtbuilder/pull/1136)
+- Refactor backend to use workers and improve performance [#1149](https://github.com/PublicMapping/districtbuilder/pull/1149)
 
 ### Fixed
 

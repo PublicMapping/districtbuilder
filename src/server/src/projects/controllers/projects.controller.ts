@@ -41,7 +41,6 @@ import {
   DistrictsDefinition,
   ProjectId,
   PublicUserProperties,
-  GeoUnitHierarchy,
   UserId,
   ProjectTemplateId,
   IUser,
@@ -214,13 +213,12 @@ export class ProjectsController implements CrudController<Project> {
 
   private formatCreateProjectDto(
     dto: CreateProjectDto,
-    geoCollection: GeoUnitTopology,
+    districtsLength: number,
     regionConfig: RegionConfig,
     req: CrudRequest
   ) {
     // Districts definition is optional. Use it if supplied, otherwise use all-unassigned.
-    const districtsDefinition =
-      dto.districtsDefinition || new Array(geoCollection.hierarchy.length).fill(0);
+    const districtsDefinition = dto.districtsDefinition || new Array(districtsLength).fill(0);
     const lockedDistricts = new Array(dto.numberOfDistricts).fill(false);
     const numberOfMembers = dto.numberOfMembers || new Array(dto.numberOfDistricts).fill(1);
     return {
@@ -256,13 +254,6 @@ export class ProjectsController implements CrudController<Project> {
     const userId =
       typeof req.parsed.authPersist.userId === "string" ? req.parsed.authPersist.userId : undefined;
     const project = await this.getProjectWithDistricts(id, userId);
-    const geoCollection = await this.topologyService.get(project.regionConfig.s3URI);
-    if (!geoCollection) {
-      throw new NotFoundException(
-        `Topology ${project.regionConfig.s3URI} not found`,
-        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
-      );
-    }
     const user = await this.usersService.findOne(userId);
     if (!user) {
       throw new InternalServerErrorException(`User not found for authenticated user id ${userId}`);
@@ -288,7 +279,7 @@ export class ProjectsController implements CrudController<Project> {
 
     try {
       const projectCopy = await this.service.save(
-        this.formatCreateProjectDto(dto, geoCollection, project.regionConfig, req)
+        this.formatCreateProjectDto(dto, dto.districtsDefinition.length, project.regionConfig, req)
       );
       await this.copyReferenceLayers(
         projectCopy,
@@ -353,18 +344,6 @@ export class ProjectsController implements CrudController<Project> {
 
   // Helper for obtaining a topology for a given S3 URI, throws exception if not found
   async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
-    const geoCollection = await this.getGeoUnitProperties(s3URI);
-    if (!("topology" in geoCollection)) {
-      throw new NotFoundException(
-        `Topology ${s3URI} is archived`,
-        MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
-      );
-    }
-    return geoCollection;
-  }
-
-  // Helper for obtaining a topology or props for a given S3 URI, throws exception if not found
-  async getGeoUnitProperties(s3URI: string): Promise<GeoUnitTopology> {
     const geoCollection = await this.topologyService.get(s3URI);
     if (!geoCollection) {
       throw new NotFoundException(
@@ -389,7 +368,7 @@ export class ProjectsController implements CrudController<Project> {
     readonly regionConfig: IRegionConfig;
   }): Promise<DistrictsGeoJSON> {
     const geoCollection = await this.getGeoUnitTopology(regionConfig.s3URI);
-    const geojson = geoCollection.merge({
+    const geojson = await geoCollection.merge({
       districtsDefinition,
       numberOfDistricts,
       user,
@@ -469,50 +448,6 @@ export class ProjectsController implements CrudController<Project> {
     await convert(formattedGeojson, response, { layer: "districts" });
   }
 
-  exportToCsv(
-    geoCollection: GeoUnitTopology,
-    districtsDefinition: DistrictsDefinition
-  ): [string, number][] {
-    const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
-
-    // First column is the base geounit id, second column is the district id
-    const mutableCsvRows: [string, number][] = [];
-
-    // The geounit hierarchy and district definition have the same structure (except the
-    // hierarchy always goes out to the base geounit level). Walk them both at the same time
-    // and collect the information needed for the CSV (base geounit id and district id).
-    const accumulateCsvRows = (
-      defnSubset: number | GeoUnitHierarchy,
-      hierarchySubset: GeoUnitHierarchy
-    ) => {
-      hierarchySubset.forEach((hierarchyNumOrArray, idx) => {
-        const districtOrArray = typeof defnSubset === "number" ? defnSubset : defnSubset[idx];
-        if (typeof districtOrArray === "number" && typeof hierarchyNumOrArray === "number") {
-          // The numbers found in the hierarchy are the base geounit indices of the topology.
-          // Access this item in the topology to find it's base geounit id.
-          const props: any = baseGeoUnitProperties[hierarchyNumOrArray];
-          const baseId = props[baseGeoLevel] as string;
-          mutableCsvRows.push([baseId, districtOrArray]);
-        } else if (typeof hierarchyNumOrArray !== "number") {
-          // Keep recursing into the hierarchy until we reach the end
-          accumulateCsvRows(districtOrArray, hierarchyNumOrArray);
-        } else {
-          // This shouldn't ever happen, and would suggest a district definition/hierarchy mismatch
-          this.logger.error(
-            "Hierarchy and districts definition mismatch",
-            districtOrArray.toString(),
-            hierarchyNumOrArray.toString()
-          );
-          throw new InternalServerErrorException();
-        }
-      });
-    };
-    accumulateCsvRows(districtsDefinition, geoCollection.hierarchyDefinition);
-
-    return mutableCsvRows;
-  }
-
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Get(":id/export/csv")
@@ -522,9 +457,9 @@ export class ProjectsController implements CrudController<Project> {
     @Param("id") projectId: ProjectId
   ): Promise<string> {
     const project = await this.getProject(req, projectId);
-    const geoCollection = await this.getGeoUnitProperties(project.regionConfig.s3URI);
+    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const csvRows = this.exportToCsv(geoCollection, project.districtsDefinition);
+    const csvRows = await geoCollection.exportToCSV(project.districtsDefinition);
 
     return stringify(csvRows, {
       header: true,
@@ -636,7 +571,7 @@ export class ProjectsController implements CrudController<Project> {
     }
     validateNumberOfMembers(dto, existingProject.numberOfDistricts);
 
-    const staticMetadata = (await this.getGeoUnitProperties(existingProject.regionConfig.s3URI))
+    const staticMetadata = (await this.getGeoUnitTopology(existingProject.regionConfig.s3URI))
       .staticMetadata;
     const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
       ([, field]) => field
@@ -776,7 +711,12 @@ export class ProjectsController implements CrudController<Project> {
       throw new InternalServerErrorException();
     }
 
-    const data = this.formatCreateProjectDto(formdata, geoCollection, regionConfig, req);
+    const data = this.formatCreateProjectDto(
+      formdata,
+      geoCollection.districtsDefLength,
+      regionConfig,
+      req
+    );
     const districts = await this.getGeojson({
       numberOfDistricts: formdata.numberOfDistricts,
       districtsDefinition: data.districtsDefinition,

@@ -2,16 +2,21 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import S3 from "aws-sdk/clients/s3";
 import { spawn } from "child_process";
+import _ from "lodash";
 import { cpus } from "os";
 import { Topology } from "topojson-specification";
 import { Repository } from "typeorm";
-import { deserialize } from "v8";
 
-import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
+import {
+  TypedArrays,
+  IStaticFile,
+  IStaticMetadata,
+  S3URI,
+  IRegionConfig
+} from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
-import _ from "lodash";
-import { getObject, s3Options } from "../../common/s3-wrapper";
+import { getObject, getTopology, s3Options } from "../../common/functions";
 
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
@@ -78,7 +83,7 @@ export class TopologyService {
         // Load a number of regions in parallel, adding another as each one completes
         await asyncLoop(
           sortedRegions.map(region => () => {
-            const promise = this.fetchLayer(region.s3URI);
+            const promise = this.fetchLayer(region);
             // eslint-disable-next-line functional/immutable-data
             this._layers = { ...this._layers, [region.s3URI]: promise };
             return promise;
@@ -113,48 +118,54 @@ export class TopologyService {
     }
   }
 
-  private async fetchLayer(s3URI: S3URI, numRetries = 0): Promise<GeoUnitTopology | undefined> {
+  private async fetchLayer(
+    regionConfig: IRegionConfig,
+    numRetries = 0
+  ): Promise<GeoUnitTopology | undefined> {
     try {
-      const [topojsonResponse, staticMetadataResponse] = await Promise.all([
-        getObject(this.s3, s3Options(s3URI, "topo.buf")),
-        getObject(this.s3, s3Options(s3URI, "static-metadata.json"))
-      ]);
+      const staticMetadataResponse = await getObject(
+        this.s3,
+        s3Options(regionConfig.s3URI, "static-metadata.json")
+      );
 
       const staticMetadataBody = staticMetadataResponse.Body?.toString("utf8");
-      const topojsonBody = topojsonResponse.Body as Buffer;
-      if (staticMetadataBody && topojsonBody) {
+      if (staticMetadataBody) {
         const staticMetadata = JSON.parse(staticMetadataBody) as IStaticMetadata;
         const geoLevelHierarchy = staticMetadata.geoLevelHierarchy.map(gl => gl.id);
         if (!geoLevelHierarchy) {
-          this.logger.error(`geoLevelHierarchy missing from static metadata for ${s3URI}`);
+          this.logger.error(
+            `geoLevelHierarchy missing from static metadata for ${regionConfig.s3URI}`
+          );
         }
-        const topology = deserialize(topojsonBody) as Topology;
+        const topology = await getTopology(this.s3, regionConfig);
+        const districtsDefLength = this.getDistrictsDefLength(staticMetadata, topology);
         const [demographics, geoLevels, voting] = await Promise.all([
-          this.fetchStaticFiles(s3URI, staticMetadata.demographics),
-          this.fetchStaticFiles(s3URI, staticMetadata.geoLevels),
-          this.fetchStaticFiles(s3URI, staticMetadata.voting || [])
+          this.fetchStaticFiles(regionConfig.s3URI, staticMetadata.demographics),
+          this.fetchStaticFiles(regionConfig.s3URI, staticMetadata.geoLevels),
+          this.fetchStaticFiles(regionConfig.s3URI, staticMetadata.voting || [])
         ]);
 
-        this.logger.debug(`downloaded data for s3URI ${s3URI}`);
+        this.logger.debug(`downloaded data for s3URI ${regionConfig.s3URI}`);
         // We no longer use archived read-only region topology for exports,
         // so always return geoUnitTopology
         return new GeoUnitTopology(
-          topology,
           { groups: geoLevelHierarchy.slice().reverse() },
           staticMetadata,
+          regionConfig,
           demographics,
           voting,
-          geoLevels
+          geoLevels,
+          districtsDefLength
         );
       } else {
         this.logger.error("Invalid TopoJSON or metadata bodies");
       }
     } catch (err) {
       this.logger.error(
-        `Failed to load topology for '${s3URI}' ${numRetries + 1} times, err ${err}`
+        `Failed to load topology for '${regionConfig.s3URI}' ${numRetries + 1} times, err ${err}`
       );
       if (numRetries < MAX_RETRIES) {
-        return this.fetchLayer(s3URI, numRetries + 1);
+        return this.fetchLayer(regionConfig, numRetries + 1);
       } else {
         // Nest spawns multiple processes, so to shutdown the main container process we need to
         // kill all running node instances
@@ -163,6 +174,16 @@ export class TopologyService {
         });
       }
     }
+  }
+
+  // Computes the length of the districtsDefinition array
+  // For most regions, this is the number of counties in the state
+  private getDistrictsDefLength(staticMetadata: IStaticMetadata, topology: Topology) {
+    const topGeoLevel = staticMetadata.geoLevelHierarchy.slice().reverse()[0].id;
+    const toplevelCollection = topology.objects[topGeoLevel];
+    return toplevelCollection.type === "GeometryCollection"
+      ? toplevelCollection.geometries.length
+      : 0;
   }
 
   private async fetchStaticFiles(path: S3URI, files: readonly IStaticFile[]): Promise<TypedArrays> {
@@ -192,8 +213,14 @@ export class TopologyService {
               // arrays on the client, due to differences in how Buffer works
               // in Node.js (see https://nodejs.org/api/buffer.html)
               const buf = res.Body as Buffer;
-              const typedArray = new typedArrayConstructor(buf.buffer);
-              return typedArray;
+              // We use a SharedArrayBuffer instead of re-using the S3 buffer in
+              // order to share the data between threads
+              const sharedArray = new typedArrayConstructor(
+                new SharedArrayBuffer(buf.buffer.byteLength)
+              );
+              sharedArray.set(new typedArrayConstructor(buf.buffer));
+
+              return sharedArray;
             })
           )
         )

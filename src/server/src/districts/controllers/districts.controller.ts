@@ -77,10 +77,6 @@ export class DistrictsController {
     if (!geoCollection) {
       throw new InternalServerErrorException();
     }
-    if (!("topology" in geoCollection)) {
-      // Only unarchived regions support imports
-      throw new InternalServerErrorException();
-    }
 
     const blockIdCounts: {
       [blockId: string]: number;
@@ -114,7 +110,7 @@ export class DistrictsController {
 
     const unflaggedRows = records.filter((record, i) => !flaggedRows[i]);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
-    const baseGeoUnitProperties = geoCollection.topologyProperties[baseGeoLevel];
+    const baseGeoUnitProperties = (await geoCollection.getTopologyProperties())[baseGeoLevel];
 
     // Find unmatched records
     const allBlockIds: Set<unknown> = new Set(
@@ -139,7 +135,7 @@ export class DistrictsController {
     const blockToDistricts = Object.fromEntries(
       unflaggedRows.map(([block, district]) => [block, Number(district)])
     );
-    const districtsDefinition = geoCollection.importFromCSV(blockToDistricts);
+    const districtsDefinition = await geoCollection.importFromCSV(blockToDistricts);
 
     const maxDistrictId = Object.values(blockToDistricts).reduce((a, b) => Math.max(a, b), 0);
     const rowFlags = flaggedRows.filter(r => !!r);
