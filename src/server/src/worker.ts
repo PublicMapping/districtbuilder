@@ -84,7 +84,7 @@ const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarc
   }
 });
 
-async function getTopology(
+async function getTopologyFromCache(
   regionConfig: IRegionConfig,
   staticMetadata: IStaticMetadata
 ): Promise<[Topology, readonly GeoUnitPolygonHierarchy[]]> {
@@ -274,7 +274,7 @@ async function merge({
   demographics,
   voting
 }: MergeArgs): Promise<DistrictsGeoJSON | null> {
-  const [topology, hierarchy] = await getTopology(regionConfig, staticMetadata);
+  const [topology, hierarchy] = await getTopologyFromCache(regionConfig, staticMetadata);
 
   // mutableDistrictGeoms contains the individual geometries prior to being merged
   // indexed by district id then by geolevel index
@@ -372,7 +372,7 @@ async function importFromCSV(
     readonly [block: string]: number;
   }
 ): Promise<DistrictsDefinition> {
-  const [topology] = await getTopology(regionConfig, staticMetadata);
+  const [topology] = await getTopologyFromCache(regionConfig, staticMetadata);
   const baseGeoLevel = staticMetadata.geoLevelHierarchy[0].id;
   const baseGeoUnitProperties = (await getTopologyProperties(regionConfig, staticMetadata))[
     baseGeoLevel
@@ -407,7 +407,7 @@ async function exportToCSV(
   regionConfig: IRegionConfig,
   districtsDefinition: DistrictsDefinition
 ): Promise<[string, number][]> {
-  const [topology] = await getTopology(regionConfig, staticMetadata);
+  const [topology] = await getTopologyFromCache(regionConfig, staticMetadata);
   const baseGeoLevel = staticMetadata.geoLevelHierarchy[0].id;
   const baseGeoUnitProperties = (await getTopologyProperties(regionConfig, staticMetadata))[
     baseGeoLevel
@@ -446,7 +446,7 @@ async function getTopologyProperties(
   regionConfig: IRegionConfig,
   staticMetadata: IStaticMetadata
 ): Promise<TopologyProperties> {
-  const [topology] = await getTopology(regionConfig, staticMetadata);
+  const [topology] = await getTopologyFromCache(regionConfig, staticMetadata);
   return mapValues(topology.objects, collection =>
     collection.type === "GeometryCollection"
       ? collection.geometries.map(feature => feature.properties || {})
