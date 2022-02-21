@@ -55,8 +55,11 @@ const ReferenceLayerFlyout = ({ layer, projectId }: FlyoutProps) => {
                           .catch(showActionFailedToast);
                       }}
                     >
-                      <svg height="28" width="28">
-                        <rect width="100%" height="100%" fill={color} />
+                      <svg height="33" width="28">
+                        <rect width="100%" height="85%" fill={color} />
+                        {color === layer.layer_color ? (
+                          <rect y="95%" width="100%" height="5%" fill="black" />
+                        ) : null}
                       </svg>
                     </IconButton>
                   );
