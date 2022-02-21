@@ -224,7 +224,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       return loop(
         {
           ...state,
-          referenceLayers: { isPending: true }
+          referenceLayers: { ...state.referenceLayers, isPending: true }
         },
         Cmd.run(fetchProjectReferenceLayers, {
           successActionCreator: projectReferenceLayersFetchSuccess,

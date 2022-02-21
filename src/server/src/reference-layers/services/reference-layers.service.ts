@@ -51,6 +51,7 @@ export class ReferenceLayersService extends TypeOrmCrudService<ReferenceLayer> {
         "referenceLayer.label_field",
         "referenceLayer.layer_color"
       ])
+      .orderBy("referenceLayer.name")
       .getMany();
     return data;
   }
