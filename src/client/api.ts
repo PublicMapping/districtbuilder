@@ -329,6 +329,19 @@ export async function importCsv(
   });
 }
 
+export async function fetchOneReferenceLayer(
+  referenceLayerId: ReferenceLayerId
+): Promise<ReferenceLayerWithGeojson> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .get(`/api/reference-layer/${referenceLayerId}`)
+      .then(response => {
+        return resolve(response.data);
+      })
+      .catch(error => reject(error.message));
+  });
+}
+
 export async function createReferenceLayer(
   referenceLayer: CreateReferenceLayerData
 ): Promise<ReferenceLayerWithGeojson> {

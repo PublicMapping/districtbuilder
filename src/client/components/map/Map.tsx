@@ -83,6 +83,7 @@ import {
   DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID,
   DISTRICTS_SELECTED_OUTLINE_LAYER_ID
 } from "./index";
+import { fetchOneReferenceLayer } from "../../api";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
 import MapMessage from "./MapMessage";
@@ -688,7 +689,7 @@ const DistrictsMap = ({
               type: "line",
               source: getRefLayerSourceId(layer.id),
               paint: {
-                "line-color": getColor(theme, "blue.4"),
+                "line-color": getColor(theme, layer.layer_color),
                 "line-opacity": 0.9,
                 "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
               }
@@ -721,7 +722,7 @@ const DistrictsMap = ({
                 "text-anchor": "top"
               },
               paint: {
-                "icon-color": getColor(theme, "green"),
+                "icon-color": getColor(theme, layer.layer_color),
                 "text-translate": [0, 12],
                 "text-color": "#000",
                 "text-halo-color": "#FFF",
@@ -732,6 +733,22 @@ const DistrictsMap = ({
             assertNever(layer.layer_type);
           }
           setActiveReferenceLayers([...activeReferenceLayers, layer]);
+        }
+      });
+
+      // update layer color on change
+      activeReferenceLayers.forEach(layer => {
+        if (
+          activeReferenceLayers.some(l => l.id === layer.id) &&
+          showReferenceLayers.has(layer.id)
+        ) {
+          fetchOneReferenceLayer(layer.id).then(result => {
+            map.setPaintProperty(
+              getRefLayerLayerId(layer.id),
+              result.layer_type === ReferenceLayerTypes.Polygon ? "line-color" : "icon-color",
+              result.layer_color
+            );
+          });
         }
       });
     }
