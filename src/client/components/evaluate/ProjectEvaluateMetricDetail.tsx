@@ -111,46 +111,32 @@ const ProjectEvaluateMetricDetail = ({
         <Text sx={style.metricText}>{metric.longText || "Lorem ipsum lorem ipsum"}</Text>
       </Flex>
       <Box sx={{ px: 3, overflowY: "auto" }}>
-        {metric && "type" in metric && metric.key === "countySplits" ? (
-          <CountySplitMetricDetail
-            project={project}
-            metric={metric}
-            geoLevel={geoLevel}
-            regionProperties={regionProperties}
-            staticMetadata={staticMetadata}
-          />
-        ) : metric && "type" in metric && metric.key === "compactness" ? (
-          <CompactnessMetricDetail metric={metric} geojson={geojson} />
-        ) : metric && "type" in metric && metric.key === "contiguity" ? (
-          <ContiguityMetricDetail metric={metric} geojson={geojson} />
-        ) : metric && "type" in metric && metric.key === "equalPopulation" ? (
-          <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
-        ) : metric && "type" in metric && metric.key === "competitiveness" ? (
-          <CompetitivenessMetricDetail
-            metric={metric}
-            geojson={geojson}
-            project={project}
-            pviBuckets={pviBuckets}
-          />
-        ) : metric && "type" in metric && metric.key === "majorityMinority" ? (
-          <MajorityRaceMetricDetail metric={metric} geojson={geojson} metadata={staticMetadata} />
-        ) : (
-          <Box>
-            <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
-              7 / 10 districts {metric.description}
-            </Heading>
-            <Flex sx={{ flexDirection: "column" }}>
-              {geojson?.features.map(
-                d =>
-                  d.properties.contiguity !== "" && (
-                    <Box sx={{ display: "block" }} key={d.id}>
-                      {d.id}
-                    </Box>
-                  )
-              )}
-            </Flex>
-          </Box>
-        )}
+        {project ? (
+          metric && "type" in metric && metric.key === "countySplits" ? (
+            <CountySplitMetricDetail
+              project={project}
+              metric={metric}
+              geoLevel={geoLevel}
+              regionProperties={regionProperties}
+              staticMetadata={staticMetadata}
+            />
+          ) : metric && "type" in metric && metric.key === "compactness" ? (
+            <CompactnessMetricDetail metric={metric} geojson={geojson} />
+          ) : metric && "type" in metric && metric.key === "contiguity" ? (
+            <ContiguityMetricDetail metric={metric} geojson={geojson} />
+          ) : metric && "type" in metric && metric.key === "equalPopulation" ? (
+            <EqualPopulationMetricDetail metric={metric} geojson={geojson} />
+          ) : metric && "type" in metric && metric.key === "competitiveness" ? (
+            <CompetitivenessMetricDetail
+              metric={metric}
+              geojson={geojson}
+              project={project}
+              pviBuckets={pviBuckets}
+            />
+          ) : metric && "type" in metric && metric.key === "majorityMinority" ? (
+            <MajorityRaceMetricDetail metric={metric} geojson={geojson} metadata={staticMetadata} />
+          ) : null
+        ) : null}
       </Box>
     </Flex>
   );
