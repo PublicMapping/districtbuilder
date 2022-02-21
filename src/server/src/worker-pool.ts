@@ -12,8 +12,8 @@ import { Functions, MergeArgs } from "./worker";
 
 // The ability to queue tasks is nice, but we want to explicitly route to worker threads that already have data loaded
 // To do so, we create many pools (each of which can queue tasks) with one worker each, rather than one pool with many workers
-const workerPools = [...Array(NUM_WORKERS).keys()].map(() =>
-  Pool(() => spawn<Functions>(new Worker("./worker")), 1)
+const workerPools = [...Array(NUM_WORKERS).keys()].map(i =>
+  Pool(() => spawn<Functions>(new Worker("./worker")), { size: 1, name: `worker-${i}` })
 );
 type WorkerPool = typeof workerPools[0];
 
