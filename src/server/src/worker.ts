@@ -454,11 +454,20 @@ async function getTopologyProperties(
   );
 }
 
+async function cacheRegion(
+  regionConfig: IRegionConfig,
+  staticMetadata: IStaticMetadata
+): Promise<void> {
+  // We don't use the topology data, we're just getting it into the cache
+  return getTopologyFromCache(regionConfig, staticMetadata).then(() => void 0);
+}
+
 const functions = {
   merge,
   importFromCSV,
   exportToCSV,
-  getTopologyProperties
+  getTopologyProperties,
+  cacheRegion
 };
 
 export type Functions = typeof functions;

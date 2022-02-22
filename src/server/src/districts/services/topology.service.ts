@@ -17,6 +17,7 @@ import {
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { getObject, getTopology, s3Options } from "../../common/functions";
+import { cacheRegion } from "../../worker-pool";
 
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
@@ -138,6 +139,8 @@ export class TopologyService {
           );
         }
         const topology = await getTopology(this.s3, regionConfig);
+        // Once getTopology has cached the topojson to disk, use cacheRegion to prewarm a worker
+        await cacheRegion(regionConfig, staticMetadata);
         const districtsDefLength = this.getDistrictsDefLength(staticMetadata, topology);
         const [demographics, geoLevels, voting] = await Promise.all([
           this.fetchStaticFiles(regionConfig.s3URI, staticMetadata.demographics),
