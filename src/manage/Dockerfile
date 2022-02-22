@@ -1,4 +1,4 @@
-FROM node:16-slim AS tippecanoe
+FROM node:16-bullseye-slim AS tippecanoe
 
 ENV TIPPECANOE_VERSION="1.35.0"
 

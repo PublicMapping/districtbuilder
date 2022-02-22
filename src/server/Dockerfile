@@ -1,4 +1,4 @@
-FROM node:16-slim
+FROM node:16-bullseye-slim
 
 RUN mkdir -p /home/node/app/server
 WORKDIR /home/node/app/server
