@@ -23,52 +23,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        # Ensure container images are current
-        docker-compose \
-            -f docker-compose.yml \
-            -f docker-compose.ci.yml \
-            build --pull
-
-        # Clean dist directory
-        docker-compose \
-            -f docker-compose.yml \
-            -f docker-compose.ci.yml \
-            run --rm --no-deps server \
-            clean
-
-        # Update frontend, Yarn dependencies and build static asset bundle
-        docker-compose \
-            -f docker-compose.yml \
-            -f docker-compose.ci.yml \
-            run --rm --no-deps client \
-            bash -c "yarn install && yarn compile && yarn build"
-
-        # Update backend, Yarn dependencies and build server
-        docker-compose \
-            -f docker-compose.yml \
-            -f docker-compose.ci.yml \
-            run --rm --no-deps --entrypoint "bash -c" server \
-            "yarn install && npm rebuild && yarn build"
-
-        # Update manage, Yarn dependencies and build
-        docker-compose \
-            -f docker-compose.yml \
-            -f docker-compose.ci.yml \
-            run --rm --no-deps manage \
-            bash -c "yarn install && yarn build"
-
-        # Bring up PostgreSQL and NestJS in a way that respects
-        # configured service health checks.
-        docker-compose \
-            -f docker-compose.yml \
-            -f docker-compose.ci.yml \
-            up -d database server
-
-        docker-compose \
-            -f docker-compose.yml \
-            -f docker-compose.ci.yml \
-            run --rm server \
-            migration:run
+        CI=1 ./scripts/update
 
         # Build tagged container images
         GIT_COMMIT="${GIT_COMMIT}" docker-compose \
