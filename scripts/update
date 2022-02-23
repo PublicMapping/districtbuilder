@@ -17,32 +17,37 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
+        if [[ -n "${CI}" ]]; then
+            CONFIG_ARGS=( "-f" "docker-compose.yml" "-f" "docker-compose.ci.yml" )
+        else
+            CONFIG_ARGS=( "-f" "docker-compose.yml" )
+        fi
         # Ensure container images are current
-        docker-compose build --pull
+        docker-compose "${CONFIG_ARGS[@]}" build --pull
 
         # Clean dist directory
-        docker-compose \
+        docker-compose "${CONFIG_ARGS[@]}" \
             run --rm --no-deps server \
             clean
 
         # Update frontend, Yarn dependencies and build static asset bundle
-        docker-compose \
+        docker-compose "${CONFIG_ARGS[@]}" \
             run --rm --no-deps client \
             bash -c "yarn install && yarn compile && yarn build"
 
         # Update backend, Yarn dependencies and build server
-        docker-compose \
+        docker-compose "${CONFIG_ARGS[@]}" \
             run --rm --no-deps --entrypoint "bash -c" server \
             "yarn install && npm rebuild && yarn build"
 
         # Update manage, Yarn dependencies and build
-        docker-compose \
+        docker-compose "${CONFIG_ARGS[@]}" \
             run --rm --no-deps manage \
             bash -c "yarn install && yarn build"
 
         # Bring up PostgreSQL and NestJS in a way that respects
         # configured service health checks.
-        docker-compose \
+        docker-compose "${CONFIG_ARGS[@]}" \
             -f docker-compose.yml \
             up -d database server
 
