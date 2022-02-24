@@ -123,6 +123,14 @@ export class Project implements IProject {
   })
   numberOfMembers: readonly number[];
 
+  // Will either be blank, contain the planscore URL, or the value "error"
+  @Column({
+    type: "character varying",
+    name: "planscore_url",
+    default: ""
+  })
+  planscoreUrl: string;
+
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {
     return { ...this, lockedDistricts: new Array(this.numberOfDistricts).fill(false) };

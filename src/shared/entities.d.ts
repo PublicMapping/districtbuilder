@@ -220,6 +220,7 @@ export type IProject = ProjectTemplateFields & {
   readonly lockedDistricts: readonly boolean[];
   readonly visibility: ProjectVisibility;
   readonly archived: boolean;
+  readonly planscoreUrl: string;
 };
 
 export type ProjectNest = Pick<
@@ -354,8 +355,3 @@ export interface DistrictsImportApiSuccess {
 }
 
 export type DistrictsImportApiResponse = DistrictsImportApiSuccess | DistrictsImportApiError;
-
-export interface PlanScoreAPIResponse {
-  readonly index_url: string;
-  readonly plan_url: string;
-}
