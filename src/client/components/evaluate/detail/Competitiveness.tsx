@@ -1,9 +1,10 @@
 /** @jsx jsx */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Box, Button, Flex, Heading, jsx, Spinner, Themed, ThemeUIStyleObject } from "theme-ui";
 
-import { IProject, PlanScoreAPIResponse } from "../../../../shared/entities";
+import { IProject } from "../../../../shared/entities";
+import { projectFetchSuccess } from "../../../actions/projectData";
 import { checkPlanScoreAPI } from "../../../api";
 import {
   calculatePVI,
@@ -11,6 +12,7 @@ import {
   formatPviByDistrict,
   getPartyColor
 } from "../../../functions";
+import store from "../../../store";
 import { DistrictsGeoJSON, EvaluateMetricWithValue, PviBucket } from "../../../types";
 import { getPviSteps } from "../../map/index";
 import PVIDisplay from "../../PVIDisplay";
@@ -68,6 +70,14 @@ const style: Record<string, ThemeUIStyleObject> = {
   },
   menuButton: {
     color: "muted"
+  },
+  planscoreButton: {
+    variant: "buttons.primary",
+    fontWeight: "light",
+    maxHeight: "34px",
+    borderBottom: "none",
+    borderBottomColor: "blue.2",
+    color: "muted"
   }
 };
 
@@ -79,29 +89,33 @@ const CompetitivenessMetricDetail = ({
 }: {
   readonly metric: EvaluateMetricWithValue;
   readonly geojson?: DistrictsGeoJSON;
-  readonly project?: IProject;
+  readonly project: IProject;
   readonly pviBuckets?: readonly (PviBucket | undefined)[] | undefined;
 }) => {
-  const [planScoreLoaded, setPlanScoreLoaded] = useState<boolean | null>(null);
-  const [planScoreLink, setPlanScoreLink] = useState<string | null>(null);
+  const [planScoreLoaded, setPlanScoreLoaded] = useState<boolean | "pending">(
+    !!project.planscoreUrl && project.planscoreUrl !== "error"
+  );
   const choroplethStops = getPviSteps();
-  const projectIsNotEmpty =
-    geojson &&
-    geojson.features.slice(1).some(feature => feature.properties.demographics.population !== 0);
+  const projectHasNoEmptyDistricts =
+    geojson && geojson.features.slice(1).every(feature => feature.geometry.coordinates.length > 0);
+
   function sendToPlanScore() {
-    setPlanScoreLoaded(false);
+    setPlanScoreLoaded("pending");
     project &&
+      geojson &&
       checkPlanScoreAPI(project)
-        .then((data: PlanScoreAPIResponse) => {
-          setPlanScoreLoaded(true);
-          setPlanScoreLink(data.plan_url);
+        .then(updatedProject => {
+          store.dispatch(projectFetchSuccess({ project: updatedProject, geojson }));
         })
         .catch(() => {
-          setPlanScoreLoaded(null);
+          setPlanScoreLoaded(false);
           toast.error("Error uploading map to PlanScore, please try again later");
         });
   }
 
+  useEffect(() => {
+    setPlanScoreLoaded(!!project.planscoreUrl && project.planscoreUrl !== "error");
+  }, [project]);
   return (
     <Box>
       <Heading as="h2" sx={{ variant: "text.h5", mt: 4 }}>
@@ -180,48 +194,40 @@ const CompetitivenessMetricDetail = ({
           bottom: "0"
         }}
       >
-        {planScoreLoaded === null || planScoreLoaded === false ? (
+        {planScoreLoaded === false ? (
           <Button
-            sx={{
-              ...{
-                variant: "buttons.primary",
-                fontWeight: "light",
-                maxHeight: "34px",
-                borderBottom: "none",
-                borderBottomColor: "blue.2"
-              },
-              ...style.menuButton
-            }}
-            disabled={planScoreLoaded === false || !projectIsNotEmpty}
+            sx={style.planscoreButton}
+            disabled={!projectHasNoEmptyDistricts}
             onClick={() => sendToPlanScore()}
           >
-            {planScoreLoaded === null ? (
-              projectIsNotEmpty ? (
-                <span>Send to PlanScore API</span>
-              ) : (
-                <Tooltip content={"Complete your project before sending to PlanScore"}>
-                  <span>Send to PlanScore API</span>
-                </Tooltip>
-              )
+            {projectHasNoEmptyDistricts ? (
+              <span>Send to PlanScore API</span>
             ) : (
-              <span>
-                Loading&nbsp;
-                <Spinner
-                  sx={{
-                    position: "relative",
-                    top: "3px",
-                    width: "18px",
-                    height: "18px",
-                    color: "white"
-                  }}
-                  variant="styles.spinner.small"
-                />
-              </span>
+              <Tooltip content={"Complete your project before sending to PlanScore"}>
+                <span>Send to PlanScore API</span>
+              </Tooltip>
             )}
           </Button>
+        ) : planScoreLoaded === "pending" ? (
+          <Button sx={style.planscoreButton} disabled={true}>
+            <span>
+              Loading&nbsp;
+              <Spinner
+                sx={{
+                  position: "relative",
+                  top: "3px",
+                  width: "18px",
+                  height: "18px",
+                  color: "white"
+                }}
+                variant="styles.spinner.small"
+              />
+            </span>
+          </Button>
         ) : (
-          planScoreLink && (
-            <Themed.a href={planScoreLink} target="_blank">
+          project.planscoreUrl &&
+          project.planscoreUrl !== "error" && (
+            <Themed.a href={project.planscoreUrl} target="_blank">
               View on PlanScore
             </Themed.a>
           )

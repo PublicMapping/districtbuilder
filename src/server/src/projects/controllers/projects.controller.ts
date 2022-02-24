@@ -31,12 +31,18 @@ import {
 } from "@nestjsx/crud";
 import stringify from "csv-stringify/lib/sync";
 import { Response } from "express";
+import FormData from "form-data";
 import { convert } from "geojson2shp";
 import * as _ from "lodash";
 import isUUID from "validator/lib/isUUID";
 import { Pagination } from "nestjs-typeorm-paginate";
 
-import { MakeDistrictsErrors, CORE_METRIC_FIELDS } from "../../../../shared/constants";
+import {
+  MakeDistrictsErrors,
+  CORE_METRIC_FIELDS,
+  PLANSCORE_POLL_MS,
+  PLANSCORE_POLL_MAX_TRIES
+} from "../../../../shared/constants";
 import {
   DistrictsDefinition,
   ProjectId,
@@ -504,33 +510,98 @@ export class ProjectsController implements CrudController<Project> {
 
   @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
-  @Post(":id/planScore")
+  @Post(":id/plan-score")
   async sendToPlanScoreAPI(
-    @Request() req: any,
+    @ParsedRequest() req: CrudRequest,
     @Param("id") projectId: ProjectId
-  ): Promise<unknown> {
-    const planScoreToken = process.env.PLAN_SCORE_API_TOKEN || "";
-    const districts = await this.exportGeoJSON(req, projectId);
-    const geojson = districts && {
-      ...districts,
-      features: districts.features.filter(f => f.id !== 0)
-    };
-
-    return new Promise((resolve, reject) => {
-      axios({
-        method: "POST",
-        data: Buffer.from(JSON.stringify(geojson)),
-        url: "http://api.planscore.org/upload/",
-        headers: {
-          Authorization: `Bearer ${planScoreToken}`
+  ): Promise<void> {
+    const userId = req.parsed.authPersist.userId as string;
+    // First clear out the existing planscore URL
+    await this.service.updateOne(req, { planscoreUrl: "" });
+    // The rest of this function happens in a callback that we *don't* wait for
+    // The frontend will poll to find out when this is completed
+    void this.getProjectWithDistricts(projectId, userId).then(project => {
+      const uploadDistricts = async () => {
+        try {
+          const planscoreUrl = await this.uploadToPlanScore(project);
+          void this.service.updateOne(req, { planscoreUrl });
+        } catch (e) {
+          this.logger.error(`Error uploading to planscore: ${e}`);
+          void this.service.updateOne(req, { planscoreUrl: "error" });
         }
-      })
-        .then(response => {
-          resolve(response.data);
+      };
+      project.districts && uploadDistricts();
+    });
+  }
+
+  async uploadToPlanScore(project: Project) {
+    const PLAN_SCORE_API_TOKEN = process.env.PLAN_SCORE_API_TOKEN || "";
+    const uploadResponse = await axios.get("https://api.planscore.org/upload/", {
+      headers: {
+        Authorization: `Bearer ${PLAN_SCORE_API_TOKEN}`
+      }
+    });
+    const [s3Uri, uploadData]: [string, Record<string, string>] = uploadResponse.data;
+
+    const form = new FormData();
+    Object.entries(uploadData).forEach(([key, val]) => {
+      form.append(key, val);
+    });
+    // If we don't remove the unassigned district, PlanScore will never complete processing
+    const geojson = { ...project.districts, features: project.districts?.features.slice(1) };
+    // Not nearly as easy to do a multi-part form file upload in Node as it is in the browser
+    //  - We need to use a module to emulate the browser native FormData
+    //  - axios doesn't integrate well with it, so we need to connect headers & length manually
+    form.append("file", Buffer.from(JSON.stringify(geojson)), {
+      contentType: "application/json",
+      filename: `${project.name}.geojson`
+    });
+    const s3Response = await axios.post(s3Uri, form, {
+      headers: {
+        ...form.getHeaders(),
+        "Content-Length": `${form.getLengthSync()}`
+      },
+      // API docs say to expect 302, but in practice I've seen 303, checking for either to be safe
+      validateStatus: status => status === 302 || status === 303,
+      maxRedirects: 0
+    });
+    const callbackLocation = s3Response.headers["location"];
+    const apiResponse = await axios.post(
+      callbackLocation,
+      {
+        description: project.name
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${PLAN_SCORE_API_TOKEN}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    const { index_url: indexUrl, plan_url: planscoreUrl } = apiResponse.data;
+    this.logger.debug(`PlanScore submitted, polling ${indexUrl}`);
+    if (typeof indexUrl !== "string" || typeof planscoreUrl !== "string") {
+      throw new Error("Unexpected response from PlanScore API");
+    }
+    await this.pollPlanScoreProgress(indexUrl);
+    return planscoreUrl;
+  }
+
+  async pollPlanScoreProgress(indexUrl: string, numTries = 1) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(indexUrl)
+        .then(apiResponse => {
+          apiResponse.data.status
+            ? resolve(void 0)
+            : numTries >= PLANSCORE_POLL_MAX_TRIES
+            ? reject()
+            : setTimeout(
+                () => resolve(this.pollPlanScoreProgress(indexUrl, numTries + 1)),
+                PLANSCORE_POLL_MS
+              );
         })
-        .catch(error => {
-          reject(error.message);
-        });
+        .catch(() => reject());
     });
   }
 
@@ -608,7 +679,9 @@ export class ProjectsController implements CrudController<Project> {
               ...existingProject,
               districtsDefinition: dto.districtsDefinition
             }),
-            regionConfigVersion: existingProject.regionConfig.version
+            regionConfigVersion: existingProject.regionConfig.version,
+            // PlanScore link is no longer valid when districts are changed
+            planscoreUrl: ""
           }
         : dto;
 
