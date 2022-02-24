@@ -100,8 +100,3 @@ export const getTopologyProperties = (
   findPool(regionConfig).then<TopologyProperties>(pool =>
     pool.queue(worker => worker.getTopologyProperties(regionConfig, staticMetadata))
   );
-
-export const cacheRegion = (regionConfig: IRegionConfig, staticMetadata: IStaticMetadata) =>
-  findPool(regionConfig).then(pool =>
-    pool.queue(worker => worker.cacheRegion(regionConfig, staticMetadata))
-  );
