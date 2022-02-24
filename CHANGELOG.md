@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Duplicated maps keep reference layers [#1137](https://github.com/PublicMapping/districtbuilder/pull/1137)
 - Fix bounds for AK mini-map [#1145](https://github.com/PublicMapping/districtbuilder/pull/1145)
 - Fix TopologyService health check[#1148](https://github.com/PublicMapping/districtbuilder/pull/1148)
+- Fix sidebar styling on firefox [#1155](https://github.com/PublicMapping/districtbuilder/pull/1155)
 - Updated PlanScore integration to use multi-step workflow [#1152](https://github.com/PublicMapping/districtbuilder/pull/1148)
 - Fix concurrent Jenkins builds breaking node dependencies [#1146](https://github.com/PublicMapping/districtbuilder/pull/1146)
 
