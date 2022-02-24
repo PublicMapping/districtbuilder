@@ -27,11 +27,11 @@ export function getObject(s3: S3, req: GetObjectRequest): Promise<S3.Types.GetOb
 }
 
 // Gets the specified topology, downloading it from S3 and caching it locally if it is not already cached
-export async function getTopology(s3: S3, regionConfig: IRegionConfig): Promise<Topology> {
+export async function downloadTopology(s3: S3, regionConfig: IRegionConfig): Promise<void> {
   const folderPath = join(TOPOLOGY_CACHE_DIRECTORY, regionConfig.id);
   const filePath = join(folderPath, "topo.buf");
 
-  async function downloadTopology() {
+  if (!existsSync(filePath)) {
     const topojsonResponse = await getObject(s3, s3Options(regionConfig.s3URI, "topo.buf"));
     const buffer = topojsonResponse.Body as Buffer;
     // Save file to disk for speedier access later
@@ -39,12 +39,7 @@ export async function getTopology(s3: S3, regionConfig: IRegionConfig): Promise<
       await mkdir(folderPath, { recursive: true });
     }
     await writeFile(filePath, buffer, "binary");
-    return buffer;
   }
-
-  // Load from disk first, download if not present
-  const buffer = await (existsSync(filePath) ? readFile(filePath) : downloadTopology());
-  return deserialize(buffer) as Topology;
 }
 
 export async function getTopologyFromDisk(regionConfig: IRegionConfig): Promise<Topology> {
