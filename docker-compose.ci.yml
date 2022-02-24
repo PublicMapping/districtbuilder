@@ -2,9 +2,19 @@ version: "2.4"
 services:
   server:
     image: "districtbuilder:${GIT_COMMIT:-latest}"
+    volumes:
+      - "/var/cache/district-builder-${EXECUTOR_NUMBER}-server-node-modules:/home/node/app/server/node_modules"
+
+  client:
+    image: node:16-slim
+    volumes:
+      - "/var/cache/district-builder-${EXECUTOR_NUMBER}-client-node-modules:/home/node/app/node_modules"
 
   manage:
     image: "districtbuilder-manage:${GIT_COMMIT:-latest}"
+    volumes:
+      - "/var/cache/district-builder-${EXECUTOR_NUMBER}-server-node-modules:/home/node/app/server/node_modules"
+      - "/var/cache/district-builder-${EXECUTOR_NUMBER}-manage-node-modules:/home/node/app/manage/node_modules"
 
   shellcheck:
     image: koalaman/shellcheck:stable

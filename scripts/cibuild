@@ -23,7 +23,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        ./scripts/update
+        CI=1 ./scripts/update
 
         # Build tagged container images
         GIT_COMMIT="${GIT_COMMIT}" docker-compose \

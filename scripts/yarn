@@ -17,12 +17,28 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     if [[ "${1:-}" == "--help" ]] || [[ ! "${1}" == "client" && ! "${1}" == "server" && ! "${1}" == "manage" ]]; then
         usage
     elif [[ "${1}" == "server" ]]; then
-        docker-compose \
-            run --rm "${1}" \
-            "${@:2}"
+        if [[ -n "${CI}" ]]; then
+            docker-compose \
+                -f docker-compose.yml \
+                -f docker-compose.ci.yml \
+                run --rm "${1}" \
+                "${@:2}"
+        else
+            docker-compose \
+                run --rm "${1}" \
+                "${@:2}"
+        fi
     else
-        docker-compose \
-            run --rm --no-deps "${1}" \
-            bash -c "yarn ${*:2}"
+        if [[ -n "${CI}" ]]; then
+            docker-compose \
+                -f docker-compose.yml \
+                -f docker-compose.ci.yml \
+                run --rm --no-deps "${1}" \
+                bash -c "yarn ${*:2}"
+        else
+            docker-compose \
+                run --rm --no-deps "${1}" \
+                bash -c "yarn ${*:2}"
+        fi
     fi
 fi
