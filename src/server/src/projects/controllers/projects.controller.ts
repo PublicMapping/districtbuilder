@@ -562,7 +562,7 @@ export class ProjectsController implements CrudController<Project> {
         "Content-Length": `${form.getLengthSync()}`
       },
       // API docs say to expect 302, but in practice I've seen 303, checking for either to be safe
-      validateStatus: status => status === 303 || status === 303,
+      validateStatus: status => status === 302 || status === 303,
       maxRedirects: 0
     });
     const callbackLocation = s3Response.headers["location"];
