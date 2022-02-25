@@ -1,3 +1,5 @@
+import { ReferenceLayerColors } from "../../shared/constants";
+
 const districtColors = [
   "transparent",
   "#19CB35",
@@ -442,4 +444,13 @@ export const demographicsColors = {
   pacific: "#B3DE69",
   multiracial: "#D77EFF",
   other: "#5A563E"
+};
+
+export const REFERENCE_LAYER_COLOR_CODES = {
+  [ReferenceLayerColors.Green]: "#17c42f",
+  [ReferenceLayerColors.Orange]: "#f3ad37",
+  [ReferenceLayerColors.Purple]: "#7549f6",
+  [ReferenceLayerColors.Blue]: "#0018ff",
+  [ReferenceLayerColors.Pink]: "#eaa0bd",
+  [ReferenceLayerColors.Red]: "#f62756"
 };

@@ -9,6 +9,7 @@ import Icon from "./Icon";
 import store from "../store";
 import { setDeleteReferenceLayer } from "../actions/projectData";
 import { ReferenceLayerColors } from "../../shared/constants";
+import { REFERENCE_LAYER_COLOR_CODES } from "../constants/colors";
 import { projectReferenceLayersFetch } from "../actions/projectData";
 
 enum LayerMenuKeys {
@@ -56,7 +57,7 @@ const ReferenceLayerFlyout = ({ layer, projectId }: FlyoutProps) => {
                       }}
                     >
                       <svg height="33" width="28">
-                        <rect width="100%" height="85%" fill={color} />
+                        <rect width="100%" height="85%" fill={REFERENCE_LAYER_COLOR_CODES[color]} />
                         {color === layer.layer_color ? (
                           <rect y="95%" width="100%" height="5%" fill="black" />
                         ) : null}

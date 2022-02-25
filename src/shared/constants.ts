@@ -55,12 +55,12 @@ export enum ReferenceLayerTypes {
 }
 
 export enum ReferenceLayerColors {
-  Green = "#17c42f",
-  Orange = "#f3ad37",
-  Purple = "#7549f6",
-  Blue = "#0018ff",
-  Pink = "#eaa0bd",
-  Red = "#f62756"
+  Green = "GREEN",
+  Orange = "ORANGE",
+  Purple = "PURPLE",
+  Blue = "BLUE",
+  Pink = "PINK",
+  Red = "RED"
 }
 
 export const DEFAULT_POPULATION_DEVIATION = 5;
