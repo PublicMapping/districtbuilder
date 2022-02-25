@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional } from "class-validator";
 import { ReferenceLayerTypes, ReferenceLayerColors } from "../../../../shared/constants";
 
 import { CreateReferenceLayerData } from "../../../../shared/entities";
@@ -16,6 +16,6 @@ export class CreateReferenceLayerDto implements CreateReferenceLayerData {
   readonly label_field?: string;
   @IsNotEmpty({ message: "Please enter a value field" })
   readonly layer: ReferenceLayerGeojson;
-  @IsNotEmpty({ message: "Please choose a layer color" })
+  @IsEnum(ReferenceLayerColors)
   readonly layer_color: ReferenceLayerColors;
 }

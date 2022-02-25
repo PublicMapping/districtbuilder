@@ -203,7 +203,7 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     @ParsedBody() dto: UpdateReferenceLayerDto
   ): Promise<ReferenceLayer> {
     if (!this.base.updateOneBase) {
-      this.logger.error("Routes misconfigured. Missing `deleteOneBase` route");
+      this.logger.error("Routes misconfigured. Missing `updateOneBase` route");
       throw new InternalServerErrorException();
     }
     if (!isUUID(id)) {
