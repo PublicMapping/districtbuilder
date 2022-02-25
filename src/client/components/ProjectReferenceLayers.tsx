@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button, Flex, Box, Heading, jsx, ThemeUIStyleObject, Checkbox, Label } from "theme-ui";
 
-import { IReferenceLayer, ProjectId, ReferenceLayerId } from "../../shared/entities";
+import { IReferenceLayer, ReferenceLayerId } from "../../shared/entities";
 import Icon from "./Icon";
 
 import store from "../store";
@@ -51,13 +51,11 @@ const style: Record<string, ThemeUIStyleObject> = {
 const ReferenceLayer = ({
   isReadOnly,
   layer,
-  checked,
-  projectId
+  checked
 }: {
   readonly isReadOnly: boolean;
   readonly layer: IReferenceLayer;
   readonly checked: boolean;
-  readonly projectId: ProjectId;
 }) => (
   <Flex sx={{ alignItems: "center", pb: 1, width: "100%" }}>
     <Box sx={{ display: "inline" }}>
@@ -82,7 +80,7 @@ const ReferenceLayer = ({
     <span sx={{ pl: 1 }}>{layer.name}</span>
     {!isReadOnly && (
       <Box sx={{ ml: "auto" }}>
-        <ReferenceLayerFlyout layer={layer} projectId={projectId} />
+        <ReferenceLayerFlyout layer={layer} />
       </Box>
     )}
   </Flex>
@@ -91,13 +89,11 @@ const ReferenceLayer = ({
 const ProjectReferenceLayers = ({
   isReadOnly,
   referenceLayers,
-  showReferenceLayers,
-  projectId
+  showReferenceLayers
 }: {
   readonly isReadOnly: boolean;
   readonly referenceLayers?: readonly IReferenceLayer[];
   readonly showReferenceLayers: ReadonlySet<ReferenceLayerId>;
-  readonly projectId: ProjectId;
 }) => {
   const [isExpanded, setExpanded] = useState(referenceLayers?.length !== 0);
 
@@ -125,7 +121,6 @@ const ProjectReferenceLayers = ({
                 layer={layer}
                 checked={showReferenceLayers.has(layer.id)}
                 isReadOnly={isReadOnly}
-                projectId={projectId}
               />
             ))
           ) : referenceLayers !== undefined ? (

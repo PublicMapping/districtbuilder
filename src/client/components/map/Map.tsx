@@ -83,7 +83,6 @@ import {
   DISTRICTS_MAJORITY_RACE_CHOROPLETH_LAYER_ID,
   DISTRICTS_SELECTED_OUTLINE_LAYER_ID
 } from "./index";
-import { fetchOneReferenceLayer } from "../../api";
 import DefaultSelectionTool from "./DefaultSelectionTool";
 import FindMenu from "./FindMenu";
 import MapMessage from "./MapMessage";
@@ -736,19 +735,20 @@ const DistrictsMap = ({
           setActiveReferenceLayers([...activeReferenceLayers, layer]);
         }
       });
-
       // update layer color on change
       activeReferenceLayers.forEach(layer => {
         if (
           activeReferenceLayers.some(l => l.id === layer.id) &&
           showReferenceLayers.has(layer.id)
         ) {
-          fetchOneReferenceLayer(layer.id).then(result => {
-            map.setPaintProperty(
-              getRefLayerLayerId(layer.id),
-              result.layer_type === ReferenceLayerTypes.Polygon ? "line-color" : "icon-color",
-              result.layer_color
-            );
+          referenceLayers.resource.forEach(updatedLayer => {
+            if (updatedLayer.id === layer.id) {
+              map.setPaintProperty(
+                getRefLayerLayerId(layer.id),
+                layer.layer_type === ReferenceLayerTypes.Polygon ? "line-color" : "icon-color",
+                REFERENCE_LAYER_COLOR_CODES[updatedLayer.layer_color]
+              );
+            }
           });
         }
       });

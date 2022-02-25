@@ -1,16 +1,13 @@
 /** @jsx jsx */
 import { jsx, Box, IconButton } from "theme-ui";
 import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
-import { IReferenceLayer, ProjectId } from "../../shared/entities";
+import { IReferenceLayer, UpdateReferenceLayer } from "../../shared/entities";
 import { style, invertStyles } from "./MenuButton.styles";
-import { patchReferenceLayer } from "../api";
-import { showActionFailedToast } from "../functions";
 import Icon from "./Icon";
 import store from "../store";
-import { setDeleteReferenceLayer } from "../actions/projectData";
+import { setDeleteReferenceLayer, referenceLayerUpdate } from "../actions/projectData";
 import { ReferenceLayerColors } from "../../shared/constants";
 import { REFERENCE_LAYER_COLOR_CODES } from "../constants/colors";
-import { projectReferenceLayersFetch } from "../actions/projectData";
 
 enum LayerMenuKeys {
   Delete = "delete"
@@ -18,10 +15,9 @@ enum LayerMenuKeys {
 
 interface FlyoutProps {
   readonly layer: IReferenceLayer;
-  readonly projectId: ProjectId;
 }
 
-const ReferenceLayerFlyout = ({ layer, projectId }: FlyoutProps) => {
+const ReferenceLayerFlyout = ({ layer }: FlyoutProps) => {
   return (
     <Wrapper>
       <MenuButton
@@ -46,14 +42,12 @@ const ReferenceLayerFlyout = ({ layer, projectId }: FlyoutProps) => {
                       key={i}
                       sx={{ borderRadius: 0, p: 0, m: 0.75 }}
                       onClick={() => {
-                        const layerData = {
+                        const layerData: UpdateReferenceLayer = {
                           layer_color: color
                         };
-                        patchReferenceLayer(layer.id, layerData)
-                          .then(() => {
-                            store.dispatch(projectReferenceLayersFetch(projectId));
-                          })
-                          .catch(showActionFailedToast);
+                        store.dispatch(
+                          referenceLayerUpdate({ id: layer.id, layer_color: layerData })
+                        );
                       }}
                     >
                       <svg height="33" width="28">

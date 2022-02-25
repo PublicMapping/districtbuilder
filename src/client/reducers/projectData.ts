@@ -40,6 +40,9 @@ import {
   projectReferenceLayersFetch,
   projectReferenceLayersFetchSuccess,
   projectReferenceLayersFetchFailure,
+  referenceLayerUpdate,
+  referenceLayerUpdateSuccess,
+  referenceLayerUpdateFailure,
   referenceLayerDelete,
   referenceLayerDeleteSuccess,
   referenceLayerDeleteFailure,
@@ -67,6 +70,7 @@ import {
   exportProjectShp,
   fetchProjectData,
   fetchProjectReferenceLayers,
+  patchReferenceLayer,
   fetchProjectGeoJson,
   patchProject,
   copyProject,
@@ -244,6 +248,44 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         {
           ...state,
           referenceLayers: action.payload
+        },
+        Cmd.run(showActionFailedToast)
+      );
+    case getType(referenceLayerUpdate):
+      return loop(
+        { ...state, referenceLayers: { ...state.referenceLayers, isPending: true } },
+        Cmd.run(patchReferenceLayer, {
+          successActionCreator: referenceLayerUpdateSuccess,
+          failActionCreator: referenceLayerUpdateFailure,
+          args: [action.payload.id, action.payload.layer_color] as Parameters<
+            typeof patchReferenceLayer
+          >
+        })
+      );
+    case getType(referenceLayerUpdateSuccess):
+      return {
+        ...state,
+        referenceLayers: {
+          resource:
+            "resource" in state.referenceLayers
+              ? state.referenceLayers.resource.map(layer => {
+                  if (layer.id === action.payload.id) {
+                    return {
+                      ...layer,
+                      layer_color: action.payload.layer_color
+                    };
+                  } else {
+                    return layer;
+                  }
+                })
+              : []
+        }
+      };
+    case getType(referenceLayerUpdateFailure):
+      return loop(
+        {
+          ...state,
+          referenceLayer: action.payload
         },
         Cmd.run(showActionFailedToast)
       );

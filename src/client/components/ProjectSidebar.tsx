@@ -454,7 +454,6 @@ const ProjectSidebar = ({
           isReadOnly={isReadOnly}
           referenceLayers={("resource" in referenceLayers && referenceLayers.resource) || undefined}
           showReferenceLayers={showReferenceLayers}
-          projectId={project.id}
         />
       )}
     </Flex>
