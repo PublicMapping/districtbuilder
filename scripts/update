@@ -48,9 +48,10 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Bring up PostgreSQL and NestJS in a way that respects
         # configured service health checks.
         docker-compose "${CONFIG_ARGS[@]}" \
-            -f docker-compose.yml \
             up -d database server
 
-        ./scripts/migration
+        docker-compose "${CONFIG_ARGS[@]}" \
+            run --rm server \
+            migration:run
     fi
 fi

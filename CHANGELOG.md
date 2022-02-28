@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.15.0] - 2022-02-28
+
+### Added
+
 - Add modal to allow organization admins to create templates from projects [#1107](https://github.com/PublicMapping/districtbuilder/pull/1107)
 
 ### Changed
@@ -446,7 +454,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.15.0...HEAD
+[1.15.0]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...1.15.0
 [1.14.0]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...1.14.0
 [1.13.0]: https://github.com/publicmapping/districtbuilder/compare/1.12.1...1.13.0
 [1.12.1]: https://github.com/publicmapping/districtbuilder/compare/1.12.0...1.12.1
