@@ -58,6 +58,10 @@ export class AuthService {
     return LoginErrors.INVALID_PASSWORD;
   }
 
+  async updateLastLogin(userId: UserId): Promise<void> {
+    return await this.usersService.updateLastLogin(userId);
+  }
+
   generateJwt(user: User): JWT {
     const payload: IUser & { sub: UserId } = {
       sub: user.id,
