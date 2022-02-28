@@ -1,7 +1,7 @@
 version: "2.4"
 services:
   database:
-    image: quay.io/azavea/postgis:3-postgres12.2-slim
+    image: quay.io/azavea/postgis:3-postgres12.4-slim
     environment:
       - POSTGRES_USER=districtbuilder
       - POSTGRES_PASSWORD=districtbuilder
@@ -28,6 +28,7 @@ services:
       - JWT_SECRET=insecure
       - JWT_EXPIRATION_IN_MS=604800000 # 1 week
       - CLIENT_URL=http://localhost:3003
+      - TOPOLOGY_CACHE_DIRECTORY=/opt/topology
     build:
       context: ./src/server
       dockerfile: Dockerfile
@@ -35,6 +36,7 @@ services:
       - ./src/server:/home/node/app/server
       - ./src/shared:/home/node/app/shared
       - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
+      - /var/cache/district-builder-server-topology:/opt/topology
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
       - $HOME/.aws:/root/.aws:ro
     working_dir: /home/node/app/server
@@ -44,7 +46,7 @@ services:
     command: start:dev
 
   client:
-    image: node:16-slim
+    image:  node:16-bullseye-slim
     environment:
       - BASE_URL=${BASE_URL:-http://server:3005}
       - PORT=3003

@@ -8,6 +8,7 @@ import { RegionConfig } from "../src/region-configs/entities/region-config.entit
 import { RegionConfigsService } from "../src/region-configs/services/region-configs.service";
 import { DistrictsModule } from "../src/districts/districts.module";
 import { TopologyService } from "../src/districts/services/topology.service";
+import { terminatePool } from "../src/worker-pool";
 
 describe("DistrictsController", () => {
   let app: INestApplication;
@@ -16,7 +17,9 @@ describe("DistrictsController", () => {
     name: "Delaware",
     regionCode: "DE",
     countryCode: "US",
-    s3URI: "s3://global-districtbuilder-dev-us-east-1/regions/US/DE/2020-09-09T19:50:10.921Z/"
+    s3URI: "s3://global-districtbuilder-dev-us-east-1/regions/US/DE/2020-09-09T19:50:10.921Z/",
+    archived: false,
+    version: new Date("2020-09-09T19:50:10.921Z")
   } as IRegionConfig;
 
   let regionConfigsService = {
@@ -43,6 +46,7 @@ describe("DistrictsController", () => {
 
   afterAll(async () => {
     await app.close();
+    await terminatePool();
   });
 
   describe("import plan from block equivalency CSV", () => {

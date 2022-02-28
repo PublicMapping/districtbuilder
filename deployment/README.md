@@ -93,8 +93,9 @@ This will attempt to apply the plan assembled in the previous step using Amazon'
 - Select **Actions** -> **Run Task**
 - Below the warning, click the blue link: "Switch to launch type"
 - Select the following
-  - **Launch type**: `Fargate`
   - **Cluster**: (See table below)
+  - **Launch type**: `Fargate`
+  - **Operating system family**: `Linux`
   - **Cluster VPC**: (See table below)
   - **Subnets**: Select any named `PrivateSubnet`
   - **Select existing security group**: (See table below)

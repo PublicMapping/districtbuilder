@@ -13,11 +13,6 @@ export enum MakeDistrictsErrors {
   INVALID_DEFINITION = "INVALID_DEFINITION"
 }
 
-export enum ConvertProjectErrors {
-  REGION_NOT_ARCHIVED = "REGION_NOT_ARCHIVED",
-  NO_ACTIVE_REGION = "NO_ACTIVE_REGION"
-}
-
 export enum JoinOrganizationErrors {
   USER_NOT_FOUND = "USER_NOT_FOUND",
   ORGANIZATION_NOT_FOUND = "ORGANIZATION_NOT_FOUND"
@@ -158,3 +153,6 @@ export const REGION_TO_FIPS = Object.fromEntries(
 export const MAX_UPLOAD_FILE_SIZE = 25_000_000;
 
 export const MAX_IMPORT_ERRORS = 1_000;
+
+export const PLANSCORE_POLL_MAX_TRIES = 40;
+export const PLANSCORE_POLL_MS = 3000;

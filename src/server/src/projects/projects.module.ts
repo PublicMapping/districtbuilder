@@ -11,7 +11,6 @@ import { GlobalProjectsController } from "./controllers/globalProjects.controlle
 import { ProjectsController } from "./controllers/projects.controller";
 import { Project } from "./entities/project.entity";
 import { ProjectsService } from "./services/projects.service";
-import { CrosswalkService } from "./services/crosswalk.service";
 import { ProjectTemplatesModule } from "../project-templates/project-templates.module";
 import { ReferenceLayersModule } from "../reference-layers/reference-layers.module";
 
@@ -22,12 +21,12 @@ import { ReferenceLayersModule } from "../reference-layers/reference-layers.modu
     RegionConfigsModule,
     ChambersModule,
     OrganizationsModule,
-    ProjectTemplatesModule,
+    forwardRef(() => ProjectTemplatesModule),
     forwardRef(() => ReferenceLayersModule),
     UsersModule
   ],
   controllers: [ProjectsController, GlobalProjectsController],
-  providers: [CrosswalkService, ProjectsService],
-  exports: [CrosswalkService, ProjectsService]
+  providers: [ProjectsService],
+  exports: [ProjectsService]
 })
 export class ProjectsModule {}

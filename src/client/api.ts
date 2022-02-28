@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { saveAs } from "file-saver";
+import memoize from "memoizee";
 
 import {
   CreateProjectData,
@@ -17,11 +18,14 @@ import {
   RegionConfigId,
   ProjectNest,
   DistrictsImportApiResponse,
-  PlanScoreAPIResponse,
   IReferenceLayer,
   ReferenceLayerId,
-  CreateReferenceLayerData
+  CreateReferenceLayerData,
+  IProjectTemplate,
+  CreateProjectTemplateData,
+  IStaticMetadata
 } from "../shared/entities";
+import { PLANSCORE_POLL_MS, PLANSCORE_POLL_MAX_TRIES } from "../shared/constants";
 import {
   DistrictsGeoJSON,
   DynamicProjectData,
@@ -137,15 +141,6 @@ export async function createProject(data: CreateProjectData): Promise<IProject> 
   return new Promise((resolve, reject) => {
     apiAxios
       .post("/api/projects", data)
-      .then(response => resolve(response.data))
-      .catch(error => reject(error.response?.data || error));
-  });
-}
-
-export async function convertAndCopyProject(id: ProjectId): Promise<IProject> {
-  return new Promise((resolve, reject) => {
-    apiAxios
-      .post(`/api/projects/${id}/convert-and-copy`)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));
   });
@@ -383,6 +378,18 @@ export async function fetchOrganizationProjects(
   });
 }
 
+export async function createProjectTemplate(
+  slug: OrganizationSlug,
+  data: CreateProjectTemplateData
+): Promise<IProjectTemplate> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/project_templates/${slug}`, data)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.response?.data || error));
+  });
+}
+
 export async function fetchOrganizationFeaturedProjects(
   slug: OrganizationSlug
 ): Promise<readonly IProjectTemplateWithProjects[]> {
@@ -397,6 +404,16 @@ export async function fetchOrganizationFeaturedProjects(
       });
   });
 }
+
+export const fetchMemoizedStateBbox = memoize(
+  async (region: IRegionConfig): Promise<IStaticMetadata["bbox"]> => {
+    const staticMetadata = await fetchStaticMetadata(region.s3URI);
+    return staticMetadata.bbox;
+  },
+  {
+    normalizer: (args: [region: IRegionConfig]) => JSON.stringify(args[0].id)
+  }
+);
 
 export async function exportOrganizationProjectsCsv(slug: OrganizationSlug): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -448,15 +465,38 @@ export async function saveProjectFeatured(project: ProjectNest): Promise<IOrgani
   });
 }
 
-export async function checkPlanScoreAPI(project: IProject): Promise<PlanScoreAPIResponse> {
+async function uploadToPlanScore(project: IProject): Promise<void> {
   return new Promise((resolve, reject) => {
     apiAxios
-      .post(`/api/projects/${project.id}/planScore`, project)
-      .then(response => resolve(response.data))
+      .post(`/api/projects/${project.id}/plan-score`)
+      .then(() => resolve())
       .catch(error => {
         reject(error.message);
       });
   });
+}
+
+async function pollForPlanScoreUpdates(projectId: ProjectId, numTries = 1): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    fetchProject(projectId)
+      .then(project =>
+        // Return an error for either an explicit error from the backend or a timeout
+        project.planscoreUrl === "error" || numTries > PLANSCORE_POLL_MAX_TRIES
+          ? reject()
+          : project.planscoreUrl === ""
+          ? setTimeout(
+              () => resolve(pollForPlanScoreUpdates(projectId, numTries + 1)),
+              PLANSCORE_POLL_MS
+            )
+          : resolve(project)
+      )
+      .catch(() => reject());
+  });
+}
+
+export async function checkPlanScoreAPI(project: IProject): Promise<IProject> {
+  await uploadToPlanScore(project);
+  return pollForPlanScoreUpdates(project.id);
 }
 
 export async function addUserToOrganization(

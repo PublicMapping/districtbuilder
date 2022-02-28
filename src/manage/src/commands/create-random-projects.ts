@@ -68,7 +68,7 @@ export default class CreateRandomProjects extends Command {
         return;
       }
 
-      const numCounties = geoCollection.hierarchyDefinition.length;
+      const numCounties = geoCollection.districtsDefLength;
       const numberOfDistricts = _.random(Math.ceil(numCounties / 2), numCounties);
       const project = new Project();
       const districtsDefinition = Array.from({ length: numCounties }, () =>
@@ -81,7 +81,7 @@ export default class CreateRandomProjects extends Command {
       }
       const lockedDistricts = new Array(numberOfDistricts).fill(false);
       const numberOfMembers = new Array(numberOfDistricts).fill(1);
-      const districts = geoCollection.merge({
+      const districts = await geoCollection.merge({
         districtsDefinition,
         numberOfDistricts,
         user,

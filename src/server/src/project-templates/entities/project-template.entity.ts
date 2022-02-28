@@ -68,7 +68,7 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
     name: "pinned_metric_fields",
     default: DEFAULT_PINNED_METRIC_FIELDS
   })
-  pinnedMetricFields: string[];
+  pinnedMetricFields: readonly string[];
 
   @Column({
     type: "integer",

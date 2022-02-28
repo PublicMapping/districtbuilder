@@ -130,7 +130,8 @@ const style: Record<string, ThemeUIStyleObject> = {
     }
   },
   number: {
-    textAlign: "right"
+    textAlign: "right",
+    whiteSpace: "nowrap"
   },
   td: {
     fontWeight: "body",

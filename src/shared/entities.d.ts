@@ -23,6 +23,7 @@ export interface IUser {
   readonly isEmailVerified: boolean;
   readonly hasSeenTour: boolean;
   readonly organizations: readonly OrganizationNest[];
+  readonly adminOrganizations: readonly OrganizationNest[];
 }
 
 export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
@@ -219,6 +220,7 @@ export type IProject = ProjectTemplateFields & {
   readonly lockedDistricts: readonly boolean[];
   readonly visibility: ProjectVisibility;
   readonly archived: boolean;
+  readonly planscoreUrl: string;
 };
 
 export type ProjectNest = Pick<
@@ -278,6 +280,10 @@ export type IProjectTemplateWithProjects = IProjectTemplate & {
   readonly projects: readonly ProjectNest[];
 };
 
+export type CreateProjectTemplateData = Pick<IProjectTemplate, "description" | "details"> & {
+  readonly project: Pick<IProject, "id">;
+};
+
 export type ChamberId = string;
 
 export interface IChamber {
@@ -322,7 +328,11 @@ export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 export type IntArray = Int8Array | Int16Array | Int32Array;
 export type TypedArray = UintArray | IntArray;
 export type TypedArrays = ReadonlyArray<TypedArray>;
+
 export type RegionLookupProperties = Record<string, unknown>;
+export type TopologyProperties = {
+  readonly [geounit: string]: readonly RegionLookupProperties[];
+};
 
 export type DistrictImportField = "" | "BLOCKID" | "DISTRICT";
 
@@ -345,8 +355,3 @@ export interface DistrictsImportApiSuccess {
 }
 
 export type DistrictsImportApiResponse = DistrictsImportApiSuccess | DistrictsImportApiError;
-
-export interface PlanScoreAPIResponse {
-  readonly index_url: string;
-  readonly plan_url: string;
-}

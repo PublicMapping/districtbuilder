@@ -13,6 +13,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.15.0] - 2022-02-28
+
+### Added
+
+- Add modal to allow organization admins to create templates from projects [#1107](https://github.com/PublicMapping/districtbuilder/pull/1107)
+
+### Changed
+
+- Stop loading archived topology [#1132](https://github.com/PublicMapping/districtbuilder/pull/1132)
+- Change formatting of the PVI chart y-axis [#1136](https://github.com/PublicMapping/districtbuilder/pull/1136)
+- Refactor backend to use workers and improve performance [#1149](https://github.com/PublicMapping/districtbuilder/pull/1149)
+
+### Fixed
+
+- parameterize REINDEX rules so both staging and prod can exist [#1130](https://github.com/PublicMapping/districtbuilder/pull/1130)
+- Duplicated maps keep reference layers [#1137](https://github.com/PublicMapping/districtbuilder/pull/1137)
+- Fix bounds for AK mini-map [#1145](https://github.com/PublicMapping/districtbuilder/pull/1145)
+- Fix TopologyService health check[#1148](https://github.com/PublicMapping/districtbuilder/pull/1148)
+- Fix sidebar styling on firefox [#1155](https://github.com/PublicMapping/districtbuilder/pull/1155)
+- Updated PlanScore integration to use multi-step workflow [#1152](https://github.com/PublicMapping/districtbuilder/pull/1148)
+- Fix concurrent Jenkins builds breaking node dependencies [#1146](https://github.com/PublicMapping/districtbuilder/pull/1146)
+
 ## [1.14.0] - 2022-02-09
 
 ### Added
@@ -432,7 +454,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.15.0...HEAD
+[1.15.0]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...1.15.0
 [1.14.0]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...1.14.0
 [1.13.0]: https://github.com/publicmapping/districtbuilder/compare/1.12.1...1.13.0
 [1.12.1]: https://github.com/publicmapping/districtbuilder/compare/1.12.0...1.12.1

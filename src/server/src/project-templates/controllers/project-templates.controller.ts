@@ -9,7 +9,9 @@ import {
   Header,
   UnauthorizedException,
   HostParam,
-  InternalServerErrorException
+  InternalServerErrorException,
+  Post,
+  Body
 } from "@nestjs/common";
 import stringify from "csv-stringify/lib/sync";
 
@@ -24,10 +26,12 @@ import { ProjectTemplatesService } from "../services/project-templates.service";
 import { TopologyService } from "../../districts/services/topology.service";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
 import { getDemographicLabel } from "../../../../shared/functions";
-import { GeoUnitProperties } from "../../districts/entities/geo-unit-properties.entity";
+import { CreateProjectTemplateDto } from "../entities/create-project-template.dto";
+import { ProjectsService } from "../../projects/services/projects.service";
+import { ReferenceLayersService } from "../../reference-layers/services/reference-layers.service";
 
 function getIds(
-  topoLayers: { [s3uri: string]: GeoUnitTopology | GeoUnitProperties },
+  topoLayers: { [s3uri: string]: GeoUnitTopology },
   prop: "demographics" | "voting"
 ): readonly string[] {
   return [
@@ -44,6 +48,8 @@ function getIds(
 export class ProjectTemplatesController {
   constructor(
     private readonly service: ProjectTemplatesService,
+    private readonly projectsService: ProjectsService,
+    private readonly referenceLayersService: ReferenceLayersService,
     private readonly orgService: OrganizationsService,
     private readonly topologyService: TopologyService
   ) {}
@@ -80,6 +86,51 @@ export class ProjectTemplatesController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post(":slug/")
+  async createTemplate(
+    @Param("slug") organizationSlug: OrganizationSlug,
+    @Request() req: any,
+    @Body() dto: CreateProjectTemplateDto
+  ): Promise<ProjectTemplate> {
+    const userId = req.user.id;
+    const org = await this.getOrg(organizationSlug);
+    const userIsAdmin = org && org.admin.id === userId;
+    if (!userIsAdmin) {
+      throw new BadRequestException(`User is not an admin for organization ${organizationSlug}`);
+    }
+    const project = await this.projectsService.findOne(dto.project.id, {
+      relations: ["regionConfig", "chamber"]
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${dto.project.id} not found`);
+    }
+
+    const projectTemplate = await this.service.createFromProject(
+      dto.description,
+      dto.details,
+      org,
+      project
+    );
+
+    const refLayers = await this.referenceLayersService.getProjectReferenceLayers(project.id);
+    // We need to wait for reference layers to be copied, but then we don't
+    // actually need to do anything with the result
+    await Promise.all(
+      refLayers.map(refLayer =>
+        this.referenceLayersService.create({
+          name: refLayer.name,
+          label_field: refLayer.label_field,
+          layer: refLayer.layer,
+          layer_type: refLayer.layer_type,
+          projectTemplate
+        })
+      )
+    );
+
+    return projectTemplate;
+  }
+
   @UseGuards(OptionalJwtAuthGuard)
   @Get("featured/:slug")
   async getFeaturedProjects(
@@ -107,7 +158,7 @@ export class ProjectTemplatesController {
     // available when the user last updated their project
     const projectRows = await this.service.findAdminOrgProjectsWithDistrictProperties(slug);
     const regionURIs = new Set(projectRows.map(row => row.regionS3URI));
-    const topoLayers: { [s3uri: string]: GeoUnitTopology | GeoUnitProperties } = {};
+    const topoLayers: { [s3uri: string]: GeoUnitTopology } = {};
     // eslint-disable-next-line
     for (const [s3uri, layerPromise] of Object.entries(this.topologyService.layers() || {})) {
       const layer = await layerPromise;

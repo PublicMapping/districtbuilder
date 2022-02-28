@@ -61,7 +61,13 @@ const style: Record<string, ThemeUIStyleObject> = {
   }
 };
 
-const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
+const HomeScreenProjectCard = ({
+  project,
+  isOrganizationAdmin
+}: {
+  readonly project: IProject;
+  readonly isOrganizationAdmin: boolean;
+}) => {
   const history = useHistory();
 
   function goToProject(project: IProject) {
@@ -100,7 +106,7 @@ const HomeScreenProjectCard = ({ project }: { readonly project: IProject }) => {
         </Text>
       </Box>
       <span sx={style.flyoutButton}>
-        <ProjectListFlyout project={project} />
+        <ProjectListFlyout project={project} isOrganizationAdmin={isOrganizationAdmin} />
       </span>
     </Flex>
   );
