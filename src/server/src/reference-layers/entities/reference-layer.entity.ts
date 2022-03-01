@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Check } 
 import { FeatureCollection, MultiPolygon, Point } from "geojson";
 import { IReferenceLayer, ReferenceLayerProperties } from "../../../../shared/entities";
 import { Project } from "../../projects/entities/project.entity";
-import { ReferenceLayerTypes } from "../../../../shared/constants";
+import { ReferenceLayerTypes, ReferenceLayerColors } from "../../../../shared/constants";
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 export type ReferenceLayerGeojson =
@@ -37,4 +37,7 @@ export class ReferenceLayer implements IReferenceLayer {
     name: "layer"
   })
   layer: ReferenceLayerGeojson;
+
+  @Column({ type: "enum", enum: ReferenceLayerColors, default: ReferenceLayerColors.Green })
+  layer_color: ReferenceLayerColors;
 }

@@ -32,6 +32,7 @@ import { ReferenceLayer } from "../entities/reference-layer.entity";
 import { ReferenceLayersService } from "../services/reference-layers.service";
 import { ProjectsService } from "../../projects/services/projects.service";
 import { CreateReferenceLayerDto } from "../entities/create-reference-layer.dto";
+import { UpdateReferenceLayerDto } from "../entities/update-reference-layer.dto";
 import { ProjectVisibility } from "../../../../shared/constants";
 
 @Crud({
@@ -58,7 +59,7 @@ import { ProjectVisibility } from "../../../../shared/constants";
     }
   },
   routes: {
-    only: ["createOneBase", "deleteOneBase", "getOneBase"]
+    only: ["createOneBase", "deleteOneBase", "getOneBase", "updateOneBase"]
   }
 })
 @CrudAuth({
@@ -149,7 +150,7 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     } catch (error) {
       if (error instanceof QueryFailedError) {
         throw new BadRequestException(
-          "The following fields are required: name, project, layer_type, layer"
+          "The following fields are required: name, project, layer_type, layer_color, layer"
         );
       } else {
         this.logger.error(`Error creating reference layer: ${error}`);
@@ -158,7 +159,6 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     }
   }
 
-  @UseInterceptors(CrudRequestInterceptor)
   @Override()
   @UseGuards(OptionalJwtAuthGuard)
   async getOne(
@@ -179,7 +179,6 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
     return referenceLayer;
   }
 
-  @UseInterceptors(CrudRequestInterceptor)
   @Override()
   @UseGuards(OptionalJwtAuthGuard)
   async deleteOne(
@@ -194,5 +193,23 @@ export class ReferenceLayersController implements CrudController<ReferenceLayer>
       throw new NotFoundException(`Layer ID ${id} is not a valid UUID`);
     }
     return await this.base.deleteOneBase(req);
+  }
+
+  @Override()
+  @UseGuards(OptionalJwtAuthGuard)
+  async updateOne(
+    @Param("id") id: ReferenceLayerId,
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: UpdateReferenceLayerDto
+  ): Promise<ReferenceLayer> {
+    if (!this.base.updateOneBase) {
+      this.logger.error("Routes misconfigured. Missing `updateOneBase` route");
+      throw new InternalServerErrorException();
+    }
+    if (!isUUID(id)) {
+      throw new NotFoundException(`Layer ID ${id} is not a valid UUID`);
+    }
+    const data = await this.getOne(id, req);
+    return await this.base.updateOneBase(req, { ...data, layer_color: dto.layer_color });
   }
 }

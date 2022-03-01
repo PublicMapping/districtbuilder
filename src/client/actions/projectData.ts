@@ -6,7 +6,8 @@ import {
   IReferenceLayer,
   LockedDistricts,
   ProjectId,
-  ReferenceLayerId
+  ReferenceLayerId,
+  UpdateReferenceLayer
 } from "../../shared/entities";
 import { DynamicProjectData, StaticProjectData } from "../types";
 import { ResourceFailure } from "../resource";
@@ -36,6 +37,17 @@ export const projectReferenceLayersFetchSuccess = createAction(
 )<readonly IReferenceLayer[]>();
 export const projectReferenceLayersFetchFailure = createAction(
   "Project reference layers fetch failure"
+)<ResourceFailure>();
+
+export const referenceLayerUpdate = createAction("Reference layer update")<{
+  readonly id: ReferenceLayerId;
+  readonly layer_color: UpdateReferenceLayer;
+}>();
+export const referenceLayerUpdateSuccess = createAction(
+  "Reference layer update success"
+)<IReferenceLayer>();
+export const referenceLayerUpdateFailure = createAction(
+  "Reference layer update failure"
 )<ResourceFailure>();
 
 export const referenceLayerDelete = createAction("Reference layer delete")<ReferenceLayerId>();

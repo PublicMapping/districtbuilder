@@ -23,7 +23,8 @@ import {
   CreateReferenceLayerData,
   IProjectTemplate,
   CreateProjectTemplateData,
-  IStaticMetadata
+  IStaticMetadata,
+  UpdateReferenceLayer
 } from "../shared/entities";
 import { PLANSCORE_POLL_MS, PLANSCORE_POLL_MAX_TRIES } from "../shared/constants";
 import {
@@ -348,6 +349,18 @@ export async function deleteReferenceLayer(
     apiAxios
       .delete(`/api/reference-layer/${referenceLayerId}`)
       .then(() => resolve(referenceLayerId))
+      .catch(error => reject(error.message));
+  });
+}
+
+export async function patchReferenceLayer(
+  referenceLayerId: ReferenceLayerId,
+  color: Partial<UpdateReferenceLayer>
+): Promise<ReferenceLayerWithGeojson> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .patch(`/api/reference-layer/${referenceLayerId}`, color)
+      .then(response => resolve(response.data))
       .catch(error => reject(error.message));
   });
 }
