@@ -102,12 +102,12 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
     // Returns public listing of all featured projects for an organization
     const builder = this.repo.createQueryBuilder("projectTemplate");
     const data = await builder
-      .innerJoinAndSelect("projectTemplate.organization", "organization")
+      .innerJoin("projectTemplate.organization", "organization")
       .innerJoinAndSelect("projectTemplate.regionConfig", "regionConfig")
-      .leftJoinAndSelect("projectTemplate.projects", "projects", "projects.isFeatured = TRUE")
-      .innerJoinAndSelect("projects.user", "user")
+      .leftJoin("projectTemplate.projects", "projects", "projects.isFeatured = TRUE")
+      .innerJoin("projects.user", "user")
       .where("organization.slug = :slug", { slug: slug })
-      .select([
+      .addSelect([
         "projectTemplate.name",
         "projectTemplate.numberOfDistricts",
         "projectTemplate.id",
@@ -116,7 +116,6 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
         "projects.id",
         "projects.updatedDt",
         "projects.districts",
-        "regionConfig.name",
         "user.name"
       ])
       .orderBy("projects.name")
