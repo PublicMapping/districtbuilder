@@ -4,6 +4,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Put,
   Request,
   UseGuards,
   Header,
@@ -15,7 +16,7 @@ import {
 } from "@nestjs/common";
 import stringify from "csv-stringify/lib/sync";
 
-import { OrganizationSlug } from "../../../../shared/entities";
+import { OrganizationSlug, ProjectTemplateId } from "../../../../shared/entities";
 
 import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { Organization } from "../../organizations/entities/organization.entity";
@@ -219,5 +220,25 @@ export class ProjectTemplatesController {
         .concat(demographicsColumns.map(getDemographicLabel))
         .concat(votingColumns)
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(":slug/:id/")
+  async archiveTemplate(
+    @Param("slug") organizationSlug: OrganizationSlug,
+    @Param("id") id: ProjectTemplateId,
+    @Request() req: any
+  ): Promise<any> {
+    const userId = req.user.id;
+    const org = await this.getOrg(organizationSlug);
+    const userIsAdmin = org && org.admin.id === userId;
+    if (!userIsAdmin) {
+      throw new BadRequestException(`User is not an admin for organization ${organizationSlug}`);
+    }
+    const template = await this.service.findOne(id);
+    if (!template) {
+      throw new NotFoundException(`Project ${id} not found`);
+    }
+    return await this.service.archiveProjectTemplate(id);
   }
 }

@@ -9,7 +9,8 @@ import {
   OrganizationSlug,
   DistrictProperties,
   UserId,
-  ProjectId
+  ProjectId,
+  ProjectTemplateId
 } from "../../../../shared/entities";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { Project } from "../../projects/entities/project.entity";
@@ -149,5 +150,15 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
 
     // @ts-ignore
     return this.repo.save(template);
+  }
+
+  async archiveProjectTemplate(id: ProjectTemplateId): Promise<ProjectTemplateId> {
+    await this.repo
+      .createQueryBuilder("projectTemplate")
+      .update(ProjectTemplate)
+      .set({ isActive: false })
+      .where("id = :id", { id })
+      .execute();
+    return id;
   }
 }
