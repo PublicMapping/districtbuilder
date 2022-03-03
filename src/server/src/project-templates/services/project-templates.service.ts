@@ -13,6 +13,7 @@ import {
 } from "../../../../shared/entities";
 import { Organization } from "../../organizations/entities/organization.entity";
 import { Project } from "../../projects/entities/project.entity";
+import { selectSimplifiedDistricts } from "../../projects/services/projects.service";
 
 export type ProjectExportRow = {
   readonly userId: UserId;
@@ -101,26 +102,25 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
   async findOrgFeaturedProjects(slug: OrganizationSlug): Promise<ProjectTemplate[]> {
     // Returns public listing of all featured projects for an organization
     const builder = this.repo.createQueryBuilder("projectTemplate");
-    const data = await builder
-      .innerJoinAndSelect("projectTemplate.organization", "organization")
-      .innerJoinAndSelect("projectTemplate.regionConfig", "regionConfig")
-      .leftJoinAndSelect("projectTemplate.projects", "projects", "projects.isFeatured = TRUE")
-      .innerJoinAndSelect("projects.user", "user")
-      .where("organization.slug = :slug", { slug: slug })
-      .select([
-        "projectTemplate.name",
-        "projectTemplate.numberOfDistricts",
-        "projectTemplate.id",
-        "projects.name",
-        "projects.isFeatured",
-        "projects.id",
-        "projects.updatedDt",
-        "projects.districts",
-        "regionConfig.name",
-        "user.name"
-      ])
-      .orderBy("projects.name")
-      .getMany();
+    const data = await selectSimplifiedDistricts(
+      builder
+        .innerJoin("projectTemplate.organization", "organization")
+        .innerJoinAndSelect("projectTemplate.regionConfig", "regionConfig")
+        .leftJoin("projectTemplate.projects", "project", "project.isFeatured = TRUE")
+        .innerJoin("project.user", "user")
+        .where("organization.slug = :slug", { slug: slug })
+        .addSelect([
+          "projectTemplate.name",
+          "projectTemplate.numberOfDistricts",
+          "projectTemplate.id",
+          "project.name",
+          "project.isFeatured",
+          "project.id",
+          "project.updatedDt",
+          "user.name"
+        ])
+        .orderBy("project.name")
+    ).getMany();
     return data;
   }
 
