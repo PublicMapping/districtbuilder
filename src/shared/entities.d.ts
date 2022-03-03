@@ -42,6 +42,8 @@ export interface IOrganization {
   readonly admin?: IUser;
   readonly users: readonly IUser[];
   readonly projectTemplates: readonly IProjectTemplate[];
+  readonly deleteTemplate?: IProjectTemplate | undefined;
+  readonly archiveTemplatePending?: boolean;
 }
 
 export interface AddUser {

@@ -46,6 +46,7 @@ import OrganizationTemplates from "../components/OrganizationTemplates";
 
 import PageNotFoundScreen from "./PageNotFoundScreen";
 import { createProject } from "../api";
+import ArchiveTemplateModal from "../components/ArchiveTemplateModal";
 
 interface StateProps {
   readonly organization: OrganizationState;
@@ -261,6 +262,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
 
   return (
     <Flex sx={{ flexDirection: "column" }}>
+      {"resource" in organization && <ArchiveTemplateModal org={organization.resource} />}
       <SiteHeader user={user} />
       <Flex as="main" sx={style.main}>
         {"resource" in organization ? (
