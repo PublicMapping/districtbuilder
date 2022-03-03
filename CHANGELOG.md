@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.15.1] - 2022-03-03
+
+### Fixed
+
+- Fixed mini-map display on organization feature maps page [#1161](https://github.com/PublicMapping/districtbuilder/pull/1161)
+
 ## [1.15.0] - 2022-02-28
 
 ### Added
