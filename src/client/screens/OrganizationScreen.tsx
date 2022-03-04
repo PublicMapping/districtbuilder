@@ -354,6 +354,7 @@ const OrganizationScreen = ({ organization, organizationProjects, user }: StateP
                   user={"resource" in user ? user.resource : undefined}
                   organization={organization.resource}
                   templateSelected={setupProjectFromTemplate}
+                  displayAdminFlyout={true}
                 />
               )}
             </Box>

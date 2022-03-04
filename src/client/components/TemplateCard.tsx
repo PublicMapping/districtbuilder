@@ -44,11 +44,13 @@ function checkIfUserIsAdmin(org: IOrganization, user: IUser) {
 }
 
 const TemplateCard = ({
+  displayAdminFlyout,
   template,
   user,
   organization,
   templateSelected
 }: {
+  readonly displayAdminFlyout: boolean;
   readonly template: IProjectTemplate;
   readonly organization: IOrganization;
   readonly templateSelected: (templateData: CreateProjectData) => Promise<void>;
@@ -155,7 +157,9 @@ const TemplateCard = ({
           <Box>{useButton}</Box>
         </Tooltip>
       )}
-      {userIsAdmin && <span sx={style.flyoutButton}>{TemplateListFlyout}</span>}
+      {userIsAdmin && displayAdminFlyout && (
+        <span sx={style.flyoutButton}>{TemplateListFlyout}</span>
+      )}
     </Flex>
   );
 };
