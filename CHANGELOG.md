@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add color picker to reference layer flyout [#1150](https://github.com/PublicMapping/districtbuilder/pull/1150)
 
 ### Changed
 
@@ -24,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add modal to allow organization admins to create templates from projects [#1107](https://github.com/PublicMapping/districtbuilder/pull/1107)
-- Add color picker to reference layer flyout [#1150](https://github.com/PublicMapping/districtbuilder/pull/1150)
 
 ### Changed
 
