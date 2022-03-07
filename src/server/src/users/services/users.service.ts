@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { TypeOrmCrudService } from "@nestjsx/crud-typeorm";
 import { Repository } from "typeorm";
 
-import { Register, OrganizationSlug } from "../../../../shared/entities";
+import { Register, OrganizationSlug, UserId } from "../../../../shared/entities";
 import { User } from "../entities/user.entity";
 
 @Injectable()
@@ -28,5 +28,16 @@ export class UsersService extends TypeOrmCrudService<User> {
       .createQueryBuilder("user")
       .innerJoin("user.organizations", "organization", "slug = :slug", { slug })
       .getMany();
+  }
+
+  async updateLastLogin(userId: UserId): Promise<void> {
+    await this.repo
+      .createQueryBuilder("user")
+      .update(User)
+      .set({ lastLoginDt: () => "NOW()" })
+      .where("id = :userId", { userId })
+      .execute();
+
+    return;
   }
 }

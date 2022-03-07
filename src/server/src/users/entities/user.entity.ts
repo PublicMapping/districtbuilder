@@ -38,6 +38,20 @@ export class User implements IUser {
   @Exclude()
   passwordHash: string;
 
+  @Column({
+    type: "timestamp with time zone",
+    name: "created_dt",
+    default: () => "NOW()"
+  })
+  createdDt: Date;
+
+  @Column({
+    type: "timestamp with time zone",
+    name: "last_login_dt",
+    default: () => "NOW()"
+  })
+  lastLoginDt: Date;
+
   constructor(params?: { id?: string; email: string; name: string; passwordHash?: string }) {
     if (!params) {
       return;

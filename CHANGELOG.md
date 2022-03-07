@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add district type to project cards on 'My Maps' page [#1162](https://github.com/PublicMapping/districtbuilder/pull/1162)
 
+- Add Creation and Login Dates to User [#1159](https://github.com/PublicMapping/districtbuilder/pull/1159)
+
 ### Changed
 
 ### Fixed
