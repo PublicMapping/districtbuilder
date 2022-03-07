@@ -2,7 +2,7 @@
 import { useState } from "react";
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
-import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx } from "theme-ui";
 
 import Icon from "../Icon";
 import { GeoLevelInfo, ProjectId } from "../../../shared/entities";
@@ -12,28 +12,6 @@ import { projectFetch } from "../../actions/projectData";
 import { patchProject } from "../../api";
 import { State } from "../../reducers";
 import store from "../../store";
-
-const style: Record<string, ThemeUIStyleObject> = {
-  modal: {
-    bg: "muted",
-    p: 3,
-    width: "small",
-    maxWidth: "90vw"
-  },
-  header: {
-    bg: "warning",
-    padding: "16px 12px",
-    margin: "-12px -12px 24px"
-  },
-  footer: {
-    flex: "auto",
-    textAlign: "right",
-    fontVariant: "tabular-nums",
-    py: 2,
-    mt: 2,
-    fontSize: 1
-  }
-};
 
 const AdvancedEditingModal = ({
   id,
@@ -57,8 +35,8 @@ const AdvancedEditingModal = ({
       getApplicationNode={() => document.getElementById("root") as Element}
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
-      <Box sx={style.modal}>
-        <Box sx={style.header}>
+      <Box sx={{ variant: "styles.confirmationModal.modal" }}>
+        <Box sx={{ variant: "styles.confirmationModal.warningHeader" }}>
           <Heading
             as="h3"
             sx={{ marginBottom: "0", fontWeight: "medium", display: "flex", alignItems: "center" }}
@@ -93,7 +71,7 @@ const AdvancedEditingModal = ({
             </li>
           </ul>
         </Box>
-        <Flex sx={style.footer}>
+        <Flex sx={{ variant: "styles.confirmationModal.footer" }}>
           <Button
             id="cancel-advanced-editing"
             onClick={hideModal}

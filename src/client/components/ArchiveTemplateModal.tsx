@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import AriaModal from "react-aria-modal";
-import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx } from "theme-ui";
 
 import Icon from "./Icon";
 import { IOrganization } from "../../shared/entities";
@@ -10,28 +10,6 @@ import { archiveTemplate, setArchiveTemplate } from "../actions/organization";
 interface Props {
   readonly org: IOrganization;
 }
-
-const style: Record<string, ThemeUIStyleObject> = {
-  modal: {
-    bg: "muted",
-    p: 3,
-    width: "small",
-    maxWidth: "90vw"
-  },
-  header: {
-    bg: "error",
-    padding: "16px 12px",
-    margin: "-12px -12px 24px"
-  },
-  footer: {
-    flex: "auto",
-    textAlign: "right",
-    fontVariant: "tabular-nums",
-    py: 2,
-    mt: 2,
-    fontSize: 1
-  }
-};
 
 const ArchiveTemplateModal = ({ org }: Props) => {
   const hideModal = () => store.dispatch(setArchiveTemplate(undefined));
@@ -45,8 +23,8 @@ const ArchiveTemplateModal = ({ org }: Props) => {
       getApplicationNode={() => document.getElementById("root") as Element}
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
-      <Box sx={style.modal}>
-        <Box sx={style.header}>
+      <Box sx={{ variant: "styles.confirmationModal.modal" }}>
+        <Box sx={{ variant: "styles.confirmationModal.errorHeader" }}>
           <Heading
             as="h3"
             sx={{
@@ -67,7 +45,7 @@ const ArchiveTemplateModal = ({ org }: Props) => {
         <Box>
           <p>{`Are you sure you want to delete “${template.name}”? This can’t be undone.`}</p>
         </Box>
-        <Flex sx={style.footer}>
+        <Flex sx={{ variant: "styles.confirmationModal.footer" }}>
           <Button
             id="cancel-delete-project"
             onClick={hideModal}
