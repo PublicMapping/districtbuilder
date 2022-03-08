@@ -253,7 +253,7 @@ variable "container_instance_asg_health_check_grace_period" {
 }
 
 variable "container_instance_reserved_memory" {
-  default = 4 * 1024
+  default = 2 * 1024
   type    = number
 }
 
