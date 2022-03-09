@@ -6,7 +6,7 @@ services:
       - "/var/cache/district-builder-${EXECUTOR_NUMBER}-server-node-modules:/home/node/app/server/node_modules"
 
   client:
-    image: node:16-slim
+    image: node:16-bullseye-slim
     volumes:
       - "/var/cache/district-builder-${EXECUTOR_NUMBER}-client-node-modules:/home/node/app/node_modules"
 

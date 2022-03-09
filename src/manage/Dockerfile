@@ -20,7 +20,7 @@ RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION}
 RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION} install
 
 
-FROM node:16-slim
+FROM node:16-bullseye-slim
 
 RUN mkdir -p /home/node/app/manage
 WORKDIR /home/node/app/manage
