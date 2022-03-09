@@ -74,6 +74,7 @@ To deploy this project's core infrastructure, use the `infra` wrapper script to 
 
 ```bash
 $ docker-compose -f docker-compose.ci.yml run --rm terraform
+$ export GIT_COMMIT= (an existing git hash of an image that has been published)
 $ ./scripts/infra plan
 ```
 
@@ -83,7 +84,7 @@ Once the plan has been assembled, and you agree with the changes, apply it:
 $ ./scripts/infra apply
 ```
 
-This will attempt to apply the plan assembled in the previous step using Amazon's APIs.
+This will attempt to apply the plan assembled in the previous step using Amazon's APIs.  If you want to change production you need to prepend DB_SETTINGS_BUCKET=districtbuilder-production-config-us-east-1 to the infra commands.
 
 ## Migrations
 
