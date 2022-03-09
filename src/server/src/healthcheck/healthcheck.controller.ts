@@ -3,8 +3,10 @@ import {
   HealthCheck,
   HealthCheckResult,
   HealthCheckService,
+  MemoryHealthIndicator,
   TypeOrmHealthIndicator
 } from "@nestjs/terminus";
+import os from "os";
 
 import TopologyLoadedIndicator from "./topology-loaded.indicator";
 
@@ -13,6 +15,7 @@ export class HealthcheckController {
   constructor(
     private readonly health: HealthCheckService,
     private readonly db: TypeOrmHealthIndicator,
+    private readonly memory: MemoryHealthIndicator,
     private readonly topoLoaded: TopologyLoadedIndicator
   ) {}
 
@@ -23,9 +26,11 @@ export class HealthcheckController {
     const timeout = process.env.TYPEORM_HEALTH_CHECK_TIMEOUT
       ? Number(process.env.TYPEORM_HEALTH_CHECK_TIMEOUT)
       : undefined;
+    const maxRss = os.totalmem() * 0.9;
     return this.health.check([
-      async () => this.db.pingCheck("database", { timeout }),
-      () => this.topoLoaded.isHealthy("topology")
+      () => this.db.pingCheck("database", { timeout }),
+      () => this.topoLoaded.isHealthy("topology"),
+      () => this.memory.checkRSS("memory", maxRss)
     ]);
   }
 }
