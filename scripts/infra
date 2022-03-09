@@ -16,7 +16,10 @@ Execute Terraform subcommands with remote state management.
 if [[ -n "${GIT_COMMIT}" ]]; then
     GIT_COMMIT="${GIT_COMMIT:0:7}"
 else
-    GIT_COMMIT="$(git rev-parse --short HEAD)"
+    #GIT_COMMIT="$(git rev-parse --short HEAD)"
+    echo "Must manually specify the GIT_COMMIT you want to deploy "
+    echo "Try git rev-parse --short HEAD if you are sure that commit already has an image"
+    exit 1
 fi
 
 if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
