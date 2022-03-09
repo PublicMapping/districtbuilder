@@ -1,7 +1,7 @@
 version: "2.4"
 services:
   server:
-    image: "districtbuilder:${GIT_COMMIT:-latest}"
+    image: "districtbuilder:${GIT_COMMIT}"
     volumes:
       - "/var/cache/district-builder-${EXECUTOR_NUMBER}-server-node-modules:/home/node/app/server/node_modules"
 
@@ -11,7 +11,7 @@ services:
       - "/var/cache/district-builder-${EXECUTOR_NUMBER}-client-node-modules:/home/node/app/node_modules"
 
   manage:
-    image: "districtbuilder-manage:${GIT_COMMIT:-latest}"
+    image: "districtbuilder-manage:${GIT_COMMIT}"
     volumes:
       - "/var/cache/district-builder-${EXECUTOR_NUMBER}-server-node-modules:/home/node/app/server/node_modules"
       - "/var/cache/district-builder-${EXECUTOR_NUMBER}-manage-node-modules:/home/node/app/manage/node_modules"
@@ -29,7 +29,7 @@ services:
       - $HOME/.aws:/root/.aws:ro
     environment:
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
-      - GIT_COMMIT=${GIT_COMMIT:-latest}
+      - GIT_COMMIT=${GIT_COMMIT}
       - DB_DEBUG=1
       - DB_SETTINGS_BUCKET=${DB_SETTINGS_BUCKET:-districtbuilder-staging-config-us-east-1}
       - DB_ROLLBAR_ACCESS_TOKEN
