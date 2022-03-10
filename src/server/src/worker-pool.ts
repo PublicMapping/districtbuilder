@@ -17,6 +17,9 @@ const workerPools = [...Array(NUM_WORKERS).keys()].map(i =>
 );
 type WorkerPool = typeof workerPools[0];
 
+// Not that important to limit small regions, but large regions in every worker will eat up our cache
+const MAX_PER_REGION = Math.ceil(NUM_WORKERS / 2);
+
 // This is needed by the tests
 export async function terminatePool() {
   return Promise.all(workerPools.map(pool => pool.terminate()));
@@ -52,8 +55,8 @@ async function findPool(regionConfig: IRegionConfig): Promise<WorkerPool> {
     // First check for available pools that were used for this region, get most recent
     lastUsedSettled.length > 0
       ? lastUsedSettled[0]
-      : // Next check if any pools are available
-      allSettledPools.length > 0
+      : // Next check if any pools are available, if we haven't hit our limit for this region
+      lastUsed.length < MAX_PER_REGION && allSettledPools.length > 0
       ? (_.sample(allSettledPools) as WorkerPool)
       : // If we have no available pools, use the most recent for this region
       lastUsed.length > 0
