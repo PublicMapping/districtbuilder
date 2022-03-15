@@ -47,9 +47,9 @@ type GroupedPolygons = {
 
 type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 
-// Reserve 80% of total memory for topology data, split amongst each worker
-// Remaining 20% is left available to the framework / handling requests
-const maxCacheSize = Math.ceil((os.totalmem() / NUM_WORKERS) * 0.8);
+// Reserve 20% of total memory for topology data, split amongst each worker
+// Remaining is left available for responding to requests and loading uncached topology data from disk
+const maxCacheSize = Math.ceil((os.totalmem() / NUM_WORKERS) * 0.2);
 
 const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarchy[]]>({
   max: 100,
@@ -80,7 +80,8 @@ const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarc
     // 1 node per feature, each node has 1 geom pointer (8 bytes) + 1 array (16 bytes)
     //  Each node is pointed to by its parent node (8 bytes)
     const hierarchySize = numFeatures * 32;
-    return featureSize + arcSize + hierarchySize;
+    // If we don't return an integer, lru-cache says our size is 0
+    return Math.ceil(featureSize + arcSize + hierarchySize);
   }
 });
 
