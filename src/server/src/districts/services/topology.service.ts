@@ -74,10 +74,10 @@ export class TopologyService {
           }),
           {}
         );
-        // Load largest states first
+        // Load largest states last, so they're less likely to be evicted from the cache
         const sortedRegions = _.sortBy(regionConfigs, region => [
-          !STATE_ORDER.includes(region.regionCode),
-          STATE_ORDER.indexOf(region.regionCode)
+          STATE_ORDER.includes(region.regionCode),
+          -STATE_ORDER.indexOf(region.regionCode)
         ]);
 
         // Load a number of regions in parallel, adding another as each one completes
