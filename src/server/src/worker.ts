@@ -1,3 +1,4 @@
+import { Logger } from "@nestjs/common";
 import area from "@turf/area";
 import length from "@turf/length";
 import polygonToLine from "@turf/polygon-to-line";
@@ -15,6 +16,7 @@ import {
   Polygon,
   Topology
 } from "topojson-specification";
+import { threadId } from "worker_threads";
 
 import {
   Contiguity,
@@ -33,7 +35,7 @@ import {
 } from "../../shared/entities";
 import { getAllBaseIndices, getDemographics, getVoting } from "../../shared/functions";
 import { NUM_WORKERS } from "./common/constants";
-import { getTopologyFromDisk } from "./common/functions";
+import { formatBytes, getTopologyFromDisk } from "./common/functions";
 import { DistrictsGeoJSON } from "./projects/entities/project.entity";
 
 interface GeoUnitPolygonHierarchy {
@@ -51,10 +53,15 @@ type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 // Remaining is left available for responding to requests and loading uncached topology data from disk
 const maxCacheSize = Math.ceil((os.totalmem() / NUM_WORKERS) * 0.2);
 
+const logger = new Logger(`worker-${threadId}`);
+
 const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarchy[]]>({
   max: 100,
   maxSize: maxCacheSize,
-  sizeCalculation: ([topology]: [Topology, unknown]) => {
+  disposeAfter: (_value: unknown, key: string) => {
+    logger.debug(`Removing layer ${key} from worker ${threadId}`);
+  },
+  sizeCalculation: ([topology]: [Topology, unknown], key: string) => {
     const numFeatures = Object.values(topology.objects)
       .map(gc => (gc.type === "GeometryCollection" ? gc.geometries.length : 0))
       .reduce((sum, length) => sum + length, 0);
@@ -81,7 +88,9 @@ const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarc
     //  Each node is pointed to by its parent node (8 bytes)
     const hierarchySize = numFeatures * 32;
     // If we don't return an integer, lru-cache says our size is 0
-    return Math.ceil(featureSize + arcSize + hierarchySize);
+    const size = Math.ceil(featureSize + arcSize + hierarchySize);
+    logger.debug(`Adding layer ${key} to worker ${threadId}, size: ${formatBytes(size)}`);
+    return size;
   }
 });
 
