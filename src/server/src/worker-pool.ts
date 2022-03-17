@@ -1,5 +1,6 @@
+import { Logger } from "@nestjs/common";
 import _ from "lodash";
-import { spawn, Pool, Worker } from "threads";
+import { spawn, Pool, Worker, Thread } from "threads";
 import {
   IStaticMetadata,
   IRegionConfig,
@@ -10,65 +11,98 @@ import { NUM_WORKERS } from "./common/constants";
 import { DistrictsGeoJSON } from "./projects/entities/project.entity";
 import { Functions, MergeArgs } from "./worker";
 
+const logger = new Logger("worker-pool");
+
+// Need to retain access to the workers for each pool to catch errors if they crash
+const workers = [...Array(NUM_WORKERS)].map(() => spawn<Functions>(new Worker("./worker")));
+
+// This function is needed by the tests
+let terminating = false;
+export async function terminatePool() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  terminating = true;
+  return Promise.all(workerPools.map(pool => pool.terminate()));
+}
+
+// If a worker crashes (e.g. it ran out of memory), replace it & its pool
+function recreatePoolOnExit(promise: Promise<Thread>, i: number) {
+  void promise.then(worker => {
+    Thread.events(worker).subscribe(event => {
+      if (terminating || event.type === "message") return;
+
+      spawn<Functions>(new Worker("./worker"))
+        .then(newWorker => {
+          const newPromise = Promise.resolve(newWorker);
+          // eslint-disable-next-line functional/immutable-data
+          workers[i] = newPromise;
+          // eslint-disable-next-line functional/immutable-data
+          workerPools[i] = Pool(() => newPromise, { size: 1, name: `worker-${i}` });
+          // Setup crash handler for new worker
+          logger.log("Recreated worker ${i} after crash");
+          recreatePoolOnExit(newPromise, i);
+        })
+        .catch(() => {
+          logger.error("Failed to recreated worker ${i} after crash");
+        });
+    });
+  });
+}
+workers.forEach(recreatePoolOnExit);
+
 // The ability to queue tasks is nice, but we want to explicitly route to worker threads that already have data loaded
 // To do so, we create many pools (each of which can queue tasks) with one worker each, rather than one pool with many workers
-const workerPools = [...Array(NUM_WORKERS).keys()].map(i =>
-  Pool(() => spawn<Functions>(new Worker("./worker")), { size: 1, name: `worker-${i}` })
+const workerPools = workers.map((worker, i) =>
+  Pool(() => Promise.resolve(worker), { size: 1, name: `worker-${i}` })
 );
 type WorkerPool = typeof workerPools[0];
 
 // Not that important to limit small regions, but large regions in every worker will eat up our cache
 const MAX_PER_REGION = Math.ceil(NUM_WORKERS / 2);
 
-// This is needed by the tests
-export async function terminatePool() {
-  return Promise.all(workerPools.map(pool => pool.terminate()));
-}
-
-async function getSettledPools(workerPools: WorkerPool[]) {
+async function getSettledPools(workerPools: WorkerPool[], indexes: number[]) {
   return [
     ...(await Promise.all(
-      workerPools.map(pool =>
-        Promise.race([
-          pool.settled(true).then(() => {
-            return [true, pool] as [boolean, WorkerPool];
+      indexes.map(index => {
+        return Promise.race([
+          workerPools[index].settled(true).then(() => {
+            return [true, index] as [boolean, number];
           }),
-          new Promise<[boolean, WorkerPool]>(res => setTimeout(() => res([false, pool]), 1))
-        ])
-      )
+          new Promise<[boolean, number]>(res => setTimeout(() => res([false, index]), 1))
+        ]);
+      })
     ))
-  ].flatMap(([settled, pool]: [boolean, unknown]) => {
-    return settled ? [pool] : [];
-  }) as WorkerPool[];
+  ].flatMap(([settled, poolIndex]: [boolean, number]) => {
+    return settled ? [poolIndex] : [];
+  });
 }
 
 // Keep track of which regions have been routed to which pools, in order of recency
 // We'll try to reroute back to those same pools later to re-use the workers cached data
-const poolsByRegion: { [id: string]: WorkerPool[] } = {};
+const poolsByRegion: { [id: string]: number[] } = {};
 
 async function findPool(regionConfig: IRegionConfig): Promise<WorkerPool> {
   const lastUsed = poolsByRegion[regionConfig.id] || [];
-  const lastUsedSettled = await getSettledPools(lastUsed);
-  const allSettledPools = await getSettledPools(workerPools);
+  const lastUsedSettled = await getSettledPools(workerPools, lastUsed);
+  const allSettledPools = await getSettledPools(workerPools, [...workerPools.keys()]);
 
-  const poolToUse =
+  const poolToUse: number =
     // First check for available pools that were used for this region, get most recent
     lastUsedSettled.length > 0
       ? lastUsedSettled[0]
       : // Next check if any pools are available, if we haven't hit our limit for this region
       lastUsed.length < MAX_PER_REGION && allSettledPools.length > 0
-      ? (_.sample(allSettledPools) as WorkerPool)
+      ? (_.sample(allSettledPools) as number)
       : // If we have no available pools, use the most recent for this region
       lastUsed.length > 0
       ? lastUsed[0]
       : // Lastly, just use anything
-        (_.sample(workerPools) as WorkerPool);
+        (_.sample([...workerPools.keys()]) as number);
 
   // Move this pool to the top of the list of pools for this region
   // eslint-disable-next-line functional/immutable-data
   poolsByRegion[regionConfig.id] = [poolToUse, ...lastUsed.filter(pool => pool != poolToUse)];
 
-  return poolToUse;
+  return workerPools[poolToUse];
 }
 
 export const merge = (args: MergeArgs) =>
