@@ -23,7 +23,9 @@ data "template_cloudinit_config" "container_instance_cloud_config" {
       # better than choosing an arbitrary constant.
       #
       # See: doc/DistrictBuilder_Memory_Usage_vs_Memory_Map_Areas.xlsx
-      vm_max_map_count = local.container_instance_app_memory * 3 + (8 * 1024)
+      #
+      # Edit 3-17-2022, doubled map count to account for new cache architecture
+      vm_max_map_count = local.container_instance_app_memory * 6 + (8 * 1024)
     })
   }
 }
