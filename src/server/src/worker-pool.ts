@@ -1,5 +1,4 @@
 import { Logger } from "@nestjs/common";
-import _ from "lodash";
 import { spawn, Pool, Worker, Thread } from "threads";
 import {
   IStaticMetadata,
@@ -19,7 +18,6 @@ const workers = [...Array(NUM_WORKERS)].map(() => spawn<Functions>(new Worker(".
 // This function is needed by the tests
 let terminating = false;
 export async function terminatePool() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   terminating = true;
   return Promise.all(workerPools.map(pool => pool.terminate()));
 }
@@ -79,11 +77,16 @@ async function getSettledPools(workerPools: WorkerPool[], indexes: number[]) {
 // Keep track of which regions have been routed to which pools, in order of recency
 // We'll try to reroute back to those same pools later to re-use the workers cached data
 const poolsByRegion: { [id: string]: number[] } = {};
+let roundRobinIndex = 0;
+const incrementedIndex = () => (roundRobinIndex = (roundRobinIndex + 1) % NUM_WORKERS);
 
 async function findPool(regionConfig: IRegionConfig): Promise<WorkerPool> {
   const lastUsed = poolsByRegion[regionConfig.id] || [];
   const lastUsedSettled = await getSettledPools(workerPools, lastUsed);
   const allSettledPools = await getSettledPools(workerPools, [...workerPools.keys()]);
+
+  const getNextSettled = (): number =>
+    allSettledPools.includes(incrementedIndex()) ? roundRobinIndex : getNextSettled();
 
   const poolToUse: number =
     // First check for available pools that were used for this region, get most recent
@@ -91,12 +94,13 @@ async function findPool(regionConfig: IRegionConfig): Promise<WorkerPool> {
       ? lastUsedSettled[0]
       : // Next check if any pools are available, if we haven't hit our limit for this region
       lastUsed.length < MAX_PER_REGION && allSettledPools.length > 0
-      ? (_.sample(allSettledPools) as number)
+      ? // Choose our next round-robin index if it's settled, or skip to the next one after that
+        getNextSettled()
       : // If we have no available pools, use the most recent for this region
       lastUsed.length > 0
       ? lastUsed[0]
-      : // Lastly, just use anything
-        (_.sample([...workerPools.keys()]) as number);
+      : // Lastly, just use anything, choosing pools round-robin
+        incrementedIndex();
 
   // Move this pool to the top of the list of pools for this region
   // eslint-disable-next-line functional/immutable-data
