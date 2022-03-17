@@ -49,9 +49,15 @@ type GroupedPolygons = {
 
 type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 
-// Reserve 20% of total memory for topology data, split amongst each worker
-// Remaining is left available for responding to requests and loading uncached topology data from disk
-const maxCacheSize = Math.ceil((os.totalmem() / NUM_WORKERS) * 0.2);
+// Reserve 25Gb for responding to requests and loading uncached topology data from disk
+// Remaining amount is split amongst each worker for topology data
+// This strategy seems to work for both 32Gb and 64Gb instances
+//
+// For environments with less memory than that (e.g. dev environments) we have a minimum of 4Gb
+const reservedMem = 25 * 1024 * 1024 * 1024;
+const maxCacheSize = Math.ceil(
+  Math.max(os.totalmem() - reservedMem, 4 * 1024 * 1024 * 1024) / NUM_WORKERS
+);
 
 const logger = new Logger(`worker-${threadId}`);
 
