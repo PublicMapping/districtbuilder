@@ -1,5 +1,6 @@
 import { Logger } from "@nestjs/common";
-import { spawn, Pool, Worker, Thread } from "threads";
+import { spawn, Pool, Worker } from "threads";
+import { TaskRunFunction } from "threads/dist/master/pool-types";
 import {
   IStaticMetadata,
   IRegionConfig,
@@ -10,48 +11,27 @@ import { NUM_WORKERS } from "./common/constants";
 import { DistrictsGeoJSON } from "./projects/entities/project.entity";
 import { Functions, MergeArgs } from "./worker";
 
+// Timeout after which we kill/recreate the worker pool
+const TASK_TIMEOUT_MS = 90_000;
+
 const logger = new Logger("worker-pool");
 
 // Need to retain access to the workers for each pool to catch errors if they crash
 const workers = [...Array(NUM_WORKERS)].map(() => spawn<Functions>(new Worker("./worker")));
+const timeouts: Array<NodeJS.Timeout | undefined> = [...Array(NUM_WORKERS)].fill(undefined);
 
-// This function is needed by the tests
-let terminating = false;
+// We need to terminate pools cleanly when running the test suite
 export async function terminatePool() {
-  terminating = true;
   return Promise.all(workerPools.map(pool => pool.terminate()));
 }
-
-// If a worker crashes (e.g. it ran out of memory), replace it & its pool
-function recreatePoolOnExit(promise: Promise<Thread>, i: number) {
-  void promise.then(worker => {
-    Thread.events(worker).subscribe(event => {
-      if (terminating || event.type === "message") return;
-
-      spawn<Functions>(new Worker("./worker"))
-        .then(newWorker => {
-          const newPromise = Promise.resolve(newWorker);
-          // eslint-disable-next-line functional/immutable-data
-          workers[i] = newPromise;
-          // eslint-disable-next-line functional/immutable-data
-          workerPools[i] = Pool(() => newPromise, { size: 1, name: `worker-${i}` });
-          // Setup crash handler for new worker
-          logger.log("Recreated worker ${i} after crash");
-          recreatePoolOnExit(newPromise, i);
-        })
-        .catch(() => {
-          logger.error("Failed to recreated worker ${i} after crash");
-        });
-    });
-  });
-}
-workers.forEach(recreatePoolOnExit);
 
 // The ability to queue tasks is nice, but we want to explicitly route to worker threads that already have data loaded
 // To do so, we create many pools (each of which can queue tasks) with one worker each, rather than one pool with many workers
 const workerPools = workers.map((worker, i) =>
   Pool(() => Promise.resolve(worker), { size: 1, name: `worker-${i}` })
 );
+type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
+type WorkerThread = Awaited<typeof workers[0]>;
 type WorkerPool = typeof workerPools[0];
 
 // Not that important to limit small regions, but large regions in every worker will eat up our cache
@@ -80,7 +60,7 @@ const poolsByRegion: { [id: string]: number[] } = {};
 let roundRobinIndex = 0;
 const incrementedIndex = () => (roundRobinIndex = (roundRobinIndex + 1) % NUM_WORKERS);
 
-async function findPool(regionConfig: IRegionConfig): Promise<WorkerPool> {
+async function findPool(regionConfig: IRegionConfig): Promise<number> {
   const lastUsed = poolsByRegion[regionConfig.id] || [];
   const lastUsedSettled = await getSettledPools(workerPools, lastUsed);
   const allSettledPools = await getSettledPools(workerPools, [...workerPools.keys()]);
@@ -106,12 +86,49 @@ async function findPool(regionConfig: IRegionConfig): Promise<WorkerPool> {
   // eslint-disable-next-line functional/immutable-data
   poolsByRegion[regionConfig.id] = [poolToUse, ...lastUsed.filter(pool => pool != poolToUse)];
 
-  return workerPools[poolToUse];
+  return poolToUse;
+}
+
+// If a worker times out or crashes (e.g. it ran out of memory), replace it & its pool
+function recreatePool(i: number) {
+  void workerPools[i].terminate(true);
+  spawn<Functions>(new Worker("./worker"))
+    .then(newWorker => {
+      const newPromise = Promise.resolve(newWorker);
+      // eslint-disable-next-line functional/immutable-data
+      workers[i] = newPromise;
+      // eslint-disable-next-line functional/immutable-data
+      workerPools[i] = Pool(() => newPromise, { size: 1, name: `worker-${i}` });
+      // Setup crash handler for new worker
+      logger.log(`Recreated worker ${i} after crash`);
+    })
+    .catch(() => {
+      logger.error(`Failed to recreated worker ${i} after crash`);
+    });
+}
+
+function clearPoolTimeout(poolIndex: number) {
+  // Clear the timeout so we don't run the cleanup function
+  const timeout = timeouts[poolIndex];
+  timeout && clearTimeout(timeout);
+  // eslint-disable-next-line functional/immutable-data
+  timeouts[poolIndex] = undefined;
+}
+
+function queueWithTimeout<R>(poolIndex: number, cb: TaskRunFunction<WorkerThread, R>) {
+  const task = workerPools[poolIndex].queue(cb);
+  // Clear out any timeouts after the task completes
+  task.then(() => clearPoolTimeout(poolIndex)).catch(() => recreatePool(poolIndex));
+  // Also clear pre-existing timeouts if we're adding a new one before cleanup could happen
+  clearPoolTimeout(poolIndex);
+  // eslint-disable-next-line functional/immutable-data
+  timeouts[poolIndex] = setTimeout(() => recreatePool(poolIndex), TASK_TIMEOUT_MS);
+  return task;
 }
 
 export const merge = (args: MergeArgs) =>
   findPool(args.regionConfig).then<DistrictsGeoJSON>(pool =>
-    pool.queue(worker => worker.merge(args))
+    queueWithTimeout(pool, worker => worker.merge(args))
   );
 
 export const importFromCSV = (
@@ -122,7 +139,9 @@ export const importFromCSV = (
   }
 ) =>
   findPool(regionConfig).then<DistrictsDefinition>(pool =>
-    pool.queue(worker => worker.importFromCSV(staticMetadata, regionConfig, blockToDistricts))
+    queueWithTimeout(pool, worker =>
+      worker.importFromCSV(staticMetadata, regionConfig, blockToDistricts)
+    )
   );
 
 export const exportToCSV = (
@@ -131,7 +150,9 @@ export const exportToCSV = (
   districtsDefinition: DistrictsDefinition
 ) =>
   findPool(regionConfig).then<[string, number][]>(pool =>
-    pool.queue(worker => worker.exportToCSV(staticMetadata, regionConfig, districtsDefinition))
+    queueWithTimeout(pool, worker =>
+      worker.exportToCSV(staticMetadata, regionConfig, districtsDefinition)
+    )
   );
 
 export const getTopologyProperties = (
@@ -139,5 +160,5 @@ export const getTopologyProperties = (
   staticMetadata: IStaticMetadata
 ) =>
   findPool(regionConfig).then<TopologyProperties>(pool =>
-    pool.queue(worker => worker.getTopologyProperties(regionConfig, staticMetadata))
+    queueWithTimeout(pool, worker => worker.getTopologyProperties(regionConfig, staticMetadata))
   );
