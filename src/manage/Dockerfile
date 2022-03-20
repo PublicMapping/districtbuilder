@@ -1,6 +1,6 @@
 FROM node:16-bullseye-slim AS tippecanoe
 
-ENV TIPPECANOE_VERSION="1.35.0"
+ENV TIPPECANOE_VERSION="1.36.0"
 
 RUN set -ex \
   && deps=" \
@@ -20,7 +20,7 @@ RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION}
 RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION} install
 
 
-FROM node:16-slim
+FROM node:16-bullseye-slim
 
 RUN mkdir -p /home/node/app/manage
 WORKDIR /home/node/app/manage
