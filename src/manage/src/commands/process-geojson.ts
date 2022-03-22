@@ -300,6 +300,8 @@ it when necessary (file sizes ~1GB+).
       geoLevelHierarchyInfo,
       this.getDemographicsGroups(flags.demographics)
     );
+
+    process.exit(0);
   }
 
   renameProps(

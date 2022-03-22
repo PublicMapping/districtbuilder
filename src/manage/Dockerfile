@@ -1,6 +1,6 @@
 FROM node:16-bullseye-slim AS tippecanoe
 
-ENV TIPPECANOE_VERSION="1.35.0"
+ENV TIPPECANOE_VERSION="1.36.0"
 
 RUN set -ex \
   && deps=" \

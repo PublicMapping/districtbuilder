@@ -9,10 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add color picker to reference layer flyout [#1150](https://github.com/PublicMapping/districtbuilder/pull/1150)
-
 - Add district type to project cards on 'My Maps' page [#1162](https://github.com/PublicMapping/districtbuilder/pull/1162)
-
 - Add Creation and Login Dates to User [#1159](https://github.com/PublicMapping/districtbuilder/pull/1159)
+- Updated tippecanoe & fix process-geojson [#1173](https://github.com/PublicMapping/districtbuilder/pull/1173)
 
 ### Changed
 
