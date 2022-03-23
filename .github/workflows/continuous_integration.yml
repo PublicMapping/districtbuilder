@@ -1,0 +1,18 @@
+name: Github CI
+
+on:
+  push:
+    branches:
+      - postgis_upgrade
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./scripts/cibuild

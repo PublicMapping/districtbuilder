@@ -1,16 +1,13 @@
 version: "2.4"
 services:
   database:
-    image: quay.io/azavea/postgis:3-postgres12.4-slim
+    image: postgis/postgis:13-3.1
     environment:
       - POSTGRES_USER=districtbuilder
       - POSTGRES_PASSWORD=districtbuilder
       - POSTGRES_DB=districtbuilder
     healthcheck:
-      test: pg_isready -U districtbuilder
-      interval: 3s
-      timeout: 3s
-      retries: 3
+      test: pg_isready -q -h database -U districtbuilder
 
   server:
     image: districtbuilder
