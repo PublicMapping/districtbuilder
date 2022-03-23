@@ -315,7 +315,8 @@ function mapStateToProps(state: State): StateProps {
     isReadOnly:
       !("resource" in state.user) ||
       (project !== undefined && state.user.resource.id !== project.user.id) ||
-      (project !== undefined && project.regionConfig.archived),
+      (project !== undefined && project.regionConfig.archived) ||
+      (project !== undefined && !!project.submittedDt),
     user: state.user
   };
 }

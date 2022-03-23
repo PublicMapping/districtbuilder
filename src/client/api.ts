@@ -491,6 +491,17 @@ export async function saveProjectFeatured(project: ProjectNest): Promise<IOrgani
   });
 }
 
+export async function submitProject(projectId: ProjectId): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/projects/${projectId}/submit`)
+      .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
 async function uploadToPlanScore(project: IProject): Promise<void> {
   return new Promise((resolve, reject) => {
     apiAxios

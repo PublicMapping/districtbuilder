@@ -48,7 +48,9 @@ import {
   referenceLayerDeleteFailure,
   setDeleteReferenceLayer,
   toggleProjectDetailsModal,
-  updateProjectDetailsSuccess
+  updateProjectDetailsSuccess,
+  projectSubmit,
+  projectSubmitSuccess
 } from "../actions/projectData";
 import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
@@ -74,7 +76,8 @@ import {
   fetchProjectGeoJson,
   patchProject,
   copyProject,
-  deleteReferenceLayer
+  deleteReferenceLayer,
+  submitProject
 } from "../api";
 import { fetchAllStaticData } from "../s3";
 import { toast } from "react-toastify";
@@ -673,6 +676,37 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(exportShpFailure):
       return loop(state, Cmd.run(showActionFailedToast));
+    case getType(projectSubmit): {
+      if ("resource" in state.projectData) {
+        const projectId = state.projectData.resource.project.id;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () =>
+              submitProject(projectId).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: updateProjectNameSuccess,
+              failActionCreator: updateProjectFailed
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(projectSubmitSuccess):
+      return {
+        ...state,
+        saving: "saved",
+        projectData: { resource: action.payload }
+      };
     default:
       return state as never;
   }

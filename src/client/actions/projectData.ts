@@ -126,3 +126,6 @@ export const exportGeoJsonFailure = createAction("Export project GeoJSON failure
 
 export const exportShp = createAction("Export project Shapefile")<IProject>();
 export const exportShpFailure = createAction("Export project Shapefile failure")<string>();
+
+export const projectSubmit = createAction("Project submit")();
+export const projectSubmitSuccess = createAction("Project submit success")<DynamicProjectData>();
