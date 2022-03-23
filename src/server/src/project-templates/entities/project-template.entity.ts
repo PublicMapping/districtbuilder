@@ -80,4 +80,10 @@ export class ProjectTemplate implements IProjectTemplateWithProjects {
 
   @Column({ name: "is_active", type: "boolean", default: true })
   isActive: boolean;
+
+  @Column({ type: "character varying", name: "contest_next_steps", default: "" })
+  contestNextSteps: string;
+
+  @Column({ type: "boolean", name: "contest_active", default: false })
+  contestActive: boolean;
 }
