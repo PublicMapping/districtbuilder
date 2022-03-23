@@ -1179,8 +1179,8 @@ const DistrictsMap = ({
       </div>
       {!evaluateMode && isThisUsersMap && isArchived && (
         <Box sx={style.archivedMessage}>
-          <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
-          and can no longer be edited.
+          <Icon name="alert-triangle" /> This map is using an archived region and can no longer be
+          edited.
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
