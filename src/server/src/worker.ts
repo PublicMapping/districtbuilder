@@ -19,7 +19,7 @@ import {
   Topology
 } from "topojson-specification";
 import { deserialize } from "v8";
-import { threadId } from "worker_threads";
+import { workerData } from "worker_threads";
 
 import {
   Contiguity,
@@ -59,7 +59,7 @@ type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 const TOPOLOGY_CACHE_DIRECTORY = process.env.TOPOLOGY_CACHE_DIRECTORY || "/tmp";
 
 const s3 = new S3();
-const logger = new Logger(`worker-${threadId}`);
+const logger = new Logger(`worker-${workerData.index}`);
 
 const cachedTopology: { [key: string]: [Topology, readonly GeoUnitPolygonHierarchy[]] } = {};
 

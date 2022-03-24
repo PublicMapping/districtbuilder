@@ -32,7 +32,9 @@ const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
 const logger = new Logger("worker-pool");
 
 // Need to retain access to the workers for each pool to catch errors if they crash
-const workers = [...Array(NUM_WORKERS)].map(() => spawn<Functions>(new Worker("./worker")));
+const workers = [...Array(NUM_WORKERS)].map((_, index) =>
+  spawn<Functions>(new Worker("./worker", { workerData: { index } }))
+);
 const timeouts: Array<NodeJS.Timeout | undefined> = [...Array(NUM_WORKERS)].fill(undefined);
 
 // Track region size & pool size so we can kill/recreate workers when they exceed a maximum size
@@ -142,19 +144,19 @@ async function getRegionSize(
 }
 
 // If a worker times out or errors, or reaches its max cache size, replace it & its pool
-function recreatePool(i: number): Promise<void> {
-  void workerPools[i].terminate(true);
-  return spawn<Functions>(new Worker("./worker"))
+function recreatePool(index: number): Promise<void> {
+  void workerPools[index].terminate(true);
+  return spawn<Functions>(new Worker("./worker", { workerData: { index } }))
     .then(newWorker => {
       const newPromise = Promise.resolve(newWorker);
       // eslint-disable-next-line functional/immutable-data
-      workers[i] = newPromise;
+      workers[index] = newPromise;
       // eslint-disable-next-line functional/immutable-data
-      workerPools[i] = Pool(() => newPromise, { size: 1, name: `worker-${i}` });
-      logger.log(`Recreated worker ${i}`);
+      workerPools[index] = Pool(() => newPromise, { size: 1, name: `worker-${index}` });
+      logger.log(`Recreated worker ${index}`);
     })
-    .catch(() => {
-      logger.error(`Failed to recreated worker ${i}`);
+    .catch(e => {
+      logger.error(`Failed to recreated worker ${index}: ${JSON.stringify(e)}`);
     });
 }
 
