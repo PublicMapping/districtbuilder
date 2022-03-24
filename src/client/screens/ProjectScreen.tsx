@@ -49,6 +49,7 @@ import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
 import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
 import { ProjectOptionsState } from "../reducers/projectOptions";
+import SubmitMapModal from "../components/SubmitMapModal";
 
 interface StateProps {
   readonly project?: IProject;
@@ -278,6 +279,7 @@ const ProjectScreen = ({
                 />
                 <AddReferenceLayerModal project={project} />
                 <ProjectDetailsModal project={project} geojson={geojson} />
+                <SubmitMapModal project={project} />
                 <DeleteReferenceLayerModal />
                 <Flex id="tour-start" sx={style.tourStart}></Flex>
               </React.Fragment>

@@ -81,6 +81,7 @@ import {
 } from "../api";
 import { fetchAllStaticData } from "../s3";
 import { toast } from "react-toastify";
+import { showSubmitMapModal } from "../actions/projectModals";
 
 function fetchGeoJsonForProject(project: IProject) {
   return () => {
@@ -692,7 +693,7 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
                 geojson
               })),
             {
-              successActionCreator: updateProjectNameSuccess,
+              successActionCreator: projectSubmitSuccess,
               failActionCreator: updateProjectFailed
             }
           )
@@ -702,11 +703,14 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       }
     }
     case getType(projectSubmitSuccess):
-      return {
-        ...state,
-        saving: "saved",
-        projectData: { resource: action.payload }
-      };
+      return loop(
+        {
+          ...state,
+          saving: "saved",
+          projectData: { resource: action.payload }
+        },
+        Cmd.action(showSubmitMapModal(true))
+      );
     default:
       return state as never;
   }
