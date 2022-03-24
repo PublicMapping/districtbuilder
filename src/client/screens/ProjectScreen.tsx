@@ -1,55 +1,57 @@
 /** @jsx jsx */
 import MapboxGL from "mapbox-gl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useBeforeunload } from "react-beforeunload";
 import { connect } from "react-redux";
 import { Redirect, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import { Flex, jsx, Spinner, ThemeUIStyleObject } from "theme-ui";
 
-import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
-import { DistrictsGeoJSON } from "../types";
 import {
   GeoUnitHierarchy,
   IProject,
-  IStaticMetadata,
-  RegionLookupProperties,
-  IUser,
-  TypedArrays,
   IReferenceLayer,
-  ProjectId
+  IStaticMetadata,
+  IUser,
+  ProjectId,
+  RegionLookupProperties,
+  TypedArrays
 } from "../../shared/entities";
-import { EvaluateMetricWithValue } from "../types";
 
 import {
-  projectDataFetch,
   clearDuplicationState,
+  projectDataFetch,
   projectReferenceLayersFetch
 } from "../actions/projectData";
-import { DistrictDrawingState } from "../reducers/districtDrawing";
 import { resetProjectState } from "../actions/root";
 import { userFetch } from "../actions/user";
 import "../App.css";
-import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
+import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
 import CenteredContent from "../components/CenteredContent";
 import CopyMapModal from "../components/CopyMapModal";
+import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
+import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
+import Icon from "../components/Icon";
+import AdvancedEditingModal from "../components/map/AdvancedEditingModal";
 import KeyboardShortcutsModal from "../components/map/KeyboardShortcutsModal";
 import Map from "../components/map/Map";
 import MapHeader from "../components/MapHeader";
+import ProjectDetailsModal from "../components/ProjectDetailsModal";
 import ProjectHeader from "../components/ProjectHeader";
 import ProjectSidebar from "../components/ProjectSidebar";
+import SiteHeader from "../components/SiteHeader";
+import SubmitMapModal from "../components/SubmitMapModal";
 import Tour from "../components/Tour";
+import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
 import { isUserLoggedIn } from "../jwt";
 import { State } from "../reducers";
+import { DistrictDrawingState } from "../reducers/districtDrawing";
+import { ProjectOptionsState } from "../reducers/projectOptions";
 import { Resource } from "../resource";
 import store from "../store";
-import { useBeforeunload } from "react-beforeunload";
+import { DistrictsGeoJSON, EvaluateMetricWithValue } from "../types";
+
 import PageNotFoundScreen from "./PageNotFoundScreen";
-import SiteHeader from "../components/SiteHeader";
-import ProjectEvaluateSidebar from "../components/evaluate/ProjectEvaluateSidebar";
-import AddReferenceLayerModal from "../components/AddReferenceLayerModal";
-import DeleteReferenceLayerModal from "../components/DeleteReferenceLayerModal";
-import ProjectDetailsModal from "../components/ProjectDetailsModal";
-import { ProjectOptionsState } from "../reducers/projectOptions";
-import SubmitMapModal from "../components/SubmitMapModal";
 
 interface StateProps {
   readonly project?: IProject;
@@ -90,6 +92,8 @@ const style: Record<string, ThemeUIStyleObject> = {
   }
 };
 
+const wasSubmitted = (project?: IProject) => (project ? !!project.submittedDt : undefined);
+
 const ProjectScreen = ({
   project,
   geojson,
@@ -116,6 +120,21 @@ const ProjectScreen = ({
   const isLoggedIn = isUserLoggedIn();
   const isFirstLoadPending = isLoading && (project === undefined || staticMetadata === undefined);
   const presentDrawingState = districtDrawing.undoHistory.present.state;
+
+  const wasSubmittedRef = useRef<boolean | undefined>();
+
+  useEffect(() => {
+    if (wasSubmittedRef.current === false && wasSubmitted(project)) {
+      toast.success(
+        <span>
+          <Icon name="check" /> Your map was submitted!
+        </span>
+      );
+    }
+    if (project) {
+      wasSubmittedRef.current = wasSubmitted(project);
+    }
+  }, [project]);
 
   // Warn the user when attempting to leave the page with selected geounits
   useBeforeunload(event => {
