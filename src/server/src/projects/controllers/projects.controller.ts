@@ -271,6 +271,7 @@ export class ProjectsController implements CrudController<Project> {
       user: undefined,
       createdDt: undefined,
       updatedDt: undefined,
+      submittedDt: undefined,
       isFeatured: undefined,
       // Overwrite the creator data from the original creator to match the new owner
       districts: project.districts?.metadata?.creator
