@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added submit map button [#1179](https://github.com/PublicMapping/districtbuilder/pull/1179)
 
 ### Changed
 
