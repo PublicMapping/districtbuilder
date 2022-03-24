@@ -17,16 +17,16 @@ import { Functions, MergeArgs, TopologyMetadata } from "./worker";
 // Timeout after which we kill/recreate the worker pool
 const TASK_TIMEOUT_MS = 90_000;
 
-// Reserve 60-80% of memory for responding to requests and loading uncached topology data from disk
+// Reserve 55% of memory for responding to requests and loading uncached topology data from disk
 // Remaining amount is split amongst each worker for topology data
 // This strategy seems to work for both 32Gb and 64Gb instances and targets total memory
-// in use stabiliing at around 80%
+// in use maxing out at around 80%
 const dockerMemLimit = Number(
   readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", { encoding: "ascii" })
 );
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
-const reservedMem = totalmem > 32 * 1024 * 1024 * 1024 ? totalmem * 0.6 : totalmem * 0.8;
+const reservedMem = totalmem * 0.55;
 const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
 
 const logger = new Logger("worker-pool");
