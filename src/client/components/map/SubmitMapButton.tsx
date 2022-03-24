@@ -21,6 +21,7 @@ const SubmitMapButton = ({
 }) => {
   const organization = project?.projectTemplate?.organization;
   const showButton = project?.submittedDt || project?.projectTemplate?.contestActive;
+
   return organization && showButton ? (
     <Wrapper sx={{ position: "relative", ml: 2 }}>
       <MenuButton
@@ -49,11 +50,16 @@ const SubmitMapButton = ({
             <React.Fragment>
               Your map was submitted to {organization.name} at{" "}
               {project.submittedDt.toLocaleTimeString(undefined, { timeStyle: "short" })} on{" "}
-              {project.submittedDt.toLocaleDateString(undefined, { dateStyle: "long" })}. View{" "}
-              <Themed.a href="void:0" onClick={() => store.dispatch(showSubmitMapModal(true))}>
-                next steps
-              </Themed.a>
-              .
+              {project.submittedDt.toLocaleDateString(undefined, { dateStyle: "long" })}.
+              {project?.projectTemplate?.contestNextSteps ? (
+                <React.Fragment>
+                  View{" "}
+                  <Themed.a href="void:0" onClick={() => store.dispatch(showSubmitMapModal(true))}>
+                    next steps
+                  </Themed.a>
+                  .
+                </React.Fragment>
+              ) : null}
             </React.Fragment>
           ) : (
             <React.Fragment>

@@ -709,7 +709,10 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
           saving: "saved",
           projectData: { resource: action.payload }
         },
-        Cmd.action(showSubmitMapModal(true))
+        "resource" in state.projectData &&
+          state.projectData.resource.project.projectTemplate?.contestNextSteps
+          ? Cmd.action(showSubmitMapModal(true))
+          : Cmd.none
       );
     default:
       return state as never;

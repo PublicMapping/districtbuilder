@@ -57,8 +57,7 @@ const SubmitMapModal = ({
         <Flex as="form" sx={{ flexDirection: "column" }}>
           <Box
             dangerouslySetInnerHTML={{
-              __html:
-                project?.projectTemplate?.contestNextSteps || "Thank you for submitting your form."
+              __html: project?.projectTemplate?.contestNextSteps || ""
             }}
           ></Box>
           <Flex sx={style.footer}>
