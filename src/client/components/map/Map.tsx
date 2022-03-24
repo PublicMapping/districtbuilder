@@ -101,6 +101,7 @@ import { Resource } from "../../resource";
 import { getColor } from "@theme-ui/color";
 import theme from "../../theme";
 import { getDemographicsGroups } from "../../../shared/functions";
+import CopyMapButton from "../CopyMapButton";
 
 function removeEvaluateMetricLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
@@ -1181,6 +1182,12 @@ const DistrictsMap = ({
         <Box sx={style.archivedMessage}>
           <Icon name="alert-triangle" /> This map is using an archived region and can no longer be
           edited.
+        </Box>
+      )}
+      {!evaluateMode && isThisUsersMap && project.submittedDt && (
+        <Box sx={style.archivedMessage}>
+          <Icon name="alert-triangle" /> This map is read-only because it was submitted to a
+          contest. {!isArchived && <CopyMapButton invert={false} />}
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (
