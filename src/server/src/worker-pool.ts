@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { readFileSync } from "fs";
 import _ from "lodash";
 import os from "os";
 import { spawn, Pool, Worker } from "threads";
@@ -19,8 +20,12 @@ const TASK_TIMEOUT_MS = 90_000;
 // Reserve 60-80% of memory for responding to requests and loading uncached topology data from disk
 // Remaining amount is split amongst each worker for topology data
 // This strategy seems to work for both 32Gb and 64Gb instances and targets total memory
-// in use stabilizing at around 80%
-const totalmem = os.totalmem();
+// in use stabiliing at around 80%
+const dockerMemLimit = Number(
+  readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", { encoding: "ascii" })
+);
+const hostmem = os.totalmem();
+const totalmem = Math.min(hostmem, dockerMemLimit);
 const reservedMem = totalmem > 32 * 1024 * 1024 * 1024 ? totalmem * 0.6 : totalmem * 0.8;
 const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
 
