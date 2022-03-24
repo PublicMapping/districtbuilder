@@ -15,13 +15,13 @@ import {
 } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
-import { getObject, downloadTopology, s3Options } from "../../common/functions";
+import { getObject, s3Options } from "../../common/functions";
 import { getTopologyProperties } from "../../worker-pool";
 
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
 // so we can afford to have more layers loading than we have cores, but not too many
-const BATCH_SIZE = cpus().length * 2;
+const BATCH_SIZE = cpus().length;
 // 10 largest states by geojson file size
 const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
 
@@ -137,9 +137,8 @@ export class TopologyService {
             `geoLevelHierarchy missing from static metadata for ${regionConfig.s3URI}`
           );
         }
-        await downloadTopology(this.s3, regionConfig);
-        // Once getTopology has cached the topojson to disk, getting topology properties to know what
-        // the districts definition length is has the helpful side-effect of prewarming a worker
+        // Getting topology properties to know what the districts definition length is has
+        // the helpful side-effect of downloading data & prewarming a worker
         const districtsDefLength = await this.getDistrictsDefLength(regionConfig, staticMetadata);
         const [demographics, geoLevels, voting] = await Promise.all([
           this.fetchStaticFiles(regionConfig.s3URI, staticMetadata.demographics),

@@ -2,11 +2,13 @@ import { Logger } from "@nestjs/common";
 import area from "@turf/area";
 import length from "@turf/length";
 import polygonToLine from "@turf/polygon-to-line";
+import S3 from "aws-sdk/clients/s3";
+import { existsSync } from "fs";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import { Feature, MultiPolygon as GeoJSONMultiPolygon } from "geojson";
 import _, { mapValues } from "lodash";
-import LRU from "lru-cache";
 import sizeof from "object-sizeof";
-import os from "os";
+import { join } from "path";
 import { expose } from "threads/worker";
 import * as topojson from "topojson-client";
 import {
@@ -16,6 +18,7 @@ import {
   Polygon,
   Topology
 } from "topojson-specification";
+import { deserialize } from "v8";
 import { threadId } from "worker_threads";
 
 import {
@@ -34,9 +37,13 @@ import {
   TypedArrays
 } from "../../shared/entities";
 import { getAllBaseIndices, getDemographics, getVoting } from "../../shared/functions";
-import { NUM_WORKERS } from "./common/constants";
-import { formatBytes, getTopologyFromDisk } from "./common/functions";
+
+import { formatBytes, getObject, s3Options } from "./common/functions";
 import { DistrictsGeoJSON } from "./projects/entities/project.entity";
+
+export interface TopologyMetadata {
+  sizeInBytes: number;
+}
 
 interface GeoUnitPolygonHierarchy {
   geom: Polygon | MultiPolygon;
@@ -49,68 +56,81 @@ type GroupedPolygons = {
 
 type FeatureProperties = Pick<DistrictProperties, "demographics" | "voting">;
 
-// Reserve 60-80% of memory for responding to requests and loading uncached topology data from disk
-// Remaining amount is split amongst each worker for topology data
-// This strategy seems to work for both 32Gb and 64Gb instances and targets total memory
-// in use stabilizing at around 80%
-const totalmem = os.totalmem();
-const reservedMem = totalmem > 32 * 1024 * 1024 * 1024 ? totalmem * 0.6 : totalmem * 0.8;
-const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
+const TOPOLOGY_CACHE_DIRECTORY = process.env.TOPOLOGY_CACHE_DIRECTORY || "/tmp";
 
+const s3 = new S3();
 const logger = new Logger(`worker-${threadId}`);
 
-const cachedTopology = new LRU<string, [Topology, readonly GeoUnitPolygonHierarchy[]]>({
-  max: 100,
-  maxSize: maxCacheSize,
-  disposeAfter: (_value: unknown, key: string) => {
-    logger.debug(`Removing layer ${key} from worker ${threadId}`);
-  },
-  sizeCalculation: ([topology]: [Topology, unknown], key: string) => {
-    const numFeatures = Object.values(topology.objects)
-      .map(gc => (gc.type === "GeometryCollection" ? gc.geometries.length : 0))
-      .reduce((sum, length) => sum + length, 0);
-    // Multiples size of avg feature by number of features for each collection
-    const featureSize = Object.values(topology.objects)
-      .map(gc => {
-        if (gc.type !== "GeometryCollection") {
-          return 0;
-        }
-        // hopefully the first chunk of geometries is representative of all of them
-        // properties should be similar on each, but arcs is variable
-        const sliceSize = Math.min(1000, gc.geometries.length);
-        const avgFeatureSize = sizeof(gc.geometries.slice(0, sliceSize)) / sliceSize;
-        return gc.geometries.length * avgFeatureSize;
-      })
-      .reduce((sum, size) => sum + size, 0);
-    // Getting the accurate byte size of 'arcs' is slow bc it is very large
-    // Using a heuristic here takes this from 1s to 10ms
-    const sliceSize = Math.min(1000, topology.arcs.length);
-    const avgArcSize = sizeof(topology.arcs.slice(0, sliceSize)) / sliceSize;
-    const arcSize = avgArcSize * topology.arcs.length;
-    // Hierarchy size:
-    // 1 node per feature, each node has 1 geom pointer (8 bytes) + 1 array (16 bytes)
-    //  Each node is pointed to by its parent node (8 bytes)
-    const hierarchySize = numFeatures * 32;
-    // If we don't return an integer, lru-cache says our size is 0
-    const size = Math.ceil(featureSize + arcSize + hierarchySize);
-    logger.debug(`Adding layer ${key} to worker ${threadId}, size: ${formatBytes(size)}`);
-    return size;
+const cachedTopology: { [key: string]: [Topology, readonly GeoUnitPolygonHierarchy[]] } = {};
+
+const calculateTopologySize = (topology: Topology) => {
+  const numFeatures = Object.values(topology.objects)
+    .map(gc => (gc.type === "GeometryCollection" ? gc.geometries.length : 0))
+    .reduce((sum, length) => sum + length, 0);
+  // Multiples size of avg feature by number of features for each collection
+  const featureSize = Object.values(topology.objects)
+    .map(gc => {
+      if (gc.type !== "GeometryCollection") {
+        return 0;
+      }
+      // hopefully the first chunk of geometries is representative of all of them
+      // properties should be similar on each, but arcs is variable
+      const sliceSize = Math.min(1000, gc.geometries.length);
+      const avgFeatureSize = sizeof(gc.geometries.slice(0, sliceSize)) / sliceSize;
+      return gc.geometries.length * avgFeatureSize;
+    })
+    .reduce((sum, size) => sum + size, 0);
+  // Getting the accurate byte size of 'arcs' is slow bc it is very large
+  // Using a heuristic here takes this from 1s to 10ms
+  const sliceSize = Math.min(1000, topology.arcs.length);
+  const avgArcSize = sizeof(topology.arcs.slice(0, sliceSize)) / sliceSize;
+  const arcSize = avgArcSize * topology.arcs.length;
+  // Hierarchy size:
+  // 1 node per feature, each node has 1 geom pointer (8 bytes) + 1 array (16 bytes)
+  //  Each node is pointed to by its parent node (8 bytes)
+  const hierarchySize = numFeatures * 32;
+  // If we don't return an integer, lru-cache says our size is 0
+  const size = Math.ceil(featureSize + arcSize + hierarchySize);
+  return size;
+};
+
+// Gets the specified topology, downloading it from S3 and caching it locally if it is not already cached
+async function getTopology(regionConfig: IRegionConfig): Promise<Topology> {
+  const folderPath = join(TOPOLOGY_CACHE_DIRECTORY, regionConfig.id);
+  const filePath = join(folderPath, "topo.buf");
+
+  let buffer;
+  if (!existsSync(filePath)) {
+    const topojsonResponse = await getObject(s3, s3Options(regionConfig.s3URI, "topo.buf"));
+    buffer = topojsonResponse.Body as Buffer;
+    // Save file to disk for speedier access later
+    if (!existsSync(folderPath)) {
+      await mkdir(folderPath, { recursive: true });
+    }
+    await writeFile(filePath, buffer, "binary");
+  } else {
+    buffer = await readFile(filePath);
   }
-});
+  return deserialize(buffer) as Topology;
+}
 
 async function getTopologyFromCache(
   regionConfig: IRegionConfig,
   staticMetadata: IStaticMetadata
 ): Promise<[Topology, readonly GeoUnitPolygonHierarchy[]]> {
-  const cachedData = cachedTopology.get(regionConfig.s3URI);
+  const cachedData = cachedTopology[regionConfig.s3URI];
   if (cachedData) {
     return cachedData;
   }
-  const topology = await getTopologyFromDisk(regionConfig);
+  const topology = await getTopology(regionConfig);
   const geoLevelIds = staticMetadata.geoLevelHierarchy.map(level => level.id);
   const definition = { groups: geoLevelIds.slice().reverse() };
   const hierarchy = group(topology, definition);
-  cachedTopology.set(regionConfig.s3URI, [topology, hierarchy]);
+  // eslint-disable-next-line functional/immutable-data
+  cachedTopology[regionConfig.s3URI] = [topology, hierarchy];
+  logger.debug(
+    `Adding layer ${regionConfig.s3URI}, size: ${formatBytes(calculateTopologySize(topology))}`
+  );
   return [topology, hierarchy];
 }
 
@@ -468,11 +488,25 @@ async function getTopologyProperties(
   );
 }
 
+async function getTopologyMetadata(
+  regionConfig: IRegionConfig,
+  staticMetadata: IStaticMetadata
+): Promise<TopologyMetadata> {
+  // Computes the length of the districtsDefinition array
+  // For most regions, this is the number of counties in the state
+  const [topology] = await getTopologyFromCache(regionConfig, staticMetadata);
+  const sizeInBytes = calculateTopologySize(topology);
+  return {
+    sizeInBytes
+  };
+}
+
 const functions = {
   merge,
   importFromCSV,
   exportToCSV,
-  getTopologyProperties
+  getTopologyProperties,
+  getTopologyMetadata
 };
 
 export type Functions = typeof functions;
