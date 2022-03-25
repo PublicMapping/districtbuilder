@@ -21,7 +21,7 @@ import { getTopologyProperties } from "../../worker-pool";
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
 // so we can afford to have more layers loading than we have cores, but not too many
-const BATCH_SIZE = cpus().length;
+const BATCH_SIZE = cpus().length * 2;
 // 10 largest states by geojson file size
 const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
 

@@ -1421,6 +1421,11 @@
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.4.4.tgz#5d9b63132df54d8909fce1c3f8ca260fdd693e17"
   integrity sha512-ReVR2rLTV1kvtlWFyuot+d1pkpG2Fw/XKE3PDAdj57rbM97ttSp9JZ2UsP+2EHTylra9cUf6JA7tGwW1INzUrA==
 
+"@types/promise-queue@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@types/promise-queue/-/promise-queue-2.2.0.tgz#cdba35f1b2c0bd8aa2bf925c2b1ed02958067a0a"
+  integrity sha512-9QLtid6GxEWqpF+QImxBRG6bSVOHtpAm2kXuIyEvZBbSOupLvqhhJv8uaHbS8kUL8FDjzH3RWcSyC/52WOVtGw==
+
 "@types/pug@2.0.5":
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/@types/pug/-/pug-2.0.5.tgz#69bc700934dd473c7ab97270bd2dbacefe562231"
@@ -6396,6 +6401,11 @@ proj4@^2.6.2:
   dependencies:
     mgrs "1.0.0"
     wkt-parser "^1.2.4"
+
+promise-queue@2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/promise-queue/-/promise-queue-2.2.5.tgz#2f6f5f7c0f6d08109e967659c79b88a9ed5e93b4"
+  integrity sha1-L29ffA9tCBCelnZZx5uIqe1ek7Q=
 
 promise@^7.0.1:
   version "7.3.1"
