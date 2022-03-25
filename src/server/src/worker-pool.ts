@@ -27,6 +27,11 @@ const reservedMem = 5 * 1024 * 1024 * 1024 + totalmem * 0.4;
 const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
 
 const logger = new Logger("worker-pool");
+logger.debug({
+  dockerMemLimit: formatBytes(dockerMemLimit),
+  hostmem: formatBytes(totalmem),
+  maxCacheSize: formatBytes(maxCacheSize)
+});
 
 // Implementing our own queuing system instead of using threads Pool in order to handle errors
 // and thread termination with more precision
