@@ -13,8 +13,11 @@ import { Functions, MergeArgs, TopologyMetadata } from "./worker";
 // Timeout after which we kill/recreate the worker thread
 const TASK_TIMEOUT_MS = 90_000;
 
-// Reserve 5Gb + 40% of memory for responding to requests and loading topology data from disk
-// 5Gb seems to be about the max memory the application uses when no topology data is loaded
+// current 32Gb 55%
+// current 16Gb 71%
+//
+
+// Reserve 6.5Gb + 30% of memory for responding to requests and loading topology data from disk
 // Remaining amount is split amongst each worker for topology data
 // This strategy seems to work for any amount of host memory and targets total memory
 // in use maxing out at around 80%
@@ -23,13 +26,13 @@ const dockerMemLimit = Number(
 );
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
-const reservedMem = 5 * 1024 * 1024 * 1024 + totalmem * 0.4;
+const reservedMem = 6.5 * 1024 * 1024 * 1024 + totalmem * 0.3;
 const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
 
 const logger = new Logger("worker-pool");
 logger.debug({
   dockerMemLimit: formatBytes(dockerMemLimit),
-  hostmem: formatBytes(totalmem),
+  hostmem: formatBytes(hostmem),
   maxCacheSize: formatBytes(maxCacheSize)
 });
 
@@ -71,20 +74,29 @@ function getSettledQueues(workerQueues: Queue[], indexes: number[]) {
 // Keep track of which regions have been routed to which workers, in order of recency
 // We'll try to reroute back to those same workers later to re-use the workers cached data
 let workersByRegion: { [id: string]: number[] } = {};
-let roundRobinIndex = 0;
-const incrementedIndex = () => (roundRobinIndex = (roundRobinIndex + 1) % NUM_WORKERS);
+let workersByRecency: number[] = [];
 
 async function findQueue(
   regionConfig: IRegionConfig,
   staticMetadata: IStaticMetadata
 ): Promise<number> {
+  const allWorkerIndexes = [...workerQueues.keys()];
   const lastUsed = workersByRegion[regionConfig.id] || [];
   const lastUsedSettled = getSettledQueues(workerQueues, lastUsed);
-  const allSettledQueues = getSettledQueues(workerQueues, [...workerQueues.keys()]);
+  const allSettledQueues = getSettledQueues(workerQueues, allWorkerIndexes);
+  const size = regionSizes[regionConfig.id];
 
-  // Choose our next round-robin index if it's settled, or skip to the next one after that
-  const getNextSettled = (): number =>
-    allSettledQueues.includes(incrementedIndex()) ? roundRobinIndex : getNextSettled();
+  // Choose our next index by size
+  const getBestFit = (workers: number[]): number =>
+    (!size
+      ? // Use the smallest worker if size is unknown
+        _.minBy(workers, idx => workerSizes[idx])
+      : // Use the largest worker that will fit if size is known
+      workerSizes.some(workerSize => workerSize + size < maxCacheSize)
+      ? _.minBy(workers, idx => maxCacheSize - (workerSizes[idx] + size))
+      : // If no workers will fit, we use the least recently used worker
+        // eslint-disable-next-line functional/immutable-data
+        workersByRecency.pop()) || workers[0];
 
   const workerToUse: number =
     // First check for available workers that were used for this region, get most recent
@@ -92,12 +104,12 @@ async function findQueue(
       ? lastUsedSettled[0]
       : // Next check if any workers are available, if we haven't hit our limit for this region
       lastUsed.length < MAX_PER_REGION && allSettledQueues.length > 0
-      ? getNextSettled()
+      ? getBestFit(allSettledQueues)
       : // If we have no available workers, use the most recent for this region
       lastUsed.length > 0
       ? lastUsed[0]
       : // Lastly, just use anything, choosing workers round-robin
-        incrementedIndex();
+        getBestFit(allWorkerIndexes);
 
   // If this region wasn't already in this workers cache, update the worker size
   // This may trigger recreating the worker thread if we would exceed the max size
@@ -117,12 +129,13 @@ async function findQueue(
     // eslint-disable-next-line functional/immutable-data
     workerSizes[workerToUse] += size;
   }
-  // Move this worker to the top of the list of workers for this region
+  // Move this worker to the top of the list of workers for this region/overall
   // eslint-disable-next-line functional/immutable-data
   workersByRegion[regionConfig.id] = [
     workerToUse,
     ...lastUsed.filter(worker => worker != workerToUse)
   ];
+  workersByRecency = [workerToUse, ...workersByRecency.filter(worker => worker != workerToUse)];
 
   return workerToUse;
 }
