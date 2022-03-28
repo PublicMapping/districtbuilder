@@ -1,35 +1,13 @@
 /** @jsx jsx */
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
-import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx } from "theme-ui";
 
 import Icon from "./Icon";
 import { IReferenceLayer } from "../../shared/entities";
 import { State } from "../reducers";
 import store from "../store";
 import { referenceLayerDelete, setDeleteReferenceLayer } from "../actions/projectData";
-
-const style: Record<string, ThemeUIStyleObject> = {
-  modal: {
-    bg: "muted",
-    p: 3,
-    width: "small",
-    maxWidth: "90vw"
-  },
-  header: {
-    bg: "error",
-    padding: "16px 12px",
-    margin: "-12px -12px 24px"
-  },
-  footer: {
-    flex: "auto",
-    textAlign: "right",
-    fontVariant: "tabular-nums",
-    py: 2,
-    mt: 2,
-    fontSize: 1
-  }
-};
 
 const DeleteReferenceLayerModal = ({
   layer,
@@ -50,8 +28,8 @@ const DeleteReferenceLayerModal = ({
       getApplicationNode={() => document.getElementById("root") as Element}
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
-      <Box sx={style.modal}>
-        <Box sx={style.header}>
+      <Box sx={{ variant: "styles.confirmationModal.modal" }}>
+        <Box sx={{ variant: "styles.confirmationModal.errorHeader" }}>
           <Heading
             as="h3"
             sx={{
@@ -72,7 +50,7 @@ const DeleteReferenceLayerModal = ({
         <Box>
           <p>{`Are you sure you want to delete the “${layer.name}” layer? This can’t be undone.`}</p>
         </Box>
-        <Flex sx={style.footer}>
+        <Flex sx={{ variant: "styles.confirmationModal.footer" }}>
           <Button
             id="cancel-delete-reference-layer"
             onClick={hideModal}

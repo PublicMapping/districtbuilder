@@ -43,6 +43,11 @@ const appButtonStyles = {
   }
 };
 
+const defaultConfirmationModalHeader = {
+  padding: "16px 12px",
+  margin: "-12px -12px 24px"
+};
+
 const theme: Theme = {
   fonts: {
     body: "-apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif",
@@ -627,6 +632,30 @@ const theme: Theme = {
         position: "relative",
         color: "gray.8",
         zIndex: 200
+      }
+    },
+    confirmationModal: {
+      modal: {
+        bg: "muted",
+        p: 3,
+        width: "small",
+        maxWidth: "90vw"
+      },
+      errorHeader: {
+        ...defaultConfirmationModalHeader,
+        bg: "error"
+      },
+      warningHeader: {
+        ...defaultConfirmationModalHeader,
+        bg: "warning"
+      },
+      footer: {
+        flex: "auto",
+        textAlign: "right",
+        fontVariant: "tabular-nums",
+        py: 2,
+        mt: 2,
+        fontSize: 1
       }
     }
   }

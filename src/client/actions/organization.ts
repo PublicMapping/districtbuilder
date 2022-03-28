@@ -1,5 +1,10 @@
 import { createAction } from "typesafe-actions";
-import { IOrganization, OrganizationSlug } from "../../shared/entities";
+import {
+  IOrganization,
+  IProjectTemplate,
+  OrganizationSlug,
+  ProjectTemplateId
+} from "../../shared/entities";
 import { ResourceFailure } from "../resource";
 
 export const organizationFetch = createAction("Organization fetch")<OrganizationSlug>();
@@ -19,3 +24,11 @@ export const exportOrgUsers = createAction("Export organization users CSV")<Orga
 export const exportOrgUsersFailure = createAction(
   "Export organization users CSV failure"
 )<string>();
+
+export const setArchiveTemplate = createAction("set archive template")<
+  IProjectTemplate | undefined
+>();
+export const archiveTemplate =
+  createAction("Archive template")<{ id: ProjectTemplateId; slug: OrganizationSlug }>();
+export const archiveTemplateSuccess = createAction("Archive template success")<ProjectTemplateId>();
+export const archiveTemplateFailure = createAction("Archive template failure")<string>();

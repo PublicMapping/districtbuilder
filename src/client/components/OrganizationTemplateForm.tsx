@@ -160,6 +160,7 @@ const OrganizationTemplateForm = ({
             user={user}
             organization={organization}
             templateSelected={templateSelected}
+            displayAdminFlyout={false}
           />
         </Box>
       )}

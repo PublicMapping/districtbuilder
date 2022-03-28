@@ -10,14 +10,19 @@ import {
   exportOrgUsersFailure,
   exportProjects,
   exportProjectsFailure,
-  organizationReset
+  organizationReset,
+  setArchiveTemplate,
+  archiveTemplate,
+  archiveTemplateSuccess,
+  archiveTemplateFailure
 } from "../actions/organization";
 
 import { IOrganization } from "../../shared/entities";
 import {
   fetchOrganization,
   exportOrganizationUsersCsv,
-  exportOrganizationProjectsCsv
+  exportOrganizationProjectsCsv,
+  archiveProjectTemplate
 } from "../api";
 import { showResourceFailedToast, showActionFailedToast } from "../functions";
 import { Resource } from "../resource";
@@ -83,6 +88,55 @@ const organizationReducer: LoopReducer<OrganizationState, Action> = (
       );
     case getType(exportOrgUsersFailure):
       return loop(state, Cmd.run(showActionFailedToast));
+    case getType(setArchiveTemplate):
+      return "resource" in state
+        ? { resource: { ...state.resource, deleteTemplate: action.payload } }
+        : {
+            isPending: false
+          };
+    case getType(archiveTemplate):
+      return loop(
+        "resource" in state
+          ? {
+              resource: { ...state.resource, archiveTemplatePending: true }
+            }
+          : {
+              isPending: false
+            },
+        Cmd.run(archiveProjectTemplate, {
+          successActionCreator: archiveTemplateSuccess,
+          failActionCreator: archiveTemplateFailure,
+          args: [action.payload.slug, action.payload.id] as Parameters<
+            typeof archiveProjectTemplate
+          >
+        })
+      );
+    case getType(archiveTemplateSuccess):
+      return "resource" in state
+        ? {
+            resource: {
+              ...state.resource,
+              deleteTemplate: undefined,
+              archiveTemplatePending: false,
+              projectTemplates: state.resource.projectTemplates.filter(
+                template => template.id !== action.payload
+              )
+            }
+          }
+        : {
+            isPending: false
+          };
+    case getType(archiveTemplateFailure):
+      return loop(
+        "resource" in state
+          ? {
+              resource: { ...state.resource, archiveTemplatePending: false }
+            }
+          : {
+              isPending: false
+            },
+        Cmd.run(showResourceFailedToast)
+      );
     default:
       return state;
   }

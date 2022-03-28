@@ -1,14 +1,20 @@
 /** @jsx jsx */
 import { useState } from "react";
+import { Button as MenuButton, Wrapper, Menu, MenuItem } from "react-aria-menubutton";
 import { Box, Button, Flex, Heading, jsx, Text, Spinner, ThemeUIStyleObject } from "theme-ui";
 
 import { IOrganization, IProjectTemplate, IUser, CreateProjectData } from "../../shared/entities";
+import { setArchiveTemplate } from "../actions/organization";
 import { isUserLoggedIn } from "../jwt";
+import store from "../store";
+import Icon from "./Icon";
+import { style as menuStyle, invertStyles } from "./MenuButton.styles";
 import Tooltip from "./Tooltip";
 
 const style: Record<string, ThemeUIStyleObject> = {
   template: {
     flexDirection: "column",
+    position: "relative",
     padding: "15px",
     bg: "#fff",
     borderRadius: "2px",
@@ -18,6 +24,11 @@ const style: Record<string, ThemeUIStyleObject> = {
     width: "100%",
     background: "lightgray",
     color: "black"
+  },
+  flyoutButton: {
+    position: "absolute",
+    top: "5px",
+    right: "10px"
   }
 };
 
@@ -28,12 +39,18 @@ function checkIfUserInOrg(org: IOrganization, user: IUser) {
   return userExists.length > 0;
 }
 
+function checkIfUserIsAdmin(org: IOrganization, user: IUser) {
+  return org.admin && Object.values(org.admin).includes(user.id);
+}
+
 const TemplateCard = ({
+  displayAdminFlyout,
   template,
   user,
   organization,
   templateSelected
 }: {
+  readonly displayAdminFlyout: boolean;
   readonly template: IProjectTemplate;
   readonly organization: IOrganization;
   readonly templateSelected: (templateData: CreateProjectData) => Promise<void>;
@@ -43,6 +60,36 @@ const TemplateCard = ({
   const userIsVerified = user?.isEmailVerified;
   const isLoggedIn = isUserLoggedIn();
   const userInOrg = user && checkIfUserInOrg(organization, user);
+  const userIsAdmin = user && organization && checkIfUserIsAdmin(organization, user);
+
+  const TemplateListFlyout = (
+    <Wrapper
+      onSelection={() => {
+        store.dispatch(setArchiveTemplate(template));
+      }}
+      sx={{ display: "inline-block" }}
+    >
+      <MenuButton
+        sx={{
+          ...{ variant: "buttons.ghost", fontWeight: "light", "& > svg": { m: "0 !important" } },
+          ...menuStyle.menuButton,
+          ...invertStyles({})
+        }}
+        className="project-list-flyout-menu"
+      >
+        <Icon name="ellipsis" />
+      </MenuButton>
+      <Menu sx={{ ...menuStyle.menu }}>
+        <ul sx={menuStyle.menuList}>
+          <li key="delete">
+            <MenuItem value="delete">
+              <Box sx={menuStyle.menuListItem}>Delete Template</Box>
+            </MenuItem>
+          </li>
+        </ul>
+      </Menu>
+    </Wrapper>
+  );
 
   const useButton = (
     <Button
@@ -109,6 +156,9 @@ const TemplateCard = ({
         >
           <Box>{useButton}</Box>
         </Tooltip>
+      )}
+      {userIsAdmin && displayAdminFlyout && (
+        <span sx={style.flyoutButton}>{TemplateListFlyout}</span>
       )}
     </Flex>
   );

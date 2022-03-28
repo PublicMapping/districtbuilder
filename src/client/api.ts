@@ -12,6 +12,7 @@ import {
   JWT,
   OrganizationSlug,
   ProjectId,
+  ProjectTemplateId,
   UpdateProjectData,
   UpdateUserData,
   UserId,
@@ -400,6 +401,18 @@ export async function createProjectTemplate(
       .post(`/api/project_templates/${slug}`, data)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));
+  });
+}
+
+export async function archiveProjectTemplate(
+  slug: OrganizationSlug,
+  id: ProjectTemplateId
+): Promise<ProjectTemplateId> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .put(`/api/project_templates/${slug}/${id}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
   });
 }
 

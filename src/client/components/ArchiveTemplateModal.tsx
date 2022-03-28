@@ -1,24 +1,21 @@
 /** @jsx jsx */
 import AriaModal from "react-aria-modal";
-import { connect } from "react-redux";
 import { Box, Button, Flex, Heading, jsx } from "theme-ui";
 
 import Icon from "./Icon";
-import { IProject } from "../../shared/entities";
-import { projectArchive, setDeleteProject } from "../actions/projects";
-import { State } from "../reducers";
+import { IOrganization } from "../../shared/entities";
 import store from "../store";
+import { archiveTemplate, setArchiveTemplate } from "../actions/organization";
 
-const DeleteProjectModal = ({
-  project,
-  isPending
-}: {
-  readonly project?: IProject;
-  readonly isPending?: boolean;
-}) => {
-  const hideModal = () => store.dispatch(setDeleteProject(undefined));
+interface Props {
+  readonly org: IOrganization;
+}
 
-  return project !== undefined ? (
+const ArchiveTemplateModal = ({ org }: Props) => {
+  const hideModal = () => store.dispatch(setArchiveTemplate(undefined));
+  const { deleteTemplate: template, archiveTemplatePending: isPending, slug } = org;
+
+  return template !== undefined && slug ? (
     <AriaModal
       titleId="delete-project-modal-header"
       onExit={hideModal}
@@ -42,11 +39,11 @@ const DeleteProjectModal = ({
             <span sx={{ fontSize: 4, mr: 2, display: "flex" }}>
               <Icon name="alert-triangle" />
             </span>
-            Delete Map
+            Delete Template
           </Heading>
         </Box>
         <Box>
-          <p>{`Are you sure you want to delete “${project.name}”? This can’t be undone.`}</p>
+          <p>{`Are you sure you want to delete “${template.name}”? This can’t be undone.`}</p>
         </Box>
         <Flex sx={{ variant: "styles.confirmationModal.footer" }}>
           <Button
@@ -60,7 +57,7 @@ const DeleteProjectModal = ({
             sx={{ variant: "buttons.danger" }}
             disabled={isPending}
             onClick={() => {
-              store.dispatch(projectArchive(project.id));
+              store.dispatch(archiveTemplate({ id: template.id, slug: slug }));
               return;
             }}
           >
@@ -72,11 +69,4 @@ const DeleteProjectModal = ({
   ) : null;
 };
 
-function mapStateToProps(state: State) {
-  return {
-    project: state.projects.deleteProject,
-    isPending: state.projects.archiveProjectPending
-  };
-}
-
-export default connect(mapStateToProps)(DeleteProjectModal);
+export default ArchiveTemplateModal;

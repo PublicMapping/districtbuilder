@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import AriaModal from "react-aria-modal";
 import { connect } from "react-redux";
-import { Box, Button, Flex, Heading, jsx, ThemeUIStyleObject, Select, Label } from "theme-ui";
+import { Box, Button, Flex, Heading, jsx, Select, Label } from "theme-ui";
 
 import Icon from "./Icon";
 import { IProject, IProjectTemplate, OrganizationNest } from "../../shared/entities";
@@ -13,28 +13,6 @@ import { WriteResource } from "../resource";
 import { InputField } from "./Field";
 import { createProjectTemplate } from "../api";
 import { useHistory } from "react-router-dom";
-
-const style: Record<string, ThemeUIStyleObject> = {
-  modal: {
-    bg: "muted",
-    p: 3,
-    width: "small",
-    maxWidth: "90vw"
-  },
-  header: {
-    bg: "error",
-    padding: "16px 12px",
-    margin: "-12px -12px 24px"
-  },
-  footer: {
-    flex: "auto",
-    textAlign: "right",
-    fontVariant: "tabular-nums",
-    py: 2,
-    mt: 2,
-    fontSize: 1
-  }
-};
 
 interface Form {
   readonly organization?: OrganizationNest;
@@ -72,7 +50,7 @@ const TemplateFromProjectModal = ({
       underlayStyle={{ paddingTop: "4.5rem" }}
     >
       <Box
-        sx={style.modal}
+        sx={{ variant: "styles.confirmationModal.modal" }}
         as="form"
         onSubmit={(e: React.FormEvent) => {
           e.preventDefault();
@@ -96,7 +74,7 @@ const TemplateFromProjectModal = ({
           }
         }}
       >
-        <Box sx={style.header}>
+        <Box sx={{ variant: "styles.confirmationModal.errorHeader" }}>
           <Heading
             as="h3"
             sx={{
@@ -162,7 +140,7 @@ const TemplateFromProjectModal = ({
             resource.data.organization?.name || "—"
           }” organization?`}
         </Box>
-        <Flex sx={style.footer}>
+        <Flex sx={{ variant: "styles.confirmationModal.footer" }}>
           <Button
             id="cancel-template-project"
             onClick={hideModal}
