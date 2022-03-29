@@ -8,11 +8,10 @@ export const options = {
   vus: 1,
   iterations: 1,
   discardResponseBodies: true,
-  verbose: true,
   maxRedirects: 0,
   thresholds: {
-    checks: [{ threshold: "rate==1", abortOnFail: true }],
-  },
+    checks: [{ threshold: "rate==1", abortOnFail: true }]
+  }
 };
 
 const har = JSON.parse(open(`./${__ENV.HAR_FILE}`));
@@ -20,21 +19,21 @@ const har = JSON.parse(open(`./${__ENV.HAR_FILE}`));
 export function setup() {
   const requests = {};
 
-  har.log.entries.forEach((entry) => {
+  har.log.entries.forEach(entry => {
     const url = entry.request.url.replace(
       /(http|https):\/\/([^\/]+)\//,
       __ENV.REQ_ORIGIN ? `${__ENV.REQ_ORIGIN}/` : "$1://$2/"
     );
 
     const referer = entry.request.headers
-      .find((header) => header.name.toLowerCase() === "referer")
+      .find(header => header.name.toLowerCase() === "referer")
       .value.replace(
         /(http|https):\/\/([^\/]+)\//,
         __ENV.REQ_ORIGIN ? `${__ENV.REQ_ORIGIN}/` : "$1://$2/"
       );
 
     const authHeader = entry.request.headers.find(
-      (header) => header.name.toLowerCase() === "authorization"
+      header => header.name.toLowerCase() === "authorization"
     );
     const authorization = authHeader
       ? authHeader.value.replace(/^Bearer .*$/, `Bearer ${__ENV.JWT_AUTH_TOKEN}`)
@@ -60,12 +59,12 @@ export function setup() {
             "Content-Type": "application/json",
             authorization,
             // Without this referer, CloudFront will throw a 401
-            referer,
-          },
-        },
+            referer
+          }
+        }
       ]);
     } else {
-      __ENV.PROJECT_UUIDS.split(" ").forEach((uuid) => {
+      __ENV.PROJECT_UUIDS.split(" ").forEach(uuid => {
         requests[batchTime].push([
           entry.request.method,
           url.replace(
@@ -82,9 +81,9 @@ export function setup() {
               referer: referer.replace(
                 /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/i,
                 uuid
-              ),
-            },
-          },
+              )
+            }
+          }
         ]);
       });
     }
@@ -98,7 +97,7 @@ export function setup() {
   return [batches, requests];
 }
 
-export default (data) => {
+export default data => {
   const batches = data[0];
   const requests = data[1];
 
@@ -109,9 +108,14 @@ export default (data) => {
 
       const responses = http.batch(requests[batch]);
 
-      responses.forEach((res) => {
+      responses.forEach(res => {
         check(res, {
-          "is status 200": (r) => r.status === 200,
+          "is status 200": r => {
+            if (r.status !== 200) {
+              console.log(r.status);
+            }
+            return r.status === 200;
+          }
         });
       });
 

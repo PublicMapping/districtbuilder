@@ -15,7 +15,7 @@ import {
 } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
-import { getObject, downloadTopology, s3Options } from "../../common/functions";
+import { getObject, s3Options } from "../../common/functions";
 import { getTopologyProperties } from "../../worker-pool";
 
 const MAX_RETRIES = 5;
@@ -74,10 +74,10 @@ export class TopologyService {
           }),
           {}
         );
-        // Load largest states first
+        // Load largest states last, so they're less likely to be evicted from the cache
         const sortedRegions = _.sortBy(regionConfigs, region => [
-          !STATE_ORDER.includes(region.regionCode),
-          STATE_ORDER.indexOf(region.regionCode)
+          STATE_ORDER.includes(region.regionCode),
+          -STATE_ORDER.indexOf(region.regionCode)
         ]);
 
         // Load a number of regions in parallel, adding another as each one completes
@@ -137,9 +137,8 @@ export class TopologyService {
             `geoLevelHierarchy missing from static metadata for ${regionConfig.s3URI}`
           );
         }
-        await downloadTopology(this.s3, regionConfig);
-        // Once getTopology has cached the topojson to disk, getting topology properties to know what
-        // the districts definition length is has the helpful side-effect of prewarming a worker
+        // Getting topology properties to know what the districts definition length is has
+        // the helpful side-effect of downloading data & prewarming a worker
         const districtsDefLength = await this.getDistrictsDefLength(regionConfig, staticMetadata);
         const [demographics, geoLevels, voting] = await Promise.all([
           this.fetchStaticFiles(regionConfig.s3URI, staticMetadata.demographics),
