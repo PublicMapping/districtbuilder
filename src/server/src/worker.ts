@@ -492,8 +492,6 @@ async function getTopologyMetadata(
   regionConfig: IRegionConfig,
   staticMetadata: IStaticMetadata
 ): Promise<TopologyMetadata> {
-  // Computes the length of the districtsDefinition array
-  // For most regions, this is the number of counties in the state
   const [topology] = await getTopologyFromCache(regionConfig, staticMetadata);
   const sizeInBytes = calculateTopologySize(topology);
   return {

@@ -104,7 +104,7 @@ async function findQueue(
       : // If we have no available workers, use the most recent for this region
       lastUsed.length > 0
       ? lastUsed[0]
-      : // Lastly, just use anything, choosing workers round-robin
+      : // Lastly, just use anything
         getBestFit(allWorkerIndexes);
 
   // If this region wasn't already in this workers cache, update the worker size
