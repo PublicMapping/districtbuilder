@@ -52,7 +52,12 @@ import {
   projectSubmit,
   projectSubmitSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
+import {
+  clearSelectedGeounits,
+  setSavingState,
+  FindTool,
+  SelectionTool
+} from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject, IReferenceLayer } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
@@ -707,12 +712,16 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
         {
           ...state,
           saving: "saved",
-          projectData: { resource: action.payload }
+          projectData: { resource: action.payload },
+          selectionTool: SelectionTool.Default
         },
         "resource" in state.projectData &&
           state.projectData.resource.project.projectTemplate?.contestNextSteps
-          ? Cmd.action(showSubmitMapModal(true))
-          : Cmd.none
+          ? Cmd.list<Action>([
+              Cmd.action(clearSelectedGeounits(true)),
+              Cmd.action(showSubmitMapModal(true))
+            ])
+          : Cmd.action(clearSelectedGeounits(true))
       );
     default:
       return state as never;

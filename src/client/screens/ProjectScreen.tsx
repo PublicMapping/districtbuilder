@@ -42,7 +42,7 @@ import ProjectSidebar from "../components/ProjectSidebar";
 import SiteHeader from "../components/SiteHeader";
 import SubmitMapModal from "../components/SubmitMapModal";
 import Tour from "../components/Tour";
-import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
+import { areAnyGeoUnitsSelected, destructureResource, isProjectReadOnly } from "../functions";
 import { isUserLoggedIn } from "../jwt";
 import { State } from "../reducers";
 import { DistrictDrawingState } from "../reducers/districtDrawing";
@@ -333,11 +333,7 @@ function mapStateToProps(state: State): StateProps {
     projectNotFound:
       "statusCode" in state.project.projectData && state.project.projectData.statusCode === 404,
     isArchived: project !== undefined && project.regionConfig.archived,
-    isReadOnly:
-      !("resource" in state.user) ||
-      (project !== undefined && state.user.resource.id !== project.user.id) ||
-      (project !== undefined && project.regionConfig.archived) ||
-      (project !== undefined && !!project.submittedDt),
+    isReadOnly: isProjectReadOnly(state),
     user: state.user
   };
 }

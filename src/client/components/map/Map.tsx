@@ -126,9 +126,7 @@ function disableEditMode(
   });
 
   // Disable selection tools in evaluate mode
-  DefaultSelectionTool.disable(map);
-  RectangleSelectionTool.disable(map);
-  PaintBrushSelectionTool.disable(map);
+  disableAllTools(map);
 
   // Resize map after editing toolbar removed
   map.resize();
@@ -204,6 +202,13 @@ function enableSummaryEvaluateLayers(map: MapboxGL.Map) {
 
 function disableSummaryEvaluateLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "none");
+}
+
+function disableAllTools(map: MapboxGL.Map) {
+  // Disable any existing selection tools
+  DefaultSelectionTool.disable(map);
+  RectangleSelectionTool.disable(map);
+  PaintBrushSelectionTool.disable(map);
 }
 
 const getRefLayerSourceId = (layerId: ReferenceLayerId) => `reference-source-${layerId}`;
@@ -1093,9 +1098,7 @@ const DistrictsMap = ({
     /* eslint-disable */
     if (map && !isReadOnly) {
       // Disable any existing selection tools
-      DefaultSelectionTool.disable(map);
-      RectangleSelectionTool.disable(map);
-      PaintBrushSelectionTool.disable(map);
+      disableAllTools(map);
       if (!evaluateMode && !isPanning) {
         // Enable appropriate tool
         if (selectionTool === SelectionTool.Default) {
@@ -1133,6 +1136,9 @@ const DistrictsMap = ({
           );
         }
       }
+    } else if (map) {
+      // Disable any existing selection tools
+      disableAllTools(map);
     }
     /* eslint-enable */
   }, [
