@@ -70,7 +70,7 @@ const SubmitMapButton = ({
               Submitting will send your map to {organization.name}
               <p sx={{ mt: 0 }}>The following things will happen:</p>
               <p>
-                <Icon name={"lock-locked"} /> your map will be locked from making additional changes
+                <Icon name={"lock-locked"} /> Your map will be locked from making additional changes
               </p>
               <p>
                 <Icon name={"pencil"} /> If you want to revise the map after submitting it, you can
