@@ -53,8 +53,12 @@ const SubmitMapButton = ({
               {project.submittedDt.toLocaleDateString(undefined, { dateStyle: "long" })}.
               {project?.projectTemplate?.contestNextSteps ? (
                 <React.Fragment>
+                  {" "}
                   View{" "}
-                  <Themed.a href="void:0" onClick={() => store.dispatch(showSubmitMapModal(true))}>
+                  <Themed.a
+                    href="javascript:void(0)"
+                    onClick={() => store.dispatch(showSubmitMapModal(true))}
+                  >
                     next steps
                   </Themed.a>
                   .
