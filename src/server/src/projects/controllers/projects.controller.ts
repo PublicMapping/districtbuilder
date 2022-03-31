@@ -711,14 +711,12 @@ export class ProjectsController implements CrudController<Project> {
       validateNumberOfMembers(dto, dto.numberOfDistricts);
     }
 
-    // This is in a lambda bc prettier kept moving my @ts-ignore
-    const findTemplate = (id: ProjectTemplateId) =>
-      this.templateService.findOne(
-        // @ts-ignore
-        { id },
-        { relations: ["regionConfig", "referenceLayers", "chamber"] }
-      );
-    const template = dto.projectTemplate ? await findTemplate(dto.projectTemplate.id) : undefined;
+    const template = dto.projectTemplate
+      ? await this.templateService.findOne(
+          { id: dto.projectTemplate.id, isActive: true, regionConfig: { archived: false } },
+          { relations: ["regionConfig", "referenceLayers", "chamber"] }
+        )
+      : undefined;
     if (dto.projectTemplate && !template) {
       throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
     }
