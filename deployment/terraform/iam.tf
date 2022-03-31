@@ -126,3 +126,32 @@ resource "aws_s3_bucket_policy" "alb_access_logging" {
   bucket = aws_s3_bucket.logs.id
   policy = data.aws_iam_policy_document.alb_access_logging.json
 }
+
+#
+# Lambda IAM resources
+#
+data "aws_iam_policy_document" "lambda_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+#
+# Lambda function role for DB server alarms
+#
+resource "aws_iam_role" "alert_database_server_alarms" {
+  name               = "lambda${var.environment}AlertDatabaseServerAlarms"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "alert_database_server_alarms_policy" {
+  role       = aws_iam_role.alert_database_server_alarms.name
+  policy_arn = var.aws_lambda_service_role_policy_arn
+}
