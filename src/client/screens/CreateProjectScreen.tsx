@@ -18,7 +18,14 @@ import {
 } from "theme-ui";
 
 import { DEFAULT_POPULATION_DEVIATION } from "../../shared/constants";
-import { CreateProjectData, IChamber, IProject, IRegionConfig } from "../../shared/entities";
+import {
+  CreateProjectData,
+  IChamber,
+  IOrganization,
+  IProject,
+  IRegionConfig,
+  OrganizationNest
+} from "../../shared/entities";
 
 import { regionConfigsFetch } from "../actions/regionConfig";
 import { userFetch } from "../actions/user";
@@ -48,6 +55,13 @@ const validate = (form: ProjectForm) =>
   form.regionConfig !== null
     ? ({ ...form, valid: true } as ValidForm)
     : ({ ...form, valid: false } as InvalidForm);
+
+function filterProjectTemplates<O extends OrganizationNest | IOrganization>(org: O): O | undefined {
+  const projectTemplates = org.projectTemplates.filter(
+    template => template.isActive && !template.regionConfig.archived
+  );
+  return projectTemplates.length > 0 ? { ...org, projectTemplates } : undefined;
+}
 
 interface ProjectForm {
   readonly name: string;
@@ -174,6 +188,9 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
   });
   const { data } = createProjectResource;
   const [totalPopulation, setTotalPopulation] = useState<number | null>(null);
+  const organizationsWithTemplates =
+    "resource" in user &&
+    user.resource.organizations.filter(o => filterProjectTemplates(o) !== undefined);
 
   const onDistrictChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chamber =
@@ -279,11 +296,15 @@ const CreateProjectScreen = ({ regionConfigs, user, organization }: StateProps) 
               }
             }}
           >
-            {"resource" in user && (
+            {"resource" in user && organizationsWithTemplates && (
               <OrganizationTemplateForm
-                organization={"resource" in organization ? organization.resource : undefined}
+                organization={
+                  "resource" in organization
+                    ? filterProjectTemplates(organization.resource)
+                    : undefined
+                }
                 templateSelected={setupProjectFromTemplate}
-                organizations={user.resource.organizations}
+                organizations={organizationsWithTemplates}
                 user={user.resource}
               />
             )}

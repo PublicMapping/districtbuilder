@@ -280,6 +280,7 @@ export type IProjectTemplate = ProjectTemplateFields & {
   readonly description: string;
   readonly details: string;
   readonly referenceLayers?: readonly IReferenceLayer[];
+  readonly isActive: boolean;
 };
 
 export type IProjectTemplateWithProjects = IProjectTemplate & {
