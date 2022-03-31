@@ -48,10 +48,8 @@ import {
   ProjectId,
   PublicUserProperties,
   UserId,
-  ProjectTemplateId,
   IUser,
-  IChamber,
-  IRegionConfig
+  IChamber
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
@@ -348,12 +346,12 @@ export class ProjectsController implements CrudController<Project> {
     return project;
   }
 
-  // Helper for obtaining a topology for a given S3 URI, throws exception if not found
-  async getGeoUnitTopology(s3URI: string): Promise<GeoUnitTopology> {
-    const geoCollection = await this.topologyService.get(s3URI);
+  // Helper for obtaining a topology for a given region config, throws exception if not found
+  async getGeoUnitTopology(regionConfig: RegionConfig): Promise<GeoUnitTopology> {
+    const geoCollection = await this.topologyService.get(regionConfig);
     if (!geoCollection) {
       throw new NotFoundException(
-        `Topology ${s3URI} not found`,
+        `Topology ${regionConfig.s3URI} not found`,
         MakeDistrictsErrors.TOPOLOGY_NOT_FOUND
       );
     }
@@ -371,9 +369,9 @@ export class ProjectsController implements CrudController<Project> {
     readonly numberOfDistricts: number;
     readonly user: IUser;
     readonly chamber?: IChamber;
-    readonly regionConfig: IRegionConfig;
+    readonly regionConfig: RegionConfig;
   }): Promise<DistrictsGeoJSON> {
-    const geoCollection = await this.getGeoUnitTopology(regionConfig.s3URI);
+    const geoCollection = await this.getGeoUnitTopology(regionConfig);
     const geojson = await geoCollection.merge({
       districtsDefinition,
       numberOfDistricts,
@@ -463,7 +461,7 @@ export class ProjectsController implements CrudController<Project> {
     @Param("id") projectId: ProjectId
   ): Promise<string> {
     const project = await this.getProject(req, projectId);
-    const geoCollection = await this.getGeoUnitTopology(project.regionConfig.s3URI);
+    const geoCollection = await this.getGeoUnitTopology(project.regionConfig);
     const baseGeoLevel = geoCollection.definition.groups.slice().reverse()[0];
     const csvRows = await geoCollection.exportToCSV(project.districtsDefinition);
 
@@ -642,7 +640,7 @@ export class ProjectsController implements CrudController<Project> {
     }
     validateNumberOfMembers(dto, existingProject.numberOfDistricts);
 
-    const staticMetadata = (await this.getGeoUnitTopology(existingProject.regionConfig.s3URI))
+    const staticMetadata = (await this.getGeoUnitTopology(existingProject.regionConfig))
       .staticMetadata;
     const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
       ([, field]) => field
@@ -711,14 +709,12 @@ export class ProjectsController implements CrudController<Project> {
       validateNumberOfMembers(dto, dto.numberOfDistricts);
     }
 
-    // This is in a lambda bc prettier kept moving my @ts-ignore
-    const findTemplate = (id: ProjectTemplateId) =>
-      this.templateService.findOne(
-        // @ts-ignore
-        { id },
-        { relations: ["regionConfig", "referenceLayers", "chamber"] }
-      );
-    const template = dto.projectTemplate ? await findTemplate(dto.projectTemplate.id) : undefined;
+    const template = dto.projectTemplate
+      ? await this.templateService.findOne(
+          { id: dto.projectTemplate.id, isActive: true, regionConfig: { archived: false } },
+          { relations: ["regionConfig", "referenceLayers", "chamber"] }
+        )
+      : undefined;
     if (dto.projectTemplate && !template) {
       throw new NotFoundException(`Project template for id '${dto.projectTemplate?.id}' not found`);
     }
@@ -742,7 +738,7 @@ export class ProjectsController implements CrudController<Project> {
       throw new NotFoundException(`Unable to find region config: ${dto.regionConfig?.id}`);
     }
 
-    const geoCollection = await this.topologyService.get(regionConfig.s3URI);
+    const geoCollection = await this.topologyService.get(regionConfig);
     if (!geoCollection) {
       throw new NotFoundException(
         `Topology ${regionConfig.s3URI} not found`,

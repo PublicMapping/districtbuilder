@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Updated tippecanoe & fix process-geojson [#1173](https://github.com/PublicMapping/districtbuilder/pull/1173)
+- Fixed crash when loading regions, don't show inactive templates / templates w/ archived regions [#1185](https://github.com/PublicMapping/districtbuilder/pull/1185)
 
 ## [1.15.1] - 2022-03-03
 

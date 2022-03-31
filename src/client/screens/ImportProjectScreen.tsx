@@ -289,7 +289,10 @@ function filterProjectTemplates<O extends OrganizationNest | IOrganization>(
   stateAbbrev: string
 ) {
   const projectTemplates = org.projectTemplates.filter(
-    template => template.regionConfig.regionCode === stateAbbrev
+    template =>
+      template.regionConfig.regionCode === stateAbbrev &&
+      template.isActive &&
+      !template.regionConfig.archived
   );
   return projectTemplates.length > 0 ? { ...org, projectTemplates } : undefined;
 }

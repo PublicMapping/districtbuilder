@@ -35,7 +35,8 @@ export class OrganizationsService extends TypeOrmCrudService<Organization> {
         "projectTemplates.name",
         "projectTemplates.numberOfDistricts",
         "projectTemplates.description",
-        "projectTemplates.details"
+        "projectTemplates.details",
+        "projectTemplates.isActive"
       ])
       .leftJoinAndSelect("projectTemplates.regionConfig", "regionConfig")
       .where("organization.slug = :slug", { slug: slug })
