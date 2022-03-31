@@ -99,20 +99,20 @@ export class TopologyService {
     return this._layers && Object.freeze({ ...this._layers });
   }
 
-  public async get(s3URI: S3URI): Promise<GeoUnitTopology | undefined> {
+  public async get(regionConfig: RegionConfig): Promise<GeoUnitTopology | undefined> {
     if (!this._layers) {
       return;
     }
-    if (!(s3URI in this._layers)) {
+    if (!(regionConfig.s3URI in this._layers)) {
       // If we encounter a new layer (i.e. one added after the service has started),
       // then store the results in the `_layers` object.
-      // @ts-ignore
       // eslint-disable-next-line functional/immutable-data
-      this._layers[s3URI] = this.fetchLayer(s3URI).catch(err => {
+      this._layers[regionConfig.s3URI] = this.fetchLayer(regionConfig).catch(err => {
         this.logger.error(err);
+        return undefined;
       });
     }
-    const layer = this._layers[s3URI];
+    const layer = this._layers[regionConfig.s3URI];
     if (layer !== null) {
       return layer;
     }

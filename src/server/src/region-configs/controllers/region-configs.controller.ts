@@ -63,7 +63,7 @@ export class RegionConfigsController implements CrudController<RegionConfig> {
   ): Promise<readonly RegionLookupProperties[]> {
     const regionConfig = await this.service.findOne({ id: regionId });
 
-    const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
+    const geoCollection = regionConfig && (await this.topologyService.get(regionConfig));
     if (!geoCollection) {
       throw new InternalServerErrorException();
     }
