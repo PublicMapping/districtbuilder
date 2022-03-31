@@ -6,7 +6,8 @@ import { IReferenceLayer, ReferenceLayerId } from "../../shared/entities";
 import Icon from "./Icon";
 
 import store from "../store";
-import { ReferenceLayerTypes } from "../../shared/constants";
+import { ReferenceLayerColors, ReferenceLayerTypes } from "../../shared/constants";
+import { REFERENCE_LAYER_COLOR_CODES } from "../constants/colors";
 import { toggleReferenceLayer } from "../actions/districtDrawing";
 import { toggleReferenceLayersModal } from "../actions/projectData";
 import ReferenceLayerFlyout from "./ReferenceLayerFlyout";
@@ -70,7 +71,11 @@ const ReferenceLayer = ({
     </Box>
     <Icon
       name={layer.layer_type === ReferenceLayerTypes.Point ? "mapPin" : "roundedSquare"}
-      color={layer.layer_type === ReferenceLayerTypes.Point ? "green" : "blue.4"}
+      color={
+        REFERENCE_LAYER_COLOR_CODES[
+          layer.layer_color ? layer.layer_color : ReferenceLayerColors.Green
+        ]
+      }
     ></Icon>
     <span sx={{ pl: 1 }}>{layer.name}</span>
     {!isReadOnly && (

@@ -30,6 +30,7 @@ import { RegisterDto } from "../entities/register.dto";
 import { ResetPasswordDto } from "../entities/reset-password.dto";
 import { AuthService } from "../services/auth.service";
 import { Organization } from "../../organizations/entities/organization.entity";
+import { User } from "../../users/entities/user.entity";
 
 /*
  * Authentication service that handles logins, account activiation and
@@ -63,7 +64,9 @@ export class AuthController {
           message: { password: ["Invalid password"] }
         } as Errors<LoginDto>);
       }
-      return this.authService.generateJwt(userOrError);
+      const user: User = userOrError;
+      await this.authService.updateLastLogin(user.id);
+      return this.authService.generateJwt(user);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

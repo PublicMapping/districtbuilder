@@ -58,6 +58,10 @@ export class AuthService {
     return LoginErrors.INVALID_PASSWORD;
   }
 
+  async updateLastLogin(userId: UserId): Promise<void> {
+    return await this.usersService.updateLastLogin(userId);
+  }
+
   generateJwt(user: User): JWT {
     const payload: IUser & { sub: UserId } = {
       sub: user.id,
@@ -100,7 +104,7 @@ export class AuthService {
           ? `${process.env.CLIENT_URL}/activate/${emailToken}/${org}`
           : `${process.env.CLIENT_URL}/activate/${emailToken}`
       },
-      template: "./verify"
+      template: "verify"
     });
 
     this.logSentEmail(info);
@@ -119,7 +123,7 @@ export class AuthService {
         user,
         url: `${process.env.CLIENT_URL}/password-reset/${emailToken}`
       },
-      template: "./passwordreset"
+      template: "passwordreset"
     });
 
     this.logSentEmail(info);

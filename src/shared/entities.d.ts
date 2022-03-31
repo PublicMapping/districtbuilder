@@ -1,4 +1,4 @@
-import { ProjectVisibility, ReferenceLayerTypes } from "./constants";
+import { ProjectVisibility, ReferenceLayerTypes, ReferenceLayerColors } from "./constants";
 
 export type UserId = string;
 
@@ -42,6 +42,8 @@ export interface IOrganization {
   readonly admin?: IUser;
   readonly users: readonly IUser[];
   readonly projectTemplates: readonly IProjectTemplate[];
+  readonly deleteTemplate?: IProjectTemplate | undefined;
+  readonly archiveTemplatePending?: boolean;
 }
 
 export interface AddUser {
@@ -181,6 +183,7 @@ export interface IReferenceLayer {
   readonly name: string;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly label_field: string;
+  readonly layer_color: ReferenceLayerColors;
 }
 
 export interface ReferenceLayerProperties {
@@ -188,6 +191,8 @@ export interface ReferenceLayerProperties {
   // value is the value for that property
   readonly [id: string]: number | string;
 }
+
+export type UpdateReferenceLayer = Pick<IReferenceLayer, "layer_color">;
 
 export type VotingMetricField = "dem16" | "rep16" | "other16" | "dem20" | "rep20" | "other20";
 
@@ -253,6 +258,7 @@ export interface CreateReferenceLayerData {
   readonly project: Pick<IProject, "id">;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
   readonly label_field?: string;
+  readonly layer_color: ReferenceLayerColors;
 }
 
 export type UpdateProjectData = Pick<
@@ -274,6 +280,7 @@ export type IProjectTemplate = ProjectTemplateFields & {
   readonly description: string;
   readonly details: string;
   readonly referenceLayers?: readonly IReferenceLayer[];
+  readonly isActive: boolean;
 };
 
 export type IProjectTemplateWithProjects = IProjectTemplate & {

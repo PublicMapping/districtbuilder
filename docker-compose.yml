@@ -44,6 +44,8 @@ services:
       database:
         condition: service_healthy
     command: start:dev
+    mem_limit: 12g
+    memswap_limit: 12g
 
   client:
     image:  node:16-bullseye-slim

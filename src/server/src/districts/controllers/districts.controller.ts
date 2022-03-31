@@ -73,7 +73,7 @@ export class DistrictsController {
             archived: false
           }
     );
-    const geoCollection = regionConfig && (await this.topologyService.get(regionConfig.s3URI));
+    const geoCollection = regionConfig && (await this.topologyService.get(regionConfig));
     if (!geoCollection) {
       throw new InternalServerErrorException();
     }

@@ -61,7 +61,7 @@ export default class CreateRandomProjects extends Command {
         this.exit(1);
         return;
       }
-      const geoCollection = await topologyService.get(region.s3URI);
+      const geoCollection = await topologyService.get(region);
       if (!geoCollection || !("merge" in geoCollection)) {
         this.log(`No active topology for region`);
         this.exit(1);

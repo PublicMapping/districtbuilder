@@ -6,6 +6,7 @@ import TemplateCard from "./TemplateCard";
 interface Props {
   readonly organization: IOrganization;
   readonly user: IUser | undefined;
+  readonly displayAdminFlyout: boolean;
 }
 
 interface IProps {
@@ -39,7 +40,12 @@ const style: Record<string, ThemeUIStyleObject> = {
   }
 };
 
-const OrganizationTemplates = ({ organization, user, templateSelected }: Props & IProps) => {
+const OrganizationTemplates = ({
+  organization,
+  user,
+  templateSelected,
+  displayAdminFlyout
+}: Props & IProps) => {
   return (
     <Box sx={style.container}>
       {organization.projectTemplates.length > 0 && (
@@ -56,6 +62,7 @@ const OrganizationTemplates = ({ organization, user, templateSelected }: Props &
                 templateSelected={templateSelected}
                 organization={organization}
                 user={user}
+                displayAdminFlyout={displayAdminFlyout}
               />
             ))}
           </Box>

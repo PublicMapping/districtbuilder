@@ -96,6 +96,7 @@ import { MAPBOX_STYLE, MAPBOX_TOKEN } from "../../constants/map";
 import { KEYBOARD_SHORTCUTS } from "./keyboardShortcuts";
 import Icon from "../Icon";
 import { ReferenceLayerTypes } from "../../../shared/constants";
+import { REFERENCE_LAYER_COLOR_CODES } from "../../constants/colors";
 import { Resource } from "../../resource";
 import { getColor } from "@theme-ui/color";
 import theme from "../../theme";
@@ -688,7 +689,7 @@ const DistrictsMap = ({
               type: "line",
               source: getRefLayerSourceId(layer.id),
               paint: {
-                "line-color": getColor(theme, "blue.4"),
+                "line-color": getColor(theme, REFERENCE_LAYER_COLOR_CODES[layer.layer_color]),
                 "line-opacity": 0.9,
                 "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 14, 5]
               }
@@ -721,7 +722,7 @@ const DistrictsMap = ({
                 "text-anchor": "top"
               },
               paint: {
-                "icon-color": getColor(theme, "green"),
+                "icon-color": getColor(theme, REFERENCE_LAYER_COLOR_CODES[layer.layer_color]),
                 "text-translate": [0, 12],
                 "text-color": "#000",
                 "text-halo-color": "#FFF",
@@ -732,6 +733,23 @@ const DistrictsMap = ({
             assertNever(layer.layer_type);
           }
           setActiveReferenceLayers([...activeReferenceLayers, layer]);
+        }
+      });
+      // update layer color on change
+      activeReferenceLayers.forEach(layer => {
+        if (
+          activeReferenceLayers.some(l => l.id === layer.id) &&
+          showReferenceLayers.has(layer.id)
+        ) {
+          referenceLayers.resource.forEach(updatedLayer => {
+            if (updatedLayer.id === layer.id) {
+              map.setPaintProperty(
+                getRefLayerLayerId(layer.id),
+                layer.layer_type === ReferenceLayerTypes.Polygon ? "line-color" : "icon-color",
+                REFERENCE_LAYER_COLOR_CODES[updatedLayer.layer_color]
+              );
+            }
+          });
         }
       });
     }

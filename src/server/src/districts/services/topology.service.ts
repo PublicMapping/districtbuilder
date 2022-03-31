@@ -15,7 +15,7 @@ import {
 } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
-import { getObject, downloadTopology, s3Options } from "../../common/functions";
+import { getObject, s3Options } from "../../common/functions";
 import { getTopologyProperties } from "../../worker-pool";
 
 const MAX_RETRIES = 5;
@@ -74,10 +74,10 @@ export class TopologyService {
           }),
           {}
         );
-        // Load largest states first
+        // Load largest states last, so they're less likely to be evicted from the cache
         const sortedRegions = _.sortBy(regionConfigs, region => [
-          !STATE_ORDER.includes(region.regionCode),
-          STATE_ORDER.indexOf(region.regionCode)
+          STATE_ORDER.includes(region.regionCode),
+          -STATE_ORDER.indexOf(region.regionCode)
         ]);
 
         // Load a number of regions in parallel, adding another as each one completes
@@ -99,20 +99,20 @@ export class TopologyService {
     return this._layers && Object.freeze({ ...this._layers });
   }
 
-  public async get(s3URI: S3URI): Promise<GeoUnitTopology | undefined> {
+  public async get(regionConfig: RegionConfig): Promise<GeoUnitTopology | undefined> {
     if (!this._layers) {
       return;
     }
-    if (!(s3URI in this._layers)) {
+    if (!(regionConfig.s3URI in this._layers)) {
       // If we encounter a new layer (i.e. one added after the service has started),
       // then store the results in the `_layers` object.
-      // @ts-ignore
       // eslint-disable-next-line functional/immutable-data
-      this._layers[s3URI] = this.fetchLayer(s3URI).catch(err => {
+      this._layers[regionConfig.s3URI] = this.fetchLayer(regionConfig).catch(err => {
         this.logger.error(err);
+        return undefined;
       });
     }
-    const layer = this._layers[s3URI];
+    const layer = this._layers[regionConfig.s3URI];
     if (layer !== null) {
       return layer;
     }
@@ -137,9 +137,8 @@ export class TopologyService {
             `geoLevelHierarchy missing from static metadata for ${regionConfig.s3URI}`
           );
         }
-        await downloadTopology(this.s3, regionConfig);
-        // Once getTopology has cached the topojson to disk, getting topology properties to know what
-        // the districts definition length is has the helpful side-effect of prewarming a worker
+        // Getting topology properties to know what the districts definition length is has
+        // the helpful side-effect of downloading data & prewarming a worker
         const districtsDefLength = await this.getDistrictsDefLength(regionConfig, staticMetadata);
         const [demographics, geoLevels, voting] = await Promise.all([
           this.fetchStaticFiles(regionConfig.s3URI, staticMetadata.demographics),

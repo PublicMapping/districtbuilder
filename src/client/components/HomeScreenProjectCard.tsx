@@ -93,7 +93,8 @@ const HomeScreenProjectCard = ({
             {project.name}
           </Heading>
           <Text sx={{ fontSize: 2, color: "gray.7" }}>
-            {project.regionConfig.name} · {project.numberOfDistricts} districts
+            {project.regionConfig.name} · {project.numberOfDistricts} districts ·
+            {project.chamber ? ` ${project.chamber.name} ` : " Custom "}
           </Text>
         </Box>
         <Text

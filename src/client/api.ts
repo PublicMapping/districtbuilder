@@ -12,6 +12,7 @@ import {
   JWT,
   OrganizationSlug,
   ProjectId,
+  ProjectTemplateId,
   UpdateProjectData,
   UpdateUserData,
   UserId,
@@ -23,7 +24,8 @@ import {
   CreateReferenceLayerData,
   IProjectTemplate,
   CreateProjectTemplateData,
-  IStaticMetadata
+  IStaticMetadata,
+  UpdateReferenceLayer
 } from "../shared/entities";
 import { PLANSCORE_POLL_MS, PLANSCORE_POLL_MAX_TRIES } from "../shared/constants";
 import {
@@ -352,6 +354,18 @@ export async function deleteReferenceLayer(
   });
 }
 
+export async function patchReferenceLayer(
+  referenceLayerId: ReferenceLayerId,
+  color: Partial<UpdateReferenceLayer>
+): Promise<ReferenceLayerWithGeojson> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .patch(`/api/reference-layer/${referenceLayerId}`, color)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
+  });
+}
+
 export async function fetchOrganization(slug: OrganizationSlug): Promise<IOrganization> {
   return new Promise((resolve, reject) => {
     apiAxios
@@ -387,6 +401,18 @@ export async function createProjectTemplate(
       .post(`/api/project_templates/${slug}`, data)
       .then(response => resolve(response.data))
       .catch(error => reject(error.response?.data || error));
+  });
+}
+
+export async function archiveProjectTemplate(
+  slug: OrganizationSlug,
+  id: ProjectTemplateId
+): Promise<ProjectTemplateId> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .put(`/api/project_templates/${slug}/${id}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error.message));
   });
 }
 

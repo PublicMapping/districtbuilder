@@ -15,7 +15,11 @@ import { ReferenceLayerGeojson, ReferenceLayerWithGeojson } from "../types";
 import { projectReferenceLayersFetch, toggleReferenceLayersModal } from "../actions/projectData";
 import { FileDrop } from "react-file-drop";
 import { WriteResource } from "../resource";
-import { MAX_UPLOAD_FILE_SIZE, ReferenceLayerTypes } from "../../shared/constants";
+import {
+  MAX_UPLOAD_FILE_SIZE,
+  ReferenceLayerTypes,
+  ReferenceLayerColors
+} from "../../shared/constants";
 import { readString } from "react-papaparse";
 import Icon from "./Icon";
 
@@ -84,15 +88,17 @@ const validate = (form: ConfigurableForm): ReferenceLayerForm => {
   const project = form.project;
   const label_field = form.label_field;
   const layer_type = form.layer_type;
+  const layer_color = form.layer_color;
   const fields = form.fields;
   const numberOfFeatures = layer && layer.features ? layer.features.length : 0;
 
-  return numberOfFeatures > 0 && layer && name && layer_type && fields
+  return numberOfFeatures > 0 && layer && name && layer_type && layer_color && fields
     ? {
         numberOfFeatures,
         name,
         project,
         layer_type,
+        layer_color,
         layer,
         fields,
         label_field: label_field || undefined,
@@ -104,6 +110,7 @@ const validate = (form: ConfigurableForm): ReferenceLayerForm => {
         project,
         label_field,
         layer_type,
+        layer_color,
         layer,
         fields,
         valid: false
@@ -120,6 +127,7 @@ interface ValidForm {
   readonly label_field?: string;
   readonly fields: readonly string[];
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon;
+  readonly layer_color: ReferenceLayerColors;
   readonly valid: true;
 }
 
@@ -130,6 +138,7 @@ interface InvalidForm {
   readonly numberOfFeatures: number;
   readonly label_field: string | null;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon | null;
+  readonly layer_color: ReferenceLayerColors | null;
   readonly fields: readonly string[] | null;
   readonly valid: false;
 }
@@ -140,6 +149,7 @@ interface ConfigurableForm {
   readonly project: ProjectId;
   readonly layer: ReferenceLayerGeojson | null;
   readonly layer_type: ReferenceLayerTypes.Point | ReferenceLayerTypes.Polygon | null;
+  readonly layer_color: ReferenceLayerColors;
   readonly fields: readonly string[] | null;
   readonly numberOfFeatures: number | null;
 }
@@ -161,6 +171,7 @@ const AddReferenceLayerModal = ({
     project: project.id,
     layer: null,
     layer_type: null,
+    layer_color: ReferenceLayerColors.Green,
     fields: null,
     numberOfFeatures: null
   };
@@ -323,7 +334,8 @@ const AddReferenceLayerModal = ({
                   label_field: validatedForm.label_field,
                   project: { id: validatedForm.project },
                   layer: validatedForm.layer,
-                  layer_type: validatedForm.layer_type
+                  layer_type: validatedForm.layer_type,
+                  layer_color: validatedForm.layer_color
                 };
 
                 createReferenceLayer(referenceLayer)

@@ -8,10 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add color picker to reference layer flyout [#1150](https://github.com/PublicMapping/districtbuilder/pull/1150)
+- Add district type to project cards on 'My Maps' page [#1162](https://github.com/PublicMapping/districtbuilder/pull/1162)
+- Add Creation and Login Dates to User [#1159](https://github.com/PublicMapping/districtbuilder/pull/1159)
+- Allow admins to archive organization templates [#1164](https://github.com/PublicMapping/districtbuilder/pull/1164)
 
 ### Changed
+- Updated caching setup based on load testing [#1172](https://github.com/PublicMapping/districtbuilder/pull/1172)
 
 ### Fixed
+- Updated tippecanoe & fix process-geojson [#1173](https://github.com/PublicMapping/districtbuilder/pull/1173)
+- Fixed crash when loading regions, don't show inactive templates / templates w/ archived regions [#1185](https://github.com/PublicMapping/districtbuilder/pull/1185)
 
 ## [1.15.1] - 2022-03-03
 
@@ -460,7 +467,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.15.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.15.1...HEAD
+[1.15.1]: https://github.com/publicmapping/districtbuilder/compare/1.15.0...1.15.1
 [1.15.0]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...1.15.0
 [1.14.0]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...1.14.0
 [1.13.0]: https://github.com/publicmapping/districtbuilder/compare/1.12.1...1.13.0
