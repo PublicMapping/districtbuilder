@@ -26,7 +26,7 @@ export class HealthcheckController {
     const timeout = process.env.TYPEORM_HEALTH_CHECK_TIMEOUT
       ? Number(process.env.TYPEORM_HEALTH_CHECK_TIMEOUT)
       : undefined;
-    const maxRss = os.totalmem() * 0.9;
+    const maxRss = os.totalmem() * 0.95;
     return this.health.check([
       () => this.db.pingCheck("database", { timeout }),
       () => this.topoLoaded.isHealthy("topology"),

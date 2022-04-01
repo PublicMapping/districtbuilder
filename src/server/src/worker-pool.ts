@@ -13,7 +13,7 @@ import { Functions, MergeArgs, TopologyMetadata } from "./worker";
 // Timeout after which we kill/recreate the worker thread
 const TASK_TIMEOUT_MS = 90_000;
 
-// Reserve 5Gb + 30% of memory for responding to requests and loading topology data from disk
+// Reserve 6Gb + 35% of memory for responding to requests and loading topology data from disk
 // Remaining amount is split amongst each worker for topology data
 // This strategy seems to work for any amount of host memory and targets total memory
 // in use maxing out at around 80%
@@ -22,7 +22,7 @@ const dockerMemLimit = Number(
 );
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
-const reservedMem = 5 * 1024 * 1024 * 1024 + totalmem * 0.3;
+const reservedMem = 6 * 1024 * 1024 * 1024 + totalmem * 0.35;
 const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
 
 const logger = new Logger("worker-pool");
@@ -83,13 +83,14 @@ async function findQueue(
   const size = regionSizes[regionConfig.id];
 
   // Choose our next index by size
+  const willFit = (worker: number) => workerSizes[worker] + size < maxCacheSize;
   const getBestFit = (workers: number[]): number =>
     (!size
       ? // Use the smallest worker if size is unknown
         _.minBy(workers, idx => workerSizes[idx])
       : // Use the largest worker that will fit if size is known
-      workerSizes.some(workerSize => workerSize + size < maxCacheSize)
-      ? _.minBy(workers, idx => maxCacheSize - (workerSizes[idx] + size))
+      workers.some(willFit)
+      ? _.minBy(workers.filter(willFit), idx => maxCacheSize - (workerSizes[idx] + size))
       : // If no workers will fit, we use the least recently used worker
         // eslint-disable-next-line functional/immutable-data
         workersByRecency.pop()) || workers[0];

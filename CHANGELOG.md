@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [1.16.1]
+
+### Fixed
+- Fix routing in worker-pool.ts [#1187](https://github.com/PublicMapping/districtbuilder/pull/1187)
+
+## [1.16.0]
+
+### Added
 - Add color picker to reference layer flyout [#1150](https://github.com/PublicMapping/districtbuilder/pull/1150)
 - Add district type to project cards on 'My Maps' page [#1162](https://github.com/PublicMapping/districtbuilder/pull/1162)
 - Add Creation and Login Dates to User [#1159](https://github.com/PublicMapping/districtbuilder/pull/1159)
@@ -467,7 +480,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.15.1...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.16.1...HEAD
+[1.16.1]: https://github.com/publicmapping/districtbuilder/compare/1.16.0...1.16.1
+[1.16.0]: https://github.com/publicmapping/districtbuilder/compare/1.15.1...1.16.0
 [1.15.1]: https://github.com/publicmapping/districtbuilder/compare/1.15.0...1.15.1
 [1.15.0]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...1.15.0
 [1.14.0]: https://github.com/publicmapping/districtbuilder/compare/1.13.0...1.14.0
