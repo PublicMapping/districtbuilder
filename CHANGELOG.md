@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+## [1.16.1]
+
 ### Fixed
 - Fix routing in worker-pool.ts [#1187](https://github.com/PublicMapping/districtbuilder/pull/1187)
 
@@ -472,7 +480,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.16.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.16.1...HEAD
+[1.16.1]: https://github.com/publicmapping/districtbuilder/compare/1.16.0...1.16.1
 [1.16.0]: https://github.com/publicmapping/districtbuilder/compare/1.15.1...1.16.0
 [1.15.1]: https://github.com/publicmapping/districtbuilder/compare/1.15.0...1.15.1
 [1.15.0]: https://github.com/publicmapping/districtbuilder/compare/1.14.0...1.15.0
