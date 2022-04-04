@@ -3,10 +3,15 @@ import { IArg } from "@oclif/parser/lib/args";
 import S3 from "aws-sdk/clients/s3";
 import cli from "cli-ux";
 import { createReadStream } from "fs";
+import { readFile } from "fs/promises";
 import { join } from "path";
 import readDir from "recursive-readdir";
+import { Topology } from "topojson-specification";
 import { createConnection } from "typeorm";
+import { deserialize } from "v8";
+
 import { RegionConfig } from "../../../server/src/region-configs/entities/region-config.entity";
+import { getTopologyLayerSize } from "../../../server/src/common/functions";
 import { connectionOptions } from "../lib/dbUtils";
 import { shouldPublishFile } from "../lib/fileUtils";
 
@@ -74,6 +79,8 @@ export default class PublishRegion extends Command {
     cli.action.stop();
     this.log(`Received ${responses.length} responses`);
 
+    const topology = deserialize(await readFile(join(args.staticDataDir, "topo.buf"))) as Topology;
+
     this.log("Saving region config to database");
     const regionConfig = new RegionConfig();
     regionConfig.name = args.regionName;
@@ -81,6 +88,7 @@ export default class PublishRegion extends Command {
     regionConfig.regionCode = args.regionCode;
     regionConfig.s3URI = `s3://${flags.bucketName}/${keyPrefix}/`;
     regionConfig.version = versionDt;
+    regionConfig.layerSizeInBytes = getTopologyLayerSize(topology);
 
     const connection = await createConnection(connectionOptions);
     const repo = connection.getRepository(RegionConfig);

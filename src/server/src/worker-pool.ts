@@ -5,10 +5,11 @@ import os from "os";
 import Queue from "promise-queue";
 import { spawn, Worker, Thread } from "threads";
 import { TaskRunFunction } from "threads/dist/master/pool-types";
-import { IStaticMetadata, IRegionConfig, DistrictsDefinition } from "../../shared/entities";
+import { IStaticMetadata, DistrictsDefinition } from "../../shared/entities";
 import { NUM_WORKERS } from "./common/constants";
 import { formatBytes } from "./common/functions";
-import { Functions, MergeArgs, TopologyMetadata } from "./worker";
+import { RegionConfig } from "./region-configs/entities/region-config.entity";
+import { Functions, MergeArgs } from "./worker";
 
 // Timeout after which we kill/recreate the worker thread
 const TASK_TIMEOUT_MS = 90_000;
@@ -41,7 +42,6 @@ const timeouts: Array<NodeJS.Timeout | undefined> = [...Array(NUM_WORKERS)].fill
 
 // Track region size & worker size so we can kill/recreate workers when they exceed a maximum size
 const workerSizes = [...Array(NUM_WORKERS)].map(() => 0);
-const regionSizes: { [key: string]: number } = {};
 
 // Each queue controls access to a specific worker thread, which runs one task at a time
 const workerQueues = [...Array(NUM_WORKERS)].map(() => new Queue(1));
@@ -72,15 +72,12 @@ function getSettledQueues(workerQueues: Queue[], indexes: number[]) {
 let workersByRegion: { [id: string]: number[] } = {};
 let workersByRecency: number[] = [];
 
-async function findQueue(
-  regionConfig: IRegionConfig,
-  staticMetadata: IStaticMetadata
-): Promise<number> {
+async function findQueue(regionConfig: RegionConfig): Promise<number> {
   const allWorkerIndexes = [...workerQueues.keys()];
   const lastUsed = workersByRegion[regionConfig.id] || [];
   const lastUsedSettled = getSettledQueues(workerQueues, lastUsed);
   const allSettledQueues = getSettledQueues(workerQueues, allWorkerIndexes);
-  const size = regionSizes[regionConfig.id];
+  const size = regionConfig.layerSizeInBytes;
 
   // Choose our next index by size
   const willFit = (worker: number) => workerSizes[worker] + size < maxCacheSize;
@@ -114,7 +111,6 @@ async function findQueue(
     !workersByRegion[regionConfig.id] ||
     !workersByRegion[regionConfig.id].includes(workerToUse)
   ) {
-    const size = await getRegionSize(regionConfig, staticMetadata, workerToUse);
     if (workerSizes[workerToUse] + size > maxCacheSize) {
       await recreateWorker(workerToUse);
       // eslint-disable-next-line functional/immutable-data
@@ -135,23 +131,6 @@ async function findQueue(
   workersByRecency = [workerToUse, ...workersByRecency.filter(worker => worker != workerToUse)];
 
   return workerToUse;
-}
-
-async function getRegionSize(
-  regionConfig: IRegionConfig,
-  staticMetadata: IStaticMetadata,
-  worker: number
-): Promise<number> {
-  if (regionConfig.id in regionSizes) {
-    return regionSizes[regionConfig.id];
-  }
-
-  const { sizeInBytes }: TopologyMetadata = await workerQueues[worker].add(async () =>
-    (await workers[worker]).getTopologyMetadata(regionConfig, staticMetadata)
-  );
-  // eslint-disable-next-line functional/immutable-data
-  regionSizes[regionConfig.id] = sizeInBytes;
-  return sizeInBytes;
 }
 
 // If a worker times out or errors, or reaches its max cache size, replace it
@@ -179,8 +158,7 @@ function clearQueueTimeout(index: number) {
 }
 
 async function queueWithTimeout<R>(
-  regionConfig: IRegionConfig,
-  staticMetadata: IStaticMetadata,
+  regionConfig: RegionConfig,
   cb: TaskRunFunction<WorkerThread, R>
 ) {
   // This function is run within a queue and encompasses finding a worker queue and running a task.
@@ -189,7 +167,7 @@ async function queueWithTimeout<R>(
   // max number of workers, due to race conditions when finding settled workers
   return new Promise<R>(resolve => {
     void taskRunnerQueue.add(async () => {
-      const workerIndex = await findQueue(regionConfig, staticMetadata);
+      const workerIndex = await findQueue(regionConfig);
       const task = workerQueues[workerIndex].add(() => workers[workerIndex].then(cb));
       // Clear out any timeouts after the task completes
       task.then(() => clearQueueTimeout(workerIndex)).catch(() => recreateWorker(workerIndex));
@@ -203,32 +181,32 @@ async function queueWithTimeout<R>(
 }
 
 export const merge = (args: MergeArgs) =>
-  queueWithTimeout(args.regionConfig, args.staticMetadata, worker => worker.merge(args));
+  queueWithTimeout(args.regionConfig, worker => worker.merge(args));
 
 export const importFromCSV = (
   staticMetadata: IStaticMetadata,
-  regionConfig: IRegionConfig,
+  regionConfig: RegionConfig,
   blockToDistricts: {
     readonly [block: string]: number;
   }
 ) =>
-  queueWithTimeout(regionConfig, staticMetadata, worker =>
+  queueWithTimeout(regionConfig, worker =>
     worker.importFromCSV(staticMetadata, regionConfig, blockToDistricts)
   );
 
 export const exportToCSV = (
   staticMetadata: IStaticMetadata,
-  regionConfig: IRegionConfig,
+  regionConfig: RegionConfig,
   districtsDefinition: DistrictsDefinition
 ) =>
-  queueWithTimeout(regionConfig, staticMetadata, worker =>
+  queueWithTimeout(regionConfig, worker =>
     worker.exportToCSV(staticMetadata, regionConfig, districtsDefinition)
   );
 
 export const getTopologyProperties = (
-  regionConfig: IRegionConfig,
+  regionConfig: RegionConfig,
   staticMetadata: IStaticMetadata
 ) =>
-  queueWithTimeout(regionConfig, staticMetadata, worker =>
+  queueWithTimeout(regionConfig, worker =>
     worker.getTopologyProperties(regionConfig, staticMetadata)
   );

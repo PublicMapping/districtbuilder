@@ -6,13 +6,7 @@ import _ from "lodash";
 import { cpus } from "os";
 import { Repository } from "typeorm";
 
-import {
-  TypedArrays,
-  IStaticFile,
-  IStaticMetadata,
-  S3URI,
-  IRegionConfig
-} from "../../../../shared/entities";
+import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { getObject, s3Options } from "../../common/functions";
@@ -119,7 +113,7 @@ export class TopologyService {
   }
 
   private async fetchLayer(
-    regionConfig: IRegionConfig,
+    regionConfig: RegionConfig,
     numRetries = 0
   ): Promise<GeoUnitTopology | undefined> {
     try {
@@ -179,10 +173,7 @@ export class TopologyService {
 
   // Computes the length of the districtsDefinition array
   // For most regions, this is the number of counties in the state
-  private async getDistrictsDefLength(
-    regionConfig: IRegionConfig,
-    staticMetadata: IStaticMetadata
-  ) {
+  private async getDistrictsDefLength(regionConfig: RegionConfig, staticMetadata: IStaticMetadata) {
     const topGeoLevel = staticMetadata.geoLevelHierarchy.slice().reverse()[0].id;
     const properties = await getTopologyProperties(regionConfig, staticMetadata);
     return properties[topGeoLevel] ? properties[topGeoLevel].length : 0;

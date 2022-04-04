@@ -3,19 +3,19 @@ import {
   IStaticMetadata,
   TypedArrays,
   DistrictsDefinition,
-  IRegionConfig,
-  IUser,
-  IChamber,
   TopologyProperties
 } from "../../../../shared/entities";
+import { Chamber } from "../../chambers/entities/chamber.entity";
 import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
+import { RegionConfig } from "../../region-configs/entities/region-config.entity";
+import { User } from "../../users/entities/user.entity";
 import { merge, exportToCSV, getTopologyProperties, importFromCSV } from "../../worker-pool";
 
 export class GeoUnitTopology {
   constructor(
     public readonly definition: GeoUnitDefinition,
     public readonly staticMetadata: IStaticMetadata,
-    public readonly regionConfig: IRegionConfig,
+    public readonly regionConfig: RegionConfig,
     public readonly demographics: TypedArrays,
     public readonly voting: TypedArrays,
     public readonly geoLevels: TypedArrays,
@@ -35,9 +35,9 @@ export class GeoUnitTopology {
   }: {
     readonly districtsDefinition: DistrictsDefinition;
     readonly numberOfDistricts: number;
-    readonly user: IUser;
-    readonly chamber?: IChamber;
-    readonly regionConfig: IRegionConfig;
+    readonly user: User;
+    readonly chamber?: Chamber;
+    readonly regionConfig: RegionConfig;
   }): Promise<DistrictsGeoJSON | null> {
     return merge({
       districtsDefinition,
