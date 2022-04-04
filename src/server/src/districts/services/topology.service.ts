@@ -2,7 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import S3 from "aws-sdk/clients/s3";
 import { spawn } from "child_process";
-import _ from "lodash";
 import { cpus } from "os";
 import { Repository } from "typeorm";
 
@@ -10,14 +9,13 @@ import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../sh
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 import { getObject, s3Options } from "../../common/functions";
-import { getTopologyProperties } from "../../worker-pool";
+import { cacheSize, getTopologyProperties } from "../../worker-pool";
+import _ from "lodash";
 
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
 // so we can afford to have more layers loading than we have cores, but not too many
 const BATCH_SIZE = cpus().length * 2;
-// 10 largest states by geojson file size
-const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
 
 type Layer = Promise<GeoUnitTopology | undefined>;
 
@@ -58,35 +56,41 @@ export class TopologyService {
   constructor(@InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>) {}
 
   public loadLayers() {
-    void this.repo.find({ archived: false }).then(regionConfigs => {
-      const getLayers = async () => {
-        // eslint-disable-next-line functional/immutable-data
-        this._layers = regionConfigs.reduce(
-          (layers, regionConfig) => ({
-            ...layers,
-            [regionConfig.s3URI]: null
-          }),
-          {}
-        );
-        // Load largest states last, so they're less likely to be evicted from the cache
-        const sortedRegions = _.sortBy(regionConfigs, region => [
-          STATE_ORDER.includes(region.regionCode),
-          -STATE_ORDER.indexOf(region.regionCode)
-        ]);
+    void this.repo
+      .find({
+        where: { archived: false },
+        order: { layerSizeInBytes: "DESC" }
+      })
+      .then(regionConfigs => {
+        const getLayers = async () => {
+          // eslint-disable-next-line functional/immutable-data
+          this._layers = regionConfigs.reduce(
+            (layers, regionConfig) => ({
+              ...layers,
+              [regionConfig.s3URI]: null
+            }),
+            {}
+          );
 
-        // Load a number of regions in parallel, adding another as each one completes
-        await asyncLoop(
-          sortedRegions.map(region => () => {
-            const promise = this.fetchLayer(region);
-            // eslint-disable-next-line functional/immutable-data
-            this._layers = { ...this._layers, [region.s3URI]: promise };
-            return promise;
-          }),
-          BATCH_SIZE
-        );
-      };
-      void getLayers();
-    });
+          const totalSize = _.sum(regionConfigs.map(r => r.layerSizeInBytes));
+          // If all regions will fit, load largest states first, to reduce chances for cache fragmentation
+          // Otherwise load largest last so they won't get evicted
+          const sortedRegions =
+            totalSize < cacheSize ? regionConfigs : regionConfigs.slice().reverse();
+
+          // Load a number of regions in parallel, adding another as each one completes
+          await asyncLoop(
+            sortedRegions.map(region => () => {
+              const promise = this.fetchLayer(region);
+              // eslint-disable-next-line functional/immutable-data
+              this._layers = { ...this._layers, [region.s3URI]: promise };
+              return promise;
+            }),
+            BATCH_SIZE
+          );
+        };
+        void getLayers();
+      });
   }
 
   public layers(): Readonly<Layers> | undefined {
