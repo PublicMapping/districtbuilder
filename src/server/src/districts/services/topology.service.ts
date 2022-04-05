@@ -2,20 +2,23 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import S3 from "aws-sdk/clients/s3";
 import { spawn } from "child_process";
-import { cpus } from "os";
+import _ from "lodash";
+import Queue from "promise-queue";
 import { Repository } from "typeorm";
 
 import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
-import { RegionConfig } from "../../region-configs/entities/region-config.entity";
-import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
+
+import { NUM_WORKERS } from "../../common/constants";
 import { getObject, s3Options } from "../../common/functions";
+import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { cacheSize, getTopologyProperties } from "../../worker-pool";
-import _ from "lodash";
+
+import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
 // so we can afford to have more layers loading than we have cores, but not too many
-const BATCH_SIZE = cpus().length * 2;
+const BATCH_SIZE = NUM_WORKERS * 2;
 
 type Layer = Promise<GeoUnitTopology | undefined>;
 
@@ -23,35 +26,12 @@ interface Layers {
   [s3URI: string]: null | Layer;
 }
 
-// https://stackoverflow.com/a/48007240
-async function asyncLoop<T>(asyncFns: ReadonlyArray<() => Promise<T>>, concurrent = 5) {
-  // queue up simultaneous calls
-  const queue: Promise<T>[] = [];
-  // eslint-disable-next-line functional/no-loop-statement
-  for (const fn of asyncFns) {
-    // fire the async function, add its promise to the queue, and remove
-    // it from queue when complete
-    const p = fn().then(res => {
-      // eslint-disable-next-line functional/immutable-data
-      queue.splice(queue.indexOf(p), 1);
-      return res;
-    });
-    // eslint-disable-next-line functional/immutable-data
-    queue.push(p);
-    // if max concurrent, wait for one to finish
-    if (queue.length >= concurrent) {
-      await Promise.race(queue);
-    }
-  }
-  // wait for the rest of the calls to finish
-  await Promise.all(queue);
-}
-
 @Injectable()
 export class TopologyService {
   private _layers?: Layers = undefined;
   private readonly logger = new Logger(TopologyService.name);
   private readonly s3 = new S3();
+  private readonly downloadQueue = new Queue(BATCH_SIZE);
 
   constructor(@InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>) {}
 
@@ -78,15 +58,16 @@ export class TopologyService {
           const sortedRegions =
             totalSize < cacheSize ? regionConfigs : regionConfigs.slice().reverse();
 
-          // Load a number of regions in parallel, adding another as each one completes
-          await asyncLoop(
-            sortedRegions.map(region => () => {
-              const promise = this.fetchLayer(region);
-              // eslint-disable-next-line functional/immutable-data
-              this._layers = { ...this._layers, [region.s3URI]: promise };
-              return promise;
-            }),
-            BATCH_SIZE
+          await Promise.all(
+            sortedRegions.map(region =>
+              // Load a number of regions in parallel, adding another as each one completes
+              this.downloadQueue.add(() => {
+                const promise = this.fetchLayer(region);
+                // eslint-disable-next-line functional/immutable-data
+                this._layers = { ...this._layers, [region.s3URI]: promise };
+                return promise;
+              })
+            )
           );
         };
         void getLayers();

@@ -24,17 +24,17 @@ const dockerMemLimit = Number(
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
 // Targets:
-// 9Gb reserved for 12Gb total (dev)
-// 18Gb reserved for 31Gb total (32Gb instance w/ ~1Gb for ECS agent)
-// 29Gb reserved for 63Gb total (64Gb instance w/ ~1Gb ECS agent)
-const reservedMem = 3 * 1024 * 1024 * 1024 + totalmem * 0.5;
-const maxCacheSize = Math.ceil((totalmem - reservedMem) / NUM_WORKERS);
+// 3Gb of cache for 12Gb total (dev)
+// 13Gb of cache for 31Gb total (32Gb instance w/ ~1Gb for ECS agent)
+// 28Gb of cache for 63Gb total (64Gb instance w/ ~1Gb ECS agent)
+export const cacheSize = totalmem * 0.5 - 3 * 1024 * 1024 * 1024;
+const maxWorkerCacheSize = Math.ceil(cacheSize / NUM_WORKERS);
 
 const logger = new Logger("worker-pool");
 logger.debug({
   dockerMemLimit: formatBytes(dockerMemLimit),
   hostmem: formatBytes(hostmem),
-  maxCacheSize: formatBytes(maxCacheSize)
+  maxCacheSize: formatBytes(maxWorkerCacheSize)
 });
 
 // Implementing our own queuing system instead of using threads Pool in order to handle errors
@@ -114,7 +114,7 @@ async function findQueue(regionConfig: RegionConfig): Promise<number> {
     !workersByRegion[regionConfig.id] ||
     !workersByRegion[regionConfig.id].includes(workerToUse)
   ) {
-    if (workerSizes[workerToUse] + size > maxCacheSize) {
+    if (workerSizes[workerToUse] + size > maxWorkerCacheSize) {
       await createWorker(workerToUse, "OoM");
       // eslint-disable-next-line functional/immutable-data
       workerSizes[workerToUse] = 0;
