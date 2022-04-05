@@ -1185,7 +1185,7 @@ const DistrictsMap = ({
         </svg>
       </div>
       {!evaluateMode && isThisUsersMap && isArchived && (
-        <Box sx={style.archivedMessage}>
+        <Box sx={{ ...style.archivedMessage, pb: 0 }}>
           <Icon name="alert-triangle" /> This map is using an archived region and can no longer be
           edited.
         </Box>
