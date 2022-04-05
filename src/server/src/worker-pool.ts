@@ -115,7 +115,7 @@ async function findQueue(regionConfig: RegionConfig): Promise<number> {
     !workersByRegion[regionConfig.id].includes(workerToUse)
   ) {
     if (workerSizes[workerToUse] + size > maxCacheSize) {
-      await createWorker(workerToUse);
+      await createWorker(workerToUse, "OoM");
       // eslint-disable-next-line functional/immutable-data
       workerSizes[workerToUse] = 0;
       workersByRegion = _.mapValues(workersByRegion, workers =>
@@ -136,8 +136,8 @@ async function findQueue(regionConfig: RegionConfig): Promise<number> {
   return workerToUse;
 }
 
-function createWorker(index: number): Promise<WorkerThread> {
-  terminateWorker(index);
+function createWorker(index: number, cause = ""): Promise<WorkerThread> {
+  terminateWorker(index, cause);
   const worker = spawn<Functions>(new Worker("./worker", { workerData: { index } }));
   // eslint-disable-next-line functional/immutable-data
   workers[index] = worker;
@@ -151,14 +151,14 @@ function createWorker(index: number): Promise<WorkerThread> {
   return worker;
 }
 
-function terminateWorker(index: number) {
+function terminateWorker(index: number, cause: string) {
   void workers[index].then(worker => {
     // If a worker times out or errors, or reaches its max cache size, we replace it
     if (worker) {
       logger.log(
-        `Terminating worker ${index}, worker cache size: ${formatBytes(
-          workerSizes[index]
-        )}, total rss: ${formatBytes(process.memoryUsage().rss)}`
+        `Terminating worker ${index} due to ${cause}, worker sizes: ${workerSizes
+          .map((size, idx) => `${idx}: ${formatBytes(size)}`)
+          .join(`, `)}, total rss: ${formatBytes(process.memoryUsage().rss)}`
       );
       void Thread.terminate(worker);
     }
@@ -196,7 +196,7 @@ async function queueWithTimeout<R>(
           clearQueueTimeout(workerIndex);
           // eslint-disable-next-line functional/immutable-data
           timeouts[workerIndex] = setTimeout(() => {
-            terminateWorker(workerIndex);
+            terminateWorker(workerIndex, "timeout");
             reject();
           }, TASK_TIMEOUT_MS);
           task
@@ -206,7 +206,7 @@ async function queueWithTimeout<R>(
               resolve(worker);
             })
             .catch(error => {
-              terminateWorker(workerIndex);
+              terminateWorker(workerIndex, "error");
               reject(error);
             });
         })
