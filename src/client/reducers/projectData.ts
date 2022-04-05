@@ -48,9 +48,16 @@ import {
   referenceLayerDeleteFailure,
   setDeleteReferenceLayer,
   toggleProjectDetailsModal,
-  updateProjectDetailsSuccess
+  updateProjectDetailsSuccess,
+  projectSubmit,
+  projectSubmitSuccess
 } from "../actions/projectData";
-import { clearSelectedGeounits, setSavingState, FindTool } from "../actions/districtDrawing";
+import {
+  clearSelectedGeounits,
+  setSavingState,
+  FindTool,
+  SelectionTool
+} from "../actions/districtDrawing";
 import { updateCurrentState } from "../reducers/undoRedo";
 import { IProject, IReferenceLayer } from "../../shared/entities";
 import { ProjectState, initialProjectState } from "./project";
@@ -74,10 +81,12 @@ import {
   fetchProjectGeoJson,
   patchProject,
   copyProject,
-  deleteReferenceLayer
+  deleteReferenceLayer,
+  submitProject
 } from "../api";
 import { fetchAllStaticData } from "../s3";
 import { toast } from "react-toastify";
+import { showSubmitMapModal } from "../actions/projectModals";
 
 function fetchGeoJsonForProject(project: IProject) {
   return () => {
@@ -673,6 +682,47 @@ const projectDataReducer: LoopReducer<ProjectState, Action> = (
       );
     case getType(exportShpFailure):
       return loop(state, Cmd.run(showActionFailedToast));
+    case getType(projectSubmit): {
+      if ("resource" in state.projectData) {
+        const projectId = state.projectData.resource.project.id;
+        const { geojson } = state.projectData.resource;
+        return loop(
+          {
+            ...state,
+            saving: "saving"
+          },
+          Cmd.run(
+            () =>
+              submitProject(projectId).then(project => ({
+                project,
+                geojson
+              })),
+            {
+              successActionCreator: projectSubmitSuccess,
+              failActionCreator: updateProjectFailed
+            }
+          )
+        );
+      } else {
+        return state;
+      }
+    }
+    case getType(projectSubmitSuccess):
+      return loop(
+        {
+          ...state,
+          saving: "saved",
+          projectData: { resource: action.payload },
+          selectionTool: SelectionTool.Default
+        },
+        "resource" in state.projectData &&
+          state.projectData.resource.project.projectTemplate?.contestNextSteps
+          ? Cmd.list<Action>([
+              Cmd.action(clearSelectedGeounits(true)),
+              Cmd.action(showSubmitMapModal(true))
+            ])
+          : Cmd.action(clearSelectedGeounits(true))
+      );
     default:
       return state as never;
   }

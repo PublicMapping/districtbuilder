@@ -101,6 +101,7 @@ import { Resource } from "../../resource";
 import { getColor } from "@theme-ui/color";
 import theme from "../../theme";
 import { getDemographicsGroups } from "../../../shared/functions";
+import CopyMapButton from "../CopyMapButton";
 
 function removeEvaluateMetricLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_COMPACTNESS_CHOROPLETH_LAYER_ID, "visibility", "none");
@@ -125,9 +126,7 @@ function disableEditMode(
   });
 
   // Disable selection tools in evaluate mode
-  DefaultSelectionTool.disable(map);
-  RectangleSelectionTool.disable(map);
-  PaintBrushSelectionTool.disable(map);
+  disableAllTools(map);
 
   // Resize map after editing toolbar removed
   map.resize();
@@ -203,6 +202,13 @@ function enableSummaryEvaluateLayers(map: MapboxGL.Map) {
 
 function disableSummaryEvaluateLayers(map: MapboxGL.Map) {
   map.setLayoutProperty(DISTRICTS_LAYER_ID, "visibility", "none");
+}
+
+function disableAllTools(map: MapboxGL.Map) {
+  // Disable any existing selection tools
+  DefaultSelectionTool.disable(map);
+  RectangleSelectionTool.disable(map);
+  PaintBrushSelectionTool.disable(map);
 }
 
 const getRefLayerSourceId = (layerId: ReferenceLayerId) => `reference-source-${layerId}`;
@@ -1092,9 +1098,7 @@ const DistrictsMap = ({
     /* eslint-disable */
     if (map && !isReadOnly) {
       // Disable any existing selection tools
-      DefaultSelectionTool.disable(map);
-      RectangleSelectionTool.disable(map);
-      PaintBrushSelectionTool.disable(map);
+      disableAllTools(map);
       if (!evaluateMode && !isPanning) {
         // Enable appropriate tool
         if (selectionTool === SelectionTool.Default) {
@@ -1132,6 +1136,9 @@ const DistrictsMap = ({
           );
         }
       }
+    } else if (map) {
+      // Disable any existing selection tools
+      disableAllTools(map);
     }
     /* eslint-enable */
   }, [
@@ -1178,9 +1185,15 @@ const DistrictsMap = ({
         </svg>
       </div>
       {!evaluateMode && isThisUsersMap && isArchived && (
+        <Box sx={{ ...style.archivedMessage, pb: 0 }}>
+          <Icon name="alert-triangle" /> This map is using an archived region and can no longer be
+          edited.
+        </Box>
+      )}
+      {!evaluateMode && isThisUsersMap && project.submittedDt && (
         <Box sx={style.archivedMessage}>
-          <Icon name="alert-triangle" /> This map is using an archived region for the 2010 Census
-          and can no longer be edited.
+          <Icon name="alert-triangle" /> This map is read-only because it was submitted to a
+          contest. {!isArchived && <CopyMapButton invert={false} />}
         </Box>
       )}
       {evaluateMode && evaluateMetric && evaluateMetric.key === "countySplits" && (

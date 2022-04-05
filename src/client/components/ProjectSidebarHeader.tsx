@@ -4,7 +4,7 @@ import { Button, Box, Flex, Heading, jsx, Spinner, Text, ThemeUIStyleObject } fr
 
 import { GeoUnits } from "../../shared/entities";
 import { SavingState } from "../types";
-import { areAnyGeoUnitsSelected, destructureResource } from "../functions";
+import { areAnyGeoUnitsSelected, isProjectReadOnly } from "../functions";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
 
@@ -125,11 +125,8 @@ const ProjectSidebarHeader = ({
 };
 
 function mapStateToProps(state: State): StateProps {
-  const project = destructureResource(state.project.projectData, "project");
   return {
-    isReadOnly:
-      !("resource" in state.user) ||
-      (project !== undefined && state.user.resource.id !== project.user.id)
+    isReadOnly: isProjectReadOnly(state)
   };
 }
 

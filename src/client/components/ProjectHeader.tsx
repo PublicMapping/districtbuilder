@@ -20,6 +20,7 @@ import { State } from "../reducers";
 import { UndoHistory } from "../reducers/undoRedo";
 
 import { style as menuButtonStyle } from "./MenuButton.styles";
+import SubmitMapButton from "./map/SubmitMapButton";
 
 const style: Record<string, ThemeUIStyleObject> = {
   undoRedo: {
@@ -53,6 +54,7 @@ const HeaderDivider = () => {
 interface StateProps {
   readonly evaluateMode: boolean;
   readonly undoHistory: UndoHistory;
+  readonly isOwnProject: boolean;
 }
 
 const EvaluateButton = ({ evaluateMode }: { readonly evaluateMode: boolean }) => (
@@ -60,7 +62,7 @@ const EvaluateButton = ({ evaluateMode }: { readonly evaluateMode: boolean }) =>
     <Button
       sx={{
         ...{
-          variant: "buttons.primary",
+          variant: "buttons.secondary",
           fontWeight: "light",
           maxHeight: "34px",
           borderBottom: evaluateMode ? "solid 3px" : "none",
@@ -86,12 +88,14 @@ const ProjectHeader = ({
   map,
   project,
   isArchived,
+  isOwnProject,
   isReadOnly,
   undoHistory
 }: {
   readonly map?: MapboxGL.Map;
   readonly project?: IProject;
   readonly isArchived: boolean;
+  readonly isOwnProject: boolean;
   readonly isReadOnly: boolean;
 } & StateProps) => (
   <Flex sx={style.projectHeader}>
@@ -134,12 +138,14 @@ const ProjectHeader = ({
           <SupportMenu invert={true} project={true} />
           {project ? <ExportMenu isArchived={isArchived} invert={true} project={project} /> : null}
           <EvaluateButton evaluateMode={evaluateMode} />
+          <SubmitMapButton project={project} />
         </React.Fragment>
       ) : (
         <React.Fragment>
           {!isArchived && <CopyMapButton invert={true} />}
           {project && <ExportMenu isArchived={isArchived} invert={true} project={project} />}
           <EvaluateButton evaluateMode={evaluateMode} />
+          {isOwnProject && <SubmitMapButton project={project} />}
         </React.Fragment>
       )}
     </Flex>
@@ -149,7 +155,11 @@ const ProjectHeader = ({
 function mapStateToProps(state: State): StateProps {
   return {
     evaluateMode: state.project.evaluateMode,
-    undoHistory: state.project.undoHistory
+    undoHistory: state.project.undoHistory,
+    isOwnProject:
+      "resource" in state.user &&
+      "resource" in state.project.projectData &&
+      state.user.resource.id === state.project.projectData.resource.project.user.id
   };
 }
 

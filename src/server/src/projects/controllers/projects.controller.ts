@@ -271,6 +271,7 @@ export class ProjectsController implements CrudController<Project> {
       user: undefined,
       createdDt: undefined,
       updatedDt: undefined,
+      submittedDt: undefined,
       isFeatured: undefined,
       // Overwrite the creator data from the original creator to match the new owner
       districts: project.districts?.metadata?.creator
@@ -481,11 +482,11 @@ export class ProjectsController implements CrudController<Project> {
   ): Promise<Project> {
     const project = await this.getProject(req, projectId);
     if (!project.projectTemplate) {
-      throw new NotFoundException(`Project is not connected to an organization's template`);
+      throw new NotFoundException("Project is not connected to an organization's template");
     }
     const orgId = project.projectTemplate.organization.id;
     if (!orgId) {
-      throw new NotFoundException(`Project is not connected to an organization`);
+      throw new NotFoundException("Project is not connected to an organization");
     }
     const userId = req.parsed.authPersist.userId || null;
     const org = await this.organizationService.findOne({ id: orgId }, { relations: ["admin"] });
@@ -507,16 +508,42 @@ export class ProjectsController implements CrudController<Project> {
   }
 
   @UseInterceptors(CrudRequestInterceptor)
+  @Override()
+  @UseGuards(JwtAuthGuard)
+  @Post(":id/submit")
+  async submitProject(@Param("id") id: ProjectId, @ParsedRequest() req: CrudRequest) {
+    const existingProject = await this.getProject(req, id);
+    if (!existingProject.projectTemplate?.contestActive) {
+      throw new NotFoundException("Project is not connected to a template with an active contest");
+    }
+    // Submitted maps can't be private
+    const visibility =
+      existingProject.visibility !== ProjectVisibility.Private
+        ? existingProject.visibility
+        : ProjectVisibility.Visible;
+    const project = await this.service.updateOne(req, { submittedDt: new Date(), visibility });
+    // Make sure submitted plans have a PlanScore report ready for judges to review
+    if (!project.planscoreUrl) {
+      this.triggerPlanScoreUpload(req, id);
+    }
+    return project;
+  }
+
+  @UseInterceptors(CrudRequestInterceptor)
   @UseGuards(OptionalJwtAuthGuard)
   @Post(":id/plan-score")
   async sendToPlanScoreAPI(
     @ParsedRequest() req: CrudRequest,
     @Param("id") projectId: ProjectId
   ): Promise<void> {
-    const userId = req.parsed.authPersist.userId as string;
     // First clear out the existing planscore URL
     await this.service.updateOne(req, { planscoreUrl: "" });
-    // The rest of this function happens in a callback that we *don't* wait for
+    this.triggerPlanScoreUpload(req, projectId);
+  }
+
+  triggerPlanScoreUpload(req: CrudRequest, projectId: ProjectId) {
+    const userId = req.parsed.authPersist.userId as string;
+    // The body of this function happens in a callback that we *don't* wait for
     // The frontend will poll to find out when this is completed
     void this.getProjectWithDistricts(projectId, userId).then(project => {
       const uploadDistricts = async () => {

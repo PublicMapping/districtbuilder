@@ -194,7 +194,10 @@ const theme: Theme = {
   },
   space: [0, 4, 8, 12, 16, 24, 32, 48, 64, 128, 256],
   buttons: {
-    primary: appButtonStyles,
+    primary: {
+      ...appButtonStyles,
+      bg: "primary"
+    },
     secondary: {
       ...appButtonStyles,
       ...{
@@ -204,6 +207,18 @@ const theme: Theme = {
         },
         "&:active": {
           bg: "gray.7"
+        }
+      }
+    },
+    success: {
+      ...appButtonStyles,
+      ...{
+        bg: "success.4",
+        "&:hover:not([disabled]):not(:active)": {
+          bg: "success.5"
+        },
+        "&:active": {
+          bg: "success.6"
         }
       }
     },

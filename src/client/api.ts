@@ -61,6 +61,15 @@ function saveJWT(response: AxiosResponse<JWT>): JWT {
   return jwt;
 }
 
+function formatProject(project: IProject): IProject {
+  return {
+    ...project,
+    createdDt: new Date(project.createdDt),
+    updatedDt: new Date(project.updatedDt),
+    submittedDt: project.submittedDt ? new Date(project.submittedDt) : undefined
+  };
+}
+
 export async function authenticateUser(email: string, password: string): Promise<JWT> {
   return new Promise((resolve, reject) => {
     apiAxios
@@ -143,7 +152,7 @@ export async function createProject(data: CreateProjectData): Promise<IProject> 
   return new Promise((resolve, reject) => {
     apiAxios
       .post("/api/projects", data)
-      .then(response => resolve(response.data))
+      .then(response => resolve(formatProject(response.data)))
       .catch(error => reject(error.response?.data || error));
   });
 }
@@ -152,7 +161,7 @@ export async function copyProject(id: ProjectId): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
       .post(`/api/projects/${id}/duplicate`)
-      .then(response => resolve(response.data))
+      .then(response => resolve(formatProject(response.data)))
       .catch(error => reject(error.response?.data || error));
   });
 }
@@ -161,7 +170,7 @@ async function fetchProject(id: ProjectId): Promise<IProject> {
   return new Promise((resolve, reject) => {
     apiAxios
       .get(`/api/projects/${id}`)
-      .then(response => resolve(response.data))
+      .then(response => resolve(formatProject(response.data)))
       .catch(error =>
         reject({ errorMessage: error.response.data, statusCode: error.response.status })
       );
@@ -258,7 +267,7 @@ export async function patchProject(
   return new Promise((resolve, reject) => {
     apiAxios
       .patch(`/api/projects/${id}`, projectData)
-      .then(response => resolve(response.data))
+      .then(response => resolve(formatProject(response.data)))
       .catch(error => reject(error.response?.data || error));
   });
 }
@@ -485,6 +494,17 @@ export async function saveProjectFeatured(project: ProjectNest): Promise<IOrgani
     apiAxios
       .post(`/api/projects/${project.id}/toggleFeatured`, projectPost)
       .then(response => resolve(response.data))
+      .catch(error => {
+        reject(error.message);
+      });
+  });
+}
+
+export async function submitProject(projectId: ProjectId): Promise<IProject> {
+  return new Promise((resolve, reject) => {
+    apiAxios
+      .post(`/api/projects/${projectId}/submit`)
+      .then(response => resolve(formatProject(response.data)))
       .catch(error => {
         reject(error.message);
       });
