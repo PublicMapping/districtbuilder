@@ -76,44 +76,42 @@ let workersByRegion: { [id: string]: number[] } = {};
 let workersByRecency: number[] = [];
 
 async function findQueue(regionConfig: RegionConfig): Promise<number> {
-  const allWorkerIndexes = [...workerQueues.keys()];
+  const workerLacksRegion = (worker: number) =>
+    !workersByRegion[regionConfig.id] || !workersByRegion[regionConfig.id].includes(worker);
+
+  const availableWorkerIndexes = [...workerQueues.keys()].filter(workerLacksRegion);
   const lastUsed = workersByRegion[regionConfig.id] || [];
+
   const lastUsedSettled = getSettledQueues(workerQueues, lastUsed);
-  const allSettledQueues = getSettledQueues(workerQueues, allWorkerIndexes);
+  const settledQueues = getSettledQueues(workerQueues, availableWorkerIndexes);
   const size = regionConfig.layerSizeInBytes;
 
   // Choose our next index by size
-  const willFit = (worker: number) => workerSizes[worker] + size < maxCacheSize;
-  const getBestFit = (workers: number[]): number =>
-    (!size
-      ? // Use the smallest worker if size is unknown
-        _.minBy(workers, idx => workerSizes[idx])
-      : // Use the largest worker that will fit if size is known
-      workers.some(willFit)
-      ? _.minBy(workers.filter(willFit), idx => maxCacheSize - (workerSizes[idx] + size))
-      : // If no workers will fit, we use the least recently used worker
-        // eslint-disable-next-line functional/immutable-data
-        workersByRecency.pop()) || workers[0];
+  const willFit = (worker: number) => workerSizes[worker] + size < maxWorkerCacheSize;
+  const getBestFit = (workers: number[]) =>
+    _.minBy(workers.filter(willFit), idx => maxWorkerCacheSize - (workerSizes[idx] + size));
 
   const workerToUse: number =
     // First check for available workers that were used for this region, get most recent
-    lastUsedSettled.length > 0
+    (lastUsedSettled.length > 0
       ? lastUsedSettled[0]
-      : // Next check if any workers are available, if we haven't hit our limit for this region
-      lastUsed.length < MAX_PER_REGION && allSettledQueues.length > 0
-      ? getBestFit(allSettledQueues)
-      : // If we have no available workers, use the most recent for this region
+      : // If there are settled queues that will fit use those first
+      lastUsed.length < MAX_PER_REGION && settledQueues.some(willFit)
+      ? getBestFit(settledQueues)
+      : // If there are unsettled queues that will fit, we'd rather block until they're ready
+      // than be forced to terminate a thread to make room
+      lastUsed.length < MAX_PER_REGION && availableWorkerIndexes.some(willFit)
+      ? getBestFit(availableWorkerIndexes)
+      : // If there are no settled workers and we hit the limit on adding more, use the most recent for this region
       lastUsed.length > 0
       ? lastUsed[0]
-      : // Lastly, just use anything
-        getBestFit(allWorkerIndexes);
+      : // Lastly if nothing will fit use the least recently used worker, which wil get terminated
+        // eslint-disable-next-line functional/immutable-data
+        workersByRecency.pop()) || 0;
 
   // If this region wasn't already in this workers cache, update the worker size
   // This may trigger recreating the worker thread if we would exceed the max size
-  if (
-    !workersByRegion[regionConfig.id] ||
-    !workersByRegion[regionConfig.id].includes(workerToUse)
-  ) {
+  if (workerLacksRegion(workerToUse)) {
     if (workerSizes[workerToUse] + size > maxWorkerCacheSize) {
       await createWorker(workerToUse, "OoM");
       // eslint-disable-next-line functional/immutable-data
