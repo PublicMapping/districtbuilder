@@ -16,6 +16,7 @@ export interface ProjectRow extends ProjectNest {
   readonly project: { readonly name: string; readonly id: string };
   readonly updatedAgo: string;
   readonly templateName: string;
+  readonly submittedOn: string;
 }
 
 interface ProjectsTableProps {
@@ -46,7 +47,8 @@ const OrganizationAdminProjectsTable = ({ templates, organizationSlug }: Project
               ...p,
               project: { name: p.name, id: p.id },
               updatedAgo: formatDate(p.updatedDt),
-              templateName: pt.name
+              templateName: pt.name,
+              submittedOn: p.submittedDt ? formatDate(p.submittedDt) : "-"
             };
           });
         })
@@ -87,12 +89,18 @@ const OrganizationAdminProjectsTable = ({ templates, organizationSlug }: Project
           return <a href={`mailto:${p.value}`}>{p.value}</a>;
         }
       },
-
       {
         Header: "Updated on",
         accessor: "updatedDt" as const,
         Cell: (p: Cell<ProjectRow>) => {
           return p.row.original.updatedAgo;
+        }
+      },
+      {
+        Header: "Submitted on",
+        accessor: "submittedOn" as const,
+        Cell: (p: Cell<ProjectRow>) => {
+          return p.row.original.submittedOn;
         }
       },
       {

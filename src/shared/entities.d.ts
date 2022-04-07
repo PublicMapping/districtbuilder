@@ -239,6 +239,7 @@ export type ProjectNest = Pick<
   | "regionConfig"
   | "isFeatured"
   | "visibility"
+  | "submittedDt"
 > & {
   readonly regionConfig: Pick<IRegionConfig, "name">;
 };
