@@ -41,6 +41,9 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         plan)
             # Clear stale modules & remote state, then re-initialize
             rm -rf .terraform terraform.tfstate*
+
+            make -sC lambda-functions/alert_db
+
             terraform init \
                 -backend-config="bucket=${DB_SETTINGS_BUCKET}" \
                 -backend-config="key=terraform/state"

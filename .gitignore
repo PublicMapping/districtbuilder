@@ -41,3 +41,9 @@ deployment/ansible/roles/azavea.*
 .vagrant/
 
 .env
+
+# Lambda
+*.zip
+*.out
+deployment/terraform/lambda-functions/alert_db/src/*
+!deployment/terraform/lambda-functions/alert_db/src/alert_db.py
