@@ -102,12 +102,12 @@ async function findQueue(regionConfig: RegionConfig): Promise<number> {
       // than be forced to terminate a thread to make room
       lastUsed.length < MAX_PER_REGION && availableWorkerIndexes.some(willFit)
       ? getBestFit(availableWorkerIndexes)
+      : // If nothing will fit use the least recently used worker, which wil get terminated
+      lastUsed.length < MAX_PER_REGION
+      ? // eslint-disable-next-line functional/immutable-data
+        workersByRecency.pop()
       : // If there are no settled workers and we hit the limit on adding more, use the most recent for this region
-      lastUsed.length > 0
-      ? lastUsed[0]
-      : // Lastly if nothing will fit use the least recently used worker, which wil get terminated
-        // eslint-disable-next-line functional/immutable-data
-        workersByRecency.pop()) || 0;
+        lastUsed[0]) || 0;
 
   // If this region wasn't already in this workers cache, update the worker size
   // This may trigger recreating the worker thread if we would exceed the max size
