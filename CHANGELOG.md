@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added submit map button [#1179](https://github.com/PublicMapping/districtbuilder/pull/1179)
-- Addded submitted column to the Organization admin projects table [#1192](https://github.com/PublicMapping/districtbuilder/pull/1192)
+- Added submitted column to the Organization admin projects table [#1192](https://github.com/PublicMapping/districtbuilder/pull/1192)
 - Added submission date and plan score url to organization map CSV export [#1193](https://github.com/PublicMapping/districtbuilder/pull/1193)
+- Added a lambda function to send DB server alarms to Slack [#1186](https://github.com/PublicMapping/districtbuilder/pull/1186)
 
 ### Changed
 
@@ -28,7 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add district type to project cards on 'My Maps' page [#1162](https://github.com/PublicMapping/districtbuilder/pull/1162)
 - Add Creation and Login Dates to User [#1159](https://github.com/PublicMapping/districtbuilder/pull/1159)
 - Allow admins to archive organization templates [#1164](https://github.com/PublicMapping/districtbuilder/pull/1164)
-- Add a lambda function to send DB server alarms to Slack [#1186](https://github.com/PublicMapping/districtbuilder/pull/1186)
 
 ### Changed
 - Updated caching setup based on load testing [#1172](https://github.com/PublicMapping/districtbuilder/pull/1172)
