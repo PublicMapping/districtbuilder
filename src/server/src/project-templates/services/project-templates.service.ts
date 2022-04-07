@@ -29,6 +29,8 @@ export type ProjectExportRow = {
   readonly regionS3URI: string;
   readonly chamberName?: string;
   readonly districtProperties: readonly DistrictProperties[];
+  readonly submittedDt: Date | null;
+  readonly planscoreUrl: string;
 };
 
 @Injectable()
@@ -58,6 +60,8 @@ export class ProjectTemplatesService extends TypeOrmCrudService<ProjectTemplate>
       .addSelect("projects.id", "projectId")
       .addSelect("projects.createdDt", "createdDt")
       .addSelect("projects.updatedDt", "updatedDt")
+      .addSelect("projects.submittedDt", "submittedDt")
+      .addSelect("projects.planscoreUrl", "planscoreUrl")
       .addSelect("projectTemplate.name", "templateName")
       .addSelect("regionConfig.name", "regionName")
       .addSelect("regionConfig.s3URI", "regionS3URI")

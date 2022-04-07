@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added submit map button [#1179](https://github.com/PublicMapping/districtbuilder/pull/1179)
 - Addded submitted column to the Organization admin projects table [#1192](https://github.com/PublicMapping/districtbuilder/pull/1192)
+- Added submission date and plan score url to organization map CSV export [#1193](https://github.com/PublicMapping/districtbuilder/pull/1193)
 
 ### Changed
 
