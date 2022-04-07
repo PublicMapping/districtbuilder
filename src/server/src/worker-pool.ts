@@ -173,7 +173,8 @@ function clearQueueTimeout(index: number) {
 
 async function queueWithTimeout<R>(
   regionConfig: RegionConfig,
-  cb: TaskRunFunction<WorkerThread, R>
+  cb: TaskRunFunction<WorkerThread, R>,
+  timeout = TASK_TIMEOUT_MS
 ) {
   // This function is run within a queue and encompasses finding a worker queue and running a task.
   //
@@ -192,11 +193,13 @@ async function queueWithTimeout<R>(
         new Promise((resolve, reject) => {
           // Clear pre-existing timeouts if we're adding a new one before cleanup could happen
           clearQueueTimeout(workerIndex);
-          // eslint-disable-next-line functional/immutable-data
-          timeouts[workerIndex] = setTimeout(() => {
-            terminateWorker(workerIndex, "timeout");
-            reject();
-          }, TASK_TIMEOUT_MS);
+          if (timeout) {
+            // eslint-disable-next-line functional/immutable-data
+            timeouts[workerIndex] = setTimeout(() => {
+              terminateWorker(workerIndex, "timeout");
+              reject();
+            }, timeout);
+          }
           task
             .then(worker => {
               // Clear out any timeouts after the task completes
@@ -238,8 +241,11 @@ export const exportToCSV = (
 
 export const getTopologyProperties = (
   regionConfig: RegionConfig,
-  staticMetadata: IStaticMetadata
+  staticMetadata: IStaticMetadata,
+  timeout?: number
 ) =>
-  queueWithTimeout(regionConfig, worker =>
-    worker.getTopologyProperties(regionConfig, staticMetadata)
+  queueWithTimeout(
+    regionConfig,
+    worker => worker.getTopologyProperties(regionConfig, staticMetadata),
+    timeout
   );

@@ -160,7 +160,7 @@ export class TopologyService {
   // For most regions, this is the number of counties in the state
   private async getDistrictsDefLength(regionConfig: RegionConfig, staticMetadata: IStaticMetadata) {
     const topGeoLevel = staticMetadata.geoLevelHierarchy.slice().reverse()[0].id;
-    const properties = await getTopologyProperties(regionConfig, staticMetadata);
+    const properties = await getTopologyProperties(regionConfig, staticMetadata, 0);
     return properties[topGeoLevel] ? properties[topGeoLevel].length : 0;
   }
 
