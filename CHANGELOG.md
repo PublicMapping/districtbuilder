@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added submit map button [#1179](https://github.com/PublicMapping/districtbuilder/pull/1179)
 
 ### Changed
+- Improved caching setup more & lowered cache size [#1195](https://github.com/PublicMapping/districtbuilder/pull/1195)
 
 ### Fixed
 
