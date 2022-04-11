@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a lambda function to send DB server alarms to Slack [#1186](https://github.com/PublicMapping/districtbuilder/pull/1186)
 
 ### Changed
+- Improved caching setup more & lowered cache size [#1195](https://github.com/PublicMapping/districtbuilder/pull/1195)
 
 ### Fixed
 

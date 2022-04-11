@@ -47,9 +47,7 @@ import {
   DistrictsDefinition,
   ProjectId,
   PublicUserProperties,
-  UserId,
-  IUser,
-  IChamber
+  UserId
 } from "../../../../shared/entities";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { GeoUnitTopology } from "../../districts/entities/geo-unit-topology.entity";
@@ -74,6 +72,7 @@ import { ProjectTemplatesService } from "../../project-templates/services/projec
 import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 import { ReferenceLayersService } from "../../reference-layers/services/reference-layers.service";
 import { ChambersService } from "../../chambers/services/chambers";
+import { Chamber } from "../../chambers/entities/chamber.entity";
 import { ReferenceLayer } from "../../reference-layers/entities/reference-layer.entity";
 
 function validateNumberOfMembers(
@@ -368,8 +367,8 @@ export class ProjectsController implements CrudController<Project> {
   }: {
     readonly districtsDefinition: DistrictsDefinition;
     readonly numberOfDistricts: number;
-    readonly user: IUser;
-    readonly chamber?: IChamber;
+    readonly user: User;
+    readonly chamber?: Chamber;
     readonly regionConfig: RegionConfig;
   }): Promise<DistrictsGeoJSON> {
     const geoCollection = await this.getGeoUnitTopology(regionConfig);

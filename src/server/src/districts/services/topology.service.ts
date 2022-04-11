@@ -3,27 +3,22 @@ import { InjectRepository } from "@nestjs/typeorm";
 import S3 from "aws-sdk/clients/s3";
 import { spawn } from "child_process";
 import _ from "lodash";
-import { cpus } from "os";
+import Queue from "promise-queue";
 import { Repository } from "typeorm";
 
-import {
-  TypedArrays,
-  IStaticFile,
-  IStaticMetadata,
-  S3URI,
-  IRegionConfig
-} from "../../../../shared/entities";
-import { RegionConfig } from "../../region-configs/entities/region-config.entity";
-import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
+import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../shared/entities";
+
+import { NUM_WORKERS } from "../../common/constants";
 import { getObject, s3Options } from "../../common/functions";
-import { getTopologyProperties } from "../../worker-pool";
+import { RegionConfig } from "../../region-configs/entities/region-config.entity";
+import { cacheSize, getTopologyProperties } from "../../worker-pool";
+
+import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 
 const MAX_RETRIES = 5;
 // Loading a topojson layer is a mix of I/O and CPU intensive work,
 // so we can afford to have more layers loading than we have cores, but not too many
-const BATCH_SIZE = cpus().length * 2;
-// 10 largest states by geojson file size
-const STATE_ORDER = ["TX", "CA", "PA", "FL", "NC", "MO", "NY", "IL", "TN", "VA"];
+const BATCH_SIZE = NUM_WORKERS * 2;
 
 type Layer = Promise<GeoUnitTopology | undefined>;
 
@@ -31,68 +26,52 @@ interface Layers {
   [s3URI: string]: null | Layer;
 }
 
-// https://stackoverflow.com/a/48007240
-async function asyncLoop<T>(asyncFns: ReadonlyArray<() => Promise<T>>, concurrent = 5) {
-  // queue up simultaneous calls
-  const queue: Promise<T>[] = [];
-  // eslint-disable-next-line functional/no-loop-statement
-  for (const fn of asyncFns) {
-    // fire the async function, add its promise to the queue, and remove
-    // it from queue when complete
-    const p = fn().then(res => {
-      // eslint-disable-next-line functional/immutable-data
-      queue.splice(queue.indexOf(p), 1);
-      return res;
-    });
-    // eslint-disable-next-line functional/immutable-data
-    queue.push(p);
-    // if max concurrent, wait for one to finish
-    if (queue.length >= concurrent) {
-      await Promise.race(queue);
-    }
-  }
-  // wait for the rest of the calls to finish
-  await Promise.all(queue);
-}
-
 @Injectable()
 export class TopologyService {
   private _layers?: Layers = undefined;
   private readonly logger = new Logger(TopologyService.name);
   private readonly s3 = new S3();
+  private readonly downloadQueue = new Queue(BATCH_SIZE);
 
   constructor(@InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>) {}
 
   public loadLayers() {
-    void this.repo.find({ archived: false }).then(regionConfigs => {
-      const getLayers = async () => {
-        // eslint-disable-next-line functional/immutable-data
-        this._layers = regionConfigs.reduce(
-          (layers, regionConfig) => ({
-            ...layers,
-            [regionConfig.s3URI]: null
-          }),
-          {}
-        );
-        // Load largest states last, so they're less likely to be evicted from the cache
-        const sortedRegions = _.sortBy(regionConfigs, region => [
-          STATE_ORDER.includes(region.regionCode),
-          -STATE_ORDER.indexOf(region.regionCode)
-        ]);
+    void this.repo
+      .find({
+        where: { archived: false },
+        order: { layerSizeInBytes: "DESC" }
+      })
+      .then(regionConfigs => {
+        const getLayers = async () => {
+          // eslint-disable-next-line functional/immutable-data
+          this._layers = regionConfigs.reduce(
+            (layers, regionConfig) => ({
+              ...layers,
+              [regionConfig.s3URI]: null
+            }),
+            {}
+          );
 
-        // Load a number of regions in parallel, adding another as each one completes
-        await asyncLoop(
-          sortedRegions.map(region => () => {
-            const promise = this.fetchLayer(region);
-            // eslint-disable-next-line functional/immutable-data
-            this._layers = { ...this._layers, [region.s3URI]: promise };
-            return promise;
-          }),
-          BATCH_SIZE
-        );
-      };
-      void getLayers();
-    });
+          const totalSize = _.sum(regionConfigs.map(r => r.layerSizeInBytes));
+          // If all regions will fit, load largest states first, to reduce chances for cache fragmentation
+          // Otherwise load largest last so they won't get evicted
+          const sortedRegions =
+            totalSize < cacheSize ? regionConfigs : regionConfigs.slice().reverse();
+
+          await Promise.all(
+            sortedRegions.map(region =>
+              // Load a number of regions in parallel, adding another as each one completes
+              this.downloadQueue.add(() => {
+                const promise = this.fetchLayer(region);
+                // eslint-disable-next-line functional/immutable-data
+                this._layers = { ...this._layers, [region.s3URI]: promise };
+                return promise;
+              })
+            )
+          );
+        };
+        void getLayers();
+      });
   }
 
   public layers(): Readonly<Layers> | undefined {
@@ -119,7 +98,7 @@ export class TopologyService {
   }
 
   private async fetchLayer(
-    regionConfig: IRegionConfig,
+    regionConfig: RegionConfig,
     numRetries = 0
   ): Promise<GeoUnitTopology | undefined> {
     try {
@@ -179,12 +158,9 @@ export class TopologyService {
 
   // Computes the length of the districtsDefinition array
   // For most regions, this is the number of counties in the state
-  private async getDistrictsDefLength(
-    regionConfig: IRegionConfig,
-    staticMetadata: IStaticMetadata
-  ) {
+  private async getDistrictsDefLength(regionConfig: RegionConfig, staticMetadata: IStaticMetadata) {
     const topGeoLevel = staticMetadata.geoLevelHierarchy.slice().reverse()[0].id;
-    const properties = await getTopologyProperties(regionConfig, staticMetadata);
+    const properties = await getTopologyProperties(regionConfig, staticMetadata, 0);
     return properties[topGeoLevel] ? properties[topGeoLevel].length : 0;
   }
 

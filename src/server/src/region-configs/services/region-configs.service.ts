@@ -7,7 +7,7 @@ import { RegionConfig } from "../entities/region-config.entity";
 
 @Injectable()
 export class RegionConfigsService extends TypeOrmCrudService<RegionConfig> {
-  constructor(@InjectRepository(RegionConfig) repo: Repository<RegionConfig>) {
+  constructor(@InjectRepository(RegionConfig) public repo: Repository<RegionConfig>) {
     super(repo);
   }
 }

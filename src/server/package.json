@@ -14,6 +14,7 @@
     "lint": "eslint 'src/**/*.{ts,tsx,json}'",
     "fix": "eslint 'src/**/*.{ts,tsx,json}' --fix",
     "reindex": "node dist/server/src/commands/reindex",
+    "set-topology-size": "node dist/server/src/commands/set-topology-size",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
