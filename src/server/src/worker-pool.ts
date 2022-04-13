@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import _ from "lodash";
 import os from "os";
 import Queue from "promise-queue";
@@ -18,9 +18,10 @@ const TASK_TIMEOUT_MS = 90_000;
 // Remaining amount is split amongst each worker for topology data
 // This strategy seems to work for any amount of host memory and targets total memory
 // in use maxing out at around 80%
-const dockerMemLimit = Number(
-  readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", { encoding: "ascii" })
-);
+const dockerMemLimit = existsSync("/sys/fs/cgroup/memory.max")
+  ? Number(readFileSync("/sys/fs/cgroup/memory.max", { encoding: "ascii" }))
+  : Number(readFileSync("/sys/fs/cgroup/memory/memory.max_usage_in_bytes", { encoding: "ascii" }));
+
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
 // Targets:
