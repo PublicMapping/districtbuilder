@@ -33,6 +33,7 @@ import {
   DemographicsGroup
 } from "../../../shared/entities";
 import { geojsonPolygonLabels, tileJoin, tippecanoe } from "../lib/cmd";
+import _ from "lodash";
 
 // Takes a comma-separated list of items, optionally as a pair separated by a ':'
 // and returns an array
@@ -44,6 +45,10 @@ function splitPairs(input: string): readonly [string, string][] {
         .map(item =>
           item.includes(":") ? (item.split(":", 2) as [string, string]) : [item, item]
         );
+}
+
+function abbrev(id: string) {
+  return `${id}-abbrev`;
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays#typed_array_views
@@ -250,7 +255,7 @@ it when necessary (file sizes ~1GB+).
       }
     }
 
-    this.writeTopoJson(flags.outputDir, topoJsonHierarchy);
+    this.writeTopoJson(flags.outputDir, topoJsonHierarchy, demographicIds, votingIds);
 
     this.addGeoLevelIndices(topoJsonHierarchy, geoLevelIds);
 
@@ -428,7 +433,7 @@ it when necessary (file sizes ~1GB+).
         for (const ids of [demographics, voting]) {
           for (const id of ids) {
             // @ts-ignore
-            geometry.properties[`${id}-abbrev`] = abbreviateNumber(geometry.properties[id]);
+            geometry.properties[abbrev(id)] = abbreviateNumber(geometry.properties[id]);
           }
         }
 
@@ -532,12 +537,46 @@ it when necessary (file sizes ~1GB+).
   }
 
   // Write TopoJSON file to disk
-  writeTopoJson(dir: string, topology: Topology<Objects<{}>>) {
+  writeTopoJson(
+    dir: string,
+    topology: Topology<Objects<{}>>,
+    demographics: readonly string[],
+    voting: readonly string[]
+  ) {
+    const filteredTopojson = this.filterTopoJson(topology, demographics, voting);
     this.log("Writing topojson file");
     const path = join(dir, "topo.buf");
     const output = createWriteStream(path, { encoding: "binary" });
-    output.write(serialize(topology));
+    output.write(serialize(filteredTopojson));
     output.close();
+  }
+
+  filterTopoJson(
+    topology: Topology<Objects<{}>>,
+    demographics: readonly string[],
+    voting: readonly string[]
+  ): Topology<Objects<{}>> {
+    // Drop all demographic and voting properties except for population to save on memory
+    // When the server needs these fields it can get them from the typed array buffers
+    const droppedFields = demographics.concat(voting);
+    const droppedProps = droppedFields
+      .concat(droppedFields.map(abbrev))
+      .filter(id => id !== "population");
+
+    return {
+      ...topology,
+      objects: _.mapValues(topology.objects, gc =>
+        gc.type === "GeometryCollection"
+          ? {
+              ...gc,
+              geometries: gc.geometries.map(geom => ({
+                ...geom,
+                properties: _.omit(geom.properties, droppedProps)
+              }))
+            }
+          : gc
+      )
+    };
   }
 
   // Makes an appropriately-sized typed array containing the data
@@ -774,7 +813,7 @@ it when necessary (file sizes ~1GB+).
       const labelOutput = labelsMbtiles[idx];
       geojsonPolygonLabels(input, { style: "largest" }, { outputPath: labelPath });
       tippecanoe(labelPath, {
-        include: [...demographics.map(id => `${id}-abbrev`), ...voting.map(id => `${id}-abbrev`)],
+        include: [...demographics.map(abbrev), ...voting.map(abbrev)],
         force: true,
         maximumZoom,
         minimumZoom,
