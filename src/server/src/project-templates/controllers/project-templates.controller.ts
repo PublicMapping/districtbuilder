@@ -179,11 +179,15 @@ export class ProjectTemplatesController {
       "Last updated date",
       "Template name",
       "Region name",
-      "Chamber name"
+      "Chamber name",
+      "Submission date",
+      "Plan score link"
     ];
     const districtColumns = ["District number", "Contiguity", "Compactness"];
     const demographicsColumns = getIds(topoLayers, "demographics");
     const votingColumns = getIds(topoLayers, "voting");
+
+    const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
     const rows = projectRows.flatMap(row =>
       row.districtProperties.map((districtProps, idx) => {
@@ -198,11 +202,13 @@ export class ProjectTemplatesController {
           row.userEmail,
           row.mapName,
           `"${host || process.env.CLIENT_URL}/projects/${row.projectId}/"`,
-          row.createdDt.toISOString().split("T")[0],
-          row.updatedDt.toISOString().split("T")[0],
+          formatDate(row.createdDt),
+          formatDate(row.updatedDt),
           row.templateName,
           row.regionName,
           row?.chamberName || "",
+          row.submittedDt ? formatDate(row.submittedDt) : "",
+          row.planscoreUrl,
           idx,
           districtProps.contiguity,
           districtProps.compactness

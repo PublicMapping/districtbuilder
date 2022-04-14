@@ -19,6 +19,8 @@ interface TemplateConfig {
   readonly numberOfMembers: readonly number[];
   readonly description?: string;
   readonly details?: string;
+  readonly contestNextSteps?: string;
+  readonly contestActive?: boolean;
 }
 
 interface OrganizationConfig {
@@ -95,10 +97,13 @@ export default class UpdateOrganization extends Command {
       template.numberOfMembers = config.numberOfMembers.map(n => Number(n));
       template.description = config.description || "";
       template.details = config.details || "";
+      template.contestNextSteps = config.contestNextSteps || "";
+      template.contestActive = config.contestActive || false;
       // @ts-ignore
       await templateRepo.save(template);
     }
 
     this.log("Organization saved to database");
+    process.exit(0);
   }
 }

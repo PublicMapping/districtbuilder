@@ -6,6 +6,8 @@ import { IProject } from "../../shared/entities";
 import ProjectListFlyout from "./ProjectListFlyout";
 import TimeAgo from "timeago-react";
 import ProjectDistrictsMap from "./map/ProjectDistrictsMap";
+import React from "react";
+import Icon from "./Icon";
 
 const style: Record<string, ThemeUIStyleObject> = {
   featuredProject: {
@@ -103,7 +105,15 @@ const HomeScreenProjectCard = ({
             fontSize: 1
           }}
         >
-          Last updated <TimeAgo datetime={project.updatedDt} />
+          {project.submittedDt ? (
+            <React.Fragment>
+              <Icon name="check" /> Submitted <TimeAgo datetime={project.submittedDt} />
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              Last updated <TimeAgo datetime={project.updatedDt} />
+            </React.Fragment>
+          )}
         </Text>
       </Box>
       <span sx={style.flyoutButton}>

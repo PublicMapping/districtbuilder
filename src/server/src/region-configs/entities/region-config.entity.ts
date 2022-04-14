@@ -52,4 +52,7 @@ export class RegionConfig implements IRegionConfig {
 
   @Column({ type: "enum", enum: CensusDate, default: CensusDate.Census2020 })
   census: CensusDate;
+
+  @Column({ name: "layer_size_in_bytes", type: "integer", default: 0 })
+  layerSizeInBytes: number;
 }

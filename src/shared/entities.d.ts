@@ -226,6 +226,7 @@ export type IProject = ProjectTemplateFields & {
   readonly visibility: ProjectVisibility;
   readonly archived: boolean;
   readonly planscoreUrl: string;
+  readonly submittedDt?: Date;
 };
 
 export type ProjectNest = Pick<
@@ -238,6 +239,7 @@ export type ProjectNest = Pick<
   | "regionConfig"
   | "isFeatured"
   | "visibility"
+  | "submittedDt"
 > & {
   readonly regionConfig: Pick<IRegionConfig, "name">;
 };
@@ -281,6 +283,8 @@ export type IProjectTemplate = ProjectTemplateFields & {
   readonly details: string;
   readonly referenceLayers?: readonly IReferenceLayer[];
   readonly isActive: boolean;
+  readonly contestNextSteps: string;
+  readonly contestActive: boolean;
 };
 
 export type IProjectTemplateWithProjects = IProjectTemplate & {

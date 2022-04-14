@@ -7,3 +7,4 @@ export const showAdvancedEditingModal = createAction(
 )<boolean>();
 export const showCopyMapModal = createAction("Show copy map modal")<boolean>();
 export const setImportFlagsModal = createAction("Show import flags modal")<boolean>();
+export const showSubmitMapModal = createAction("Show submit map modal")<boolean>();

@@ -131,6 +131,14 @@ export class Project implements IProject {
   })
   planscoreUrl: string;
 
+  @Column({
+    type: "timestamp with time zone",
+    name: "submitted_dt",
+    nullable: true,
+    default: null
+  })
+  submittedDt?: Date;
+
   // Strips out data that we don't want to have available in the read-only view in the UI
   getReadOnlyView(): Project {
     return { ...this, lockedDistricts: new Array(this.numberOfDistricts).fill(false) };

@@ -16,8 +16,10 @@ import {
   IStaticMetadata,
   ReferenceLayerProperties,
   GroupTotal,
-  DemographicsGroup
+  DemographicsGroup,
+  IProject
 } from "../shared/entities";
+import { State } from "./reducers";
 
 import { Resource, WriteResource } from "./resource";
 import {
@@ -483,4 +485,14 @@ export function extractErrors<D, T>(
   return "errors" in resource && typeof resource.errors.message === "object"
     ? resource.errors.message[field]
     : undefined;
+}
+
+export function isProjectReadOnly(state: State) {
+  const project: IProject | undefined = destructureResource(state.project.projectData, "project");
+  return (
+    !("resource" in state.user) ||
+    (project !== undefined && state.user.resource.id !== project.user.id) ||
+    (project !== undefined && project.regionConfig.archived) ||
+    (project !== undefined && !!project.submittedDt)
+  );
 }
