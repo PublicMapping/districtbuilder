@@ -23,7 +23,7 @@
     "migration:generate": "yarn run typeorm migration:generate -n",
     "migration:create": "yarn run typeorm migration:create -n",
     "migration:revert": "yarn run typeorm migration:revert",
-    "migration:run": "yarn run typeorm migration:run -t=false"
+    "migration:run": "yarn run typeorm migration:run"
   },
   "dependencies": {
     "@drdgvhbh/postgres-error-codes": "0.0.6",
