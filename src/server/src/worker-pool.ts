@@ -20,7 +20,7 @@ const TASK_TIMEOUT_MS = 90_000;
 // in use maxing out at around 80%
 const dockerMemLimit = existsSync("/sys/fs/cgroup/memory.max")
   ? Number(readFileSync("/sys/fs/cgroup/memory.max", { encoding: "ascii" }))
-  : Number(readFileSync("/sys/fs/cgroup/memory/memory.max_usage_in_bytes", { encoding: "ascii" }));
+  : Number(readFileSync("/sys/fs/cgroup/memory/memory.limit_in_bytes", { encoding: "ascii" }));
 
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
