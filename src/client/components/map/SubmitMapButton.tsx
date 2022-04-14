@@ -67,8 +67,7 @@ const SubmitMapButton = ({
             </React.Fragment>
           ) : (
             <React.Fragment>
-              Submitting will send your map to {organization.name}
-              <p sx={{ mt: 0 }}>The following things will happen:</p>
+              Submitting will send your map to {organization.name}, and the following will happen:
               <p>
                 <Icon name={"lock-locked"} /> Your map will be locked from making additional changes
               </p>
@@ -78,7 +77,7 @@ const SubmitMapButton = ({
               </p>
               <p>
                 <Icon name={"link"} /> If your map is private, it will be switched to “shared with
-                link” so the contest can see it
+                link” so the administrators can see it
               </p>
               <Button
                 disabled={saving === "saving"}

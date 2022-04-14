@@ -124,7 +124,11 @@ const ProjectScreen = ({
   const wasSubmittedRef = useRef<boolean | undefined>();
 
   useEffect(() => {
-    if (wasSubmittedRef.current === false && wasSubmitted(project)) {
+    if (
+      wasSubmittedRef.current === false &&
+      wasSubmitted(project) &&
+      project?.projectTemplate?.contestNextSteps === ""
+    ) {
       toast.success(
         <span>
           <Icon name="check" /> Your map was submitted!
