@@ -550,7 +550,7 @@ export class ProjectsController implements CrudController<Project> {
           const planscoreUrl = await this.uploadToPlanScore(project);
           void this.service.updateOne(req, { planscoreUrl });
         } catch (e) {
-          this.logger.error(`Error uploading to planscore: ${e}`);
+          this.logger.error(`Error uploading to planscore for project '${projectId}': ${e}`);
           void this.service.updateOne(req, { planscoreUrl: "error" });
         }
       };
@@ -619,13 +619,13 @@ export class ProjectsController implements CrudController<Project> {
           apiResponse.data.status
             ? resolve(void 0)
             : numTries >= PLANSCORE_POLL_MAX_TRIES
-            ? reject()
+            ? reject(new Error("Exceeded maximum number of retries"))
             : setTimeout(
                 () => resolve(this.pollPlanScoreProgress(indexUrl, numTries + 1)),
                 PLANSCORE_POLL_MS
               );
         })
-        .catch(() => reject());
+        .catch(e => reject(e));
     });
   }
 

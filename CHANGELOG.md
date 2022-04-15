@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+
 ### Changed
+ - Improved PlanScore error logging & double timeout [#1204](https://github.com/PublicMapping/districtbuilder/pull/1204)
+
 ### Fixed
+
 
 ## [1.17.0]
 
