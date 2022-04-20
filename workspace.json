@@ -2,8 +2,8 @@
   "version": 2,
   "projects": {
     "server": {
-      "root": "apps/server",
-      "sourceRoot": "apps/server/src",
+      "root": "src/server",
+      "sourceRoot": "src/server/src",
       "projectType": "application",
       "tags": ["scope:server"],
       "targets": {
@@ -11,10 +11,10 @@
           "executor": "@nrwl/node:webpack",
           "outputs": ["{options.outputPath}"],
           "options": {
-            "outputPath": "dist/apps/server",
-            "main": "apps/server/src/main.ts",
-            "tsConfig": "apps/server/tsconfig.app.json",
-            "assets": ["apps/server/src/templates"]
+            "outputPath": "dist/src/server",
+            "main": "src/server/src/main.ts",
+            "tsConfig": "src/server/tsconfig.app.json",
+            "assets": ["src/server/src/templates"]
           },
           "configurations": {
             "production": {
@@ -23,8 +23,8 @@
               "inspect": false,
               "fileReplacements": [
                 {
-                  "replace": "apps/server/src/environments/environment.ts",
-                  "with": "apps/server/src/environments/environment.prod.ts"
+                  "replace": "src/server/src/environments/environment.ts",
+                  "with": "src/server/src/environments/environment.prod.ts"
                 }
               ]
             }
@@ -39,22 +39,22 @@
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "options": {
-            "lintFilePatterns": ["apps/server/**/*.ts"]
+            "lintFilePatterns": ["src/server/**/*.ts"]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/server"],
+          "outputs": ["coverage/src/server"],
           "options": {
-            "jestConfig": "apps/server/jest.config.js",
+            "jestConfig": "src/server/jest.config.js",
             "passWithNoTests": true
           }
         }
       }
     },
     "client": {
-      "root": "apps/client",
-      "sourceRoot": "apps/client/src",
+      "root": "src/client",
+      "sourceRoot": "src/client/src",
       "projectType": "application",
       "tags": ["scope:client"],
       "targets": {
@@ -62,13 +62,13 @@
           "executor": "@nrwl/web:build",
           "outputs": ["{options.outputPath}"],
           "options": {
-            "outputPath": "dist/apps/client",
-            "index": "apps/client/src/index.html",
-            "main": "apps/client/src/main.tsx",
-            "polyfills": "apps/client/src/polyfills.ts",
-            "tsConfig": "apps/client/tsconfig.app.json",
-            "assets": ["apps/client/src/favicon.ico", "apps/client/src/assets"],
-            "styles": ["apps/client/src/styles.scss"],
+            "outputPath": "dist/src/client",
+            "index": "src/client/src/index.html",
+            "main": "src/client/src/main.tsx",
+            "polyfills": "src/client/src/polyfills.ts",
+            "tsConfig": "src/client/tsconfig.app.json",
+            "assets": ["src/client/src/favicon.ico", "src/client/src/assets"],
+            "styles": ["src/client/src/styles.scss"],
             "scripts": [],
             "webpackConfig": "@nrwl/react/plugins/webpack"
           },
@@ -76,8 +76,8 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "apps/client/src/environments/environment.ts",
-                  "with": "apps/client/src/environments/environment.prod.ts"
+                  "replace": "src/client/src/environments/environment.ts",
+                  "with": "src/client/src/environments/environment.prod.ts"
                 }
               ],
               "optimization": true,
@@ -102,7 +102,7 @@
           "options": {
             "buildTarget": "client:build",
             "hmr": true,
-            "proxyConfig": "apps/client/proxy.conf.json"
+            "proxyConfig": "src/client/proxy.conf.json"
           },
           "configurations": {
             "production": {
@@ -114,14 +114,14 @@
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "options": {
-            "lintFilePatterns": ["apps/client/**/*.{ts,tsx,js,jsx}"]
+            "lintFilePatterns": ["src/client/**/*.{ts,tsx,js,jsx}"]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/client"],
+          "outputs": ["coverage/src/client"],
           "options": {
-            "jestConfig": "apps/client/jest.config.js",
+            "jestConfig": "src/client/jest.config.js",
             "passWithNoTests": true
           }
         }
