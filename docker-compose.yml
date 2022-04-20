@@ -33,17 +33,15 @@ services:
       context: ./src/server
       dockerfile: Dockerfile
     volumes:
-      - ./src/server:/home/node/app/server
-      - ./src/shared:/home/node/app/shared
-      - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
+      - ./:/home/node/app
+      - /var/cache/district-builder-node-modules:/home/node/app/node_modules
       - /var/cache/district-builder-server-topology:/opt/topology
-      - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
       - $HOME/.aws:/root/.aws:ro
-    working_dir: /home/node/app/server
+    working_dir: /home/node/app
     depends_on:
       database:
         condition: service_healthy
-    command: start:dev
+    command: server:start
     mem_limit: 12g
     memswap_limit: 12g
 

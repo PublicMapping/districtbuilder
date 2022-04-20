@@ -3,6 +3,10 @@
   "affected": {
     "defaultBase": "main"
   },
+  "workspaceLayout": {
+    "libsDir": "libs",
+    "appsDir": "src"
+  },
   "implicitDependencies": {
     "package.json": {
       "dependencies": "*",
