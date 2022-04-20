@@ -1,211 +1,101 @@
-# DistrictBuilder
 
-This project is a continuation of the original version of DistrictBuilder, now called [DistrictBuilder Classic](https://github.com/PublicMapping/districtbuilder-classic), which is no longer being maintained. This repository is where active development of DistrictBuilder will continue to occur.
 
-## Overview
+# NX NestJS React starter
 
-DistrictBuilder is web-based, open source software for collaborative redistricting.
+This project was generated using [Nx](https://nx.dev).
 
-- [Requirements](#requirements)
-- [Development](#development)
-  - [Host Environments](#host-environments)
-    - [Linux](#linux)
-    - [macOS](#macos)
-  - [Hot Reloading 🔥](#hot-reloading-)
-  - [Remote Server Proxy](#remote-server-proxy)
-  - [Project Organization](#project-organization)
-  - [Stack](#stack)
-  - [Ports](#ports)
-- [Scripts](#scripts)
-- [Command Line Interface](#command-line-interface)
+<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
 
-## Requirements
+🔎 **Smart, Extensible Build Framework**
 
-- [Docker Engine](https://docs.docker.com/install/) 17.12+
-- [Docker Compose](https://docs.docker.com/compose/install/) 1.21+
+## Project setup / initialization
+This project setup was created by executing folling steps
 
-## Development
+1) install nx globally `npm i nx`
+2) initialize new nx workspace with default react-app  
+`npx create-nx-workspace@latest nx-nestjs-react-starter`
+3) use package manager of choice to install dependency for NestJS  
+`yarn add -D @nrwl/nest`  
+`npm install -D @nrwl/nest`
 
-_Optional:_
-Ensure that you have an AWS credential profile for `district-builder` configured on your host system.
-The server backend will use this in order to access S3 assets if present, and any `manage` commands that use S3 assets will **require** it.
+4) add a new nestjs app to the workspace  
+`npx nx g @nrwl/nest:app api --frontendProject=client`
 
-### Host Environments
+5) add a shared library  
+`nx g @nrwl/node:library mylib`
 
-The Docker containers used in development work very well on Linux, but require an additional layer of translation when running on non-Linux hosts. In particular, there are significant file-watching costs, which result in high CPU usage on macOS. On macOS, it is more efficient to run the containers within a Linux VM created with Vagrant.
 
-#### Linux
+### adjust package.json  
+support linting and testing for all applications at once  
+`"test": "npx nx run-many --all --target=test --parallel"`  
+`"lint": "nx workspace-lint && npx nx run-many --all --target=lint --parallel"`
 
-On Linux, run `scripts/setup` to prepare the development environment:
+add separate run & build scripts for backend and frontend  
+`"start:client": "nx run client:serve"`   
+`"start:api": "nx run api:serve"`
 
-```bash
-$ ./scripts/setup
-```
+## Adding capabilities to your workspace
 
-All other scripts can be run natively from the host, e.g.
+Nx supports many plugins which add capabilities for developing different types of applications and different tools.
 
-```bash
-$ ./scripts/update
-```
+These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
 
-#### macOS
+- [React](https://reactjs.org)
+  - `npm install --save-dev @nrwl/react`
+- [Nest](https://nestjs.com)
+  - `npm install --save-dev @nrwl/nest`
+- [Node](https://nodejs.org)
+  - `npm install --save-dev @nrwl/node`
 
-On macOS, use the `--vagrant` flag to create a Vagrant VM instead:
+There are also many [community plugins](https://nx.dev/community) you could add.
 
-```bash
-$ ./scripts/setup --vagrant
-```
+## Generate an application
 
-All other scripts must be run from the Vagrant VM, e.g.
+Run `nx g @nrwl/react:app my-app` to generate an application.
 
-```bash
-$ vagrant ssh
-vagrant@vagrant:/vagrant$ ./scripts/update
-```
+> You can use any of the plugins above to generate applications as well.
 
-or
+When using Nx, you can create multiple applications and libraries in the same workspace.
 
-```bash
-$ vagrant ssh -c 'cd /vagrant && ./scripts/update'
-```
+## Generate a library
 
-For brevity, this document will use Linux examples throughout. You should run the scripts from the appropriate environment.
+Run `nx g @nrwl/react:lib my-lib` to generate a react library.
+Run `nx g @nrwl/node:library mylib` to create a new node library.
 
-_Note:_ It is recommended to configure your editor to auto-format your code via Prettier on save.
+> You can also use any of the plugins above to generate libraries as well.
 
-#### Windows
+Libraries are shareable across libraries and applications. They can be imported from `@nx-nestjs-react-starter/mylib`.
 
-For Windows, please install [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install) and [Docker Desktop](https://hub.docker.com/editions/community/docker-ce-desktop-windows), and enable the [WSL2-based docker backend](https://docs.docker.com/desktop/windows/wsl/).
+## Development server
 
-Once you've setup WSL and Docker, you can clone and setup this project from within your WSL2 environment following the Linux installation instructions above.
+Run `nx serve client` for a frontend dev server. Navigate to http://localhost:4200/. 
+Run `nx serve api` for a backend dev server. Navigate to http://localhost:3333/api.  
+The app will automatically reload if you change any of the source files.
 
-### Hot Reloading 🔥
+## Code scaffolding
 
-_Note:_ Environments that use Vagrant require the [Vagrant notification forwarder plugin](https://github.com/mhallin/vagrant-notify-forwarder) for hot reloading. To install, run
+Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
 
-```bash
-$ vagrant plugin install vagrant-notify-forwarder
-$ vagrant reload
-```
+## Build
 
-Run `scripts/server` to start the application:
+Run `nx build api` or `nx build client` respectively to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
 
-```bash
- $ ./scripts/server
-```
+## Running unit tests
 
-While `server` is running, the [Create React App](https://github.com/facebook/create-react-app/) frontend will automatically [reload](https://github.com/facebook/create-react-app/#whats-included) when changes are made. Additionally, the [NestJS](https://nestjs.com/) backend will [restart](https://docs.nestjs.com/cli/usages#nest-start) when changes are made.
+Run `nx test api` or `nx test client` to execute the unit tests via [Jest](https://jestjs.io).
 
-### Remote Server Proxy
+Run `nx affected:test` to execute the unit tests affected by a change.
 
-If you want to develop the `client` locally against a `server` running in the AWS staging environment, you can configure a local proxy using the `BASE_URL` environment variable:
+## Running end-to-end tests
 
-```#bash
-BASE_URL=https://app.staging.districtbuilder.org docker-compose up client
-```
+Run `ng e2e client` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
 
-This will proxy local all requests directed at `/api` to `https://staging.districtbuilder.org`.
+Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
 
-### PlanScore API integration
+## Understand your workspace
 
-You will need a PlanScore API token to test the PlanScore integration in development. Please email info@planscore.org to get a token, then run `./scripts/bootstrap` to create a `.env` file in the server directory and populate the `PLAN_SCORE_API_TOKEN` environment variable with your token.
+Run `nx dep-graph` to see a diagram of the dependencies of your projects.
 
-### Development Data
+## Further help
 
-#### Using pre-processed data for development and testing
-
-1. Sign up for an account in your local dev instance of the application at [http://localhost:3003](http://localhost:3003)(if you haven't already done so)
-1. Load testing data with `$ ./scripts/load-dev-data`. This will:
-
-- Load region configs for Pennsylvania, Michigan, and Dane County WI.
-- Create an organization, accessible at [`http://localhost:3003/o/azavea`](http://localhost:3003/o/azavea)
-- Set the user you just created as the organization administrator
-
-3. In order to use any of the organization templates, you will need to confirm your email. You will see a banner asking you to confirm your email; when you click "Resend Email", an email form will appear in your terminal. Copy and paste the activation link within that form in your browser to activate your account.
-
-#### Processing your own data for custom regions
-
-To have data to work with, you'll need to do a two step process:
-
-1. Process the GeoJSON for your state/region (this outputs all the static files DistrictBuilder needs to work in a local directory)
-1. Publish the resulting files (upload to S3 for use by the app)
-
-To process PA data, first copy the GeoJSON file into the `src/manage/data` directory, create an output directory (eg. `src/manage/data/output-pa`), and then run this command:
-
-```
-$ ./scripts/manage process-geojson data/PA.geojson -b -o data/output-pa -n 12,4,4 -x 12,12,12
-```
-
-Then:
-
-```
-$ ./scripts/manage publish-region data/output-pa US PA Pennsylvania
-```
-
-Once your data is published, you should be able to run the app and create a new project through the UI using that region and begin building districts.
-
-If instead you'd like to use the processed data to update S3 in-place (and not insert a new region into the database), you may instead run the command:
-
-```
-$ ./scripts/manage update-region data/output-pa s3://previous/location/of/the/published/region
-```
-
-Note: when doing this, you will need to restart your server to see the new data, since it's cached on startup
-
-### Project Organization
-
-In order to allow for code-sharing across the frontend and backend in conjunction with an unejected Create React App (CRA), it was decided that the simplest and least error-prone way forward was to structure the code as such:
-
-```
-.
-├── package.json (Applies to the CRA frontend)
-├── src
-│   ├── client (Location for all CRA frontend code)
-│   ├── index.tsx (This and another file need to be here for CRA-purposes)
-│   ├── manage (Command-line interface)
-│   │   ├── package.json (Applies to the command-line interface)
-│   ├── server (NestJS backend code)
-│   │   ├── package.json (Applies to the NestJS backend)
-│   └── shared (Code that is used by both the frontend and backend)
-```
-
-### Stack
-
-- [TypeScript](https://www.typescriptlang.org/) for type safety
-- [React](https://reactjs.org/) as a declarative view layer
-- [Redux](https://redux.js.org/) for state management
-- [redux-loop](https://redux-loop.js.org/) for effect management (eg. API calls)
-- [ts.data.json](https://github.com/joanllenas/ts.data.json) for JSON decoding
-- [PostgreSQL](https://www.postgresql.org/) for a relational database
-- [NestJS](https://nestjs.com/) for the backend web server
-- [TypeORM](https://typeorm.io/) for database queries and migrations
-- [TopoJSON](https://github.com/topojson/topojson) for fast, topologically-aware geospatial operations
-
-### Ports
-
-| Port                          | Service          |
-| ----------------------------- | ---------------- |
-| [3003](http://localhost:3003) | Create React App |
-| [3005](http://localhost:3005) | NestJS           |
-
-## Scripts
-
-| Name            | Description                                                               |
-| --------------- | ------------------------------------------------------------------------- |
-| `cibuild`       | Build application for staging or a release.                               |
-| `cipublish`     | Publish container images to Elastic Container Registry.                   |
-| `dbshell`       | Enter a database shell.                                                   |
-| `infra`         | Execute Terraform subcommands with remote state management.               |
-| `load-dev-data` | Loads development data for testing                                        |
-| `manage`        | Execute commands with the `manage` CLI tool.                              |
-| `migration`     | Execute TypeORM migration CLI commands.                                   |
-| `server`        | Bring up all of the services required for the project to function.        |
-| `setup`         | Setup the project's development environment.                              |
-| `test`          | Run linters and tests.                                                    |
-| `update`        | Build container images, update dependencies, and run database migrations. |
-| `yarn`          | Execute Yarn CLI commands.                                                |
-
-## Command Line Interface
-
-A command line interface is available for performing data processing operations.
-See `src/manage/README.md` for more info.
+Visit the [Nx Documentation](https://nx.dev) to learn more.

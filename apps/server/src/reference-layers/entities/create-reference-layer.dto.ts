@@ -1,0 +1,21 @@
+import { IsEnum, IsNotEmpty, IsOptional } from "class-validator";
+import { ReferenceLayerTypes, ReferenceLayerColors } from "@districtbuilder/shared/constants";
+
+import { CreateReferenceLayerData } from "@districtbuilder/shared/entities";
+import { ProjectIdDto } from "../../projects/entities/project-id.dto";
+import { ReferenceLayerGeojson } from "./reference-layer.entity";
+
+export class CreateReferenceLayerDto implements CreateReferenceLayerData {
+  @IsNotEmpty({ message: "Please enter a name for your project" })
+  readonly name: string;
+  @IsNotEmpty({ message: "Please enter a project ID" })
+  readonly project: ProjectIdDto;
+  @IsNotEmpty({ message: "Please enter a layer type" })
+  readonly layer_type: ReferenceLayerTypes;
+  @IsOptional()
+  readonly label_field?: string;
+  @IsNotEmpty({ message: "Please enter a field" })
+  readonly layer: ReferenceLayerGeojson;
+  @IsEnum(ReferenceLayerColors)
+  readonly layer_color: ReferenceLayerColors;
+}
