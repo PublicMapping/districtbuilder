@@ -10,8 +10,7 @@
     "strictPropertyInitialization": false,
     "strict": true,
     "target": "es2019",
-    "sourceMap": true,
-    "baseUrl": "./"
+    "sourceMap": true
   },
   "files": [],
   "include": [],

@@ -6,17 +6,14 @@ import {
   MetricsList,
   VotingMetricsList,
   VotingMetricField,
-  DemographicsGroup,
-} from "@districtbuilder/shared/entities";
+  DemographicsGroup
+} from "./entities";
 import { CORE_METRIC_FIELDS, DEMOGRAPHIC_FIELDS_ORDER } from "./constants";
 
 // Helper for finding all indices in an array buffer matching a value.
 // Note: mutation is used, because the union type of array buffers proved
 // too difficult to line up types for reduce or map/filter.
-export function getAllIndices(
-  arrayBuf: TypedArray,
-  vals: ReadonlySet<number>
-): readonly number[] {
+export function getAllIndices(arrayBuf: TypedArray, vals: ReadonlySet<number>): readonly number[] {
   // eslint-disable-next-line
   let indices: number[] = [];
   arrayBuf.forEach((el: number, ind: number) => {
@@ -65,12 +62,7 @@ export function getVoting(
   staticVoting: readonly TypedArray[]
 ): DemographicCounts {
   return staticMetadata.voting
-    ? getAggregatedCounts(
-        baseIndices,
-        staticMetadata,
-        staticVoting,
-        staticMetadata.voting
-      )
+    ? getAggregatedCounts(baseIndices, staticMetadata, staticVoting, staticMetadata.voting)
     : {};
 }
 
@@ -103,16 +95,13 @@ export function getDemographicLabel(id: string) {
 export const getMetricFieldForDemographicsId = (id: string) =>
   id === "population" ? id : `${id}Population`;
 
-export function getDemographicsMetricFields(
-  staticMetadata: IStaticMetadata
-): MetricsList {
+export function getDemographicsMetricFields(staticMetadata: IStaticMetadata): MetricsList {
   // eslint-disable-next-line functional/prefer-readonly-type
-  const data: (readonly [string, string])[] =
-    staticMetadata.demographics.flatMap(file =>
-      CORE_METRIC_FIELDS.includes(file.id)
-        ? []
-        : [[file.id, getMetricFieldForDemographicsId(file.id)]]
-    );
+  const data: (readonly [string, string])[] = staticMetadata.demographics.flatMap(file =>
+    CORE_METRIC_FIELDS.includes(file.id)
+      ? []
+      : [[file.id, getMetricFieldForDemographicsId(file.id)]]
+  );
   // If the configuration has demographic groups specified use that order, otherwise use the default ordering
   const order: readonly string[] =
     staticMetadata.demographicsGroups?.flatMap(g =>
@@ -123,9 +112,7 @@ export function getDemographicsMetricFields(
   return data;
 }
 
-export function getVotingMetricFields(
-  staticMetadata: IStaticMetadata
-): VotingMetricsList {
+export function getVotingMetricFields(staticMetadata: IStaticMetadata): VotingMetricsList {
   // eslint-disable-next-line functional/prefer-readonly-type
   const data: (readonly [string, VotingMetricField])[] =
     staticMetadata.voting?.flatMap(file => {
@@ -159,8 +146,8 @@ export function getDemographicsGroups(
     staticMetadata.demographicsGroups || [
       {
         total: "population",
-        subgroups: demographicsMetricFields?.map(([id]) => id) || [],
-      },
+        subgroups: demographicsMetricFields?.map(([id]) => id) || []
+      }
     ]
   );
 }
