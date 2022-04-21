@@ -9,7 +9,7 @@ fi
 function usage() {
     echo -n \
         "Usage: $(basename "$0") [command [flags]]
-Execute TypeORM migration CLI commands.
+Execute TypeORM CLI commands.
 "
 }
 
@@ -19,10 +19,10 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     elif [[ -z "${1}" ]]; then
         docker-compose \
             run --rm server \
-            migration:run
+            run typeorm -- --args=migration:run
     else
         docker-compose \
             run --rm server \
-            "migration:${1}" "${*:2}"
+            run typeorm -- --args="${*}"
     fi
 fi

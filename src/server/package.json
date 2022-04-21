@@ -8,11 +8,6 @@
     "reindex": "node dist/server/src/commands/reindex",
     "set-topology-size": "node dist/server/src/commands/set-topology-size",
     "test:watch": "jest --watch",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "migration:generate": "yarn run typeorm migration:generate -n",
-    "migration:create": "yarn run typeorm migration:create -n",
-    "migration:revert": "yarn run typeorm migration:revert",
-    "migration:run": "yarn run typeorm migration:run"
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   }
 }

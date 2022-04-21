@@ -10,8 +10,8 @@ module.exports = {
   logging: process.env.NODE_ENV === "Development",
   synchronize: false,
   entities: ["dist/**/*.entity.js"],
-  subscribers: ["dist/server/subscriber/*.js"],
-  migrations: ["dist/server/migrations/*.js"],
+  subscribers: ["dist/src/server/subscriber/*.js"],
+  migrations: ["dist/src/server/migrations/*.js"],
   cli: {
     entitiesDir: "src",
     migrationsDir: "migrations",

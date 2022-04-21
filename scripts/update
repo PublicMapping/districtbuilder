@@ -26,7 +26,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Otherwise Docker will create them as root, which will cause file perm issues
         mkdir -p "$HOME/.cache/district-builder-node-modules${EXECUTOR_NUMBER:-}"
 
-
         # Ensure container images are current
         docker-compose "${CONFIG_ARGS[@]}" build --pull
 

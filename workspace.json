@@ -49,6 +49,13 @@
             "jestConfig": "src/server/jest.config.js",
             "passWithNoTests": true
           }
+        },
+        "typeorm": {
+          "executor": "@nrwl/workspace:run-commands",
+          "options": {
+            "cwd": "src/server",
+            "command": "ts-node -r tsconfig-paths/register ../../node_modules/typeorm/cli.js"
+          }
         }
       }
     },
