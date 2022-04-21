@@ -19,6 +19,7 @@ import { RegionConfigsModule } from "./region-configs/region-configs.module";
 import { ReferenceLayersModule } from "./reference-layers/reference-layers.module";
 import { RollbarModule } from "./rollbar/rollbar.module";
 import { UsersModule } from "./users/users.module";
+import ormconfig from "../ormconfig";
 
 import { join } from "path";
 
@@ -53,7 +54,7 @@ if (DEBUG) {
         }
       }
     }),
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRoot(ormconfig),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "static"),
       // https://github.com/nestjs/serve-static/blob/master/lib/interfaces/serve-static-options.interface.ts

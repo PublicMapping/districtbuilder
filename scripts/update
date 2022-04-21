@@ -34,17 +34,17 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
             run -u node --rm --no-deps server \
             run clean
 
-        # Update frontend, Yarn dependencies and build static asset bundle
+        # Update frontend, NPM dependencies and build static asset bundle
         # docker-compose "${CONFIG_ARGS[@]}" \
         #     run --rm --no-deps client \
         #     bash -c "yarn install && yarn compile && yarn build"
 
-        # Update backend, Yarn dependencies and build server
+        # Update backend, NPM dependencies and build server
         docker-compose "${CONFIG_ARGS[@]}" \
-            run -u node --rm --no-deps --entrypoint "bash -c" server \
+            run --rm --no-deps --entrypoint "bash -c" server \
             "npm install && npm rebuild && npm run build:server"
 
-        # Update manage, Yarn dependencies and build
+        # Update manage, NPM dependencies and build
         # docker-compose "${CONFIG_ARGS[@]}" \
         #     run --rm --no-deps manage \
         #     bash -c "yarn install && yarn build"

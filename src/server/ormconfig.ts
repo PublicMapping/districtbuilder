@@ -1,20 +1,21 @@
-const process = require("process");
+import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
-module.exports = {
+const config: TypeOrmModuleOptions = {
   type: "postgres",
   host: process.env.POSTGRES_HOST,
-  port: process.env.POSTGRES_PORT || 5432,
+  port: Number(process.env.POSTGRES_PORT || 5432),
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
   logging: process.env.NODE_ENV === "Development",
   synchronize: false,
-  entities: ["dist/**/*.entity.js"],
-  subscribers: ["dist/src/server/subscriber/*.js"],
-  migrations: ["dist/src/server/migrations/*.js"],
+  autoLoadEntities: true,
+  migrations: ["migrations/*.ts"],
   cli: {
     entitiesDir: "src",
     migrationsDir: "migrations",
     subscribersDir: "subscriber"
   }
 };
+
+export default config;
