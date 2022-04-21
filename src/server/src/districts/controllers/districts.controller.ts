@@ -10,6 +10,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import csvParse from "csv-parse";
 import { Express } from "express";
+import "multer";
 
 import {
   ImportRowFlag,

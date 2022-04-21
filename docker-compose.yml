@@ -30,11 +30,12 @@ services:
       - CLIENT_URL=http://localhost:3003
       - TOPOLOGY_CACHE_DIRECTORY=/opt/topology
     build:
-      context: ./src/server
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: src/server/Dockerfile
+    user: node
     volumes:
       - ./:/home/node/app
-      - /var/cache/district-builder-node-modules:/home/node/app/node_modules
+      - $HOME/.cache/district-builder-node-modules:/home/node/app/node_modules
       - /var/cache/district-builder-server-topology:/opt/topology
       - $HOME/.aws:/root/.aws:ro
     working_dir: /home/node/app
@@ -50,37 +51,38 @@ services:
     environment:
       - BASE_URL=${BASE_URL:-http://server:3005}
       - PORT=3003
+    user: node
     volumes:
       - ./:/home/node/app
       - ./src/server/dist/server/src/static:/home/node/app/build
-      - /var/cache/district-builder-client-node-modules:/home/node/app/node_modules
+      - $HOME/.cache/district-builder-node-modules:/home/node/app/node_modules
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
     working_dir: /home/node/app
     command: yarn start
 
-  manage:
-    image: districtbuilder-manage
-    environment:
-      - POSTGRES_HOST=database
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=districtbuilder
-      - POSTGRES_PASSWORD=districtbuilder
-      - POSTGRES_DB=districtbuilder
-      - AWS_PROFILE=${AWS_PROFILE:-district-builder}
-      - NODE_OPTIONS=--max-old-space-size=16384
-    build:
-      context: ./src/manage
-      dockerfile: Dockerfile
-    volumes:
-      - ./src/server:/home/node/app/server
-      - ./src/shared:/home/node/app/shared
-      - ./src/manage:/home/node/app/manage
-      - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
-      - /var/cache/district-builder-manage-node-modules:/home/node/app/manage/node_modules
-      - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
-      - $HOME/.aws:/root/.aws:ro
-    working_dir: /home/node/app/manage
-    depends_on:
-      database:
-        condition: service_healthy
-    command: bash
+  # manage:
+  #   image: districtbuilder-manage
+  #   environment:
+  #     - POSTGRES_HOST=database
+  #     - POSTGRES_PORT=5432
+  #     - POSTGRES_USER=districtbuilder
+  #     - POSTGRES_PASSWORD=districtbuilder
+  #     - POSTGRES_DB=districtbuilder
+  #     - AWS_PROFILE=${AWS_PROFILE:-district-builder}
+  #     - NODE_OPTIONS=--max-old-space-size=16384
+  #   build:
+  #     context: ./src/manage
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./src/server:/home/node/app/server
+  #     - ./src/shared:/home/node/app/shared
+  #     - ./src/manage:/home/node/app/manage
+  #     - /var/cache/district-builder-server-node-modules:/home/node/app/server/node_modules
+  #     - /var/cache/district-builder-manage-node-modules:/home/node/app/manage/node_modules
+  #     - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
+  #     - $HOME/.aws:/root/.aws:ro
+  #   working_dir: /home/node/app/manage
+  #   depends_on:
+  #     database:
+  #       condition: service_healthy
+  #   command: bash

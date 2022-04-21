@@ -22,28 +22,33 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         else
             CONFIG_ARGS=( "-f" "docker-compose.yml" )
         fi
+        # Ensure cached node_modules directories exist on host before startup
+        # Otherwise Docker will create them as root, which will cause file perm issues
+        mkdir -p "$HOME/.cache/district-builder-node-modules${EXECUTOR_NUMBER:-}"
+
+
         # Ensure container images are current
         docker-compose "${CONFIG_ARGS[@]}" build --pull
 
         # Clean dist directory
         docker-compose "${CONFIG_ARGS[@]}" \
-            run --rm --no-deps server \
-            clean
+            run -u node --rm --no-deps server \
+            run clean
 
         # Update frontend, Yarn dependencies and build static asset bundle
-        docker-compose "${CONFIG_ARGS[@]}" \
-            run --rm --no-deps client \
-            bash -c "yarn install && yarn compile && yarn build"
+        # docker-compose "${CONFIG_ARGS[@]}" \
+        #     run --rm --no-deps client \
+        #     bash -c "yarn install && yarn compile && yarn build"
 
         # Update backend, Yarn dependencies and build server
         docker-compose "${CONFIG_ARGS[@]}" \
-            run --rm --no-deps --entrypoint "bash -c" server \
-            "yarn install && npm rebuild && yarn build"
+            run -u node --rm --no-deps --entrypoint "bash -c" server \
+            "npm install && npm rebuild && npm run build:server"
 
         # Update manage, Yarn dependencies and build
-        docker-compose "${CONFIG_ARGS[@]}" \
-            run --rm --no-deps manage \
-            bash -c "yarn install && yarn build"
+        # docker-compose "${CONFIG_ARGS[@]}" \
+        #     run --rm --no-deps manage \
+        #     bash -c "yarn install && yarn build"
 
         # Bring up PostgreSQL and NestJS in a way that respects
         # configured service health checks.
@@ -52,6 +57,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
 
         docker-compose "${CONFIG_ARGS[@]}" \
             run --rm server \
-            migration:run
+            run migration:run
     fi
 fi

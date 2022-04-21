@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "nx": "nx",
+    "clean": "rm -rf dist",
     "test": "npx nx run-many --all --target=test --parallel",
     "start:client": "nx run client:serve",
     "build:client": "nx run client:build",
@@ -11,6 +12,7 @@
     "start:server": "nx run server:serve",
     "build:server": "nx run server:build",
     "test:server": "nx run server:test",
+    "start:prod": "node dist/src/server/main",
     "lint": "nx workspace-lint && npx nx run-many --all --target=lint --parallel",
     "e2e": "nx e2e client-e2e",
     "e2e:affected": "nx e2e client-e2e",

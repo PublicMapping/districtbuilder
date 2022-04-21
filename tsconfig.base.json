@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@districtbuilder/shared": ["libs/shared/src/index.ts"]
+      "@districtbuilder/shared/*": ["libs/shared/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
