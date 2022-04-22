@@ -36,7 +36,7 @@ services:
     volumes:
       - ./:/home/node/app
       - $HOME/.cache/district-builder-node-modules:/home/node/app/node_modules
-      - /var/cache/district-builder-server-topology:/opt/topology
+      - $HOME/.cache/district-builder-topology:/opt/topology
       - $HOME/.aws:/root/.aws:ro
     working_dir: /home/node/app
     depends_on:

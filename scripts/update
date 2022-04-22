@@ -22,9 +22,10 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         else
             CONFIG_ARGS=( "-f" "docker-compose.yml" )
         fi
-        # Ensure cached node_modules directories exist on host before startup
+        # Ensure cached directories exist on host before startup
         # Otherwise Docker will create them as root, which will cause file perm issues
         mkdir -p "$HOME/.cache/district-builder-node-modules${EXECUTOR_NUMBER:-}"
+        mkdir -p "$HOME/.cache/district-builder-topology"
 
         # Ensure container images are current
         docker-compose "${CONFIG_ARGS[@]}" build --pull
