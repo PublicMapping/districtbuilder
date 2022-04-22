@@ -22,10 +22,10 @@ describe("DistrictsController", () => {
     version: new Date("2020-09-09T19:50:10.921Z")
   } as IRegionConfig;
 
-  let regionConfigsService = {
-    findOne: (conditions: unknown) => Promise.resolve(region)
+  const regionConfigsService = {
+    findOne: (_conditions: unknown) => Promise.resolve(region)
   };
-  let regionConfigsRepo = {
+  const regionConfigsRepo = {
     find: () => Promise.resolve([region])
   };
 

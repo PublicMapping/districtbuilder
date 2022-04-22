@@ -1,5 +1,4 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
-'use strict';
 
 export class lockedDistricts1617656641073 implements MigrationInterface {
     name = 'lockedDistricts1617656641073'
