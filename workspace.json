@@ -11,6 +11,12 @@
           "executor": "@nrwl/node:webpack",
           "outputs": ["{options.outputPath}"],
           "options": {
+            "additionalEntryPoints": [
+              {
+                "entryName": "worker",
+                "entryPath": "src/server/src/worker.ts"
+              }
+            ],
             "outputPath": "dist/src/server",
             "main": "src/server/src/main.ts",
             "tsConfig": "src/server/tsconfig.app.json",

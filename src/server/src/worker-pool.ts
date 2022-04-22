@@ -137,7 +137,7 @@ async function findQueue(regionConfig: RegionConfig): Promise<number> {
 
 function createWorker(index: number, cause = ""): Promise<WorkerThread> {
   terminateWorker(index, cause);
-  const worker = spawn<Functions>(new Worker("./worker", { workerData: { index } }));
+  const worker = spawn<Functions>(new Worker("./worker.js", { workerData: { index } }));
   // eslint-disable-next-line functional/immutable-data
   workers[index] = worker;
   workers[index]
