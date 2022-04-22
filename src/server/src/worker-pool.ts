@@ -47,6 +47,9 @@ const timeouts: Array<NodeJS.Timeout | undefined> = [...Array(NUM_WORKERS)].fill
 
 // Track region size & worker size so we can kill/recreate workers when they exceed a maximum size
 const workerSizes = [...Array(NUM_WORKERS)].map(() => 0);
+// We route to workers by best fit, so we want to know what size they'll be after any pending tasks
+// are processed, in addition to their actual current size
+const pendingWorkerSizes = [...Array(NUM_WORKERS)].map(() => 0);
 
 // Each queue controls access to a specific worker thread, which runs one task at a time
 const workerQueues = [...Array(NUM_WORKERS)].map(() => new Queue(1));
@@ -73,13 +76,27 @@ function getSettledQueues(workerQueues: Queue[], indexes: number[]) {
 
 // Keep track of which regions have been routed to which workers, in order of recency
 // We'll try to reroute back to those same workers later to re-use the workers cached data
+const pendingWorkersByRegion: { [id: string]: number[] } = {};
 let workersByRegion: { [id: string]: number[] } = {};
 let workersByRecency: number[] = [];
 
-async function findQueue(regionConfig: RegionConfig): Promise<number> {
-  const workerLacksRegion = (worker: number) =>
-    !workersByRegion[regionConfig.id] || !workersByRegion[regionConfig.id].includes(worker);
+function addToRegionMap(
+  mapping: { [id: string]: number[] },
+  regionConfig: RegionConfig,
+  worker: number
+) {
+  // eslint-disable-next-line functional/immutable-data
+  mapping[regionConfig.id] = [
+    worker,
+    ...(mapping[regionConfig.id] ? mapping[regionConfig.id].filter(w => w != worker) : [])
+  ];
+}
 
+function findQueue(regionConfig: RegionConfig): [number, boolean] {
+  const workerLacksRegion = (worker: number) =>
+    (!workersByRegion[regionConfig.id] || !workersByRegion[regionConfig.id].includes(worker)) &&
+    (!pendingWorkersByRegion[regionConfig.id] ||
+      !pendingWorkersByRegion[regionConfig.id].includes(worker));
   const availableWorkerIndexes = [...workerQueues.keys()].filter(workerLacksRegion);
   const lastUsed = workersByRegion[regionConfig.id] || [];
 
@@ -88,9 +105,13 @@ async function findQueue(regionConfig: RegionConfig): Promise<number> {
   const size = regionConfig.layerSizeInBytes;
 
   // Choose our next index by size
-  const willFit = (worker: number) => workerSizes[worker] + size < maxWorkerCacheSize;
+  const willFit = (worker: number) =>
+    workerSizes[worker] + pendingWorkerSizes[worker] + size < maxWorkerCacheSize;
   const getBestFit = (workers: number[]) =>
-    _.minBy(workers.filter(willFit), idx => maxWorkerCacheSize - (workerSizes[idx] + size));
+    _.minBy(
+      workers.filter(willFit),
+      idx => maxWorkerCacheSize - (workerSizes[idx] + pendingWorkerSizes[idx] + size)
+    );
 
   const workerToUse: number =
     // First check for available workers that were used for this region, get most recent
@@ -110,33 +131,22 @@ async function findQueue(regionConfig: RegionConfig): Promise<number> {
       : // If there are no settled workers and we hit the limit on adding more, use the most recent for this region
         lastUsed[0]) || 0;
 
-  // If this region wasn't already in this workers cache, update the worker size
-  // This may trigger recreating the worker thread if we would exceed the max size
-  if (workerLacksRegion(workerToUse)) {
-    if (workerSizes[workerToUse] + size > maxWorkerCacheSize) {
-      await createWorker(workerToUse, "OoM");
-      // eslint-disable-next-line functional/immutable-data
-      workerSizes[workerToUse] = 0;
-      workersByRegion = _.mapValues(workersByRegion, workers =>
-        workers.filter(w => w !== workerToUse)
-      );
-    }
+  // We don't update workerSizes until we actually queue the task, in case we have to terminate it due to running OoM
+  const addingRegion = workerLacksRegion(workerToUse);
+  if (addingRegion) {
     // eslint-disable-next-line functional/immutable-data
-    workerSizes[workerToUse] += size;
+    pendingWorkerSizes[workerToUse] += size;
   }
+
   // Move this worker to the top of the list of workers for this region/overall
-  // eslint-disable-next-line functional/immutable-data
-  workersByRegion[regionConfig.id] = [
-    workerToUse,
-    ...lastUsed.filter(worker => worker != workerToUse)
-  ];
+  addToRegionMap(pendingWorkersByRegion, regionConfig, workerToUse);
   workersByRecency = [workerToUse, ...workersByRecency.filter(worker => worker != workerToUse)];
 
-  return workerToUse;
+  return [workerToUse, addingRegion];
 }
 
-function createWorker(index: number, cause = ""): Promise<WorkerThread> {
-  terminateWorker(index, cause);
+async function createWorker(index: number, cause = ""): Promise<WorkerThread> {
+  await terminateWorker(index, cause);
   const worker = spawn<Functions>(new Worker("./worker", { workerData: { index } }));
   // eslint-disable-next-line functional/immutable-data
   workers[index] = worker;
@@ -150,8 +160,11 @@ function createWorker(index: number, cause = ""): Promise<WorkerThread> {
   return worker;
 }
 
-function terminateWorker(index: number, cause: string) {
-  void workers[index].then(worker => {
+function terminateWorker(index: number, cause: string): Promise<void> {
+  const oldWorker = workers[index];
+  // eslint-disable-next-line functional/immutable-data
+  workers[index] = Promise.resolve(undefined);
+  return oldWorker.then(worker => {
     // If a worker times out or errors, or reaches its max cache size, we replace it
     if (worker) {
       logger.log(
@@ -159,8 +172,9 @@ function terminateWorker(index: number, cause: string) {
           .map((size, idx) => `${idx}: ${formatBytes(size)}`)
           .join(`, `)}, total rss: ${formatBytes(process.memoryUsage().rss)}`
       );
-      void Thread.terminate(worker);
+      return Thread.terminate(worker);
     }
+    return;
   });
 }
 
@@ -172,7 +186,7 @@ function clearQueueTimeout(index: number) {
   timeouts[index] = undefined;
 }
 
-async function queueWithTimeout<R>(
+function queueWithTimeout<R>(
   regionConfig: RegionConfig,
   cb: TaskRunFunction<WorkerThread, R>,
   timeout = TASK_TIMEOUT_MS
@@ -182,13 +196,41 @@ async function queueWithTimeout<R>(
   // Without this queuing to limit concurrency, I encountered problems limiting regions to a
   // max number of workers, due to race conditions when finding settled workers
   return new Promise<R>(resolve => {
-    void taskRunnerQueue.add(async () => {
-      const workerIndex = await findQueue(regionConfig);
+    void taskRunnerQueue.add((): Promise<void> => {
+      const [workerIndex, addedToRegion] = findQueue(regionConfig);
       const task = workerQueues[workerIndex].add(() =>
-        workers[workerIndex].then(worker =>
-          // If we haven't created the worker yet, do so now
-          worker ? cb(worker) : createWorker(workerIndex).then(cb)
-        )
+        workers[workerIndex]
+          .then(worker => {
+            // If this region wasn't already in this workers cache, update the worker size
+            // This may trigger recreating the worker thread if we would exceed the max size
+            if (addedToRegion) {
+              /* eslint-disable functional/immutable-data */
+              const size = regionConfig.layerSizeInBytes;
+              pendingWorkerSizes[workerIndex] -= size;
+
+              // Remove worker from pending & add to main mapping
+              pendingWorkersByRegion[regionConfig.id] =
+                pendingWorkersByRegion[regionConfig.id].filter(w => w !== workerIndex) || [];
+              addToRegionMap(workersByRegion, regionConfig, workerIndex);
+
+              if (workerSizes[workerIndex] + size > maxWorkerCacheSize) {
+                const worker = createWorker(workerIndex, "OoM");
+                // Reset tracking info for this worker (any pending data stays the same)
+                workerSizes[workerIndex] = size;
+                workersByRegion = _.mapValues(workersByRegion, workers =>
+                  workers.filter(w => w !== workerIndex)
+                );
+                return worker;
+              }
+              workerSizes[workerIndex] += size;
+              /* eslint-enable functional/immutable-data */
+            }
+            return worker;
+          })
+          .then(worker =>
+            // If we haven't created the worker yet, do so now
+            worker ? cb(worker) : createWorker(workerIndex).then(cb)
+          )
       );
       resolve(
         new Promise((resolve, reject) => {
@@ -197,8 +239,7 @@ async function queueWithTimeout<R>(
           if (timeout) {
             // eslint-disable-next-line functional/immutable-data
             timeouts[workerIndex] = setTimeout(() => {
-              terminateWorker(workerIndex, "timeout");
-              reject();
+              terminateWorker(workerIndex, "timeout").finally(() => reject());
             }, timeout);
           }
           task
@@ -208,11 +249,11 @@ async function queueWithTimeout<R>(
               resolve(worker);
             })
             .catch(error => {
-              terminateWorker(workerIndex, "error");
-              reject(error);
+              terminateWorker(workerIndex, "error").finally(() => reject(error));
             });
         })
       );
+      return Promise.resolve(void 0);
     });
   });
 }
