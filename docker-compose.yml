@@ -54,11 +54,10 @@ services:
     user: node
     volumes:
       - ./:/home/node/app
-      # - ./dist/src/server/src/static:/home/node/app/build
       - $HOME/.cache/district-builder-node-modules:/home/node/app/node_modules
       - $HOME/.cache/district-builder:/usr/local/share/.cache/yarn
     working_dir: /home/node/app
-    command: yarn start
+    command: yarn start:client
 
   # manage:
   #   image: districtbuilder-manage
