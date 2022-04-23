@@ -147,11 +147,15 @@ export class TopologyService {
       if (numRetries < MAX_RETRIES) {
         return this.fetchLayer(regionConfig, numRetries + 1);
       } else {
-        // Nest spawns multiple processes, so to shutdown the main container process we need to
-        // kill all running node instances
-        spawn("pkill", ["node"]).once("exit", () => {
+        if (process.env.JEST_WORKER_ID !== undefined) {
           process.exit(1);
-        });
+        } else {
+          // Nest spawns multiple processes, so to shutdown the main container process we need to
+          // kill all running node instances
+          spawn("pkill", ["node"]).once("exit", () => {
+            process.exit(1);
+          });
+        }
       }
     }
   }

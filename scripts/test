@@ -23,31 +23,14 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
             run --rm --no-deps shellcheck \
             scripts/*
 
-        echo "Linting client source code"
-        ./scripts/yarn client \
-            lint
-        ./scripts/yarn client \
-            check-format
+        echo "Linting source code"
+        ./scripts/npm server run lint
 
-        echo "Linting server source code"
-        ./scripts/yarn server \
-            lint
-        ./scripts/yarn server \
-            check-format
-
-        echo "Linting manage source code"
-        ./scripts/yarn manage \
-            lint
-        ./scripts/yarn manage \
-            check-format
+        echo "Checking formatting"
+        ./scripts/npm server run format:check
 
         echo "Executing client test suite"
-        ./scripts/yarn client \
-            test --watchAll=false
-
-        echo "Executing manage test suite"
-        ./scripts/yarn manage \
-            test --watchAll=false
+        ./scripts/npm server run test:client
 
         echo "Executing server test suite"
         if [[ -n "${CI}" ]]; then
@@ -57,7 +40,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 run --rm --no-deps \
                 -e "CI=${CI}" \
                 server \
-                test --watchAll=false --passWithNoTests
+                run test:server
 
             GIT_COMMIT="${GIT_COMMIT}" docker-compose \
                 -f docker-compose.yml \
@@ -65,12 +48,10 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                 run --rm --no-deps \
                 -e "CI=${CI}" \
                 server \
-                test:e2e --watchAll=false
+                run e2e
         else
-            ./scripts/yarn server \
-                test --watchAll=false --passWithNoTests
-            ./scripts/yarn server \
-                test:e2e --watchAll=false
+            ./scripts/npm server run test:server
+            ./scripts/npm server run server:e2e
         fi
     fi
 fi

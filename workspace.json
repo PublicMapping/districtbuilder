@@ -36,6 +36,13 @@
             }
           }
         },
+        "e2e": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/src/server"],
+          "options": {
+            "jestConfig": "src/server/test/jest-e2e.config.js"
+          }
+        },
         "serve": {
           "executor": "@nrwl/node:node",
           "options": {

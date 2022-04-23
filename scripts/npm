@@ -9,7 +9,7 @@ fi
 function usage() {
     echo -n \
         "Usage: $(basename "$0") client | server | manage [command [flags]]
-Execute Yarn CLI commands.
+Execute NPM CLI commands.
 "
 }
 
@@ -34,11 +34,11 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
                 -f docker-compose.yml \
                 -f docker-compose.ci.yml \
                 run --rm --no-deps "${1}" \
-                bash -c "yarn ${*:2}"
+                bash -c "npm ${*:2}"
         else
             docker-compose \
                 run --rm --no-deps "${1}" \
-                bash -c "yarn ${*:2}"
+                bash -c "npm ${*:2}"
         fi
     fi
 fi

@@ -1,6 +1,6 @@
 module.exports = {
   displayName: "server",
-  preset: "../../jest.preset.js",
+  preset: "../../../jest.preset.js",
   globals: {
     "ts-jest": {
       tsconfig: "<rootDir>/tsconfig.spec.json"
@@ -8,7 +8,6 @@ module.exports = {
   },
   rootDir: "src",
   testEnvironment: "node",
-  testRegex: ".spec.ts$",
   transform: {
     "^.+\\.[tj]s$": "ts-jest"
   },
