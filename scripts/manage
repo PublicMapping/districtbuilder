@@ -7,5 +7,6 @@ if [[ -n "${DB_DEBUG}" ]]; then
 fi
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    docker-compose run --rm manage ./bin/run "$@"
+    docker-compose up -d database
+    docker-compose run --no-deps --rm manage ./bin/run "$@"
 fi

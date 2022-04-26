@@ -24,8 +24,9 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
                 run --rm "${1}" \
                 "${@:2}"
         else
+            docker-compose up -d database
             docker-compose \
-                run --rm "${1}" \
+                run --rm --no-deps "${1}" \
                 "${@:2}"
         fi
     else
