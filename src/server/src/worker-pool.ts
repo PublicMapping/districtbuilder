@@ -25,10 +25,11 @@ const dockerMemLimit = existsSync("/sys/fs/cgroup/memory.max")
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
 // Targets:
-// 3Gb of cache for 12Gb total (dev)
-// 13Gb of cache for 31Gb total (32Gb instance w/ ~1Gb for ECS agent)
-// 28Gb of cache for 63Gb total (64Gb instance w/ ~1Gb ECS agent)
-export const cacheSize = totalmem * 0.5 - 3 * 1024 * 1024 * 1024;
+// 1.5Gb of cache for 12Gb total (dev)
+//   3Gb of cache for 15Gb total (16Gb instance w/ ~1Gb ECS agent)
+//  11Gb of cache for 31Gb total (32Gb instance w/ ~1Gb ECS agent)
+//  27Gb of cache for 63Gb total (64Gb instance w/ ~1Gb ECS agent)
+export const cacheSize = totalmem * 0.5 - 4.5 * 1024 * 1024 * 1024;
 const maxWorkerCacheSize = Math.ceil(cacheSize / NUM_WORKERS);
 
 const logger = new Logger("worker-pool");
