@@ -26,13 +26,7 @@
             "production": {
               "optimization": true,
               "extractLicenses": true,
-              "inspect": false,
-              "fileReplacements": [
-                {
-                  "replace": "src/server/src/environments/environment.ts",
-                  "with": "src/server/src/environments/environment.prod.ts"
-                }
-              ]
+              "inspect": false
             }
           }
         },
@@ -46,6 +40,7 @@
         "serve": {
           "executor": "@nrwl/node:node",
           "options": {
+            "port": 3005,
             "buildTarget": "server:build"
           }
         },
@@ -84,23 +79,17 @@
           "outputs": ["{options.outputPath}"],
           "options": {
             "outputPath": "dist/src/client",
-            "index": "src/client/src/index.html",
+            "index": "src/client/src/public/index.html",
             "main": "src/client/src/main.tsx",
             "polyfills": "src/client/src/polyfills.ts",
             "tsConfig": "src/client/tsconfig.app.json",
-            "assets": ["src/client/src/favicon.ico", "src/client/src/assets"],
+            "assets": ["src/client/src/public"],
             "styles": ["src/client/src/styles.scss"],
             "scripts": [],
             "webpackConfig": "@nrwl/react/plugins/webpack"
           },
           "configurations": {
             "production": {
-              "fileReplacements": [
-                {
-                  "replace": "src/client/src/environments/environment.ts",
-                  "with": "src/client/src/environments/environment.prod.ts"
-                }
-              ],
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -122,6 +111,8 @@
           "executor": "@nrwl/web:dev-server",
           "options": {
             "buildTarget": "client:build",
+            "port": 3003,
+            "host": "0.0.0.0",
             "hmr": true,
             "proxyConfig": "src/client/proxy.conf.json"
           },

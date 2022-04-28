@@ -50,7 +50,6 @@ services:
     image:  node:16-bullseye-slim
     environment:
       - BASE_URL=${BASE_URL:-http://server:3005}
-      - PORT=3003
     user: node
     volumes:
       - ./:/home/node/app
