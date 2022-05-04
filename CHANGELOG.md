@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
  - Improved PlanScore error logging & double timeout [#1204](https://github.com/PublicMapping/districtbuilder/pull/1204)
+ - Revert to using JSON for data serialization [#1206](https://github.com/PublicMapping/districtbuilder/pull/1206)
 
 ### Fixed
 
