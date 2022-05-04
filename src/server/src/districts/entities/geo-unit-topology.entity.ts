@@ -9,10 +9,12 @@ import { Chamber } from "../../chambers/entities/chamber.entity";
 import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
-import { merge, exportToCSV, getTopologyProperties, importFromCSV } from "../../worker-pool";
+
+import { WorkerPoolService } from "../services/worker-pool.service";
 
 export class GeoUnitTopology {
   constructor(
+    public readonly workerService: WorkerPoolService,
     public readonly definition: GeoUnitDefinition,
     public readonly staticMetadata: IStaticMetadata,
     public readonly regionConfig: RegionConfig,
@@ -39,7 +41,7 @@ export class GeoUnitTopology {
     readonly chamber?: Chamber;
     readonly regionConfig: RegionConfig;
   }): Promise<DistrictsGeoJSON | null> {
-    return merge({
+    return this.workerService.merge({
       districtsDefinition,
       numberOfDistricts,
       user,
@@ -55,14 +57,22 @@ export class GeoUnitTopology {
   async importFromCSV(blockToDistricts: {
     readonly [block: string]: number;
   }): Promise<DistrictsDefinition> {
-    return importFromCSV(this.staticMetadata, this.regionConfig, blockToDistricts);
+    return this.workerService.importFromCSV(
+      this.staticMetadata,
+      this.regionConfig,
+      blockToDistricts
+    );
   }
 
   async exportToCSV(districtsDefinition: DistrictsDefinition): Promise<[string, number][]> {
-    return exportToCSV(this.staticMetadata, this.regionConfig, districtsDefinition);
+    return this.workerService.exportToCSV(
+      this.staticMetadata,
+      this.regionConfig,
+      districtsDefinition
+    );
   }
 
   async getTopologyProperties(): Promise<TopologyProperties> {
-    return getTopologyProperties(this.regionConfig, this.staticMetadata);
+    return this.workerService.getTopologyProperties(this.regionConfig, this.staticMetadata);
   }
 }

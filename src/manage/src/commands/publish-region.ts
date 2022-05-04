@@ -8,7 +8,6 @@ import { join } from "path";
 import readDir from "recursive-readdir";
 import { Topology } from "topojson-specification";
 import { createConnection } from "typeorm";
-import { deserialize } from "v8";
 
 import { RegionConfig } from "../../../server/src/region-configs/entities/region-config.entity";
 import { getTopologyLayerSize } from "../../../server/src/common/functions";
@@ -79,7 +78,9 @@ export default class PublishRegion extends Command {
     cli.action.stop();
     this.log(`Received ${responses.length} responses`);
 
-    const topology = deserialize(await readFile(join(args.staticDataDir, "topo.buf"))) as Topology;
+    const topology = JSON.parse(
+      await readFile(join(args.staticDataDir, "topo.json"), { encoding: "utf-8" })
+    ) as Topology;
 
     this.log("Saving region config to database");
     const regionConfig = new RegionConfig();

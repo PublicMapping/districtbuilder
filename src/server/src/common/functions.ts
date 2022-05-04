@@ -1,15 +1,15 @@
 import S3, { GetObjectRequest } from "aws-sdk/clients/s3";
-import { Request } from "aws-sdk/lib/request";
 import { AWSError } from "aws-sdk/lib/error";
-
-import { S3URI } from "../../../shared/entities";
-import { RegionConfig } from "../region-configs/entities/region-config.entity";
+import { Request } from "aws-sdk/lib/request";
 import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import sizeof from "object-sizeof";
 import { join } from "path";
 import { Topology } from "topojson-specification";
-import { deserialize } from "v8";
+
+import { S3URI } from "../../../shared/entities";
+
+import { RegionConfig } from "../region-configs/entities/region-config.entity";
 
 export function s3Options(path: S3URI, fileName: string): GetObjectRequest {
   const url = new URL(path);
@@ -42,21 +42,21 @@ export function formatBytes(bytes: number, decimals = 2) {
 export async function getTopology(regionConfig: RegionConfig, s3: S3): Promise<Topology> {
   const cacheDir = process.env.TOPOLOGY_CACHE_DIRECTORY || "/tmp";
   const folderPath = join(cacheDir, regionConfig.id);
-  const filePath = join(folderPath, "topo.buf");
+  const filePath = join(folderPath, "topo.json");
 
-  let buffer;
+  let json;
   if (!existsSync(filePath)) {
-    const topojsonResponse = await getObject(s3, s3Options(regionConfig.s3URI, "topo.buf"));
-    buffer = topojsonResponse.Body as Buffer;
+    const topojsonResponse = await getObject(s3, s3Options(regionConfig.s3URI, "topo.json"));
+    json = topojsonResponse.Body?.toString("utf-8") || "";
     // Save file to disk for speedier access later
     if (!existsSync(folderPath)) {
       await mkdir(folderPath, { recursive: true });
     }
-    await writeFile(filePath, buffer, "binary");
+    await writeFile(filePath, json, "utf-8");
   } else {
-    buffer = await readFile(filePath);
+    json = await readFile(filePath, { encoding: "utf-8" });
   }
-  return deserialize(buffer) as Topology;
+  return JSON.parse(json) as Topology;
 }
 
 export function getTopologyLayerSize(topology: Topology) {

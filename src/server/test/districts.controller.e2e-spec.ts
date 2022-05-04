@@ -8,7 +8,7 @@ import { RegionConfig } from "../src/region-configs/entities/region-config.entit
 import { RegionConfigsService } from "../src/region-configs/services/region-configs.service";
 import { DistrictsModule } from "../src/districts/districts.module";
 import { TopologyService } from "../src/districts/services/topology.service";
-import { terminatePool } from "../src/worker-pool";
+import { WorkerPoolService } from "../src/districts/services/worker-pool.service";
 
 describe("DistrictsController", () => {
   let app: INestApplication;
@@ -46,7 +46,10 @@ describe("DistrictsController", () => {
 
   afterAll(async () => {
     await app.close();
-    await terminatePool();
+  });
+
+  afterEach(async () => {
+    await app.select(DistrictsModule).get(WorkerPoolService, { strict: true }).terminatePool();
   });
 
   describe("import plan from block equivalency CSV", () => {
