@@ -1,6 +1,88 @@
 {
   "version": 2,
   "projects": {
+    "client": {
+      "root": "src/client",
+      "sourceRoot": "src/client",
+      "projectType": "application",
+      "tags": ["scope:client"],
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:webpack",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/src/client",
+            "index": "src/client/public/index.html",
+            "main": "src/client/src/index.tsx",
+            "polyfills": "src/client/src/polyfills.ts",
+            "tsConfig": "src/client/tsconfig.app.json",
+            "assets": [
+              {
+                "input": "src/client/public/",
+                "glob": "**/*",
+                "output": "./"
+              }
+            ],
+            "styles": ["src/client/src/styles.scss"],
+            "scripts": [],
+            "webpackConfig": "@nrwl/react/plugins/webpack"
+          },
+          "configurations": {
+            "development": {
+              "optimization": false
+            },
+            "production": {
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/web:dev-server",
+          "options": {
+            "buildTarget": "client:build:development",
+            "port": 3003,
+            "host": "0.0.0.0",
+            "baseUrl": "http://localhost:3003",
+            "publicHost": "http://localhost:3003",
+            "hmr": true,
+            "proxyConfig": "src/client/setupProxy.conf"
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "client:build:production",
+              "hmr": false
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["src/client/**/*.{ts,tsx,js,jsx}"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/src/client"],
+          "options": {
+            "jestConfig": "src/client/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "server": {
       "root": "src/server",
       "sourceRoot": "src/server/src",
@@ -68,77 +150,6 @@
         }
       }
     },
-    "client": {
-      "root": "src/client",
-      "sourceRoot": "src/client/src",
-      "projectType": "application",
-      "tags": ["scope:client"],
-      "targets": {
-        "build": {
-          "executor": "@nrwl/web:webpack",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/src/client",
-            "index": "src/client/src/public/index.html",
-            "main": "src/client/src/main.tsx",
-            "polyfills": "src/client/src/polyfills.ts",
-            "tsConfig": "src/client/tsconfig.app.json",
-            "assets": ["src/client/src/public"],
-            "styles": ["src/client/src/styles.scss"],
-            "scripts": [],
-            "webpackConfig": "@nrwl/react/plugins/webpack"
-          },
-          "configurations": {
-            "production": {
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "extractCss": true,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
-                }
-              ]
-            }
-          }
-        },
-        "serve": {
-          "executor": "@nrwl/web:dev-server",
-          "options": {
-            "buildTarget": "client:build",
-            "port": 3003,
-            "host": "0.0.0.0",
-            "hmr": true,
-            "proxyConfig": "src/client/proxy.conf.json"
-          },
-          "configurations": {
-            "production": {
-              "buildTarget": "client:build:production",
-              "hmr": false
-            }
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["src/client/**/*.{ts,tsx,js,jsx}"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/src/client"],
-          "options": {
-            "jestConfig": "src/client/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "shared": {
       "root": "libs/shared",
       "sourceRoot": "libs/shared/src",
@@ -161,25 +172,5 @@
         }
       }
     }
-  },
-  "cli": {
-    "defaultCollection": "@nrwl/react"
-  },
-  "generators": {
-    "@nrwl/react": {
-      "application": {
-        "style": "scss",
-        "linter": "eslint",
-        "babel": true
-      },
-      "component": {
-        "style": "scss"
-      },
-      "library": {
-        "style": "scss",
-        "linter": "eslint"
-      }
-    }
-  },
-  "defaultProject": "client"
+  }
 }
