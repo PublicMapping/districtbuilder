@@ -203,7 +203,7 @@ export class WorkerPoolService {
         const [workerIndex, addedToRegion] = this.findQueue(regionConfig);
         const task = this.workerQueues[workerIndex].add(() =>
           this.workers[workerIndex]
-            .then(worker => {
+            .then((worker: undefined | WorkerThread | Promise<WorkerThread>) => {
               // If this region wasn't already in this workers cache, update the worker size
               // This may trigger recreating the worker thread if we would exceed the max size
               if (addedToRegion) {
@@ -211,21 +211,22 @@ export class WorkerPoolService {
                 const size = regionConfig.layerSizeInBytes;
                 this.pendingWorkerSizes[workerIndex] -= size;
 
+                if (this.workerSizes[workerIndex] + size > maxWorkerCacheSize) {
+                  // eslint-disable-next-line no-param-reassign
+                  worker = this.createWorker(workerIndex, "OoM");
+                  // Reset tracking info for this worker (any pending data stays the same)
+                  this.workerSizes[workerIndex] = 0;
+                  this.workersByRegion = _.mapValues(this.workersByRegion, workers =>
+                    workers.filter(w => w !== workerIndex)
+                  );
+                }
+
                 // Remove worker from pending & add to main mapping
                 this.pendingWorkersByRegion[regionConfig.id] =
                   this.pendingWorkersByRegion[regionConfig.id].filter(w => w !== workerIndex) || [];
                 this.addToRegionMap(this.workersByRegion, regionConfig, workerIndex);
-
-                if (this.workerSizes[workerIndex] + size > maxWorkerCacheSize) {
-                  const worker = this.createWorker(workerIndex, "OoM");
-                  // Reset tracking info for this worker (any pending data stays the same)
-                  this.workerSizes[workerIndex] = size;
-                  this.workersByRegion = _.mapValues(this.workersByRegion, workers =>
-                    workers.filter(w => w !== workerIndex)
-                  );
-                  return worker;
-                }
                 this.workerSizes[workerIndex] += size;
+
                 /* eslint-enable functional/immutable-data */
               }
               return worker;
