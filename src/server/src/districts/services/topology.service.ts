@@ -11,7 +11,7 @@ import { TypedArrays, IStaticFile, IStaticMetadata, S3URI } from "../../../../sh
 import { NUM_WORKERS } from "../../common/constants";
 import { getObject, s3Options } from "../../common/functions";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
-import { cacheSize, getTopologyProperties } from "../../worker-pool";
+import { cacheSize, WorkerPoolService } from "./worker-pool.service";
 
 import { GeoUnitTopology } from "../entities/geo-unit-topology.entity";
 
@@ -33,7 +33,10 @@ export class TopologyService {
   private readonly s3 = new S3();
   private readonly downloadQueue = new Queue(BATCH_SIZE);
 
-  constructor(@InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>) {}
+  constructor(
+    @InjectRepository(RegionConfig) private readonly repo: Repository<RegionConfig>,
+    private readonly workerService: WorkerPoolService
+  ) {}
 
   public loadLayers() {
     void this.repo
@@ -129,6 +132,7 @@ export class TopologyService {
         // We no longer use archived read-only region topology for exports,
         // so always return geoUnitTopology
         return new GeoUnitTopology(
+          this.workerService,
           { groups: geoLevelHierarchy.slice().reverse() },
           staticMetadata,
           regionConfig,
@@ -160,7 +164,11 @@ export class TopologyService {
   // For most regions, this is the number of counties in the state
   private async getDistrictsDefLength(regionConfig: RegionConfig, staticMetadata: IStaticMetadata) {
     const topGeoLevel = staticMetadata.geoLevelHierarchy.slice().reverse()[0].id;
-    const properties = await getTopologyProperties(regionConfig, staticMetadata, 0);
+    const properties = await this.workerService.getTopologyProperties(
+      regionConfig,
+      staticMetadata,
+      0
+    );
     return properties[topGeoLevel] ? properties[topGeoLevel].length : 0;
   }
 

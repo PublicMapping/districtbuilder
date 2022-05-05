@@ -21,7 +21,6 @@ import { feature as topo2feature, mergeArcs, quantize } from "topojson-client";
 import { topology } from "topojson-server";
 import { planarTriangleArea, presimplify, simplify } from "topojson-simplify";
 import { GeometryCollection, GeometryObject, Objects, Topology } from "topojson-specification";
-import { serialize, deserialize } from "v8";
 
 import {
   TypedArray,
@@ -504,36 +503,14 @@ it when necessary (file sizes ~1GB+).
     const bucket = uriComponents[2];
     const keyPrefix = uriComponents.slice(3).join("/");
 
-    console.log(bucket);
-    const bufFileExists = await s3
-      .headObject({
-        Bucket: bucket,
-        Key: `${keyPrefix}topo.buf`
-      })
-      .promise()
-      .then(
-        () => true,
-        err => {
-          if (err.code === "NotFound") {
-            return false;
-          }
-          throw err;
-        }
-      );
-
-    // Use binary format if it exists, but fallback to text format otherwise
-    const key = bufFileExists ? `${keyPrefix}topo.buf` : `${keyPrefix}topo.json`;
-
     const response: any = await s3
       .getObject({
         Bucket: bucket,
-        Key: key
+        Key: `${keyPrefix}topo.json`
       })
       .promise();
 
-    return bufFileExists
-      ? deserialize(response.Body as Buffer)
-      : JSON.parse(response.Body?.toString("utf8"));
+    return JSON.parse(response.Body?.toString("utf8"));
   }
 
   // Write TopoJSON file to disk
@@ -547,7 +524,7 @@ it when necessary (file sizes ~1GB+).
     this.log("Writing topojson file");
     const path = join(dir, "topo.buf");
     const output = createWriteStream(path, { encoding: "binary" });
-    output.write(serialize(filteredTopojson));
+    output.write(JSON.stringify(filteredTopojson));
     output.close();
   }
 

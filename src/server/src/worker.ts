@@ -67,7 +67,9 @@ async function getTopologyFromCache(
   // eslint-disable-next-line functional/immutable-data
   cachedTopology[regionConfig.s3URI] = [topology, hierarchy];
   logger.debug(
-    `Adding layer ${regionConfig.s3URI}, size: ${formatBytes(regionConfig.layerSizeInBytes)}`
+    `Downloaded layer ${regionConfig.s3URI}, size: ${formatBytes(
+      regionConfig.layerSizeInBytes
+    )}, rss: ${formatBytes(process.memoryUsage().rss)}`
   );
   return [topology, hierarchy];
 }

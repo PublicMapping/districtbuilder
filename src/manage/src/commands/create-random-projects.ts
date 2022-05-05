@@ -8,6 +8,7 @@ import { connectionOptions } from "../lib/dbUtils";
 import { RegionConfig } from "../../../server/src/region-configs/entities/region-config.entity";
 import { Project } from "../../../server/src/projects/entities/project.entity";
 import { TopologyService } from "../../../server/src/districts/services/topology.service";
+import { WorkerPoolService } from "../../../server/src/districts/services/worker-pool.service";
 import { User } from "../../../server/src/users/entities/user.entity";
 
 const PERCENT_COMPLETE = 0.25;
@@ -36,7 +37,8 @@ export default class CreateRandomProjects extends Command {
     const regionConfigRepo = connection.getRepository(RegionConfig);
     const projectRepo = connection.getRepository(Project);
     const userRepo = connection.getRepository(User);
-    const topologyService = new TopologyService(regionConfigRepo);
+    const topologyService = new TopologyService(regionConfigRepo, new WorkerPoolService());
+    topologyService.loadLayers();
 
     const regions = await regionConfigRepo.find(
       args.region === "all"
