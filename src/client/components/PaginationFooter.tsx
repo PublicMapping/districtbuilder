@@ -7,6 +7,7 @@ import { range } from "lodash";
 interface StateProps {
   readonly currentPage: number;
   readonly totalPages: number;
+  readonly showLastPageButton?: boolean;
   // eslint-disable-next-line
   readonly setPage: (number: number) => void;
 }
@@ -34,7 +35,12 @@ const style = {
 
 const MAX_PAGES_AROUND_CURRENT = 3;
 
-const PaginationFooter = ({ currentPage, totalPages, setPage }: StateProps) => {
+const PaginationFooter = ({
+  currentPage,
+  totalPages,
+  setPage,
+  showLastPageButton = true
+}: StateProps) => {
   // This component is to be used for server-side pagination with a list of elements rendered separately.
 
   // We show a set of pages around the current page, as well as links for first & last page
@@ -66,14 +72,15 @@ const PaginationFooter = ({ currentPage, totalPages, setPage }: StateProps) => {
           {pageNumbers.map(number => (
             <PageLink number={number} key={number} />
           ))}
-          {pageNumbers[pageNumbers.length - 1] === totalPages || (
-            <React.Fragment>
-              {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-                <span sx={{ px: 2, fontWeight: "800" }}>·</span>
-              )}
-              <PageLink number={totalPages} />
-            </React.Fragment>
-          )}
+          {showLastPageButton &&
+            (pageNumbers[pageNumbers.length - 1] === totalPages || (
+              <React.Fragment>
+                {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
+                  <span sx={{ px: 2, fontWeight: "800" }}>·</span>
+                )}
+                <PageLink number={totalPages} />
+              </React.Fragment>
+            ))}
         </ul>
       )}
     </Box>
