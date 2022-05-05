@@ -31,9 +31,9 @@ data "template_cloudinit_config" "container_instance_cloud_config" {
 }
 
 # Pull the image ID for the latest Amazon ECS-optimized Amazon Linux 2 AMI
-# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#al2ami
+# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-ami-versions.html
 data "aws_ssm_parameter" "ecs_image_id" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2022/recommended/image_id"
 }
 
 data "aws_ami" "ecs_ami" {
