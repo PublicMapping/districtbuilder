@@ -61,15 +61,7 @@ export default class SerializeTopojson extends Command {
   // Reads a TopoJSON file from S3, given the S3 run directory
   async readJson(inputS3Dir: string): Promise<Topology<Objects<{}>>> {
     this.log("Reading topo.json");
-    const uriComponents = inputS3Dir.split("/");
-    const bucket = uriComponents[2];
-    const key = `${uriComponents.slice(3).join("/")}topo.json`;
-    const response: any = await new S3()
-      .getObject({
-        Bucket: bucket,
-        Key: key
-      })
-      .promise();
+    const response: any = await new S3().getObject(this.s3Options(inputS3Dir, "json")).promise();
 
     const objects = await new Promise(resolve =>
       createReadStream(response.Body as Buffer)
@@ -120,76 +112,50 @@ export default class SerializeTopojson extends Command {
     } as Topology<Objects<{}>>;
   }
 
-  jsonOptions(inputS3Dir: string) {
-    const uriComponents = inputS3Dir.split("/");
-    return {
-      Bucket: uriComponents[2],
-      Key: `${uriComponents.slice(3).join("/")}topo.json`
-    };
+  read(inputS3Dir: string, ext: string) {
+    this.log(`Reading topo.${ext}`);
+    const s3Client = new S3();
+    return s3Client.getObject(this.s3Options(inputS3Dir, ext)).promise();
   }
 
-  bufOptions(inputS3Dir: string) {
+  s3Options(inputS3Dir: string, ext: string) {
     const uriComponents = inputS3Dir.split("/");
     return {
       Bucket: uriComponents[2],
-      Key: `${uriComponents.slice(3).join("/")}topo.buf`
-    };
-  }
-
-  pbfOptions(inputS3Dir: string) {
-    const uriComponents = inputS3Dir.split("/");
-    return {
-      Bucket: uriComponents[2],
-      Key: `${uriComponents.slice(3).join("/")}topo.pbf`
+      Key: `${uriComponents.slice(3).join("/")}topo.${ext}`
     };
   }
 
   async readBuf(inputS3Dir: string) {
-    this.log("Reading topo.buf");
-
-    const s3Client = new S3();
-    const resp = await s3Client.getObject(this.bufOptions(inputS3Dir)).promise();
+    const resp = await this.read(inputS3Dir, "buf");
     return deserialize(resp.Body as Buffer);
   }
 
   async readPbf(inputS3Dir: string) {
-    this.log("Reading topo.buf");
-
-    const s3Client = new S3();
-    const resp = await s3Client.getObject(this.bufOptions(inputS3Dir)).promise();
+    const resp = await this.read(inputS3Dir, "pbf");
     return decode(new Pbf(resp.Body as Buffer)) as Topology;
   }
 
-  writeJson(inputS3Dir: string, topology: Topology<Objects<{}>>) {
-    this.log("Streaming topo.json");
+  write(inputS3Dir: string, ext: string, body: string | Buffer | Uint8Array) {
+    this.log(`Writing topo.${ext}`);
     const s3Client = new S3();
     return s3Client
       .upload({
-        Body: JSON.stringify(topology),
-        ...this.jsonOptions(inputS3Dir)
+        Body: body,
+        ...this.s3Options(inputS3Dir, ext)
       })
       .promise();
+  }
+
+  writeJson(inputS3Dir: string, topology: Topology<Objects<{}>>) {
+    return this.write(inputS3Dir, "json", JSON.stringify(topology));
   }
 
   writeBuf(inputS3Dir: string, topology: Topology<Objects<{}>>) {
-    this.log("Streaming topo.buf");
-    const s3Client = new S3();
-    return s3Client
-      .upload({
-        Body: serialize(topology),
-        ...this.bufOptions(inputS3Dir)
-      })
-      .promise();
+    return this.write(inputS3Dir, "buf", serialize(topology));
   }
 
   writePbf(inputS3Dir: string, topology: Topology<Objects<{}>>) {
-    this.log("Streaming topo.pbf");
-    const s3Client = new S3();
-    return s3Client
-      .upload({
-        Body: encode(topology, new Pbf()),
-        ...this.pbfOptions(inputS3Dir)
-      })
-      .promise();
+    return this.write(inputS3Dir, "pbf", encode(topology, new Pbf()));
   }
 }
