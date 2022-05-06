@@ -17,6 +17,8 @@ interface StateProps {
   readonly user: Resource<IUser>;
 }
 
+const T_C_LINK = "https://www.azavea.com/terms-of-use/";
+
 const RegistrationScreen = ({ user }: StateProps) => {
   const isLoggedIn = "resource" in user && isUserLoggedIn();
   const location = useLocation<AuthLocationState>();
@@ -64,15 +66,12 @@ const RegistrationScreen = ({ user }: StateProps) => {
               )}
             </RegisterContent>
           </Card>
-          <Box sx={{ fontSize: 1, textAlign: "center" }}>
-            Already have an account?{" "}
-            <Themed.a
-              as={Link}
-              to={{ pathname: "/login", state: location.state }}
-              sx={{ color: "primary" }}
-            >
-              Log in
-            </Themed.a>
+          <Box sx={{ fontSize: 0, textAlign: "start", fontWeight: "normal" }}>
+            By creating an account, you agree to the{" "}
+            <a href={T_C_LINK} sx={{ color: "primary" }} target="_blank" rel="noopener noreferrer">
+              Terms of Service
+            </a>
+            . We will infrequently send you critical, account-related emails.
           </Box>
         </React.Fragment>
       )}
