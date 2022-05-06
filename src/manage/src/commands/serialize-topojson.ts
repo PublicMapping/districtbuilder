@@ -43,7 +43,7 @@ export default class SerializeTopojson extends Command {
       cli.action.start(`Reading base TopoJSON: ${s3URI}`);
       const baseTopojson = await (flags.input === "json"
         ? this.readJson(s3URI)
-        : flags.output === "buf"
+        : flags.input === "buf"
         ? this.readBuf(s3URI)
         : this.readPbf(s3URI));
       cli.action.stop();
