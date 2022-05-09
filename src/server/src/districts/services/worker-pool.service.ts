@@ -96,7 +96,10 @@ export class WorkerPoolService {
       (!this.pendingWorkersByRegion[regionConfig.id] ||
         !this.pendingWorkersByRegion[regionConfig.id].includes(worker));
     const availableWorkerIndexes = [...this.workerQueues.keys()].filter(workerLacksRegion);
-    const lastUsed = this.workersByRegion[regionConfig.id] || [];
+    const lastUsed = [
+      ...(this.workersByRegion[regionConfig.id] || []),
+      ...(this.pendingWorkersByRegion[regionConfig.id] || [])
+    ];
 
     const lastUsedSettled = getSettledQueues(this.workerQueues, lastUsed);
     const settledQueues = getSettledQueues(this.workerQueues, availableWorkerIndexes);
