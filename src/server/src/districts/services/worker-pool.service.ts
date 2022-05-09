@@ -202,7 +202,7 @@ export class WorkerPoolService {
         const [workerIndex, addedToRegion] = this.findQueue(regionConfig);
         const task = this.workerQueues[workerIndex].add(() =>
           this.workers[workerIndex]
-            .then((worker: undefined | WorkerThread | Promise<WorkerThread>) => {
+            .then(async (worker: WorkerThread | undefined) => {
               // If this region wasn't already in this workers cache, update the worker size
               // This may trigger recreating the worker thread if we would exceed the max size
               if (addedToRegion) {
@@ -212,7 +212,7 @@ export class WorkerPoolService {
 
                 if (this.workerSizes[workerIndex] + size > maxWorkerCacheSize) {
                   // eslint-disable-next-line no-param-reassign
-                  worker = this.createWorker(workerIndex, "OoM");
+                  worker = await this.createWorker(workerIndex, "OoM");
                   // Reset tracking info for this worker (any pending data stays the same)
                   this.workerSizes[workerIndex] = 0;
                   this.workersByRegion = _.mapValues(this.workersByRegion, workers =>
