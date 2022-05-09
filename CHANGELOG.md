@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+ - Reduce max cache size [#1213](https://github.com/PublicMapping/districtbuilder/pull/1213)
 
 ### Fixed
 
