@@ -231,26 +231,30 @@ export class WorkerPoolService {
               }
               return worker;
             })
-            .then(worker =>
-              // If we haven't created the worker yet, do so now
-              worker ? cb(worker) : this.createWorker(workerIndex).then(cb)
+            .then(
+              worker =>
+                new Promise<R>((resolve, reject) => {
+                  // Clear pre-existing timeouts if we're adding a new one before cleanup could happen
+                  this.clearQueueTimeout(workerIndex);
+                  if (timeout) {
+                    // eslint-disable-next-line functional/immutable-data
+                    this.timeouts[workerIndex] = setTimeout(() => {
+                      reject("Worker request timed out");
+                    }, timeout);
+                  }
+                  // If we haven't created the worker yet, do so now
+                  const result = worker ? cb(worker) : this.createWorker(workerIndex).then(cb);
+                  result.then(resolve).catch(reject);
+                })
             )
         );
         resolve(
           new Promise((resolve, reject) => {
-            // Clear pre-existing timeouts if we're adding a new one before cleanup could happen
-            this.clearQueueTimeout(workerIndex);
-            if (timeout) {
-              // eslint-disable-next-line functional/immutable-data
-              this.timeouts[workerIndex] = setTimeout(() => {
-                this.terminateWorker(workerIndex, "timeout").finally(() => reject());
-              }, timeout);
-            }
             task
-              .then(worker => {
+              .then(result => {
                 // Clear out any timeouts after the task completes
                 this.clearQueueTimeout(workerIndex);
-                resolve(worker);
+                resolve(result);
               })
               .catch(error => {
                 this.terminateWorker(workerIndex, "error").finally(() => reject(error));
