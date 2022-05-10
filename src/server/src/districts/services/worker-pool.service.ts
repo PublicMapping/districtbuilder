@@ -25,11 +25,10 @@ const dockerMemLimit = existsSync("/sys/fs/cgroup/memory.max")
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
 // Targets:
-// 1.5Gb of cache for 12Gb total (dev)
-//   3Gb of cache for 15Gb total (16Gb instance w/ ~1Gb ECS agent)
-//  11Gb of cache for 31Gb total (32Gb instance w/ ~1Gb ECS agent)
-//  27Gb of cache for 63Gb total (64Gb instance w/ ~1Gb ECS agent)
-export const cacheSize = totalmem * 0.5 - 4.5 * 1024 * 1024 * 1024;
+// 1.8Gb of cache for 12Gb total (dev)
+// 3.0Gb of cache for 15Gb total (16Gb instance w/ ~1Gb ECS agent)
+// 9.5Gb of cache for 31Gb total (32Gb instance w/ ~1Gb ECS agent)
+export const cacheSize = totalmem * 0.4 - 3 * 1024 * 1024 * 1024;
 const maxWorkerCacheSize = Math.ceil(cacheSize / NUM_WORKERS);
 
 // Not that important to limit small regions, but large regions in every worker will eat up our cache
@@ -97,7 +96,10 @@ export class WorkerPoolService {
       (!this.pendingWorkersByRegion[regionConfig.id] ||
         !this.pendingWorkersByRegion[regionConfig.id].includes(worker));
     const availableWorkerIndexes = [...this.workerQueues.keys()].filter(workerLacksRegion);
-    const lastUsed = this.workersByRegion[regionConfig.id] || [];
+    const lastUsed = [
+      ...(this.workersByRegion[regionConfig.id] || []),
+      ...(this.pendingWorkersByRegion[regionConfig.id] || [])
+    ];
 
     const lastUsedSettled = getSettledQueues(this.workerQueues, lastUsed);
     const settledQueues = getSettledQueues(this.workerQueues, availableWorkerIndexes);
@@ -203,7 +205,7 @@ export class WorkerPoolService {
         const [workerIndex, addedToRegion] = this.findQueue(regionConfig);
         const task = this.workerQueues[workerIndex].add(() =>
           this.workers[workerIndex]
-            .then((worker: undefined | WorkerThread | Promise<WorkerThread>) => {
+            .then(async (worker: WorkerThread | undefined) => {
               // If this region wasn't already in this workers cache, update the worker size
               // This may trigger recreating the worker thread if we would exceed the max size
               if (addedToRegion) {
@@ -213,7 +215,7 @@ export class WorkerPoolService {
 
                 if (this.workerSizes[workerIndex] + size > maxWorkerCacheSize) {
                   // eslint-disable-next-line no-param-reassign
-                  worker = this.createWorker(workerIndex, "OoM");
+                  worker = await this.createWorker(workerIndex, "OoM");
                   // Reset tracking info for this worker (any pending data stays the same)
                   this.workerSizes[workerIndex] = 0;
                   this.workersByRegion = _.mapValues(this.workersByRegion, workers =>
@@ -231,26 +233,30 @@ export class WorkerPoolService {
               }
               return worker;
             })
-            .then(worker =>
-              // If we haven't created the worker yet, do so now
-              worker ? cb(worker) : this.createWorker(workerIndex).then(cb)
+            .then(
+              worker =>
+                new Promise<R>((resolve, reject) => {
+                  // Clear pre-existing timeouts if we're adding a new one before cleanup could happen
+                  this.clearQueueTimeout(workerIndex);
+                  if (timeout) {
+                    // eslint-disable-next-line functional/immutable-data
+                    this.timeouts[workerIndex] = setTimeout(() => {
+                      reject("Worker request timed out");
+                    }, timeout);
+                  }
+                  // If we haven't created the worker yet, do so now
+                  const result = worker ? cb(worker) : this.createWorker(workerIndex).then(cb);
+                  result.then(resolve).catch(reject);
+                })
             )
         );
         resolve(
           new Promise((resolve, reject) => {
-            // Clear pre-existing timeouts if we're adding a new one before cleanup could happen
-            this.clearQueueTimeout(workerIndex);
-            if (timeout) {
-              // eslint-disable-next-line functional/immutable-data
-              this.timeouts[workerIndex] = setTimeout(() => {
-                this.terminateWorker(workerIndex, "timeout").finally(() => reject());
-              }, timeout);
-            }
             task
-              .then(worker => {
+              .then(result => {
                 // Clear out any timeouts after the task completes
                 this.clearQueueTimeout(workerIndex);
-                resolve(worker);
+                resolve(result);
               })
               .catch(error => {
                 this.terminateWorker(workerIndex, "error").finally(() => reject(error));

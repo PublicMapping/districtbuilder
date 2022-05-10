@@ -522,8 +522,8 @@ it when necessary (file sizes ~1GB+).
   ) {
     const filteredTopojson = this.filterTopoJson(topology, demographics, voting);
     this.log("Writing topojson file");
-    const path = join(dir, "topo.buf");
-    const output = createWriteStream(path, { encoding: "binary" });
+    const path = join(dir, "topo.json");
+    const output = createWriteStream(path, { encoding: "utf-8" });
     output.write(JSON.stringify(filteredTopojson));
     output.close();
   }
