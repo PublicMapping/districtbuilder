@@ -8,5 +8,6 @@ export const DEFAULT_FROM_EMAIL =
   process.env.DEFAULT_FROM_EMAIL || "no-reply@staging.districtbuilder.org";
 
 // One worker/CPU works well on AWS using memory-optimized units
-// For dev that's not the case, so just use a fixed amount
-export const NUM_WORKERS = DEBUG ? 2 : os.cpus().length;
+// For dev & CI that's not the case, so just use a fixed amount
+export const NUM_WORKERS =
+  ENVIRONMENT === "Development" || ENVIRONMENT === "test" ? 3 : os.cpus().length;

@@ -29,12 +29,12 @@ const totalmem = Math.min(hostmem, dockerMemLimit);
 // 3.0Gb of cache for 15Gb total (16Gb instance w/ ~1Gb ECS agent)
 // 9.5Gb of cache for 31Gb total (32Gb instance w/ ~1Gb ECS agent)
 export const cacheSize = totalmem * 0.4 - 3 * 1024 * 1024 * 1024;
-const maxWorkerCacheSize = Math.ceil(cacheSize / NUM_WORKERS);
+export const maxWorkerCacheSize = Math.ceil(cacheSize / NUM_WORKERS);
 
 // Not that important to limit small regions, but large regions in every worker will eat up our cache
-const MAX_PER_REGION = Math.ceil(NUM_WORKERS / 2);
+const MAX_PER_REGION = Math.max(2, Math.ceil(NUM_WORKERS / 2));
 
-type WorkerThread = ModuleThread<Functions>;
+export type WorkerThread = ModuleThread<Functions>;
 
 function getSettledQueues(workerQueues: Queue[], indexes: number[]) {
   return indexes.filter(
@@ -48,7 +48,7 @@ export class WorkerPoolService {
 
   // Implementing our own queuing system instead of using threads Pool in order to handle errors
   // and thread termination with more precision
-  private readonly workers: Array<Promise<ModuleThread<Functions> | undefined>> = [
+  readonly workers: Array<Promise<ModuleThread<Functions> | undefined>> = [
     ...Array(NUM_WORKERS)
   ].map(() => Promise.resolve(undefined));
   private readonly timeouts: Array<NodeJS.Timeout | undefined> = [...Array(NUM_WORKERS)].fill(
@@ -137,10 +137,11 @@ export class WorkerPoolService {
     if (addingRegion) {
       // eslint-disable-next-line functional/immutable-data
       this.pendingWorkerSizes[workerToUse] += size;
+
+      // Add this worker to the list of workers for this region
+      this.addToRegionMap(this.pendingWorkersByRegion, regionConfig, workerToUse);
     }
 
-    // Move this worker to the top of the list of workers for this region/overall
-    this.addToRegionMap(this.pendingWorkersByRegion, regionConfig, workerToUse);
     // eslint-disable-next-line functional/immutable-data
     this.workersByRecency = [
       workerToUse,
