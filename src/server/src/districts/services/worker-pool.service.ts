@@ -255,12 +255,14 @@ export class WorkerPoolService {
           new Promise((resolve, reject) => {
             task
               .then(result => {
-                // Clear out any timeouts after the task completes
-                this.clearQueueTimeout(workerIndex);
                 resolve(result);
               })
               .catch(error => {
                 this.terminateWorker(workerIndex, "error").finally(() => reject(error));
+              })
+              .finally(() => {
+                // Clear out any timeouts after the task completes
+                this.clearQueueTimeout(workerIndex);
               });
           })
         );

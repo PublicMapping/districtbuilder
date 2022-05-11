@@ -203,5 +203,31 @@ describe("WorkerPoolService", () => {
       });
       expect(spy).toBeCalledWith(0, "OoM");
     });
+
+    it("should return an error and terminate worker on timeouts", async () => {
+      const spy = jest.spyOn(service, "terminateWorker");
+      await expect(
+        service.queueWithTimeout(
+          regions[0],
+          async () => {
+            await sleep(100);
+            return;
+          },
+          10
+        )
+      ).rejects.toMatch("Worker request timed out");
+      expect(spy).toBeCalledWith(0, "error");
+    });
+
+    it("should return an error and terminate worker on errors", async () => {
+      const spy = jest.spyOn(service, "terminateWorker");
+      await expect(
+        service.queueWithTimeout(regions[0], async () => {
+          await sleep(1);
+          throw new Error("Horrors");
+        })
+      ).rejects.toMatchObject({ message: "Horrors" });
+      expect(spy).toBeCalledWith(0, "error");
+    });
   });
 });
