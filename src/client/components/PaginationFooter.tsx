@@ -45,7 +45,10 @@ const PaginationFooter = ({
 
   // We show a set of pages around the current page, as well as links for first & last page
   const startingPage = Math.max(1, currentPage - MAX_PAGES_AROUND_CURRENT);
-  const endingPage = Math.min(totalPages, currentPage + MAX_PAGES_AROUND_CURRENT);
+  const endingPage = Math.min(
+    showLastPageButton ? totalPages : totalPages + 1,
+    currentPage + MAX_PAGES_AROUND_CURRENT
+  );
   const pageNumbers = range(startingPage, endingPage);
 
   const PageLink = ({ number }: { readonly number: number }) => (
