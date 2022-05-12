@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+- Fixed adding regions to more than 1 worker [#1217](https://github.com/PublicMapping/districtbuilder/pull/1217)
 
 
 ## [1.17.2]
