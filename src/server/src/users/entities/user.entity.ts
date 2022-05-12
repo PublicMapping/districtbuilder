@@ -52,7 +52,7 @@ export class User implements IUser {
   })
   lastLoginDt: Date;
 
-  @Column({ default: false, type: "boolean" })
+  @Column({ default: false, type: "boolean", name: "is_marketing_email_on" })
   isMarketingEmailOn: boolean;
 
   constructor(params?: {
