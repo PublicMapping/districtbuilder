@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import React, { useState } from "react";
-import { Box, Button, Checkbox, Flex, jsx, Label, Link, Themed } from "theme-ui";
+import { Box, Button, Checkbox, Flex, jsx, Label, Themed } from "theme-ui";
 import { toast } from "react-toastify";
 import { connect } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { Register, IOrganization } from "../../shared/entities";
 import { State } from "../reducers";
