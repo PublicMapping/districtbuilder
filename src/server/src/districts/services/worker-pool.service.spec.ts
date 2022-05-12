@@ -22,7 +22,6 @@ describe("WorkerPoolService", () => {
 
   beforeEach(async () => {
     jest.mock("../../worker");
-    jest.setTimeout(10_000);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [WorkerPoolService]
@@ -88,7 +87,7 @@ describe("WorkerPoolService", () => {
           expect([0, 1]).toContain(await workerIndex(worker));
         })
       ]);
-    });
+    }, 10_000);
 
     it("should route to a new worker for the same region if existing is blocked", async () => {
       await service.queueWithTimeout(regions[0], async worker => {
@@ -103,7 +102,7 @@ describe("WorkerPoolService", () => {
         expect(await workerIndex(worker)).not.toEqual(0);
       });
       await blockingRequest;
-    });
+    }, 10_000);
 
     it("should route to a new worker for the same region if existing is blocked by a different region", async () => {
       await service.queueWithTimeout(regions[0], async worker => {
@@ -118,7 +117,7 @@ describe("WorkerPoolService", () => {
         expect(await workerIndex(worker)).not.toEqual(0);
       });
       await blockingRequest;
-    });
+    }, 10_000);
 
     it("should wait for a busy worker once # of workers = MAX_PER_REGION", async () => {
       const first = service.queueWithTimeout(regions[0], async worker => {
@@ -139,7 +138,7 @@ describe("WorkerPoolService", () => {
       });
       await first;
       await second;
-    });
+    }, 10_000);
 
     it("should not double-count pending requests when routing to workers", async () => {
       // Load testing region onto worker 0
@@ -173,7 +172,7 @@ describe("WorkerPoolService", () => {
       });
       await otherRegionRequests;
       await pendingRequest;
-    });
+    }, 10_000);
 
     it("should terminate worker on OoM", async () => {
       const spy = jest.spyOn(service, "terminateWorker");
@@ -202,7 +201,7 @@ describe("WorkerPoolService", () => {
         expect(await workerIndex(worker)).toEqual(0);
       });
       expect(spy).toBeCalledWith(0, "OoM");
-    });
+    }, 10_000);
 
     it("should return an error and terminate worker on timeouts", async () => {
       const spy = jest.spyOn(service, "terminateWorker");
