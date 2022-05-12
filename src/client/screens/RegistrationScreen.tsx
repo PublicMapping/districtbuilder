@@ -18,8 +18,6 @@ interface StateProps {
   readonly user: Resource<IUser>;
 }
 
-const T_C_LINK = "https://www.azavea.com/terms-of-use/";
-
 const RegistrationScreen = ({ user }: StateProps) => {
   const isLoggedIn = "resource" in user && isUserLoggedIn();
   const location = useLocation<AuthLocationState>();
