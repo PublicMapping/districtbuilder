@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+ - Hid last page button on Community Maps screen [#1208](https://github.com/PublicMapping/districtbuilder/pull/1208)
 
 ### Fixed
 - Fixed adding regions to more than 1 worker [#1217](https://github.com/PublicMapping/districtbuilder/pull/1217)

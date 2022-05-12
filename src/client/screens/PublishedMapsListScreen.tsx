@@ -176,6 +176,7 @@ const PublishedMapsListScreen = ({
                   <PaginationFooter
                     currentPage={pagination.currentPage}
                     totalPages={pagination.totalPages}
+                    showLastPageButton={false}
                     setPage={number => store.dispatch(globalProjectsFetchPage(number))}
                   />
                 </Box>
