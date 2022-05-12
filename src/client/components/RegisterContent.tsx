@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box, Button, Checkbox, Flex, jsx, Label, Link, Themed } from "theme-ui";
 import { toast } from "react-toastify";
 import { connect } from "react-redux";
@@ -139,7 +139,7 @@ const RegisterContent = ({
         <Themed.a
           as={Link}
           to={{ pathname: "/login", state: location.state }}
-          sx={{ color: "primary" }}
+          sx={{ cursor: "pointer", color: "blue.5" }}
         >
           Log in
         </Themed.a>
@@ -155,6 +155,3 @@ function mapStateToProps(state: State) {
 }
 
 export default connect(mapStateToProps)(RegisterContent);
-function validatePassword(password: any, arg1: string[]) {
-  throw new Error("Function not implemented.");
-}
