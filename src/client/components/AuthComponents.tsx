@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React, { useState } from "react";
-import { Box, Button, Flex, Heading, Text, jsx, ThemeUIStyleObject } from "theme-ui";
+import { Box, Button, Flex, Heading, Text, jsx, ThemeUIStyleObject, Divider } from "theme-ui";
 
 import { Login, JWT, IOrganization } from "../../shared/entities";
 import RegisterContent from "./RegisterContent";
@@ -16,6 +16,7 @@ import store from "../store";
 import { ReactComponent as SignupIconAudience } from "../media/signup-icon-audience.svg";
 import { ReactComponent as SignupIconDollar } from "../media/signup-icon-dollar.svg";
 import { ReactComponent as SignupIconSearch } from "../media/signup-icon-search.svg";
+import RegisterTermsText from "./RegisterTermsText";
 
 const style: Record<string, ThemeUIStyleObject> = {
   footer: {
@@ -262,12 +263,8 @@ export const AuthModalContent = ({
           Create an account
         </Heading>
       </RegisterContent>
-      <Text sx={style.footerMicrocopy}>
-        Already have an account?{" "}
-        <span id="primary-action" sx={style.link} onClick={() => setModalIntent("login")}>
-          Log in
-        </span>
-      </Text>
+      <Divider sx={{ my: 3 }} />
+      <RegisterTermsText />
     </React.Fragment>
   );
 

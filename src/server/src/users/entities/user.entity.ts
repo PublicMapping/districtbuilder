@@ -52,7 +52,16 @@ export class User implements IUser {
   })
   lastLoginDt: Date;
 
-  constructor(params?: { id?: string; email: string; name: string; passwordHash?: string }) {
+  @Column({ default: false, type: "boolean", name: "is_marketing_email_on" })
+  isMarketingEmailOn: boolean;
+
+  constructor(params?: {
+    id?: string;
+    email: string;
+    name: string;
+    passwordHash?: string;
+    isMarketingEmailOn: boolean;
+  }) {
     if (!params) {
       return;
     }
@@ -64,6 +73,7 @@ export class User implements IUser {
     if (params.passwordHash) {
       this.passwordHash = params.passwordHash;
     }
+    this.isMarketingEmailOn = params.isMarketingEmailOn;
   }
 
   async comparePassword(password: string): Promise<boolean> {
