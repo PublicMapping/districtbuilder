@@ -355,6 +355,7 @@ variable "typeorm_health_check_timeout" {
 
 variable "jwt_secret" {
   type = string
+  sensitive = true
 }
 
 variable "jwt_expiration_in_ms" {
@@ -367,10 +368,12 @@ variable "client_url" {
 
 variable "rollbar_access_token" {
   type = string
+  sensitive = true
 }
 
 variable "plan_score_api_token" {
   type = string
+  sensitive = true
 }
 
 variable "app_port" {
@@ -400,4 +403,5 @@ variable "aws_lambda_service_role_policy_arn" {
 
 variable "slack_bot_webhook_url" {
   type = string
+  sensitive = true
 }
