@@ -66,6 +66,13 @@ export class Project implements IProject {
   })
   districts?: DistrictsGeoJSON;
 
+  @Column({
+    type: "jsonb",
+    name: "simplified_districts",
+    nullable: true
+  })
+  simplifiedDistricts?: DistrictsGeoJSON;
+
   @ManyToOne(() => User, { nullable: false, eager: true })
   @JoinColumn({ name: "user_id" })
   user: User;
