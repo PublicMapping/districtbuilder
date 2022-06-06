@@ -20,6 +20,8 @@ export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictPropertie
   readonly metadata?: ProjectProperties;
 };
 
+export type SimplifiedDistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictProperties>;
+
 export interface DynamicProjectData {
   readonly project: IProject;
   readonly geojson: DistrictsGeoJSON;

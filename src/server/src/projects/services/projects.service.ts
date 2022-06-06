@@ -6,39 +6,12 @@ import { Repository, SelectQueryBuilder, DeepPartial } from "typeorm";
 import { Project } from "../entities/project.entity";
 import { ProjectVisibility } from "../../../../shared/constants";
 import { paginate, Pagination, IPaginationOptions } from "nestjs-typeorm-paginate";
-import { ProjectTemplate } from "../../project-templates/entities/project-template.entity";
 
 type AllProjectsOptions = IPaginationOptions & {
   readonly completed?: boolean;
   readonly region?: string;
   readonly userId?: string;
 };
-
-export function selectSimplifiedDistricts<P extends Project | ProjectTemplate>(
-  builder: SelectQueryBuilder<P>
-): SelectQueryBuilder<P> {
-  // Replace the districts column with a simplified one to save on response size
-  //
-  // Note that we're doing a bit of a trick here to replace the contents of the districts column,
-  // we need to select it first, and then give an alias that will override that selection
-  return builder.addSelect("project.districts").addSelect(
-    `CASE
-       WHEN districts IS NULL THEN NULL
-       ELSE JSON_BUILD_OBJECT(
-         'type', 'FeatureCollection',
-         'features', ARRAY(
-           SELECT JSON_BUILD_OBJECT(
-             'type', 'Feature',
-             'properties', feature->'properties',
-             'geometry', ST_AsGeoJSON(ST_Simplify(ST_GeomFromGeoJSON(feature->'geometry'), 0.001))::json
-           )
-           FROM jsonb_array_elements(districts->'features') feature
-         )
-       )
-     END`,
-    "project_districts"
-  );
-}
 
 @Injectable()
 export class ProjectsService extends TypeOrmCrudService<Project> {
@@ -52,29 +25,28 @@ export class ProjectsService extends TypeOrmCrudService<Project> {
   }
 
   getProjectsBase(): SelectQueryBuilder<Project> {
-    return selectSimplifiedDistricts(
-      this.repo
-        .createQueryBuilder("project")
-        .innerJoin("project.regionConfig", "regionConfig")
-        .innerJoin("project.user", "user")
-        .leftJoin("project.chamber", "chamber")
-        .select([
-          "project.id",
-          "project.name",
-          "project.numberOfDistricts",
-          "project.updatedDt",
-          "project.createdDt",
-          "project.submittedDt",
-          "chamber.name",
-          "regionConfig.name",
-          "regionConfig.id",
-          "regionConfig.archived",
-          "regionConfig.s3URI",
-          "user.id",
-          "user.name"
-        ])
-        .orderBy("project.updatedDt", "DESC")
-    );
+    return this.repo
+      .createQueryBuilder("project")
+      .innerJoin("project.regionConfig", "regionConfig")
+      .innerJoin("project.user", "user")
+      .leftJoin("project.chamber", "chamber")
+      .select([
+        "project.id",
+        "project.name",
+        "project.numberOfDistricts",
+        "project.updatedDt",
+        "project.createdDt",
+        "project.submittedDt",
+        "project.simplifiedDistricts",
+        "chamber.name",
+        "regionConfig.name",
+        "regionConfig.id",
+        "regionConfig.archived",
+        "regionConfig.s3URI",
+        "user.id",
+        "user.name"
+      ])
+      .orderBy("project.updatedDt", "DESC");
   }
 
   async findAllPublishedProjectsPaginated(

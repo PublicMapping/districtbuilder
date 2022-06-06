@@ -57,7 +57,7 @@ import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.g
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 import { CreateProjectDto } from "../entities/create-project.dto";
-import { DistrictsGeoJSON, Project } from "../entities/project.entity";
+import { DistrictsGeoJSON, Project, SimplifiedDistrictsGeoJSON } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
 import { OrganizationsService } from "../../organizations/services/organizations.service";
 
@@ -74,6 +74,10 @@ import { ReferenceLayersService } from "../../reference-layers/services/referenc
 import { ChambersService } from "../../chambers/services/chambers";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { ReferenceLayer } from "../../reference-layers/entities/reference-layer.entity";
+
+import { simplify } from "simplify-geojson";
+import bbox from "@turf/bbox";
+import { BBox } from "@turf/helpers";
 
 function validateNumberOfMembers(
   dto: CreateProjectDto | UpdateProjectDto,
@@ -648,6 +652,30 @@ export class ProjectsController implements CrudController<Project> {
     return this.service.findAllUserProjectsPaginated(userId, { page, limit });
   }
 
+  private simplifyDistricts(
+    districts: DistrictsGeoJSON | undefined
+  ): SimplifiedDistrictsGeoJSON | undefined {
+    function computeBBoxArea(districts: DistrictsGeoJSON): number {
+      const box: BBox = bbox(districts);
+      return (box[2] - box[0]) * (box[3] - box[1]);
+    }
+
+    const boxArea = districts && computeBBoxArea(districts);
+    // We only use the districts column for displaying a mini-map outside of the main Project Screen
+    // so we can simplify the geometries to save on size and improve performance
+    districts &&
+      districts.features.forEach(districtFeature => {
+        const tolerance = boxArea && boxArea > 1 ? 0.005 : 0.001;
+        try {
+          simplify(districtFeature, tolerance);
+        } catch (e) {
+          this.logger.debug(`Could not simplify district ${districtFeature.id}: ${e}`);
+        }
+      });
+
+    return districts;
+  }
+
   @Override()
   @UseGuards(JwtAuthGuard)
   async updateOne(
@@ -691,6 +719,18 @@ export class ProjectsController implements CrudController<Project> {
     }
 
     // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
+    const updatedDistrictsGeoJSON =
+      existingProject &&
+      dto.districtsDefinition &&
+      (!existingProject.districts ||
+        existingProject.regionConfigVersion !== existingProject.regionConfig.version ||
+        !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
+        ? await this.getGeojson({
+            ...existingProject,
+            districtsDefinition: dto.districtsDefinition
+          })
+        : undefined;
+
     const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
@@ -699,13 +739,11 @@ export class ProjectsController implements CrudController<Project> {
         !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
         ? {
             ...dto,
-            districts: await this.getGeojson({
-              ...existingProject,
-              districtsDefinition: dto.districtsDefinition
-            }),
+            districts: updatedDistrictsGeoJSON,
             regionConfigVersion: existingProject.regionConfig.version,
             // PlanScore link is no longer valid when districts are changed
-            planscoreUrl: ""
+            planscoreUrl: "",
+            simplifiedDistricts: this.simplifyDistricts(updatedDistrictsGeoJSON)
           }
         : dto;
 
@@ -819,9 +857,14 @@ export class ProjectsController implements CrudController<Project> {
       chamber: template?.chamber || chamber,
       regionConfig
     });
+    const simplifiedDistricts = this.simplifyDistricts(districts);
 
     try {
-      const project = await this.service.createOne(req, { ...data, districts });
+      const project = await this.service.createOne(req, {
+        ...data,
+        districts,
+        simplifiedDistricts
+      });
       // Copy any reference layers associated with the template to the project
       if (template) {
         await this.copyReferenceLayers(project, template.referenceLayers);

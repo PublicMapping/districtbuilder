@@ -22,6 +22,8 @@ export type DistrictsGeoJSON = FeatureCollection<MultiPolygon, DistrictPropertie
   readonly metadata?: ProjectProperties;
 };
 
+export type SimplifiedDistrictsGeoJSON = FeatureCollection<MultiPolygon>;
+
 @Entity()
 @Index("IDX_PUBLISHED_PROJECTS", { synchronize: false })
 @Index(["updatedDt", "user"])
@@ -71,7 +73,7 @@ export class Project implements IProject {
     name: "simplified_districts",
     nullable: true
   })
-  simplifiedDistricts?: DistrictsGeoJSON;
+  simplifiedDistricts?: SimplifiedDistrictsGeoJSON;
 
   @ManyToOne(() => User, { nullable: false, eager: true })
   @JoinColumn({ name: "user_id" })
