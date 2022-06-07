@@ -7,6 +7,7 @@ import _ from "lodash";
 import { connectionOptions } from "../lib/dbUtils";
 import { RegionConfig } from "../../../server/src/region-configs/entities/region-config.entity";
 import { Project } from "../../../server/src/projects/entities/project.entity";
+import { simplifyDistricts } from "../../../server/src/projects/controllers/projects.controller";
 import { TopologyService } from "../../../server/src/districts/services/topology.service";
 import { WorkerPoolService } from "../../../server/src/districts/services/worker-pool.service";
 import { User } from "../../../server/src/users/entities/user.entity";
@@ -37,6 +38,8 @@ export default class CreateRandomProjects extends Command {
     const regionConfigRepo = connection.getRepository(RegionConfig);
     const projectRepo = connection.getRepository(Project);
     const userRepo = connection.getRepository(User);
+
+    const boundSimplifyDistricts = simplifyDistricts.bind(this);
 
     const regions = await regionConfigRepo.find(
       args.region === "all"
@@ -97,6 +100,7 @@ export default class CreateRandomProjects extends Command {
       project.regionConfig = region;
       project.districtsDefinition = districtsDefinition;
       project.districts = districts;
+      project.simplifiedDistricts = boundSimplifyDistricts(districts);
       project.lockedDistricts = lockedDistricts;
       project.numberOfMembers = numberOfMembers;
       project.populationDeviation = 5;

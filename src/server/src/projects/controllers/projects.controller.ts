@@ -79,6 +79,32 @@ import { simplify } from "simplify-geojson";
 import bbox from "@turf/bbox";
 import { BBox } from "@turf/helpers";
 
+// TODO #179: Move to shared/entities
+export function simplifyDistricts(
+  this: any,
+  districts: DistrictsGeoJSON | undefined
+): SimplifiedDistrictsGeoJSON | undefined {
+  function computeBBoxArea(districts: DistrictsGeoJSON): number {
+    const box: BBox = bbox(districts);
+    return (box[2] - box[0]) * (box[3] - box[1]);
+  }
+
+  const boxArea = districts && computeBBoxArea(districts);
+  // We only use the districts column for displaying a mini-map outside of the main Project Screen
+  // so we can simplify the geometries to save on size and improve performance
+  districts &&
+    districts.features.forEach(districtFeature => {
+      const tolerance = boxArea && boxArea > 1 ? 0.005 : 0.001;
+      try {
+        simplify(districtFeature, tolerance);
+      } catch (e) {
+        this.logger.debug(`Could not simplify district ${districtFeature.id}: ${e}`);
+      }
+    });
+
+  return districts;
+}
+
 function validateNumberOfMembers(
   dto: CreateProjectDto | UpdateProjectDto,
   numberOfDistricts: number
@@ -652,30 +678,6 @@ export class ProjectsController implements CrudController<Project> {
     return this.service.findAllUserProjectsPaginated(userId, { page, limit });
   }
 
-  private simplifyDistricts(
-    districts: DistrictsGeoJSON | undefined
-  ): SimplifiedDistrictsGeoJSON | undefined {
-    function computeBBoxArea(districts: DistrictsGeoJSON): number {
-      const box: BBox = bbox(districts);
-      return (box[2] - box[0]) * (box[3] - box[1]);
-    }
-
-    const boxArea = districts && computeBBoxArea(districts);
-    // We only use the districts column for displaying a mini-map outside of the main Project Screen
-    // so we can simplify the geometries to save on size and improve performance
-    districts &&
-      districts.features.forEach(districtFeature => {
-        const tolerance = boxArea && boxArea > 1 ? 0.005 : 0.001;
-        try {
-          simplify(districtFeature, tolerance);
-        } catch (e) {
-          this.logger.debug(`Could not simplify district ${districtFeature.id}: ${e}`);
-        }
-      });
-
-    return districts;
-  }
-
   @Override()
   @UseGuards(JwtAuthGuard)
   async updateOne(
@@ -731,6 +733,8 @@ export class ProjectsController implements CrudController<Project> {
           })
         : undefined;
 
+    const boundSimplifyDistricts = simplifyDistricts.bind(this);
+
     const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
@@ -743,7 +747,7 @@ export class ProjectsController implements CrudController<Project> {
             regionConfigVersion: existingProject.regionConfig.version,
             // PlanScore link is no longer valid when districts are changed
             planscoreUrl: "",
-            simplifiedDistricts: this.simplifyDistricts(updatedDistrictsGeoJSON)
+            simplifiedDistricts: boundSimplifyDistricts(updatedDistrictsGeoJSON)
           }
         : dto;
 
@@ -772,6 +776,8 @@ export class ProjectsController implements CrudController<Project> {
     if (dto.numberOfDistricts) {
       validateNumberOfMembers(dto, dto.numberOfDistricts);
     }
+
+    const boundSimplifyDistricts = simplifyDistricts.bind(this);
 
     const template = dto.projectTemplate
       ? await this.templateService.findOne(
@@ -857,7 +863,7 @@ export class ProjectsController implements CrudController<Project> {
       chamber: template?.chamber || chamber,
       regionConfig
     });
-    const simplifiedDistricts = this.simplifyDistricts(districts);
+    const simplifiedDistricts = boundSimplifyDistricts(districts);
 
     try {
       const project = await this.service.createOne(req, {
