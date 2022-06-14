@@ -16,6 +16,7 @@ import OrganizationAdminScreen from "./screens/OrganizationAdminScreen";
 import ProjectScreen from "./screens/ProjectScreen";
 import RegistrationScreen from "./screens/RegistrationScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
+import UserAccountScreen from "./screens/UserAccountScreen";
 import theme from "./theme";
 
 import "./App.css";
@@ -69,7 +70,7 @@ const App = () => (
           <Route path="/login" exact={true} component={LoginScreen} />
           <Route path="/maps" exact={true} component={PublishedMapsListScreen} />
           <Route path="/register" exact={true} component={RegistrationScreen} />
-          <Route path="/forgot-password" exact={true} component={ForgotPasswordScreen} />
+          <Route path="/forgot-password/:email?" exact={true} component={ForgotPasswordScreen} />
           <Route path="/activate/:token" exact={true} component={ActivateAccountScreen} />
           <Route
             path="/activate/:token/:organizationSlug"
@@ -85,6 +86,9 @@ const App = () => (
           </PrivateRoute>
           <PrivateRoute path="/import-project" exact={true}>
             <ImportProjectScreen />
+          </PrivateRoute>
+          <PrivateRoute path="/user-account" exact={true}>
+            <UserAccountScreen />
           </PrivateRoute>
         </Switch>
       </QueryParamProvider>
