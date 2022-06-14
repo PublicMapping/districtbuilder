@@ -27,7 +27,7 @@ export interface IUser {
   readonly isMarketingEmailOn: boolean;
 }
 
-export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
+export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour" | "isMarketingEmailOn">;
 
 export type OrganizationSlug = string;
 

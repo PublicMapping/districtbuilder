@@ -9,4 +9,7 @@ export class UpdateUserDataDto implements UpdateUserData {
   @IsBoolean()
   @IsOptional()
   hasSeenTour: boolean;
+  @IsBoolean()
+  @IsOptional()
+  isMarketingEmailOn: boolean;
 }
