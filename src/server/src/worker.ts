@@ -36,7 +36,7 @@ import { DistrictsGeoJSON, SimplifiedDistrictsGeoJSON } from "./projects/entitie
 import { RegionConfig } from "./region-configs/entities/region-config.entity";
 import { User } from "./users/entities/user.entity";
 
-import { simplify } from "simplify-geojson";
+import simplify from "simplify-geojson";
 import bbox from "@turf/bbox";
 import { BBox } from "@turf/helpers";
 
@@ -228,24 +228,32 @@ function getHierarchyDefinition(staticMetadata: IStaticMetadata, topology: Topol
 
 // Simplify the geometries to save on size and improve performance
 // when displaying districts outside of the main Project Screen (mini-maps)
-export function simplifyDistricts(districts: DistrictsGeoJSON): SimplifiedDistrictsGeoJSON {
+export function simplifyDistricts(
+  districts: DistrictsGeoJSON,
+  region: RegionConfig
+): SimplifiedDistrictsGeoJSON {
   function computeBBoxArea(districts: DistrictsGeoJSON): number {
     const box: BBox = bbox(districts);
     return (box[2] - box[0]) * (box[3] - box[1]);
   }
 
   const boxArea = districts && computeBBoxArea(districts);
-  districts &&
-    districts.features.forEach(districtFeature => {
-      const tolerance = boxArea && boxArea > 1 ? 0.005 : 0.001;
+  const tolerance = boxArea && boxArea > 1 ? 0.005 : 0.001;
+  const simplifiedDistricts = districts && {
+    ...districts,
+    features: districts.features.map(districtFeature => {
       try {
-        simplify(districtFeature, tolerance);
+        return simplify(districtFeature, tolerance);
       } catch (e) {
-        logger.debug(`Could not simplify district ${districtFeature.id}: ${e}`);
+        logger.debug(
+          `Could not simplify district ${districtFeature.id} for region ${region.id}: ${e}`
+        );
       }
-    });
+      return districtFeature;
+    })
+  };
 
-  return districts;
+  return simplifiedDistricts;
 }
 
 /*
@@ -368,7 +376,7 @@ async function merge({
   };
   return {
     districts: districts,
-    simplifiedDistricts: simplifyDistricts(districts)
+    simplifiedDistricts: simplifyDistricts(districts, regionConfig)
   };
 }
 

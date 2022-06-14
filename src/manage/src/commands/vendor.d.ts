@@ -22,5 +22,5 @@ declare module "geojson2shp" {
 declare module "simplify-geojson" {
   import { GeoJSON } from "geojson";
 
-  export function simplify(feature: GeoJSON, tolerance?: number): void;
+  export default function simplify<G extends GeoJSON>(feature: G, tolerance?: number): G;
 }
