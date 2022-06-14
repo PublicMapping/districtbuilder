@@ -32,9 +32,13 @@ import { getAllBaseIndices, getDemographics, getVoting } from "../../shared/func
 import { Chamber } from "./chambers/entities/chamber.entity";
 
 import { formatBytes, getTopology } from "./common/functions";
-import { DistrictsGeoJSON } from "./projects/entities/project.entity";
+import { DistrictsGeoJSON, SimplifiedDistrictsGeoJSON } from "./projects/entities/project.entity";
 import { RegionConfig } from "./region-configs/entities/region-config.entity";
 import { User } from "./users/entities/user.entity";
+
+import { simplify } from "simplify-geojson";
+import bbox from "@turf/bbox";
+import { BBox } from "@turf/helpers";
 
 interface GeoUnitPolygonHierarchy {
   geom: Polygon | MultiPolygon;
@@ -222,6 +226,28 @@ function getHierarchyDefinition(staticMetadata: IStaticMetadata, topology: Topol
   return groupForHierarchy(topology, definition);
 }
 
+// Simplify the geometries to save on size and improve performance
+// when displaying districts outside of the main Project Screen (mini-maps)
+export function simplifyDistricts(districts: DistrictsGeoJSON): SimplifiedDistrictsGeoJSON {
+  function computeBBoxArea(districts: DistrictsGeoJSON): number {
+    const box: BBox = bbox(districts);
+    return (box[2] - box[0]) * (box[3] - box[1]);
+  }
+
+  const boxArea = districts && computeBBoxArea(districts);
+  districts &&
+    districts.features.forEach(districtFeature => {
+      const tolerance = boxArea && boxArea > 1 ? 0.005 : 0.001;
+      try {
+        simplify(districtFeature, tolerance);
+      } catch (e) {
+        logger.debug(`Could not simplify district ${districtFeature.id}: ${e}`);
+      }
+    });
+
+  return districts;
+}
+
 /*
  * Performs a merger of the specified districts into a GeoJSON collection,
  * or returns null if the district definition is invalid
@@ -247,7 +273,10 @@ async function merge({
   geoLevels,
   demographics,
   voting
-}: MergeArgs): Promise<DistrictsGeoJSON | null> {
+}: MergeArgs): Promise<{
+  readonly districts: DistrictsGeoJSON;
+  readonly simplifiedDistricts: SimplifiedDistrictsGeoJSON;
+} | null> {
   const [topology, hierarchy] = await getTopologyFromCache(regionConfig, staticMetadata);
 
   // mutableDistrictGeoms contains the individual geometries prior to being merged
@@ -309,7 +338,7 @@ async function merge({
     type: "GeometryCollection",
     geometries: merged
   });
-  return {
+  const districts = {
     ...featureCollection,
     // FeatureCollection objects cannot have 'properties' (RFC7964 Sec 7),
     // but they can have other unrecognized fields (Sec 6.1)
@@ -336,6 +365,10 @@ async function merge({
         }
       };
     })
+  };
+  return {
+    districts: districts,
+    simplifiedDistricts: simplifyDistricts(districts)
   };
 }
 

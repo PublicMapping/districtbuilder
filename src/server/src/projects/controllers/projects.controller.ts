@@ -75,36 +75,6 @@ import { ChambersService } from "../../chambers/services/chambers";
 import { Chamber } from "../../chambers/entities/chamber.entity";
 import { ReferenceLayer } from "../../reference-layers/entities/reference-layer.entity";
 
-import { simplify } from "simplify-geojson";
-import bbox from "@turf/bbox";
-import { BBox } from "@turf/helpers";
-
-// TODO #179: Move to shared/entities
-export function simplifyDistricts(
-  this: any,
-  districts: DistrictsGeoJSON | undefined
-): SimplifiedDistrictsGeoJSON | undefined {
-  function computeBBoxArea(districts: DistrictsGeoJSON): number {
-    const box: BBox = bbox(districts);
-    return (box[2] - box[0]) * (box[3] - box[1]);
-  }
-
-  const boxArea = districts && computeBBoxArea(districts);
-  // We only use the districts column for displaying a mini-map outside of the main Project Screen
-  // so we can simplify the geometries to save on size and improve performance
-  districts &&
-    districts.features.forEach(districtFeature => {
-      const tolerance = boxArea && boxArea > 1 ? 0.005 : 0.001;
-      try {
-        simplify(districtFeature, tolerance);
-      } catch (e) {
-        this.logger.debug(`Could not simplify district ${districtFeature.id}: ${e}`);
-      }
-    });
-
-  return districts;
-}
-
 function validateNumberOfMembers(
   dto: CreateProjectDto | UpdateProjectDto,
   numberOfDistricts: number
@@ -400,7 +370,10 @@ export class ProjectsController implements CrudController<Project> {
     readonly user: User;
     readonly chamber?: Chamber;
     readonly regionConfig: RegionConfig;
-  }): Promise<DistrictsGeoJSON> {
+  }): Promise<{
+    readonly districts: DistrictsGeoJSON;
+    readonly simplifiedDistricts: SimplifiedDistrictsGeoJSON;
+  }> {
     const geoCollection = await this.getGeoUnitTopology(regionConfig);
     const geojson = await geoCollection.merge({
       districtsDefinition,
@@ -439,12 +412,13 @@ export class ProjectsController implements CrudController<Project> {
       !project.districts ||
       project.regionConfigVersion.getTime() !== project.regionConfig.version.getTime()
     ) {
-      const districts = await this.getGeojson(project);
+      const { districts, simplifiedDistricts } = await this.getGeojson(project);
 
       // Note we don't wait for save to return, and we throw away it's result
       void this.service.save({
         ...project,
         districts,
+        simplifiedDistricts,
         regionConfigVersion: project.regionConfig.version
       });
 
@@ -720,21 +694,6 @@ export class ProjectsController implements CrudController<Project> {
       } as Errors<UpdateProjectDto>);
     }
 
-    // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
-    const updatedDistrictsGeoJSON =
-      existingProject &&
-      dto.districtsDefinition &&
-      (!existingProject.districts ||
-        existingProject.regionConfigVersion !== existingProject.regionConfig.version ||
-        !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
-        ? await this.getGeojson({
-            ...existingProject,
-            districtsDefinition: dto.districtsDefinition
-          })
-        : undefined;
-
-    const boundSimplifyDistricts = simplifyDistricts.bind(this);
-
     const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
@@ -743,11 +702,13 @@ export class ProjectsController implements CrudController<Project> {
         !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
         ? {
             ...dto,
-            districts: updatedDistrictsGeoJSON,
+            ...(await this.getGeojson({
+              ...existingProject,
+              districtsDefinition: dto.districtsDefinition
+            })),
             regionConfigVersion: existingProject.regionConfig.version,
             // PlanScore link is no longer valid when districts are changed
-            planscoreUrl: "",
-            simplifiedDistricts: boundSimplifyDistricts(updatedDistrictsGeoJSON)
+            planscoreUrl: ""
           }
         : dto;
 
@@ -776,8 +737,6 @@ export class ProjectsController implements CrudController<Project> {
     if (dto.numberOfDistricts) {
       validateNumberOfMembers(dto, dto.numberOfDistricts);
     }
-
-    const boundSimplifyDistricts = simplifyDistricts.bind(this);
 
     const template = dto.projectTemplate
       ? await this.templateService.findOne(
@@ -856,20 +815,17 @@ export class ProjectsController implements CrudController<Project> {
       regionConfig,
       req
     );
-    const districts = await this.getGeojson({
-      numberOfDistricts: formdata.numberOfDistricts,
-      districtsDefinition: data.districtsDefinition,
-      user,
-      chamber: template?.chamber || chamber,
-      regionConfig
-    });
-    const simplifiedDistricts = boundSimplifyDistricts(districts);
 
     try {
       const project = await this.service.createOne(req, {
         ...data,
-        districts,
-        simplifiedDistricts
+        ...(await this.getGeojson({
+          numberOfDistricts: formdata.numberOfDistricts,
+          districtsDefinition: data.districtsDefinition,
+          user,
+          chamber: template?.chamber || chamber,
+          regionConfig
+        }))
       });
       // Copy any reference layers associated with the template to the project
       if (template) {
