@@ -176,7 +176,7 @@ const UserAccountScreen = () => {
         const user = await patchUser({ name, isMarketingEmailOn });
         setUpdateUserResource({ data, resource: user });
         dispatch(userFetch());
-      } catch (errors: any) {
+      } catch {
         showActionFailedToast();
       }
     }
