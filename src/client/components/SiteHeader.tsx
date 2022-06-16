@@ -23,6 +23,7 @@ interface Props {
 }
 
 enum UserMenuKeys {
+  Account = "account",
   Logout = "logout"
 }
 
@@ -235,6 +236,11 @@ const SiteHeader = ({ user }: Props) => {
               </MenuButton>
               <Menu sx={style.menu}>
                 <ul sx={style.menuList}>
+                  <li key={UserMenuKeys.Account}>
+                    <MenuItem value={UserMenuKeys.Account} sx={style.menuListItem}>
+                      Account
+                    </MenuItem>
+                  </li>
                   <li key={UserMenuKeys.Logout}>
                     <MenuItem value={UserMenuKeys.Logout} sx={style.menuListItem}>
                       Logout
@@ -255,6 +261,10 @@ const handleSelection = (history: H.History) => (key: string | number) => {
   if (key === UserMenuKeys.Logout) {
     logout();
     history.push("/login");
+  }
+
+  if (key === UserMenuKeys.Account) {
+    history.push("/user-account");
   }
 };
 

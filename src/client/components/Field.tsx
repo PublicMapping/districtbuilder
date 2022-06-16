@@ -1,6 +1,17 @@
 /** @jsx jsx */
 import React, { RefAttributes } from "react";
-import { Box, Flex, Input, InputProps, jsx, Label, Select, SelectProps, Themed } from "theme-ui";
+import {
+  Box,
+  Flex,
+  Input,
+  InputProps,
+  jsx,
+  Label,
+  Select,
+  SelectProps,
+  Themed,
+  ThemeUIStyleObject
+} from "theme-ui";
 
 import { validate as validatePassword } from "../../shared/password-validator";
 import { ErrorMap } from "../../shared/types";
@@ -47,6 +58,8 @@ interface InputFieldProps<D, R> extends FieldProps<D, R> {
   readonly description?: string | React.ReactElement;
   readonly defaultValue?: number | string;
   readonly inputProps: RefAttributes<HTMLInputElement> & InputProps;
+  readonly disabled?: boolean;
+  readonly style?: ThemeUIStyleObject;
 }
 
 export function InputField<D, R>({
@@ -55,7 +68,9 @@ export function InputField<D, R>({
   description,
   defaultValue,
   resource,
-  inputProps
+  inputProps,
+  disabled,
+  style
 }: InputFieldProps<D, R>): React.ReactElement {
   return (
     <Field field={field} resource={resource}>
@@ -74,7 +89,15 @@ export function InputField<D, R>({
             id={field.toString()}
             defaultValue={defaultValue || undefined}
             aria-describedby={description ? `description-${field.toString()}` : undefined}
-            sx={{ borderColor: hasErrors ? "warning" : undefined }}
+            sx={{
+              ...(style !== undefined ? style : {}),
+              borderColor: hasErrors ? "warning" : undefined,
+              "&[disabled]": {
+                cursor: "not-allowed",
+                background: "gray.2"
+              }
+            }}
+            disabled={disabled === undefined ? false : disabled}
           />
         </React.Fragment>
       )}
