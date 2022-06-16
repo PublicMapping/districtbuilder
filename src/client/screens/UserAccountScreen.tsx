@@ -297,7 +297,7 @@ const UserAccountScreen = () => {
                       rel="noopener noreferrer"
                       sx={{ color: "blue.5" }}
                     >
-                      districtbuilder@azavea.com
+                      {accountDeleteEmail}
                     </a>{" "}
                     with your name and email. Deletion of your account will result in the permanent
                     destruction of all your maps.
