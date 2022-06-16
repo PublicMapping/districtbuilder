@@ -26,6 +26,7 @@ import { IUser } from "../../shared/entities";
 import RegisterTermsText from "../components/RegisterTermsText";
 import FormError from "../components/FormError";
 import { patchUser } from "../api";
+import { showActionFailedToast } from "../functions";
 
 const style: Record<string, ThemeUIStyleObject> = {
   page: {
@@ -95,10 +96,7 @@ interface InvalidUserForm extends UserForm {
 const accountDeleteEmail = "districtbuilder@azavea.com";
 
 const validate = (form: UserForm) =>
-  form.name.trim() !== "" &&
-  form.email.trim() !== "" &&
-  form.isMarketingEmailOn !== null &&
-  form.isMarketingEmailOn !== undefined
+  form.name.trim() !== "" && form.email.trim() !== ""
     ? ({ ...form, valid: true } as ValidUserForm)
     : ({ ...form, valid: false } as InvalidUserForm);
 
@@ -112,12 +110,11 @@ const UserAccountScreen = () => {
       isMarketingEmailOn: false
     }
   });
-  const [dirty, setDirty] = useState<boolean>(false);
   const { data } = updateUserResource;
 
   useEffect(() => {
     dispatch(userFetch());
-  }, [dirty]);
+  }, []);
 
   useEffect(() => {
     if ("resource" in user) {
@@ -178,9 +175,9 @@ const UserAccountScreen = () => {
       try {
         const user = await patchUser({ name, isMarketingEmailOn });
         setUpdateUserResource({ data, resource: user });
-        setDirty(!dirty);
+        dispatch(userFetch());
       } catch (errors: any) {
-        setUpdateUserResource({ data, errors });
+        showActionFailedToast();
       }
     }
   };
@@ -278,7 +275,7 @@ const UserAccountScreen = () => {
                   <Text>Forgot your password?</Text>{" "}
                   <Themed.a
                     as={RouterLink}
-                    to={{ pathname: `/forgot-password/${data.email}` }}
+                    to={{ pathname: `/forgot-password/`, state: { email: data.email } }}
                     sx={{ cursor: "pointer", color: "blue.5" }}
                   >
                     Reset password

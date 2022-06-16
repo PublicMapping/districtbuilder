@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import React, { useState } from "react";
-import { Link, useLocation, RouteComponentProps } from "react-router-dom";
-import useRouter from "use-react-router";
+import { Link, useLocation } from "react-router-dom";
 import { Box, Button, Card, Flex, Heading, jsx, Themed } from "theme-ui";
 import { ReactComponent as Logo } from "../media/logos/logo.svg";
 
@@ -19,19 +18,13 @@ interface ForgotPasswordForm {
   readonly email: string;
 }
 
-interface RouteProps {
-  email: string | undefined;
+export interface ResetPasswordLocationState {
+  readonly email?: string;
 }
 
-type Route = RouteComponentProps<RouteProps>;
-
 const ForgotPasswordScreen = () => {
-  const location = useLocation<AuthLocationState>();
-  const {
-    match: {
-      params: { email }
-    }
-  }: Route = useRouter();
+  const location = useLocation<(AuthLocationState & ResetPasswordLocationState) | undefined>();
+  const { email } = location.state || {};
   const [emailResource, setEmailResource] = useState<WriteResource<ForgotPasswordForm, void>>({
     data: {
       email: email === undefined ? "" : email
