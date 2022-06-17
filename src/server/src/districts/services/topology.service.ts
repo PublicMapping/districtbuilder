@@ -38,50 +38,34 @@ export class TopologyService {
     private readonly workerService: WorkerPoolService
   ) {}
 
-  public loadLayers() {
-    void this.repo
-      .find({
-        where: { archived: false },
-        order: { layerSizeInBytes: "DESC" }
-      })
-      .then(regionConfigs => {
-        const getLayers = async () => {
+  public async loadLayers() {
+    const regionConfigs = await this.repo.find({
+      where: { archived: false },
+      order: { layerSizeInBytes: "DESC" }
+    });
+    // eslint-disable-next-line functional/immutable-data
+    this._layers = regionConfigs.reduce(
+      (layers, regionConfig) => ({
+        ...layers,
+        [regionConfig.s3URI]: null
+      }),
+      {}
+    );
+    const totalSize = _.sum(regionConfigs.map(r => r.layerSizeInBytes));
+    // If all regions will fit, load largest states first, to reduce chances for cache fragmentation
+    // Otherwise load largest last so they won't get evicted
+    const sortedRegions = totalSize < cacheSize ? regionConfigs : regionConfigs.slice().reverse();
+    await Promise.all(
+      sortedRegions.map(region =>
+        // Load a number of regions in parallel, adding another as each one completes
+        this.downloadQueue.add(() => {
+          const promise = this.fetchLayer(region);
           // eslint-disable-next-line functional/immutable-data
-          this._layers = regionConfigs.reduce(
-            (layers, regionConfig) => ({
-              ...layers,
-              [regionConfig.s3URI]: null
-            }),
-            {}
-          );
-
-          const totalSize = _.sum(regionConfigs.map(r => r.layerSizeInBytes));
-          // If all regions will fit, load largest states first, to reduce chances for cache fragmentation
-          // Otherwise load largest last so they won't get evicted
-          const sortedRegions =
-            totalSize < cacheSize ? regionConfigs : regionConfigs.slice().reverse();
-
-          await Promise.all(
-            sortedRegions.map(region =>
-              // Load a number of regions in parallel, adding another as each one completes
-              this.downloadQueue.add(() => {
-                const promise = this.fetchLayer(region);
-                // eslint-disable-next-line functional/immutable-data
-                this._layers = { ...this._layers, [region.s3URI]: promise };
-                return promise;
-              })
-            )
-          );
-        };
-        void getLayers();
-      });
-  }
-
-  public async layersLoaded(): Promise<void> {
-    while (!this._layers || Object.values(this._layers).filter(l => l === null).length > 0) {
-      await new Promise(r => setTimeout(r, 1000));
-    }
-    await Promise.all(Object.values(this._layers));
+          this._layers = { ...this._layers, [region.s3URI]: promise };
+          return promise;
+        })
+      )
+    );
   }
 
   public layers(): Readonly<Layers> | undefined {
