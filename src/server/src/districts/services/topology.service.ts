@@ -77,6 +77,13 @@ export class TopologyService {
       });
   }
 
+  public async layersLoaded(): Promise<void> {
+    while (!this._layers || Object.values(this._layers).filter(l => l === null).length > 0) {
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    await Promise.all(Object.values(this._layers));
+  }
+
   public layers(): Readonly<Layers> | undefined {
     return this._layers && Object.freeze({ ...this._layers });
   }
