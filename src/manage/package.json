@@ -36,13 +36,14 @@
     "topojson-server": "3.0.1",
     "topojson-simplify": "3.0.3",
     "tslib": "1.11.0",
-    "typeorm": "0.2.41"
+    "typeorm": "0.2.41",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",
     "@types/event-stream": "3.3.34",
     "@types/geojson": "7946.0.7",
-    "@types/jest": "26.0.14",
+    "@types/jest": "28.1.2",
     "@types/js-yaml": "4.0.0",
     "@types/json-stream-stringify": "^2.0.1",
     "@types/jsonstream": "0.8.30",
@@ -51,6 +52,7 @@
     "@types/recursive-readdir": "2.2.0",
     "@types/streamifier": "^0.1.0",
     "@types/topojson": "3.2.2",
+    "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "5.7.0",
     "@typescript-eslint/parser": "5.7.0",
     "aws-sdk": "2.814.0",
@@ -62,9 +64,10 @@
     "eslint-plugin-prefer-arrow": "1.2.3",
     "eslint-plugin-prettier": "4.0.0",
     "globby": "11.0.0",
-    "jest": "26.5.3",
+    "jest": "28.1.1",
+    "pg-mem": "^2.5.0",
     "prettier": "2.5.1",
-    "ts-jest": "26.4.1",
+    "ts-jest": "28.0.5",
     "ts-node": "10.4.0",
     "typescript": "4.3.5"
   },

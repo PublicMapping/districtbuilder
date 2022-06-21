@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+- Fixed create-random-projects for large number of states [#1232](https://github.com/PublicMapping/districtbuilder/pull/1232)
 
 
 ## [1.17.3]

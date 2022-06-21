@@ -37,8 +37,6 @@ export default class CreateRandomProjects extends Command {
     const regionConfigRepo = connection.getRepository(RegionConfig);
     const projectRepo = connection.getRepository(Project);
     const userRepo = connection.getRepository(User);
-    const topologyService = new TopologyService(regionConfigRepo, new WorkerPoolService());
-    topologyService.loadLayers();
 
     const regions = await regionConfigRepo.find(
       args.region === "all"
@@ -47,6 +45,9 @@ export default class CreateRandomProjects extends Command {
     );
 
     const user = await userRepo.findOneOrFail();
+
+    const topologyService = new TopologyService(regionConfigRepo, new WorkerPoolService());
+    await topologyService.loadLayers();
 
     const layers = Object.values(topologyService.layers() || {});
     this.log(`Downloading topology for ${layers.length} layers`);
@@ -61,13 +62,11 @@ export default class CreateRandomProjects extends Command {
       if (!region) {
         this.log(`No regions in database`);
         this.exit(1);
-        return;
       }
       const geoCollection = await topologyService.get(region);
       if (!geoCollection || !("merge" in geoCollection)) {
         this.log(`No active topology for region`);
         this.exit(1);
-        return;
       }
 
       const numCounties = geoCollection.districtsDefLength;
@@ -92,7 +91,6 @@ export default class CreateRandomProjects extends Command {
       if (!districts) {
         this.log(`Could not generate geojson`);
         this.exit(1);
-        return;
       }
       project.name = `Project ${i} ${region.regionCode}`;
       project.numberOfDistricts = numberOfDistricts;
@@ -111,5 +109,6 @@ export default class CreateRandomProjects extends Command {
     }
     bar.stop();
     this.log(`Projects created`);
+    this.exit(0);
   }
 }
