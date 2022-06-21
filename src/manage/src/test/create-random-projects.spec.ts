@@ -22,7 +22,11 @@ jest.mock("../../../server/src/districts/services/worker-pool.service", () => {
   return {
     WorkerPoolService: jest.fn().mockImplementation(() => ({
       getTopologyProperties: () => Promise.resolve({ county: [] }),
-      merge: () => Promise.resolve({ type: "FeatureCollection", features: [] })
+      merge: () =>
+        Promise.resolve({
+          districts: { type: "FeatureCollection", features: [] },
+          simplifiedDistricts: { type: "FeatureCollection", features: [] }
+        })
     }))
   };
 });
