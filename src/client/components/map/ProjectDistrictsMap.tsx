@@ -4,7 +4,7 @@ import MapboxGL from "mapbox-gl";
 import React, { useEffect, useRef, useState } from "react";
 
 import { IStaticMetadata, ProjectNest } from "../../../shared/entities";
-import { DistrictGeoJSON } from "../../types";
+import { DistrictGeoJSON, SimplifiedDistrictsGeoJSON } from "../../types";
 import { getDistrictColor } from "../../constants/colors";
 import { fetchMemoizedStateBbox } from "../../api";
 
@@ -42,8 +42,9 @@ const ProjectDistrictsMap = ({
     });
 
   // TODO #179 - the districts property can't be defined in the shared/entities.d.ts right now
-  // @ts-ignore
-  const districts: DistrictsGeoJSON | undefined = project.districts;
+  const districts: SimplifiedDistrictsGeoJSON | undefined =
+    // @ts-ignore
+    project.simplifiedDistricts;
 
   useEffect(() => {
     if (mapRef.current === null || bounds === null) {

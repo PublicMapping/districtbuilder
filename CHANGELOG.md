@@ -6,16 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
 
 ### Changed
 
 ### Fixed
 
+## [1.18.0]
+### Added
+ - Added email opt-in on the registration page [#1210](https://github.com/PublicMapping/districtbuilder/pull/1210)
+ - Added user account page [#1230](https://github.com/PublicMapping/districtbuilder/pull/1230)
+
+### Fixed
+- Fixed create-random-projects for large number of states [#1232](https://github.com/PublicMapping/districtbuilder/pull/1232)
+- Fix excess memory usage on projects query [#1228](https://github.com/PublicMapping/districtbuilder/pull/1228)
+
 
 ## [1.17.3]
-### Added
-
 ### Changed
  - Hid last page button on Community Maps screen [#1208](https://github.com/PublicMapping/districtbuilder/pull/1208)
 
@@ -516,7 +524,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.17.3...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.18.0...HEAD
+[1.18.0]: https://github.com/publicmapping/districtbuilder/compare/1.17.3...1.18.0
 [1.17.3]: https://github.com/publicmapping/districtbuilder/compare/1.17.2...1.17.3
 [1.17.2]: https://github.com/publicmapping/districtbuilder/compare/1.17.1...1.17.2
 [1.17.1]: https://github.com/publicmapping/districtbuilder/compare/1.17.0...1.17.1

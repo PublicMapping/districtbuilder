@@ -16,6 +16,7 @@ import OrganizationAdminScreen from "./screens/OrganizationAdminScreen";
 import ProjectScreen from "./screens/ProjectScreen";
 import RegistrationScreen from "./screens/RegistrationScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
+import UserAccountScreen from "./screens/UserAccountScreen";
 import theme from "./theme";
 
 import "./App.css";
@@ -85,6 +86,9 @@ const App = () => (
           </PrivateRoute>
           <PrivateRoute path="/import-project" exact={true}>
             <ImportProjectScreen />
+          </PrivateRoute>
+          <PrivateRoute path="/user-account" exact={true}>
+            <UserAccountScreen />
           </PrivateRoute>
         </Switch>
       </QueryParamProvider>

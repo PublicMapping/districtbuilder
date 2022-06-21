@@ -24,9 +24,10 @@ export interface IUser {
   readonly hasSeenTour: boolean;
   readonly organizations: readonly OrganizationNest[];
   readonly adminOrganizations: readonly OrganizationNest[];
+  readonly isMarketingEmailOn: boolean;
 }
 
-export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour">;
+export type UpdateUserData = Pick<IUser, "name" | "hasSeenTour" | "isMarketingEmailOn">;
 
 export type OrganizationSlug = string;
 
@@ -146,6 +147,7 @@ export interface Login {
 export interface Register extends Login {
   readonly name: string;
   readonly organization?: string;
+  readonly isMarketingEmailOn: boolean;
 }
 
 export interface ResetPassword {

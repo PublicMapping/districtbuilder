@@ -18,11 +18,16 @@ interface ForgotPasswordForm {
   readonly email: string;
 }
 
+export interface ResetPasswordLocationState {
+  readonly email?: string;
+}
+
 const ForgotPasswordScreen = () => {
-  const location = useLocation<AuthLocationState>();
+  const location = useLocation<(AuthLocationState & ResetPasswordLocationState) | undefined>();
+  const { email } = location.state || {};
   const [emailResource, setEmailResource] = useState<WriteResource<ForgotPasswordForm, void>>({
     data: {
-      email: ""
+      email: email === undefined ? "" : email
     }
   });
   const { data } = emailResource;
@@ -85,6 +90,7 @@ const ForgotPasswordScreen = () => {
                   label="Email"
                   resource={emailResource}
                   inputProps={{
+                    value: data.email,
                     required: true,
                     type: "email",
                     onChange: (e: React.ChangeEvent<HTMLInputElement>) =>

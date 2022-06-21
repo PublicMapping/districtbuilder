@@ -12,6 +12,7 @@ import { IUser } from "../../shared/entities";
 import { State } from "../reducers";
 import { AuthLocationState } from "../types";
 import { Resource } from "../resource";
+import RegisterTermsText from "../components/RegisterTermsText";
 
 interface StateProps {
   readonly user: Resource<IUser>;
@@ -64,16 +65,7 @@ const RegistrationScreen = ({ user }: StateProps) => {
               )}
             </RegisterContent>
           </Card>
-          <Box sx={{ fontSize: 1, textAlign: "center" }}>
-            Already have an account?{" "}
-            <Themed.a
-              as={Link}
-              to={{ pathname: "/login", state: location.state }}
-              sx={{ color: "primary" }}
-            >
-              Log in
-            </Themed.a>
-          </Box>
+          <RegisterTermsText />
         </React.Fragment>
       )}
     </CenteredContent>

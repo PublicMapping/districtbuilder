@@ -101,9 +101,12 @@ export async function registerUser(
   name: string,
   email: string,
   password: string,
+  isMarketingEmailOn: boolean,
   organization?: string
 ): Promise<JWT> {
-  const data = organization ? { name, email, password, organization } : { name, email, password };
+  const data = organization
+    ? { name, email, password, organization, isMarketingEmailOn }
+    : { name, email, password, isMarketingEmailOn };
   return new Promise((resolve, reject) => {
     apiAxios
       .post("/api/auth/email/register", data)

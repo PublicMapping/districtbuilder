@@ -6,7 +6,10 @@ import {
   TopologyProperties
 } from "../../../../shared/entities";
 import { Chamber } from "../../chambers/entities/chamber.entity";
-import { DistrictsGeoJSON } from "../../projects/entities/project.entity";
+import {
+  DistrictsGeoJSON,
+  SimplifiedDistrictsGeoJSON
+} from "../../projects/entities/project.entity";
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 
@@ -40,7 +43,10 @@ export class GeoUnitTopology {
     readonly user: User;
     readonly chamber?: Chamber;
     readonly regionConfig: RegionConfig;
-  }): Promise<DistrictsGeoJSON | null> {
+  }): Promise<{
+    readonly districts: DistrictsGeoJSON;
+    readonly simplifiedDistricts: SimplifiedDistrictsGeoJSON;
+  } | null> {
     return this.workerService.merge({
       districtsDefinition,
       numberOfDistricts,

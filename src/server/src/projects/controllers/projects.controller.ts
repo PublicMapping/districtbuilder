@@ -57,7 +57,7 @@ import { JwtAuthGuard, OptionalJwtAuthGuard } from "../../auth/guards/jwt-auth.g
 import { RegionConfig } from "../../region-configs/entities/region-config.entity";
 import { User } from "../../users/entities/user.entity";
 import { CreateProjectDto } from "../entities/create-project.dto";
-import { DistrictsGeoJSON, Project } from "../entities/project.entity";
+import { DistrictsGeoJSON, Project, SimplifiedDistrictsGeoJSON } from "../entities/project.entity";
 import { ProjectsService } from "../services/projects.service";
 import { OrganizationsService } from "../../organizations/services/organizations.service";
 
@@ -370,7 +370,10 @@ export class ProjectsController implements CrudController<Project> {
     readonly user: User;
     readonly chamber?: Chamber;
     readonly regionConfig: RegionConfig;
-  }): Promise<DistrictsGeoJSON> {
+  }): Promise<{
+    readonly districts: DistrictsGeoJSON;
+    readonly simplifiedDistricts: SimplifiedDistrictsGeoJSON;
+  }> {
     const geoCollection = await this.getGeoUnitTopology(regionConfig);
     const geojson = await geoCollection.merge({
       districtsDefinition,
@@ -409,12 +412,13 @@ export class ProjectsController implements CrudController<Project> {
       !project.districts ||
       project.regionConfigVersion.getTime() !== project.regionConfig.version.getTime()
     ) {
-      const districts = await this.getGeojson(project);
+      const { districts, simplifiedDistricts } = await this.getGeojson(project);
 
       // Note we don't wait for save to return, and we throw away it's result
       void this.service.save({
         ...project,
         districts,
+        simplifiedDistricts,
         regionConfigVersion: project.regionConfig.version
       });
 
@@ -690,7 +694,6 @@ export class ProjectsController implements CrudController<Project> {
       } as Errors<UpdateProjectDto>);
     }
 
-    // Update districts GeoJSON if the definition has changed, the version is out-of-date, or there is no cached value yet
     const dataWithDefinitions =
       existingProject &&
       dto.districtsDefinition &&
@@ -699,10 +702,10 @@ export class ProjectsController implements CrudController<Project> {
         !_.isEqual(dto.districtsDefinition, existingProject.districtsDefinition))
         ? {
             ...dto,
-            districts: await this.getGeojson({
+            ...(await this.getGeojson({
               ...existingProject,
               districtsDefinition: dto.districtsDefinition
-            }),
+            })),
             regionConfigVersion: existingProject.regionConfig.version,
             // PlanScore link is no longer valid when districts are changed
             planscoreUrl: ""
@@ -812,16 +815,18 @@ export class ProjectsController implements CrudController<Project> {
       regionConfig,
       req
     );
-    const districts = await this.getGeojson({
-      numberOfDistricts: formdata.numberOfDistricts,
-      districtsDefinition: data.districtsDefinition,
-      user,
-      chamber: template?.chamber || chamber,
-      regionConfig
-    });
 
     try {
-      const project = await this.service.createOne(req, { ...data, districts });
+      const project = await this.service.createOne(req, {
+        ...data,
+        ...(await this.getGeojson({
+          numberOfDistricts: formdata.numberOfDistricts,
+          districtsDefinition: data.districtsDefinition,
+          user,
+          chamber: template?.chamber || chamber,
+          regionConfig
+        }))
+      });
       // Copy any reference layers associated with the template to the project
       if (template) {
         await this.copyReferenceLayers(project, template.referenceLayers);

@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
 
   // Start TopoJSON loading
   const topologyService = app.select(DistrictsModule).get(TopologyService, { strict: true });
-  topologyService.loadLayers();
+  topologyService.loadLayers().catch(() => app.close());
 
   // Save the output of 'listen' to a variable, which is a Node http.Server
   const server = await app.listen(3005);

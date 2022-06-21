@@ -1,8 +1,9 @@
 /** @jsx jsx */
 import React, { useState } from "react";
-import { Box, Button, Flex, jsx } from "theme-ui";
+import { Box, Button, Checkbox, Flex, jsx, Label, Themed } from "theme-ui";
 import { toast } from "react-toastify";
 import { connect } from "react-redux";
+import { Link, useLocation } from "react-router-dom";
 
 import { Register, IOrganization } from "../../shared/entities";
 import { State } from "../reducers";
@@ -15,6 +16,7 @@ import { userFetch } from "../actions/user";
 import { showCopyMapModal } from "../actions/projectModals";
 import store from "../store";
 import { Resource } from "../resource";
+import { AuthLocationState } from "../types";
 
 const RegisterContent = ({
   children,
@@ -23,20 +25,21 @@ const RegisterContent = ({
   readonly children: React.ReactNode;
   readonly organization: Resource<IOrganization>;
 }) => {
-  const isFormInvalid = (form: Register): boolean =>
-    Object.values(form).some(value => {
-      return value && value.trim() === "";
-    });
-
+  const location = useLocation<AuthLocationState>();
   const [registrationResource, setRegistrationResource] = useState<WriteResource<Register, void>>({
     data: {
       email: "",
       password: "",
       name: "",
-      organization: "resource" in organization ? organization.resource.slug : undefined
+      isMarketingEmailOn: true
     }
   });
   const { data } = registrationResource;
+
+  const isFormInvalid = (form: Register): boolean =>
+    Object.values(form)
+      .filter(val => typeof val === "string")
+      .some(value => value.trim() === "");
 
   const setForm = (field: keyof Register) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setRegistrationResource({
@@ -51,17 +54,19 @@ const RegisterContent = ({
       onSubmit={(e: React.FormEvent) => {
         e.preventDefault();
         setRegistrationResource({ data, isPending: true });
-        (registrationResource.data.organization
+        ("resource" in organization
           ? registerUser(
               registrationResource.data.name,
               registrationResource.data.email,
               registrationResource.data.password,
-              registrationResource.data.organization
+              registrationResource.data.isMarketingEmailOn,
+              organization.resource.slug
             )
           : registerUser(
               registrationResource.data.name,
               registrationResource.data.email,
-              registrationResource.data.password
+              registrationResource.data.password,
+              registrationResource.data.isMarketingEmailOn
             )
         )
           .then(() => {
@@ -103,6 +108,22 @@ const RegisterContent = ({
           inputProps={{ onChange: setForm("password") }}
         />
       </Box>
+      <Box sx={{ mb: 3 }}>
+        <Label sx={{ display: "inline-flex" }}>
+          <Checkbox
+            name="user-is-marketing-email-on"
+            checked={registrationResource.data.isMarketingEmailOn}
+            onChange={() => {
+              setRegistrationResource({
+                data: { ...data, isMarketingEmailOn: !registrationResource.data.isMarketingEmailOn }
+              });
+            }}
+          />
+          <Flex as="span" sx={{ textTransform: "none", fontWeight: "normal" }}>
+            I want to receive product updates and announcements via email
+          </Flex>
+        </Label>
+      </Box>
       <Button
         id="primary-action"
         type="submit"
@@ -113,6 +134,16 @@ const RegisterContent = ({
       >
         Let’s go!
       </Button>
+      <Box sx={{ fontSize: 1, textAlign: "center", mt: 3 }}>
+        Already have an account?{" "}
+        <Themed.a
+          as={Link}
+          to={{ pathname: "/login", state: location.state }}
+          sx={{ cursor: "pointer", color: "blue.5" }}
+        >
+          Log in
+        </Themed.a>
+      </Box>
     </Flex>
   );
 };
