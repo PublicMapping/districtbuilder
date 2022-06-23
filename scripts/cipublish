@@ -19,22 +19,36 @@ else
     GIT_COMMIT="$(git rev-parse --short HEAD)"
 fi
 
-if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
-    if [ "${1:-}" = "--help" ]; then
+function amazon_ecr_login() {
+    # Retrieves a temporary authorization token that can be used to access
+    # Amazon ECR, along with the registry URL.
+    read -r AUTHORIZATION_TOKEN ECR_REGISTRY \
+        <<<"$(aws ecr get-authorization-token \
+            --output "text" \
+            --query "authorizationData[0].[authorizationToken, proxyEndpoint]")"
+
+    # The authorization token is base64 encoded, and we need to strip the
+    # protocol from the registry URL.
+    AUTHORIZATION_TOKEN="$(echo "${AUTHORIZATION_TOKEN}" | base64 -d)"
+    ECR_REGISTRY="${ECR_REGISTRY##*://}"
+
+    # Authenticate to the ECR registry. The authorization token is presented in
+    # the format user:password.
+    echo "${AUTHORIZATION_TOKEN##*:}" |
+        docker login \
+            --username "${AUTHORIZATION_TOKEN%%:*}" \
+            --password-stdin "${ECR_REGISTRY}"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    if [[ "${1:-}" == "--help" ]]; then
         usage
     else
-        if [[ -n "${DB_AWS_ECR_ENDPOINT}" ]]; then
-            # Evaluate the return value of the get-login subcommand, which
-            # is a docker login command with temporarily ECR credentials.
-            eval "$(aws ecr get-login --no-include-email)"
+        # Login to Amazon ECR with the local Docker client.
+        amazon_ecr_login
 
-            docker tag "districtbuilder:${GIT_COMMIT}" \
-                "${DB_AWS_ECR_ENDPOINT}/districtbuilder:${GIT_COMMIT}"
-            docker push "${DB_AWS_ECR_ENDPOINT}/districtbuilder:${GIT_COMMIT}"
-
-        else
-            echo "ERROR: No DB_AWS_ECR_ENDPOINT variable defined."
-            exit 1
-        fi
+        docker tag "districtbuilder:${GIT_COMMIT}" \
+            "${ECR_REGISTRY}/districtbuilder:${GIT_COMMIT}"
+        docker push "${ECR_REGISTRY}/districtbuilder:${GIT_COMMIT}"
     fi
 fi
