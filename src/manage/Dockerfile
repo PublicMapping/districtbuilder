@@ -16,7 +16,7 @@ WORKDIR /usr/local/src
 
 RUN wget -qO- https://github.com/mapbox/tippecanoe/archive/${TIPPECANOE_VERSION}.tar.gz \
   | tar xvz -C /usr/local/src
-RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION}
+RUN make -j2 -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION}
 RUN make -C /usr/local/src/tippecanoe-${TIPPECANOE_VERSION} install
 
 

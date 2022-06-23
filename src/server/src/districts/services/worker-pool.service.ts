@@ -25,10 +25,12 @@ const dockerMemLimit = existsSync("/sys/fs/cgroup/memory.max")
 const hostmem = os.totalmem();
 const totalmem = Math.min(hostmem, dockerMemLimit);
 // Targets:
+// 1Gb of cache min (CI)
 // 1.8Gb of cache for 12Gb total (dev)
 // 3.0Gb of cache for 15Gb total (16Gb instance w/ ~1Gb ECS agent)
 // 9.5Gb of cache for 31Gb total (32Gb instance w/ ~1Gb ECS agent)
-export const cacheSize = totalmem * 0.4 - 3 * 1024 * 1024 * 1024;
+const minCacheSize = 1 * 1024 * 1024 * 1024;
+export const cacheSize = Math.max(minCacheSize, totalmem * 0.4 - 3 * 1024 * 1024 * 1024);
 export const maxWorkerCacheSize = Math.ceil(cacheSize / NUM_WORKERS);
 
 // Not that important to limit small regions, but large regions in every worker will eat up our cache
@@ -77,6 +79,7 @@ export class WorkerPoolService {
     this.logger.debug({
       dockerMemLimit: formatBytes(dockerMemLimit),
       hostmem: formatBytes(hostmem),
+      cacheSize: formatBytes(cacheSize),
       maxCacheSize: formatBytes(maxWorkerCacheSize)
     });
   }

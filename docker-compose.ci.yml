@@ -30,6 +30,9 @@ services:
     environment:
       - AWS_PROFILE=${AWS_PROFILE:-district-builder}
       - GIT_COMMIT=${GIT_COMMIT}
+      - GITHUB_SHA
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
       - DB_DEBUG=1
       - DB_SETTINGS_BUCKET=${DB_SETTINGS_BUCKET:-districtbuilder-staging-config-us-east-1}
       - DB_ROLLBAR_ACCESS_TOKEN

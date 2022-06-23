@@ -31,6 +31,9 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
             -f docker-compose.ci.yml \
             build server manage
 
+        # Stop all docker containers so Github actions uses less memory
+        docker stop districtbuilder_server_1 districtbuilder_database_1
+
         CI=1 GIT_COMMIT="${GIT_COMMIT}" \
             ./scripts/test
     fi

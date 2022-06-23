@@ -1,0 +1,51 @@
+name: Github CI
+
+on:
+  push:
+    branches:
+      - develop
+      - test/**
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+    steps:
+      - uses: actions/checkout@v3
+
+      # TODO Variables to change for production
+      #- run: |
+      #    echo "DB_SETTINGS_BUCKET=districtbuilder-production-config-us-east-1" >> $GITHUB_ENV
+      #    echo "DB_DEPLOYMENT_ENVIRONMENT=production" >> $GITHUB_ENV
+      #    NODE_ENV right below
+
+      - name: CI Build
+        run: ./scripts/cibuild
+        env:
+          NODE_ENV: test
+
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
+
+      - name: CI Publish
+        run: |
+          unset AWS_PROFILE
+          ./scripts/cipublish
+        if: github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/test/')
+
+      - name: Infra Plan and Apply
+        run: |
+          docker-compose -f docker-compose.yml -f docker-compose.ci.yml run --rm terraform -c "
+            unset AWS_PROFILE
+            ./scripts/infra plan
+            ./scripts/infra apply"
+        env:
+          DB_ROLLBAR_ACCESS_TOKEN: ${{ secrets.DB_ROLLBAR_ACCESS_TOKEN }}
+        if: github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/test/')
