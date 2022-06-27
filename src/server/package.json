@@ -51,7 +51,7 @@
     "crypto": "1.0.1",
     "csv-parse": "4.15.3",
     "csv-stringify": "5.5.1",
-    "ejs": "3.1.6",
+    "ejs": "3.1.7",
     "form-data": "4.0.0",
     "geojson2shp": "0.5.0",
     "handlebars": "4.7.7",
