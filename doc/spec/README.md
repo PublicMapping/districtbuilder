@@ -8,7 +8,7 @@ Get a paginated list of global projects.
 
 **Method** : `GET`
 
-**Auth required** : YES
+**Auth required** : NO
 
 **Permissions required** : N/A
 
