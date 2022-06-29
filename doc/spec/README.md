@@ -24,6 +24,8 @@ Get a paginated list of global projects.
 
 **Content examples**
 
+**Note** the contents of the `voting` and `demographics` columns are dependent on the region the project is associated with. Not every region will have political data (some may have no data or only data for 2016) or the full range of demographic data available (though every region _will_ have `demographics.population` at the least).
+
 ```json
 {
     "items": [
