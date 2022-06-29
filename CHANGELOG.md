@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added API spec for `/api/globalProjects` [#1239](https://github.com/PublicMapping/districtbuilder/pull/1239)
 
 ### Changed
 
