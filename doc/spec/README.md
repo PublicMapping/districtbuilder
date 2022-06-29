@@ -46,7 +46,10 @@ Get a paginated list of global projects.
                             "voting": {
                                 "democrat16": 0,
                                 "republican16": 0,
-                                "other party16": 0
+                                "other party16": 0,
+                                "democrat20": 0,
+                                "republican20": 0,
+                                "other party20": 0
                             },
                             "contiguity": "",
                             "compactness": 0,
