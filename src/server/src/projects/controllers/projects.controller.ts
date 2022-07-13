@@ -670,28 +670,29 @@ export class ProjectsController implements CrudController<Project> {
     }
     validateNumberOfMembers(dto, existingProject.numberOfDistricts);
 
-    const staticMetadata = (await this.getGeoUnitTopology(existingProject.regionConfig))
-      .staticMetadata;
-    const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
-      ([, field]) => field
-    );
-    const allowedVotingFields: readonly string[] =
-      getVotingMetricFields(staticMetadata).map(([, field]) => field) || [];
-    if (
-      dto.pinnedMetricFields &&
-      dto.pinnedMetricFields.some(
-        field =>
-          !(
-            CORE_METRIC_FIELDS.includes(field) ||
-            allowedDemographicFields.includes(field) ||
-            allowedVotingFields.includes(field)
-          )
-      )
-    ) {
-      throw new BadRequestException({
-        error: "Bad Request",
-        message: { pinnedMetricFields: [`Field not allowed in "pinnedMetricFields"`] }
-      } as Errors<UpdateProjectDto>);
+    if (dto.pinnedMetricFields) {
+      const staticMetadata = (await this.getGeoUnitTopology(existingProject.regionConfig))
+        .staticMetadata;
+      const allowedDemographicFields = getDemographicsMetricFields(staticMetadata).map(
+        ([, field]) => field
+      );
+      const allowedVotingFields: readonly string[] =
+        getVotingMetricFields(staticMetadata).map(([, field]) => field) || [];
+      if (
+        dto.pinnedMetricFields.some(
+          field =>
+            !(
+              CORE_METRIC_FIELDS.includes(field) ||
+              allowedDemographicFields.includes(field) ||
+              allowedVotingFields.includes(field)
+            )
+        )
+      ) {
+        throw new BadRequestException({
+          error: "Bad Request",
+          message: { pinnedMetricFields: [`Field not allowed in "pinnedMetricFields"`] }
+        } as Errors<UpdateProjectDto>);
+      }
     }
 
     const dataWithDefinitions =
