@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+- Fix server crashed caused by archived maps w/ an archived region [#1244](https://github.com/PublicMapping/districtbuilder/pull/1244)
 
 ## [1.18.0]
 ### Added
