@@ -17,12 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # TODO Variables to change for production
-      #- run: |
-      #    echo "DB_SETTINGS_BUCKET=districtbuilder-production-config-us-east-1" >> $GITHUB_ENV
-      #    echo "DB_DEPLOYMENT_ENVIRONMENT=production" >> $GITHUB_ENV
-      #    NODE_ENV right below
-
       - name: CI Build
         run: ./scripts/cibuild
         env:

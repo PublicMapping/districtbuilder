@@ -23,7 +23,7 @@ $ git commit -m "X.Y.Z"
 $ git flow release publish X.Y.Z
 ```
 - [ ] Test the release branch on staging
-- [ ] Start a new [release pipeline job](http://urbanappsci.internal.azavea.com/job/DistrictBuilder%20Release%20Pipeline/build?delay=0sec) with the SHA (see command below) of `release/X.Y.Z` that was tested on staging
+- [ ] Start a new [release workflow](https://github.com/PublicMapping/districtbuilder/actions/workflows/release.yml) with the SHA (see command below) of `release/X.Y.Z` that was tested on staging
 ```bash
 $ git rev-parse --short HEAD
 ```
