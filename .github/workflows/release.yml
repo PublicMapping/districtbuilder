@@ -1,0 +1,34 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_commit:
+        description: 'Short Git commit hash to deploy to production'
+        required: true
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      GIT_COMMIT: ${{ github.event.inputs.git_commit }}
+      DB_SETTINGS_BUCKET: districtbuilder-production-config-us-east-1
+      DB_DEPLOYMENT_ENVIRONMENT: "production"
+      NODE_ENV: production
+      DB_ROLLBAR_ACCESS_TOKEN: ${{ secrets.DB_ROLLBAR_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
+
+      - run: |
+          docker-compose -f docker-compose.yml -f docker-compose.ci.yml run --rm terraform -c "
+            unset AWS_PROFILE
+            ./scripts/infra plan"
+          
