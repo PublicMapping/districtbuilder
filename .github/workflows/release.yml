@@ -38,7 +38,8 @@ jobs:
       - run: |
           docker-compose -f docker-compose.yml -f docker-compose.ci.yml run --rm terraform -c "
             unset AWS_PROFILE
-            ./scripts/infra plan"
+            ./scripts/infra plan
+            ./scripts/infra apply"
 
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
