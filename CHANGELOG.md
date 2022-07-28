@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.18.1]
+
+### Added
+- Added API spec for `/api/globalProjects` [#1239](https://github.com/PublicMapping/districtbuilder/pull/1239)
+
+### Changed
+- Ported from Jenkins to Github actions including cibuild and staging deploy [#1245](https://github.com/PublicMapping/districtbuilder/pull/1245)
+- Added Github Release workflow [#1255](https://github.com/PublicMapping/districtbuilder/pull/1255)
+
+### Fixed
+- Fixed server crashed caused by archived maps w/ an archived region [#1244](https://github.com/PublicMapping/districtbuilder/pull/1244)
+
 ## [1.18.0]
 ### Added
  - Added email opt-in on the registration page [#1210](https://github.com/PublicMapping/districtbuilder/pull/1210)
@@ -524,7 +536,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.18.0...HEAD
+[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.18.1...HEAD
+[1.18.1]: https://github.com/publicmapping/districtbuilder/compare/1.18.0...1.18.1
 [1.18.0]: https://github.com/publicmapping/districtbuilder/compare/1.17.3...1.18.0
 [1.17.3]: https://github.com/publicmapping/districtbuilder/compare/1.17.2...1.17.3
 [1.17.2]: https://github.com/publicmapping/districtbuilder/compare/1.17.1...1.17.2

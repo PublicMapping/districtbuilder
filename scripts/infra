@@ -15,6 +15,9 @@ Execute Terraform subcommands with remote state management.
 
 if [[ -n "${GIT_COMMIT}" ]]; then
     GIT_COMMIT="${GIT_COMMIT:0:7}"
+elif [[ -n "${GITHUB_SHA}" ]]; then
+    GIT_COMMIT="${GITHUB_SHA:0:7}"
+    echo "On Github so using GITHUB_SHA"
 else
     echo "Must manually specify the GIT_COMMIT you want to deploy "
     echo "Try git rev-parse --short HEAD if you are sure that commit already has an image"
@@ -56,7 +59,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         apply)
             terraform apply "${DB_SETTINGS_BUCKET}.tfplan"
 
-            # Notify Rollbar of the deploy when running on Jenkins
+            # Notify Rollbar of the deploy when runnng CI (have access to access token)
             if [[ -n "${DB_ROLLBAR_ACCESS_TOKEN}" && -n "${DB_DEPLOYMENT_ENVIRONMENT}" ]]; then
                 curl -s https://api.rollbar.com/api/1/deploy/ \
                     -F "access_token=${DB_ROLLBAR_ACCESS_TOKEN}" \

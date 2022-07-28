@@ -265,15 +265,17 @@ export interface CreateReferenceLayerData {
   readonly layer_color: ReferenceLayerColors;
 }
 
-export type UpdateProjectData = Pick<
-  IProject,
-  | "name"
-  | "districtsDefinition"
-  | "advancedEditingEnabled"
-  | "lockedDistricts"
-  | "pinnedMetricFields"
-  | "visibility"
-  | "archived"
+export type UpdateProjectData = Partial<
+  Pick<
+    IProject,
+    | "name"
+    | "districtsDefinition"
+    | "advancedEditingEnabled"
+    | "lockedDistricts"
+    | "pinnedMetricFields"
+    | "visibility"
+    | "archived"
+  >
 >;
 
 export type ProjectTemplateId = string;
