@@ -27,8 +27,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: "us-east-1"
 
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: district-builder
+          SLACK_MESSAGE: 'deploying revision https://github.com/publicmapping/districtbuilder/tree/${{ github.event.inputs.git_commit }} to *production*'
+          SLACK_TITLE: Deploying
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
       - run: |
           docker-compose -f docker-compose.yml -f docker-compose.ci.yml run --rm terraform -c "
             unset AWS_PROFILE
             ./scripts/infra plan"
-          
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: district-builder
+          SLACK_MESSAGE: 'deployed revision https://github.com/publicmapping/districtbuilder/tree/${{ github.event.inputs.git_commit }} to *production*'
+          SLACK_TITLE: Deployed
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
