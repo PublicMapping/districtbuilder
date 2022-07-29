@@ -65,7 +65,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                     -F "access_token=${DB_ROLLBAR_ACCESS_TOKEN}" \
                     -F "environment=${DB_DEPLOYMENT_ENVIRONMENT}" \
                     -F "revision=${GIT_COMMIT}" \
-                    -F "local_username=jenkins"
+                    -F "local_username=GitHub_Actions"
             fi
             ;;
         *)

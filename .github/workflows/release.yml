@@ -40,11 +40,3 @@ jobs:
             unset AWS_PROFILE
             ./scripts/infra plan
             ./scripts/infra apply"
-
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: district-builder
-          SLACK_MESSAGE: 'deployed revision https://github.com/publicmapping/districtbuilder/tree/${{ github.event.inputs.git_commit }} to *production*'
-          SLACK_TITLE: Deployed
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
