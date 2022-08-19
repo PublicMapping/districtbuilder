@@ -12,7 +12,7 @@ The configuration file is written referring to the staging database; however, th
 ### Connecting
 1. `export AWS_PROFILE=district-builder`
 
-2. Find an ec2 instance id like i-0e2796c2ebbfbb048 (not the bastion) either via the console or a command like 
+2. Find an ec2 instance id like i-0e2796c2ebbfbb048 either via the console or a command like
 
 ```
 aws ec2 describe-instances --query "Reservations[*].Instances[*].[InstanceId,Tags]" --filters "Name=tag:Environment,Values=Staging"
