@@ -53,20 +53,6 @@ variable "vpc_public_subnet_cidr_blocks" {
   type    = list(string)
 }
 
-variable "bastion_ami" {
-  type = string
-}
-
-variable "bastion_instance_type" {
-  default = "t3.nano"
-  type    = string
-}
-
-variable "bastion_ebs_optimized" {
-  default = true
-  type    = bool
-}
-
 variable "rds_allocated_storage" {
   default = "32"
   type    = string
