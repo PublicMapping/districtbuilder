@@ -152,6 +152,26 @@ $ ./scripts/manage update-region data/output-pa s3://previous/location/of/the/pu
 
 Note: when doing this, you will need to restart your server to see the new data, since it's cached on startup
 
+#### Acquiring custom data to upload to DistrictBuilder
+To create a custom region, you will need a GeoJSON for a state/region at the `county`, `blockgroup`, or `block` level of detail. The file should include the following properties for each geographic unit:
+
+ * geoid (a unique identifier for each geographic unit, eg. census geoid/FIPS)
+ * state
+ * county_identifier
+ * county_name
+ * blockgroup_identifier
+ * block_identifier
+ * population
+ * white
+ * black
+ * asian
+ * hispanic
+ * other
+ 
+We recommend acquiring data from the US Census Bureau, which typically distributes geographic and demographic files separately. Files for a state/region at the desired level of geographic detail (eg. blockgroup, block) should be acquired and then joined on the unique identifier field (eg. the census geoid/FIPS) into a single GeoJSON.
+
+When the GeoJSON is ready, use `process-geojson` to process the data and `publish-geojson` to publish the region to S3. In `process-geojson` the `--demographic` field specifies the columns to upload as demographic data, and multiple groups of demographic data can be uploaded (e.g. CVAP, etc.). The `--levels` field specifies what level of geographic detail (eg. blockgroup, block) contained in the GeoJSON should be processed. 
+
 ### Project Organization
 
 In order to allow for code-sharing across the frontend and backend in conjunction with an unejected Create React App (CRA), it was decided that the simplest and least error-prone way forward was to structure the code as such:
