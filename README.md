@@ -166,7 +166,7 @@ To create a custom region, you will need a GeoJSON for a state/region at the `co
  * hispanic
  * other
  
-We recommend acquiring data from the US Census Bureau, which typically distributes geographic and demographic files separately. Files for a state/region at the desired level of geographic detail (eg. blockgroup, block) should be acquired and then joined on the unique identifier field (eg. the census geoid/FIPS) into a single GeoJSON.
+For locations in the United States, we recommend acquiring data from the US Census Bureau, which typically distributes geographic and demographic files separately. Files for a state/region at the desired level of geographic detail (eg. blockgroup, block) should be acquired and then joined on the unique identifier field (eg. the census geoid/FIPS) into a single GeoJSON.
 
 When the GeoJSON is ready, use `process-geojson` to process the data and `publish-geojson` to publish the region to S3. 
 
