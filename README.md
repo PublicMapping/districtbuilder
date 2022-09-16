@@ -170,7 +170,11 @@ To create a custom region, you will need a GeoJSON for a state/region at the `co
  
 We recommend acquiring data from the US Census Bureau, which typically distributes geographic and demographic files separately. Files for a state/region at the desired level of geographic detail (eg. blockgroup, block) should be acquired and then joined on the unique identifier field (eg. the census geoid/FIPS) into a single GeoJSON.
 
-When the GeoJSON is ready, use `process-geojson` to process the data and `publish-geojson` to publish the region to S3. In `process-geojson` the `--demographic` field specifies the columns to upload as demographic data, and multiple groups of demographic data can be uploaded (e.g. CVAP, etc.). The `--levels` field specifies what level of geographic detail (eg. blockgroup, block) contained in the GeoJSON should be processed. 
+When the GeoJSON is ready, use `process-geojson` to process the data and `publish-geojson` to publish the region to S3. 
+
+In `process-geojson` the `--demographic` field specifies the columns to upload as demographic data, and multiple groups of demographic data can be uploaded (e.g. CVAP, etc.).
+
+The `--levels` field specifies properties in the GeoJSON containing identifiers for other levels of geographic details. For example `--levels block,blockgroup` should be used when the input GeoJSON is at the `block` level and you wish to generate a `blockgroup` layer in addition to the `block` layer by combining all Blocks w/ the same `blockgroup` ID. 
 
 ### Project Organization
 
