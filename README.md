@@ -155,12 +155,10 @@ Note: when doing this, you will need to restart your server to see the new data,
 #### Acquiring custom data to upload to DistrictBuilder
 To create a custom region, you will need a GeoJSON for a state/region at the `county`, `blockgroup`, or `block` level of detail. The file should include the following properties for each geographic unit:
 
- * geoid (a unique identifier for each geographic unit, eg. census geoid/FIPS)
- * state
- * county_identifier
+ * block (a unique identifier for each geographic unit, eg. census block FIPS code)
+ * blockgroup
+ * county
  * county_name
- * blockgroup_identifier
- * block_identifier
  * population
  * white
  * black
