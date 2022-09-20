@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { BadRequestExceptionFilter } from "./common/bad-request-exception.filter";
-import { DEBUG } from "./common/constants";
+import { DEBUG } from "../../shared/constants";
 import * as bodyParser from "body-parser";
 import { DistrictsModule } from "./districts/districts.module";
 import { TopologyService } from "./districts/services/topology.service";
