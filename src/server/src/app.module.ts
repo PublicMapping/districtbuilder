@@ -9,7 +9,7 @@ import { SES } from "aws-sdk";
 import * as SESTransport from "nodemailer/lib/ses-transport";
 import * as StreamTransport from "nodemailer/lib/stream-transport";
 
-import { DEBUG } from "./common/constants";
+import { DEBUG } from "../../shared/constants";
 import { AuthModule } from "./auth/auth.module";
 import { HealthCheckModule } from "./healthcheck/healthcheck.module";
 import { OrganizationsModule } from "./organizations/organizations.module";
