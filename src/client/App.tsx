@@ -45,14 +45,16 @@ const PrivateRoute = ({ children, ...props }: { children: React.ReactNode } & Ro
   );
 };
 
+const environment = ENVIRONMENT.toLowerCase() === "production" ? "production" : "staging";
+
 const rollbarConfig: Rollbar.Configuration = {
-  accessToken: process.env.ROLLBAR_CLIENT_ACCESS_TOKEN || "",
+  accessToken: process.env.REACT_APP_ROLLBAR_CLIENT_ACCESS_TOKEN || "",
   captureUncaught: true,
   captureUnhandledRejections: true,
   enabled: !DEBUG,
   nodeSourceMaps: true,
   payload: {
-    environment: ENVIRONMENT.toLowerCase(),
+    environment,
     client: {
       javascript: {
         code_version: "1.18.2",
