@@ -30,6 +30,8 @@ interface StateProps {
   readonly user: UserState;
 }
 
+throw new Error("Test error from Aaron on staging");
+
 const HomeScreen = ({ projects, isSaving, duplicatedProject, user, pagination }: StateProps) => {
   const isLoggedIn = isUserLoggedIn();
   const projectList =
