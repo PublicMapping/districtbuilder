@@ -23,17 +23,21 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
+        echo "Running update script to build and package client app and server"
         GIT_COMMIT="${GIT_COMMIT}" CI=1 ./scripts/update
 
+        echo "Building images"
         # Build tagged container images
         GIT_COMMIT="${GIT_COMMIT}" docker-compose \
             -f docker-compose.yml \
             -f docker-compose.ci.yml \
             build server manage
 
+        echo "Stopping containers"
         # Stop all docker containers so Github actions uses less memory
         docker stop districtbuilder_server_1 districtbuilder_database_1
 
+        echo "Running tests"
         CI=1 GIT_COMMIT="${GIT_COMMIT}" \
             ./scripts/test
     fi
