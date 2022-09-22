@@ -26,7 +26,7 @@ import StartProjectScreen from "./screens/StartProjectScreen";
 import PublishedMapsListScreen from "./screens/PublishedMapsListScreen";
 import { PushReplaceHistory, QueryParamProvider } from "use-query-params";
 import { createBrowserHistory } from "history";
-import { DEBUG, ENVIRONMENT } from "../shared/constants";
+import { DEBUG } from "../shared/constants";
 
 const PrivateRoute = ({ children, ...props }: { children: React.ReactNode } & RouteProps) => {
   const savedJWT = getJWT();
@@ -45,7 +45,7 @@ const PrivateRoute = ({ children, ...props }: { children: React.ReactNode } & Ro
   );
 };
 
-const environment = ENVIRONMENT.toLowerCase() === "production" ? "production" : "staging";
+const environment = window.location.href.includes("staging") ? "staging" : "production";
 
 const rollbarConfig: Rollbar.Configuration = {
   accessToken: process.env.REACT_APP_ROLLBAR_CLIENT_ACCESS_TOKEN || "",

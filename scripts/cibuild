@@ -14,14 +14,8 @@ Build application for staging or a release.
 }
 
 function pull_env() {
-    DIR="$(dirname "${0}")/../"
-    
-    pushd "${DIR}"
-
     echo "Updating environment variables file from ${DB_SETTINGS_BUCKET}"
     aws s3 cp "s3://${DB_SETTINGS_BUCKET}/.env" ".env"
-
-    popd    
 }
 
 if [[ -n "${GIT_COMMIT}" ]]; then
@@ -37,18 +31,22 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Pull the dotenv file from S3 before building frontend
         pull_env
 
+        echo "Running update script to build and package client app and server"
         GIT_COMMIT="${GIT_COMMIT}" CI=1 ./scripts/update
 
+        echo "Building images"
         # Build tagged container images
         GIT_COMMIT="${GIT_COMMIT}" docker-compose \
             -f docker-compose.yml \
             -f docker-compose.ci.yml \
             build server manage
 
+        echo "Stopping containers"
         # Stop all docker containers so Github actions uses less memory
         docker stop districtbuilder_server_1 districtbuilder_database_1
 
-        CI=1 GIT_COMMIT="${GIT_COMMIT}" \
+        echo "Running tests"
+        # CI=1 GIT_COMMIT="${GIT_COMMIT}" \
             ./scripts/test
     fi
 fi

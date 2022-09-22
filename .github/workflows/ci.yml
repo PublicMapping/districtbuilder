@@ -27,7 +27,9 @@ jobs:
           aws-region: "us-east-1"
 
       - name: CI Build
-        run: unset AWS_PROFILE ./scripts/cibuild
+        run: |
+          unset AWS_PROFILE
+          ./scripts/cibuild
         env:
           NODE_ENV: test
 
