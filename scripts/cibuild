@@ -47,6 +47,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
 
         echo "Running tests"
         # CI=1 GIT_COMMIT="${GIT_COMMIT}" \
-        #     ./scripts/test
+            ./scripts/test
     fi
 fi
