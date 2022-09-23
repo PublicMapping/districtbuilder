@@ -9,4 +9,6 @@ export const DEFAULT_FROM_EMAIL =
 // One worker/CPU works well on AWS using memory-optimized units
 // For dev & CI that's not the case, so just use a fixed amount
 export const NUM_WORKERS =
-  ENVIRONMENT === "development" || ENVIRONMENT === "test" ? 3 : os.cpus().length;
+  ENVIRONMENT.toUpperCase() === "DEVELOPMENT" || ENVIRONMENT.toUpperCase() === "TEST"
+    ? 3
+    : os.cpus().length;

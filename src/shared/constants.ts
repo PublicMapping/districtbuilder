@@ -167,4 +167,4 @@ export const PLANSCORE_POLL_MAX_TRIES = 40;
 export const PLANSCORE_POLL_MS = 6000;
 
 export const ENVIRONMENT = process.env.NODE_ENV || "development";
-export const DEBUG = ENVIRONMENT === "development";
+export const DEBUG = ENVIRONMENT.toUpperCase() === "DEVELOPMENT";
