@@ -46,7 +46,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         docker stop districtbuilder_server_1 districtbuilder_database_1
 
         echo "Running tests"
-        # CI=1 GIT_COMMIT="${GIT_COMMIT}" \
+        CI=1 GIT_COMMIT="${GIT_COMMIT}" \
             ./scripts/test
     fi
 fi
