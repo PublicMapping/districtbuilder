@@ -223,7 +223,7 @@ This section demonstrates how to format a GeoJSON to feed into the `process geoj
 ```
 ./scripts/manage precincts.geojson -d population,white,black,asian,hispanic,other -v republican,democrat,other_voters -l precinct,ward -o data/precinct-example
 ```
-Visit the [manage README](src/manage.README.md) further documentation of the `process-geojson` script.
+Visit the [manage README](src/manage/README.md#manage-process-geojson-file) further documentation of the `process-geojson` script.
 
 ### Project Organization
 
