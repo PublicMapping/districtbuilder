@@ -155,7 +155,7 @@ Note: when doing this, you will need to restart your server to see the new data,
 
 #### How to format a custom GeoJSON to upload to DistrictBuilder
 
-This section demonstrates how to format a GeoJSON to feed into the `process geojson` script. DistrictBuilder is flexible and allows you to specify in a state/region one or more base geographic units to use to draw district boundaries in the user interface. The base geographic unit or units can be census boundaries (ie. `county`, `tract`,`blockgroup`, or `block`), voting boundaries (ie. `wards` or `precincts`) or any custom unit for which you have geographic boundaries and demographic data. The following examples demonstrate how to format the GeoJSON that you acquire or create in order to use `process-geojson` to prepare it to upload to DistrictBuilder:
+This section demonstrates how to format a GeoJSON to feed into the `process-geojson` script. DistrictBuilder is flexible and allows you to specify in a state/region one or more base geographic units to use to draw district boundaries in the user interface. The base geographic unit or units can be census boundaries (ie. `county`, `tract`,`blockgroup`, or `block`), voting boundaries (ie. `wards` or `precincts`) or any custom unit for which you have geographic boundaries and demographic data. The following examples demonstrate how to format the GeoJSON that you acquire or create in order to use `process-geojson` to prepare it to upload to DistrictBuilder:
 
 ##### Example 1: US Census & VAP Data
 
