@@ -125,7 +125,7 @@ You will need a PlanScore API token to test the PlanScore integration in develop
 
 #### Processing your own data for custom regions
 
-To have data to work with, you'll need to do a two step process:
+To have data to work with, you'll need to do a three step process:
 
 1. Prepare or acquire a GeoJSON with boundaries and demographic data for your state/region (see next section for details on how to format this file)
 1. Process the GeoJSON (this outputs all the static files DistrictBuilder needs to work in a local directory)
