@@ -20,18 +20,17 @@ jobs:
        # Set the bucket to pull the dotenv file
       - run: echo "DB_SETTINGS_BUCKET=districtbuilder-staging-config-us-east-1" >> $GITHUB_ENV
 
+      - name: CI Build
+        run: ./scripts/cibuild
+        env:
+          NODE_ENV: test
+          REACT_APP_ROLLBAR_CLIENT_ACCESS_TOKEN: ${{ secrets.REACT_APP_ROLLBAR_CLIENT_ACCESS_TOKEN }}
+
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: "us-east-1"
-
-      - name: CI Build
-        run: |
-          unset AWS_PROFILE
-          ./scripts/cibuild
-        env:
-          NODE_ENV: test
 
       - name: CI Publish
         run: |

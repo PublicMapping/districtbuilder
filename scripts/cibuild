@@ -13,11 +13,6 @@ Build application for staging or a release.
 "
 }
 
-function pull_env() {
-    echo "Updating environment variables file from ${DB_SETTINGS_BUCKET}"
-    aws s3 cp "s3://${DB_SETTINGS_BUCKET}/.env" ".env"
-}
-
 if [[ -n "${GIT_COMMIT}" ]]; then
     GIT_COMMIT="${GIT_COMMIT:0:7}"
 else
@@ -28,9 +23,6 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     if [ "${1:-}" = "--help" ]; then
         usage
     else
-        # Pull the dotenv file from S3 before building frontend
-        pull_env
-
         echo "Running update script to build and package client app and server"
         GIT_COMMIT="${GIT_COMMIT}" CI=1 ./scripts/update
 

@@ -33,7 +33,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         # Update frontend, Yarn dependencies and build static asset bundle
         docker-compose "${CONFIG_ARGS[@]}" \
             run --rm --no-deps client \
-            bash -c "yarn install && yarn compile && yarn build"
+            bash -c "REACT_APP_ROLLBAR_CLIENT_ACCESS_TOKEN=${REACT_APP_ROLLBAR_CLIENT_ACCESS_TOKEN} yarn install && yarn compile && yarn build"
 
         # Update backend, Yarn dependencies and build server
         docker-compose "${CONFIG_ARGS[@]}" \
