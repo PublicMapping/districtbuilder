@@ -1,7 +1,7 @@
 import { join } from "path";
 import { Injectable } from "@nestjs/common";
 import Rollbar from "rollbar";
-import { DEBUG, ENVIRONMENT } from "../common/constants";
+import { DEBUG, ENVIRONMENT } from "../../../shared/constants";
 
 @Injectable()
 export class RollbarService extends Rollbar {

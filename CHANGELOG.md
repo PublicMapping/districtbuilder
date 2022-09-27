@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
- - Enable SSM to EC2 Hosts [#1259](https://github.com/PublicMapping/districtbuilder/pull/1259)
+- Enabled SSM to EC2 Hosts [#1259](https://github.com/PublicMapping/districtbuilder/pull/1259)
+- Added support for client-side error-logging with Rollbar [#1264](https://github.com/PublicMapping/districtbuilder/pull/1264)
 
 ### Changed
 

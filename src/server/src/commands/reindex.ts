@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "../app.module";
-import { DEBUG } from "../common/constants";
+import { DEBUG } from "../../../shared/constants";
 import { Connection } from "typeorm";
 
 async function bootstrap(): Promise<void> {
