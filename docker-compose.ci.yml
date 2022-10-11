@@ -33,6 +33,7 @@ services:
       - GITHUB_SHA
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
       - DB_DEBUG=1
       - DB_SETTINGS_BUCKET=${DB_SETTINGS_BUCKET:-districtbuilder-staging-config-us-east-1}
       - DB_ROLLBAR_ACCESS_TOKEN
