@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enabled SSM to EC2 Hosts [#1259](https://github.com/PublicMapping/districtbuilder/pull/1259)
 - Added support for client-side error-logging with Rollbar [#1264](https://github.com/PublicMapping/districtbuilder/pull/1264)
 - Specify verbosity in parameter group and set to terse. [#1273](https://github.com/PublicMapping/districtbuilder/pull/1273)
+- Updated to React 17 [#1275](https://github.com/PublicMapping/districtbuilder/pull/1275)
 
 ### Changed
 
