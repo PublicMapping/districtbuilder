@@ -2,8 +2,12 @@ resource "aws_sns_topic" "global" {
   name = "topic${var.environment}GlobalNotifications"
 }
 
+locals {
+  alarm_count = var.environment == "Production" ? 1 : 0
+}
+
 resource "aws_cloudwatch_metric_alarm" "db_server_cpu_utilization" {
-  count                     = var.environment == "Production" ? 1 : 0
+  count                     = local.alarm_count
   alarm_name                = "alarm${var.environment}DatabaseServerCPUUtilization"
   comparison_operator       = "GreaterThanThreshold"
   evaluation_periods        = "1"
@@ -25,7 +29,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_cpu_utilization" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_server_disk_queue_depth" {
-  count                     = var.environment == "Production" ? 1 : 0
+  count                     = local.alarm_count
   alarm_name                = "alarm${var.environment}DatabaseServerDiskQueueDepth"
   comparison_operator       = "GreaterThanThreshold"
   evaluation_periods        = "1"
@@ -47,7 +51,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_disk_queue_depth" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_server_freeable_memory" {
-  count                     = var.environment == "Production" ? 1 : 0
+  count                     = local.alarm_count
   alarm_name                = "alarm${var.environment}DatabaseServerFreeableMemory"
   comparison_operator       = "LessThanThreshold"
   evaluation_periods        = "1"
@@ -69,7 +73,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_freeable_memory" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_server_free_storage_space" {
-  count                     = var.environment == "Production" ? 1 : 0
+  count                     = local.alarm_count
   alarm_name                = "alarm${var.environment}DatabaseServerFreeStorageSpace"
   comparison_operator       = "LessThanThreshold"
   evaluation_periods        = "1"
@@ -91,7 +95,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_free_storage_space" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "app_server_latency" {
-  count                     = var.environment == "Production" ? 1 : 0
+  count                     = local.alarm_count
   alarm_name                = "alarm${var.environment}AppServerTargetResponseRate"
   comparison_operator       = "GreaterThanThreshold"
   evaluation_periods        = "1"
