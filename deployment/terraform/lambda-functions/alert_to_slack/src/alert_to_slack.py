@@ -34,14 +34,14 @@ def handler(event, context):
 
             if alarm_name in ALARM_NAMES:
                 slack_message = {
-                    "text": f":alert::alert::alert: {alarm_name} state is "
+                    "text": f":thinking_face: {alarm_name} state is "
                     f" now {new_state}: {reason}\n"
                     f"```\n{message}```"
                 }
                 slack_message = {
                     "text": f":white_check_mark: {alarm_name} has recovered"
                     if new_state.lower() == "ok"
-                    else f":alert::alert::alert: {alarm_name} state is "
+                    else f":thinking_face: {alarm_name} state is "
                     f" now {new_state}: {reason}\n"
                     f"```\n{message}```"
                 }
