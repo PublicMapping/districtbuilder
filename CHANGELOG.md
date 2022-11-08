@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for client-side error-logging with Rollbar [#1264](https://github.com/PublicMapping/districtbuilder/pull/1264)
 - Specify verbosity in parameter group and set to terse. [#1273](https://github.com/PublicMapping/districtbuilder/pull/1273)
 - Updated to React 17 [#1275](https://github.com/PublicMapping/districtbuilder/pull/1275)
+- Added CloudWatch alarms to Terraform. Added an alarm for ALB target response rate. [#1281](https://github.com/PublicMapping/districtbuilder/pull/1281)
 
 ### Changed
 
