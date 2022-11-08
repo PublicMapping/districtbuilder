@@ -11,18 +11,15 @@ logger.addHandler(ch)
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "Staging")
 SLACK_BOT_WEBHOOK = os.getenv("SLACK_BOT_WEBHOOK")
-APP_NAME = "districtbuilder"
-SERVER_NAME = "DatabaseServer"
+DB_SERVER_NAME = "DatabaseServer"
+APP_SERVER_NAME = "AppServer"
 
-DB_ALARM_NAMES = [
-    f"alarm{ENVIRONMENT}{SERVER_NAME}CPUUtilization-"
-    f"{APP_NAME}-{ENVIRONMENT.lower()}",
-    f"alarm{ENVIRONMENT}{SERVER_NAME}DiskQueueDepth-"
-    f"{APP_NAME}-{ENVIRONMENT.lower()}",
-    f"alarm{ENVIRONMENT}{SERVER_NAME}FreeableMemory-"
-    f"{APP_NAME}-{ENVIRONMENT.lower()}",
-    f"alarm{ENVIRONMENT}{SERVER_NAME}FreeStorageSpace-"
-    f"{APP_NAME}-{ENVIRONMENT.lower()}",
+ALARM_NAMES = [
+    f"alarm{ENVIRONMENT}{DB_SERVER_NAME}CPUUtilization",
+    f"alarm{ENVIRONMENT}{DB_SERVER_NAME}DiskQueueDepth",
+    f"alarm{ENVIRONMENT}{DB_SERVER_NAME}FreeableMemory",
+    f"alarm{ENVIRONMENT}{DB_SERVER_NAME}FreeStorageSpace",
+    f"alarm{ENVIRONMENT}{APP_SERVER_NAME}TargetResponseRate",
 ]
 
 
@@ -35,7 +32,7 @@ def handler(event, context):
             new_state = message['NewStateValue']
             reason = message['NewStateReason']
 
-            if alarm_name in DB_ALARM_NAMES:
+            if alarm_name in ALARM_NAMES:
                 slack_message = {
                     "text": f":alert::alert::alert: {alarm_name} state is "
                     f" now {new_state}: {reason}\n"
