@@ -3,6 +3,7 @@ resource "aws_sns_topic" "global" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_server_cpu_utilization" {
+  count                     = var.environment == "Staging" ? 1 : 0
   alarm_name                = "alarm${var.environment}DatabaseServerCPUUtilization"
   comparison_operator       = "GreaterThanThreshold"
   evaluation_periods        = "1"
@@ -24,6 +25,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_cpu_utilization" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_server_disk_queue_depth" {
+  count                     = var.environment == "Staging" ? 1 : 0
   alarm_name                = "alarm${var.environment}DatabaseServerDiskQueueDepth"
   comparison_operator       = "GreaterThanThreshold"
   evaluation_periods        = "1"
@@ -45,6 +47,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_disk_queue_depth" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_server_freeable_memory" {
+  count                     = var.environment == "Staging" ? 1 : 0
   alarm_name                = "alarm${var.environment}DatabaseServerFreeableMemory"
   comparison_operator       = "LessThanThreshold"
   evaluation_periods        = "1"
@@ -66,6 +69,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_freeable_memory" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_server_free_storage_space" {
+  count                     = var.environment == "Staging" ? 1 : 0
   alarm_name                = "alarm${var.environment}DatabaseServerFreeStorageSpace"
   comparison_operator       = "LessThanThreshold"
   evaluation_periods        = "1"
@@ -87,6 +91,7 @@ resource "aws_cloudwatch_metric_alarm" "db_server_free_storage_space" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "app_server_latency" {
+  count                     = var.environment == "Staging" ? 1 : 0
   alarm_name                = "alarm${var.environment}AppServerTargetResponseRate"
   comparison_operator       = "GreaterThanThreshold"
   evaluation_periods        = "1"
