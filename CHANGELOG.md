@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
+## [1.19.1]
 ### Changed
 - Deduplicate CloudWatch alarms [#1283](https://github.com/PublicMapping/districtbuilder/pull/1283)
 
@@ -540,7 +547,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[Unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.19.0...HEAD
+[Unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.19.1...HEAD
+[1.19.1]: https://github.com/publicmapping/districtbuilder/compare/1.19.0...1.19.1
 [1.19.0]: https://github.com/publicmapping/districtbuilder/compare/1.18.1...1.19.0
 [1.18.1]: https://github.com/publicmapping/districtbuilder/compare/1.18.0...1.18.1
 [1.18.0]: https://github.com/publicmapping/districtbuilder/compare/1.17.3...1.18.0
