@@ -1,9 +1,9 @@
 all: test
-	rm -rf alert_db.zip
-	(cd src && zip -qXr ../alert_db.zip .)
+	rm -rf alert_to_slack.zip
+	(cd src && zip -qXr ../alert_to_slack.zip .)
 
 test: requirements
-	(cd src && python3 -c "from alert_db import handler" && cd ../)
+	(cd src && python3 -c "from alert_to_slack import handler" && cd ../)
 
 requirements: requirements.txt.out
 

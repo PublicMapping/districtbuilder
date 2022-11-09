@@ -53,6 +53,8 @@ services:
     environment:
       - BASE_URL=${BASE_URL:-http://server:3005}
       - PORT=3003
+      - REACT_APP_ROLLBAR_CLIENT_ACCESS_TOKEN
+      - DISABLE_NEW_JSX_TRANSFORM=true
     volumes:
       - ./:/home/node/app
       - ./src/server/dist/server/src/static:/home/node/app/build

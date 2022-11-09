@@ -58,6 +58,11 @@ resource "aws_db_parameter_group" "default" {
     value = var.rds_log_autovacuum_min_duration
   }
 
+ parameter {
+    name  = "log_error_verbosity"
+    value = "terse"
+  }
+
   tags = {
     Name        = "dbpgDatabaseServer"
     Project     = var.project
@@ -93,6 +98,7 @@ module "database" {
   storage_encrypted          = var.rds_storage_encrypted
   subnet_group               = aws_db_subnet_group.default.name
   parameter_group            = aws_db_parameter_group.default.name
+  cloudwatch_logs_exports    = null
 
   alarm_cpu_threshold                = var.rds_cpu_threshold_percent
   alarm_disk_queue_threshold         = var.rds_disk_queue_threshold

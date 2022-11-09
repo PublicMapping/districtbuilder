@@ -4,7 +4,7 @@ import S3 from "aws-sdk/clients/s3";
 import Queue from "promise-queue";
 
 import { AppModule } from "../app.module";
-import { DEBUG } from "../common/constants";
+import { DEBUG } from "../../../shared/constants";
 import { formatBytes, getTopology, getTopologyLayerSize } from "../common/functions";
 import { RegionConfigsModule } from "../region-configs/region-configs.module";
 import { RegionConfigsService } from "../region-configs/services/region-configs.service";

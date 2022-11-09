@@ -125,9 +125,10 @@ You will need a PlanScore API token to test the PlanScore integration in develop
 
 #### Processing your own data for custom regions
 
-To have data to work with, you'll need to do a two step process:
+To have data to work with, you'll need to do a three step process:
 
-1. Process the GeoJSON for your state/region (this outputs all the static files DistrictBuilder needs to work in a local directory)
+1. Prepare or acquire a GeoJSON with boundaries and demographic data for your state/region (see next section for details on how to format this file)
+1. Process the GeoJSON (this outputs all the static files DistrictBuilder needs to work in a local directory)
 1. Publish the resulting files (upload to S3 for use by the app)
 
 To process PA data, first copy the GeoJSON file into the `src/manage/data` directory, create an output directory (eg. `src/manage/data/output-pa`), and then run this command:
@@ -151,6 +152,78 @@ $ ./scripts/manage update-region data/output-pa s3://previous/location/of/the/pu
 ```
 
 Note: when doing this, you will need to restart your server to see the new data, since it's cached on startup
+
+#### How to format a custom GeoJSON to upload to DistrictBuilder
+
+This section demonstrates how to format a GeoJSON to feed into the `process-geojson` script. DistrictBuilder is flexible and allows you to specify in a state/region one or more base geographic units to use to draw district boundaries in the user interface. The base geographic unit or units can be census boundaries (ie. `county`, `tract`,`blockgroup`, or `block`), voting boundaries (ie. `wards` or `precincts`) or any custom unit for which you have geographic boundaries and demographic data. The following examples demonstrate how to format the GeoJSON that you acquire or create in order to use `process-geojson` to prepare it to upload to DistrictBuilder:
+
+##### Example 1: US Census & VAP Data
+
+```
+{ "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": ...
+        },
+      "properties": {
+        "block":482012231001050
+        "blockgroup":482012231001
+        "population": 1250,
+        "white": 250,
+        "black": 250,
+        "asian":250,
+        "hispanic":250,
+        "other":250
+        "vap": 1000,
+        "vap_white":200,
+        "vap_black":200,
+        "vap_asian":200,
+        "vap_hispanic":200,
+        "vap_other":200
+        }
+      },
+      ...
+    ]
+  }
+```
+```
+./scripts/manage process-geojson census-example.geojson -d population,white,black,asian,hispanic,other -d vap,vap_white,vap_black,vap_asian,vap_hispanic,vap_other -l block,blockgroup -o data/census-example
+```
+
+##### Example 2: Ward & Precinct Boundaries with Voting Data
+
+```
+{ "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": ...
+        },
+      "properties": {
+        "precinct":7
+        "ward":3
+        "population": 1000,
+        "white": 200,
+        "black": 200,
+        "asian":200,
+        "hispanic":200,
+        "other":200,
+        "republican:400,
+        "democrat":400,
+        "other_voters":200
+        }
+      },
+      ...
+    ]
+  }
+```
+```
+./scripts/manage precincts.geojson -d population,white,black,asian,hispanic,other -v republican,democrat,other_voters -l precinct,ward -o data/precinct-example
+```
+Visit the [manage README](src/manage/README.md#manage-process-geojson-file) further documentation of the `process-geojson` script.
 
 ### Project Organization
 

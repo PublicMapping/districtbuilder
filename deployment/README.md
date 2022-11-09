@@ -58,10 +58,6 @@ r53_private_hosted_zone = "districtbuilder.internal"
 
 external_access_cidr_block = "127.0.0.1/32"
 
-bastion_ami           = "ami-0fc61db8544a617ed"
-bastion_instance_type = "t3.nano"
-bastion_ebs_optimized = true
-
 rds_database_identifier = districtbuilder-staging
 rds_database_name       = districtbuilder
 rds_database_username   = districtbuilder

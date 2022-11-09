@@ -100,6 +100,12 @@ resource "aws_iam_role_policy" "scoped_email_sending_container_instance" {
   policy = data.aws_iam_policy_document.scoped_email_sending.json
 }
 
+# Enable SSM for EC2 instances
+resource "aws_iam_role_policy_attachment" "ssm_for_ec2" {
+  role       = "ecs${var.environment}ContainerInstanceRole"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 #
 # ALB IAM resources
 #

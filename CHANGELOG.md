@@ -6,12 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
 
 ### Changed
 
 ### Fixed
+
+## [1.19.0]
+### Added
+- Enabled SSM to EC2 Hosts [#1259](https://github.com/PublicMapping/districtbuilder/pull/1259)
+- Added support for client-side error-logging with Rollbar [#1264](https://github.com/PublicMapping/districtbuilder/pull/1264)
+- Specify verbosity in parameter group and set to terse. [#1273](https://github.com/PublicMapping/districtbuilder/pull/1273)
+- Updated to React 17 [#1275](https://github.com/PublicMapping/districtbuilder/pull/1275)
+- Added CloudWatch alarms to Terraform. Added an alarm for ALB target response rate. [#1281](https://github.com/PublicMapping/districtbuilder/pull/1281)
 
 ## [1.18.1]
 
@@ -536,7 +543,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.18.1...HEAD
+[Unreleased]: https://github.com/publicmapping/districtbuilder/compare/1.19.0...HEAD
+[1.19.0]: https://github.com/publicmapping/districtbuilder/compare/1.18.1...1.19.0
 [1.18.1]: https://github.com/publicmapping/districtbuilder/compare/1.18.0...1.18.1
 [1.18.0]: https://github.com/publicmapping/districtbuilder/compare/1.17.3...1.18.0
 [1.17.3]: https://github.com/publicmapping/districtbuilder/compare/1.17.2...1.17.3
