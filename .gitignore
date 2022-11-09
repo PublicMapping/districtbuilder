@@ -45,5 +45,5 @@ deployment/ansible/roles/azavea.*
 # Lambda
 *.zip
 *.out
-deployment/terraform/lambda-functions/alert_db/src/*
-!deployment/terraform/lambda-functions/alert_db/src/alert_db.py
+deployment/terraform/lambda-functions/alert_to_slack/src/*
+!deployment/terraform/lambda-functions/alert_to_slack/src/alert_to_slack.py
