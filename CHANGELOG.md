@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated database Terraform module to use the 'max_allocated_storage' param [#1312](https://github.com/PublicMapping/districtbuilder/pull/1312)
+- Made TopologyService check 'archived' status and refuse to load archived layers [#1315](https://github.com/PublicMapping/districtbuilder/pull/1315)
 
 ### Fixed
 

@@ -76,6 +76,10 @@ export class TopologyService {
     if (!this._layers) {
       return;
     }
+    if (regionConfig.archived) {
+      this.logger.error(`Tried to load archived RegionConfig ${regionConfig.id}`);
+      return undefined;
+    }
     if (!(regionConfig.s3URI in this._layers)) {
       // If we encounter a new layer (i.e. one added after the service has started),
       // then store the results in the `_layers` object.
