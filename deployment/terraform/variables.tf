@@ -58,6 +58,11 @@ variable "rds_allocated_storage" {
   type    = string
 }
 
+variable "rds_max_allocated_storage" {
+  default = 0
+  type    = string
+}
+
 variable "rds_engine_version" {
   default = "12.4"
   type    = string

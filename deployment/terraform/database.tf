@@ -75,14 +75,17 @@ resource "aws_db_parameter_group" "default" {
 }
 
 module "database" {
-  source = "github.com/azavea/terraform-aws-postgresql-rds?ref=3.0.0"
+  # TODO (#1316): go back to github.com/azavea/terraform-aws-postgresql-rds once it's updated
+  # (see https://github.com/azavea/terraform-aws-postgresql-rds/pull/48)
+  source = "github.com/KlaasH/terraform-aws-postgresql-rds?ref=max-allocated-storage"
 
   vpc_id                     = module.vpc.id
   allocated_storage          = var.rds_allocated_storage
+  max_allocated_storage      = var.rds_max_allocated_storage
   engine_version             = var.rds_engine_version
   instance_type              = var.rds_instance_type
   storage_type               = var.rds_storage_type
-  iops                       = var.rds_storage_type == "io1" ? var.rds_iops : null
+  iops                       = var.rds_iops
   database_identifier        = var.rds_database_identifier
   database_name              = var.rds_database_name
   database_username          = var.rds_database_username

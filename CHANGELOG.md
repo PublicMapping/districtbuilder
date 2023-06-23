@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Updated database Terraform module to use the 'max_allocated_storage' param [#1312](https://github.com/PublicMapping/districtbuilder/pull/1312)
+
 ### Fixed
 
 ## [1.19.1]
